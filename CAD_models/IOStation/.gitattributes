@@ -1,0 +1,1 @@
+*.{jpeg,pdf,docx,xlsx,jpg,png,SLDASM,SLDPRT,STL,stp,xls,JPG,pptx} filter=lfs diff=lfs merge=lfs -text
