@@ -1,0 +1,11 @@
+name: rppmcontroller
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # same python version as the one preinstalled on the revpi
+  - python=3.7.3
+  - pip
+  - pip:
+    # - revpimodio2
+    - -r requirement.txt
