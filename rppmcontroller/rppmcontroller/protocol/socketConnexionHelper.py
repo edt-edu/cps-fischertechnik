@@ -23,8 +23,8 @@ def listenSocket(host: str, port: int, func: Callable[[socket.socket], None], au
         server_socket.listen(1)
 
         nbconnexions = 0
-        while nbconnexions < 1 or auto_reconnect:
-            logging.info(f"ComnandServer listening on {host}:{port}")
+        while nbconnexions < 1 or auto_reconnect:            
+            logging.info(f"Listening on {host}:{port} , handled by {func.__name__}() once connected")
             client_socket, _ = server_socket.accept()
             logging.info(f"Accepted connection from {_}")
             nbconnexions = nbconnexions + 1
