@@ -6,6 +6,7 @@ from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from math import isclose
 import logging
+from typing import Tuple
 
 
 class VacuumGripper(MovingMachine):
@@ -203,7 +204,7 @@ class VacuumGripper(MovingMachine):
     def vacuumActRotLeft(self, value):
         self.__vacuumActRotLeft = value
 
-    def executeHelper(self):
+    def executeHelper(self) -> Tuple[bool, bool, bool]:
         """
         Returns whether each counter can be reset after the setup process
 
