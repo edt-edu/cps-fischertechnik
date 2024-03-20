@@ -60,12 +60,18 @@ class RevPiPyMachineController:
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "receiveCommandMessages Process"))
 
-        while True:#not lFlag.wait(0.01):
+        isBrokenConnection = False
+
+        while not isBrokenConnection:#not lFlag.wait(0.01):
                 #print("loop client listen", flush=True)
                 data = s.recv(1024)
                 #print("got data, evaluating", flush=True)
-                if not data.isspace():
-                    logging.debug(f"Received {data!r}")
+                if data == b'':
+                    logging.info("receiveCommandMessages socket connection broken")
+                    isBrokenConnection = True
+                else:
+                    if not data.isspace():
+                        logging.debug(f"Received {data!r}")
                     # objdata = JSONReader.read(data)
                     # #print(objdata)
                     # self.inputBuffer.put(objdata)
@@ -100,6 +106,7 @@ class RevPiPyMachineController:
                 logging.debug(messageSend)
             except Empty:
                 logging.debug("nothing in queue to send")
+                time.sleep(1.0) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
 
 
     def processJson(self, inputBuffer: Queue):
@@ -116,7 +123,8 @@ class RevPiPyMachineController:
         try:
             inputBufferItem = inputBuffer.get(block=False)
         except Empty:
-            logging.debug("nothing in queue")
+            # logging.debug("nothing in queue")
+            pass
         if inputBufferItem is not None:
             for m in self.machines:
                 # überprüfe ob maschinen-id bekannt
@@ -315,7 +323,7 @@ class RevPiPyMachineController:
             # self.reset1()
             # # logging.debug(self.currentlyExecuting)
             self.createFeedbackOnChange()
-            time.sleep(0.03)
+            time.sleep(3.0)
 
 
 def signal_custom_handler(sig, frame, name: str):
