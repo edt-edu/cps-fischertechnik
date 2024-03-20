@@ -11,3 +11,12 @@ bin/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+
+# python intermediate files
+__pycache__/
+.cache/
+.eggs/
+*.egg-info/
+.virtualenv/
+*.pyc

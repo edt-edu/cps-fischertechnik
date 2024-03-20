@@ -1,0 +1,6 @@
+---
+
+connection:
+  host: "localhost"
+  command_port: 6001
+  notification_port: 6011

@@ -1,0 +1,5 @@
+# run: pip install -i requirements.txt
+
+pyyaml
+revpimodio2
+pytest
