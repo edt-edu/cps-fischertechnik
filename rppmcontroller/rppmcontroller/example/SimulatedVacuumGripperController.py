@@ -57,8 +57,8 @@ class VacuumGripperController(RevPiPyMachineController):
             self.vacuumGripperMachine: None
         }
 
-    def read(self):
-        # TODO find a way to simulated read
+    def read(self) -> None:
+        # TODO find a way to simulate read
         
         self.vacuumGripperMachine.vacuumSensVerticalEndUp = 0
         self.vacuumGripperMachine.vacuumSensArmEndIn = 0
@@ -67,8 +67,8 @@ class VacuumGripperController(RevPiPyMachineController):
         self.vacuumGripperMachine.vacuumSensArmEncoderCounter = 0
         self.vacuumGripperMachine.vacuumSensRotEncoderCounter = 0
 
-    def write(self):
-        # TODO find a way to simulated write
+    def write(self) -> None:
+        # TODO find a way to simulate write
         pass
         # self.rpi.io.dio3_O_1.value = self.vacuumGripperMachine.vacuumActVerticalUp
         # self.rpi.io.dio3_O_2.value = self.vacuumGripperMachine.vacuumActVerticalDown
@@ -79,6 +79,15 @@ class VacuumGripperController(RevPiPyMachineController):
         # self.rpi.io.dio3_O_7.value = self.vacuumGripperMachine.vacuumActCompressorOn
         # self.rpi.io.dio3_O_8.value = self.vacuumGripperMachine.vacuumActValve
    
+    def reset(self) -> None:
+        # TODO find a way to simulated reset
+        vg = self.vacuumGripperMachine.executeHelper()
+        if vg[0]:
+            pass
+            # self.rpi.io.dio4_Counter_5.reset()
+            # self.rpi.io.dio4_Counter_7.reset()
+            # self.rpi.io.dio4_Counter_9.reset()
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
     logging.debug('main')

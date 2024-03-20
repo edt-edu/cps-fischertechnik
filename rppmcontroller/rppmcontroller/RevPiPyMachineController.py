@@ -238,7 +238,7 @@ class RevPiPyMachineController:
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
 
     @abstractmethod
-    def read(self):
+    def read(self) -> None:
         """
         Set the internal machine parameters according to the RevPi inputs
         Ie.  maps the DIO bus values to our python objects
@@ -247,7 +247,7 @@ class RevPiPyMachineController:
         pass
 
     @abstractmethod
-    def write(self):
+    def write(self) -> None:
         """
         Set the RevPi output according to the internal machine parameters
         Ie.  maps the DIO bus values to our python objects
@@ -255,7 +255,16 @@ class RevPiPyMachineController:
         """
         pass
 
-    def exLoop(self):
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        Reset encoder values to 0 after the setup of the individual machine connected to
+        these ports is finished
+        DIO IO variables names must conforms to the physical configuration
+        """
+        pass
+
+    def exLoop(self) -> None:
         """
         The execute loop, which activates all the necessary functions on each machine
         """
@@ -274,7 +283,7 @@ class RevPiPyMachineController:
                 #logging.debug(str(key) + 'finished execution')
                 self.currentlyExecuting[key][0] = None
 
-    def createFeedbackOnChange(self):
+    def createFeedbackOnChange(self) -> None:
         """Whenever the state of the machine changes, feedback is created
         a machine can be in several states as definded in the ExecutionStatus enum
         (currently, only INACTION and FINISHED are used)
@@ -320,7 +329,7 @@ class RevPiPyMachineController:
             self.read()
             self.exLoop()
             self.write()
-            # self.reset1()
+            self.reset()
             # # logging.debug(self.currentlyExecuting)
             self.createFeedbackOnChange()
             time.sleep(3.0)

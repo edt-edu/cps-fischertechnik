@@ -78,7 +78,16 @@ class VacuumGripperController(RevPiPyMachineController):
         self.rpi.io.dio3_O_6.value = self.vacuumGripperMachine.vacuumActRotLeft
         self.rpi.io.dio3_O_7.value = self.vacuumGripperMachine.vacuumActCompressorOn
         self.rpi.io.dio3_O_8.value = self.vacuumGripperMachine.vacuumActValve
-   
+    
+    def reset(self) -> None:
+        # TODO find a way to read from a configuration file
+        assert self.rpi.io is not None
+        vg = self.vacuumGripperMachine.executeHelper()
+        if vg[0]:
+            self.rpi.io.dio3_Counter_5.reset()
+            self.rpi.io.dio3_Counter_7.reset()
+            self.rpi.io.dio3_Counter_9.reset()
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
     # Start VacuumGripperStreamer app
