@@ -8,3 +8,8 @@ build/
 dist/
 *.pyc
 pytest.log
+# Tests
+.coverage
+report.xml
+coverage.xml
+
