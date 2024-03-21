@@ -8,4 +8,4 @@ dependencies:
   - pip
   - pip:
     # - revpimodio2
-    - -r requirement.txt
+    - -r requirements.txt
