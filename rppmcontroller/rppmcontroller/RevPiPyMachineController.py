@@ -335,6 +335,7 @@ class RevPiPyMachineController:
     def start(self):
         """
         Starts communication threads for receiving commands via Sockets and executing them
+        Initiate the main loop 
         """
         logging.debug('start')
 
@@ -351,20 +352,22 @@ class RevPiPyMachineController:
         logging.debug('all threads started')
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "Main"))
         while True:
-            logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
-            self.processJson(self.inputBuffer)
-            self.read()
-            self.exLoop()
-            self.write()
-            self.reset()
-            # # logging.debug(self.currentlyExecuting)
-            self.createFeedbackOnChange()
-            
-            # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
-            for m in self.machines:
-                m.decrementNbMinimumRequiredExecutionCycles()
-            time.sleep(3.0)
+            self.mainLoopIteration()
 
+    def mainLoopIteration(self):
+        logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
+        self.processJson(self.inputBuffer)
+        self.read()
+        self.exLoop()
+        self.write()
+        self.reset()
+        # # logging.debug(self.currentlyExecuting)
+        self.createFeedbackOnChange()
+        
+        # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
+        for m in self.machines:
+            m.decrementNbMinimumRequiredExecutionCycles()
+        time.sleep(3.0)
 
 def signal_custom_handler(sig, frame, name: str):
     process_id = os.getpid()
