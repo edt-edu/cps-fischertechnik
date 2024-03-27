@@ -20,16 +20,16 @@ from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.example.VacuumGripperController import VacuumGripperController
 from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import VacuumGripperSimpleSimulator
 
 
-class SimulatedVacuumGripperController(RevPiPyMachineController):
+class SimulatedVacuumGripperController(VacuumGripperController):
     """
-    Class allowing to stream commands to and from  a vacuum gripper
+    Class allowing to stream commands to and from  a simulated vacuum gripper
     """
 
-    def __init__(self, simulatedRevPiModIO: bool = False):
+    def __init__(self):
         """
         Init method of this class, starts all threads and everything is ready for receiving commands via Sockets and executing them
         """
@@ -38,11 +38,6 @@ class SimulatedVacuumGripperController(RevPiPyMachineController):
 
         super().__init__()
         
-
-        # Instantiate RevPiModIO
-        if(not simulatedRevPiModIO):
-            self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
-
         # TODO read from a configuration file
         #the list of all machines that are connected to this core
         self.machines = []
@@ -77,6 +72,6 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
     logging.debug('main')
     # Start VacuumGripperStreamer app
-    root = SimulatedVacuumGripperController(simulatedRevPiModIO=True)
+    root = SimulatedVacuumGripperController()
     # start communication threads and main control loop
     root.start()

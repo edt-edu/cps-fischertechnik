@@ -370,9 +370,3 @@ def signal_custom_handler(sig, frame, name: str):
     process_id = os.getpid()
     logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).")    
     sys.exit(0)
-
-# if __name__ == "__main__":
-#     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
-#     # Start RevPiPyController app
-#     root = RevPiPyController()
-#     root.start()
