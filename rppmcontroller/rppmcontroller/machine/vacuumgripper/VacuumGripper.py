@@ -7,6 +7,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from math import isclose
 import logging
 from typing import Tuple
+import traceback
 
 
 class VacuumGripper(MovingMachine):
@@ -56,8 +57,13 @@ class VacuumGripper(MovingMachine):
 
     @property
     def isExecuting(self) -> bool:
-        logging.debug('called isExecuting')
-        return self.__vacuumActRotRight or self.__vacuumActRotLeft or self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActCompressorOn or self.__vacuumActValve or self.__vacuumActArmOut or self.__vacuumActArmIn
+        res = self.__vacuumActRotRight or self.__vacuumActRotLeft or self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or \
+            self.__vacuumActCompressorOn or self.__vacuumActValve or self.__vacuumActArmOut or self.__vacuumActArmIn or \
+            self.nbMinimumRequiredExecutionCycles != 0
+        
+        logging.debug(f'called isExecuting({self.id}) = {res}')
+        
+        return res
 
 
     def __init__(self, id1):
@@ -110,6 +116,9 @@ class VacuumGripper(MovingMachine):
 
     @property
     def vacuumSensVerticalEndUp(self) -> bool:
+        """The Vacuum Gripper sensor for vertical axis
+
+        True if arm is up at maximum position  so that it touches the sensor"""
         return self.__vacuumSensVerticalEndUp
 
     @vacuumSensVerticalEndUp.setter
@@ -126,6 +135,9 @@ class VacuumGripper(MovingMachine):
 
     @property
     def vacuumSensArmEndIn(self) -> bool:
+        """The Vacuum Gripper sensor for horizontal axis
+
+        True if arm is retracted at maximum position  so that it touches the sensor"""
         return self.__vacuumSensArmEndIn
 
     @vacuumSensArmEndIn.setter
@@ -142,6 +154,9 @@ class VacuumGripper(MovingMachine):
 
     @property
     def vacuumSensRotEnd(self):
+        """The Vacuum Gripper sensor for rotation
+
+        True if arm is rotated clockwise at maximum position so that it touches the sensor"""
         return self.__vacuumSensRotEnd
 
     @vacuumSensRotEnd.setter
@@ -212,7 +227,7 @@ class VacuumGripper(MovingMachine):
         :rtype tuple
         """
         if self.setupFinishedHelper:
-            self.setupFinishedHelper = False
+            self.setupFinishedHelper = False    
             return True, True, True
         else:
             return False, False, True
@@ -268,13 +283,15 @@ class VacuumGripper(MovingMachine):
         if self.vacuumSensVerticalEndUp:
             self.vacuumActVerticalUp = False
             t1 = True
-        elif t3:
+        # elif t3:  # useful if we want to move engines one by one ?
+        else:
             self.vacuumActVerticalUp = True
 
         if self.vacuumSensRotEnd:
             self.vacuumActRotRight = False
             t2 = True
-        elif t3:
+        # elif t1:
+        else:
             self.vacuumActRotRight = True
 
         self.vacuumActCompressorOn = False
@@ -282,20 +299,18 @@ class VacuumGripper(MovingMachine):
 
         #return (t1 and t2 and t3)
         self.setupFinished = (t1 and t2 and t3)
+        
         if not self.setupFinished:
-            # self.setFakeExecuting = True
             self.setupFirst = True
         else:
-            self.setupFinishedHelper = True
+            self.setupFinishedHelper = True # ask for a counter reset in the main loop
         if self.setupFirst:
             logging.debug("setup first True")
             self.setupFirst = False
-            self.setFakeExecuting = True
         return lambda: self.setup()
 
     def move(self, startPos, endPos):
         self.setupFirst = True
-        self.setFakeExecuting = True
         self.setupCount = 0
         self.__isExecutingCount = 0
         print("move")
@@ -307,14 +322,12 @@ class VacuumGripper(MovingMachine):
 
     def pick(self, startPos):
         self.setupFirst = True
-        self.setFakeExecuting = True
         moveList = self.generateTransferMoveList(startPos, startPos)
         moveList = moveList[:6]
         return lambda: self.execute(startPos, startPos, moveList)
 
     def place(self, endPos):
         self.setupFirst = True
-        self.setFakeExecuting = True
         moveList = self.generateTransferMoveList(endPos, endPos)
         moveList = moveList[6:]
         return lambda: self.execute(endPos, endPos, moveList)

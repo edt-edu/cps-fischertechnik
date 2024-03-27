@@ -35,6 +35,7 @@ class MovingMachine(Machine):
 
     @property
     def setupFinished(self):
+        """Record if a setup has been performed and finished on this machine"""
         return self.__setupFinished
 
     @setupFinished.setter
@@ -70,6 +71,7 @@ class MovingMachine(Machine):
         """
         pass
 
+    
     def execute(self, start: Position, fin: Position, moveList: list) -> None:
         """execute performs the action indicated by the input numbers to move the product between the two specified places
 
@@ -78,6 +80,8 @@ class MovingMachine(Machine):
         :param list moveList:
         """
         logging.debug("execute")
+        super().execute(start, fin, moveList) # ensure that the nbMinimumRequiredExecutionCycles is updated
+
         #Reset pc for new move list if input from start or target position changes
         if self.start != start or self.fin != fin:
             self.start = start

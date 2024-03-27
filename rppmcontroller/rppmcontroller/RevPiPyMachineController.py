@@ -10,13 +10,16 @@ import signal
 import socket
 import sys
 import time
+from typing import List
 
 from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
+from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
 
 
@@ -47,7 +50,7 @@ class RevPiPyMachineController:
         self.__parent_pid = os.getppid()
 
         #the list of all machines that are connected to this core
-        self.machines = []
+        self.machines : List[Machine] = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
         #dict, which keys are the machines, feedback as the values
@@ -72,9 +75,8 @@ class RevPiPyMachineController:
                 else:
                     if not data.isspace():
                         logging.debug(f"Received {data!r}")
-                    # objdata = JSONReader.read(data)
-                    # #print(objdata)
-                    # self.inputBuffer.put(objdata)
+                        objdata = JSONReader.read(data)
+                        self.inputBuffer.put(objdata)
         # if not self.funcMustExit:
         #     received_data = s.recv(1024).decode("utf-8")
         #     if received_data:
@@ -176,18 +178,23 @@ class RevPiPyMachineController:
                                 if i == 0:
                                     logging.debug("function called with no args")
                                     #m.setupFirst = True unschön
+
+                                    m.incrementNbMinimumRequiredExecutionCycles()
                                     ret = func(m)
                                 if i == 1:
                                     # just assume that start/end is correct
                                     # TODO get rid of assumption
                                     logging.debug("function called with one arg")
+                                    m.incrementNbMinimumRequiredExecutionCycles()
                                     ret = func(m, pos[0])
                                 if i == 2:
                                     if pos[0].meaning == "START" and pos[1].meaning == "END":
                                         logging.debug("function called with two args")
+                                        m.incrementNbMinimumRequiredExecutionCycles()
                                         ret = func(m, pos[0], pos[1])
                                     elif pos[0].meaning == "END" and pos[1].meaning == "START":
                                         logging.debug("function called with two args")
+                                        m.incrementNbMinimumRequiredExecutionCycles()
                                         ret = func(m, pos[1], pos[0])
                                     else:
                                         logging.error("command not supported - params")
@@ -262,7 +269,6 @@ class RevPiPyMachineController:
         these ports is finished
         DIO IO variables names must conforms to the physical configuration
         """
-        pass
 
     def exLoop(self) -> None:
         """
@@ -272,16 +278,23 @@ class RevPiPyMachineController:
             # call method
             if not self.currentlyExecuting[key][0] is None:
                 #print(key)
+                logging.debug(f'currentlyExecuting {self.currentlyExecuting[key][0]}')
                 #print(self.currentlyExecuting[key][0])
                 #if key == self.robot41:
                     #print(self.currentlyExecuting[key][0])
                 # noinspection PyCallingNonCallable
                 self.currentlyExecuting[key][0]()
-            # remove method once it is finished
-            if key.fakeFeedback() == ExecutionStatus.FINISHED:
-            #if (key.fakeFeedback() == ExecutionStatus.FINISHED) and (key.feedback() == ExecutionStatus.FINISHED):
-                #logging.debug(str(key) + 'finished execution')
+
+            # remove currentlyExecuting function once it is finished
+            if key.feedback() == ExecutionStatus.FINISHED and self.currentlyExecuting[key][0] != None:
+                logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
                 self.currentlyExecuting[key][0] = None
+            # DVK    
+            # if key.fakeFeedback() == ExecutionStatus.FINISHED:
+            
+            # #if (key.fakeFeedback() == ExecutionStatus.FINISHED) and (key.feedback() == ExecutionStatus.FINISHED):
+            #     #logging.debug(str(key) + 'finished execution')
+            #     self.currentlyExecuting[key][0] = None
 
     def createFeedbackOnChange(self) -> None:
         """Whenever the state of the machine changes, feedback is created
@@ -290,16 +303,31 @@ class RevPiPyMachineController:
         Also update the self.feedback[m] dictionnary
         """
         for m in self.machines:
-            if self.feedback[m] != m.fakeFeedback():
-                self.feedback[m] = m.fakeFeedback()
-                # bei allererstem Feedback ohne command als id 0 senden (evtl. problematisch weil ungewünschter Programm-
-                # fluss in späterer realer Ausführung in Fehlerfällen, bislang keine Probleme bekannt)
+            # if self.feedback[m] != m.fakeFeedback():
+            #     self.feedback[m] = m.fakeFeedback()
+            #     # bei allererstem Feedback ohne command als id 0 senden (evtl. problematisch weil ungewünschter Programm-
+            #     # fluss in späterer realer Ausführung in Fehlerfällen, bislang keine Probleme bekannt)
+            #     # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
+            #     # flow in later real execution in error cases, no problems known so far)
+            #     if self.currentlyExecuting[m][1] is None:
+            #         jsonid = 0
+            #     else:
+            #         jsonid = self.currentlyExecuting[m][1]
+            #     # append feedback to outputBuffer
+            #     f = MachineCommandFeedback("FEEDBACK", jsonid, m.fakeFeedback().name,  "")
+            #     j = JSONOutput(m.id, time.time(), f)
+            #     #logging.debug("created Feedback")
+            #     self.outputBuffer.put(j, block=False)
+            if self.feedback[m] != m.feedback():
+                self.feedback[m] = m.feedback()
+                # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
+                # flow in later real execution in error cases, no problems known so far)
                 if self.currentlyExecuting[m][1] is None:
                     jsonid = 0
                 else:
                     jsonid = self.currentlyExecuting[m][1]
                 # append feedback to outputBuffer
-                f = MachineCommandFeedback("FEEDBACK", jsonid, m.fakeFeedback().name,  "")
+                f = MachineCommandFeedback("FEEDBACK", jsonid, m.feedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
@@ -323,8 +351,7 @@ class RevPiPyMachineController:
         logging.debug('all threads started')
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "Main"))
         while True:
-            logging.debug('main loop')
-            logging.debug(f'self.inputBuffer.empty()={self.inputBuffer.empty()}')
+            logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
             self.processJson(self.inputBuffer)
             self.read()
             self.exLoop()
@@ -332,6 +359,10 @@ class RevPiPyMachineController:
             self.reset()
             # # logging.debug(self.currentlyExecuting)
             self.createFeedbackOnChange()
+            
+            # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
+            for m in self.machines:
+                m.decrementNbMinimumRequiredExecutionCycles()
             time.sleep(3.0)
 
 

@@ -19,10 +19,9 @@ class Machine:
         self.__id = id1
         self.__dictMap = dictMap
         self.__isExecuting = False
-        self.__fakeIsExecuting = False
         self.__lastExecutionTime = -math.inf
         self.__isExecutingCount = 0
-        self.setFakeExecuting = False
+        self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
 
     @property
     def id(self) -> str:
@@ -37,36 +36,26 @@ class Machine:
         :return bool: the executing status
         """
         return self.__isExecuting
-        #pass
-
-    #use only in exLoop
-    @property
-    @abstractmethod
-    def fakeIsExecuting(self) -> bool:
-        """Returns whether the machine should currently be performing actions
-
-        :return bool: the fake executing status
-        """
-        if self.isExecuting or self.setFakeExecuting:
-            logging.debug("is executing true")
-            self.setFakeExecuting = False
-            self.__isExecutingCount = 0
-            return True
-        else:
-            logging.debug('isexecutingCount ' + str(self.__isExecutingCount))
-            if self.__isExecutingCount < 15:
-                self.__isExecutingCount += 1
-                logging.debug('fake is executing true')
-                return True
-            else:
-                logging.debug('is executing false')
-                return False
 
     @isExecuting.setter
     def isExecuting(self, value: bool):
         self.__isExecuting = value
         if value:
             self.__lastExecutionTime = time()
+
+
+    
+    @property
+    def nbMinimumRequiredExecutionCycles(self) -> int:
+        """Returns the number of cycles still required before considerring the current execution being done
+        when > 0 this condition can be used to help ensuring that at least this number of IO read, execute,  IO write is performed before 
+        setting the isExecuting back to FINISHED
+        """
+        return self.__nbMinimumRequiredExecutionCycles
+    
+    @nbMinimumRequiredExecutionCycles.setter
+    def nbMinimumRequiredExecutionCycles(self,value: int) -> None:
+        self.__nbMinimumRequiredExecutionCycles = value
 
     def timeSinceExecution(self):
         if self.__isExecuting:
@@ -76,6 +65,16 @@ class Machine:
 
     def execute(self, *args):
         pass
+
+
+    def incrementNbMinimumRequiredExecutionCycles(self) -> None:
+        """increment nbMinimumRequiredExecutionCycles. """
+        self.__nbMinimumRequiredExecutionCycles += 1
+
+    def decrementNbMinimumRequiredExecutionCycles(self) -> None:
+        """decrement nbMinimumRequiredExecutionCycles. """
+        if self.__nbMinimumRequiredExecutionCycles > 0:
+            self.__nbMinimumRequiredExecutionCycles -= 1
 
     @abstractmethod
     def stop(self):
@@ -111,8 +110,3 @@ class Machine:
         else:
             return ExecutionStatus.FINISHED
 
-    def fakeFeedback(self):
-        if self.fakeIsExecuting:
-            return ExecutionStatus.INACTION
-        else:
-            return ExecutionStatus.FINISHED

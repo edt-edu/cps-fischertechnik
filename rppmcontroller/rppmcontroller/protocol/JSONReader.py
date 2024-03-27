@@ -1,6 +1,7 @@
 import json as json
 from rppmcontroller.protocol.decoderFunctions import customDecoder
 from rppmcontroller.protocol.JSONOutput import JSONOutput
+from typing import Union
 
 
 class JSONReader:
@@ -10,5 +11,5 @@ class JSONReader:
     """
 
     @staticmethod
-    def read(jsonString: str) -> JSONOutput:
+    def read(jsonString: Union[str, bytes, bytearray]) -> JSONOutput:
         return json.loads(jsonString, object_hook=customDecoder)

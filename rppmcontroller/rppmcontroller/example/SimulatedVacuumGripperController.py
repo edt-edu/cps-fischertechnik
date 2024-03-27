@@ -21,9 +21,10 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import VacuumGripperSimpleSimulator
 
 
-class VacuumGripperController(RevPiPyMachineController):
+class SimulatedVacuumGripperController(RevPiPyMachineController):
     """
     Class allowing to stream commands to and from  a vacuum gripper
     """
@@ -57,41 +58,25 @@ class VacuumGripperController(RevPiPyMachineController):
             self.vacuumGripperMachine: None
         }
 
+        self.vaccumGripperSimulator = VacuumGripperSimpleSimulator(self.vacuumGripperMachine)
+        """Simulator for the Vacuum Gripper"""
+
     def read(self) -> None:
-        # TODO find a way to simulate read
-        
-        self.vacuumGripperMachine.vacuumSensVerticalEndUp = 0
-        self.vacuumGripperMachine.vacuumSensArmEndIn = 0
-        self.vacuumGripperMachine.vacuumSensRotEnd = 0
-        self.vacuumGripperMachine.vacuumSensVerticalEncoderCounter = 0
-        self.vacuumGripperMachine.vacuumSensArmEncoderCounter = 0
-        self.vacuumGripperMachine.vacuumSensRotEncoderCounter = 0
+        self.vaccumGripperSimulator.simulatedRead()
 
     def write(self) -> None:
-        # TODO find a way to simulate write
-        pass
-        # self.rpi.io.dio3_O_1.value = self.vacuumGripperMachine.vacuumActVerticalUp
-        # self.rpi.io.dio3_O_2.value = self.vacuumGripperMachine.vacuumActVerticalDown
-        # self.rpi.io.dio3_O_3.value = self.vacuumGripperMachine.vacuumActArmIn
-        # self.rpi.io.dio3_O_4.value = self.vacuumGripperMachine.vacuumActArmOut
-        # self.rpi.io.dio3_O_5.value = self.vacuumGripperMachine.vacuumActRotRight
-        # self.rpi.io.dio3_O_6.value = self.vacuumGripperMachine.vacuumActRotLeft
-        # self.rpi.io.dio3_O_7.value = self.vacuumGripperMachine.vacuumActCompressorOn
-        # self.rpi.io.dio3_O_8.value = self.vacuumGripperMachine.vacuumActValve
+        self.vaccumGripperSimulator.simulatedWrite()
    
     def reset(self) -> None:
         # TODO find a way to simulated reset
         vg = self.vacuumGripperMachine.executeHelper()
         if vg[0]:
-            pass
-            # self.rpi.io.dio4_Counter_5.reset()
-            # self.rpi.io.dio4_Counter_7.reset()
-            # self.rpi.io.dio4_Counter_9.reset()
+            self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
     logging.debug('main')
     # Start VacuumGripperStreamer app
-    root = VacuumGripperController(simulatedRevPiModIO=True)
+    root = SimulatedVacuumGripperController(simulatedRevPiModIO=True)
     # start communication threads and main control loop
     root.start()
