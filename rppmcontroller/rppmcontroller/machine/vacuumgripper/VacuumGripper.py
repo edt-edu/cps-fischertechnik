@@ -57,11 +57,13 @@ class VacuumGripper(MovingMachine):
 
     @property
     def isExecuting(self) -> bool:
+
         res = self.__vacuumActRotRight or self.__vacuumActRotLeft or self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or \
             self.__vacuumActCompressorOn or self.__vacuumActValve or self.__vacuumActArmOut or self.__vacuumActArmIn or \
-            self.nbMinimumRequiredExecutionCycles != 0
+            self.nbMinimumRequiredExecutionCycles != 0 or \
+            self.__moveList is not None and (len(self.__moveList) > 0)
         
-        logging.debug(f'called isExecuting({self.id}) = {res}')
+        logging.debug(f'called isExecuting({self.id}) = {res} [{self.__moveList}]')
         
         return res
 
