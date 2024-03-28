@@ -175,6 +175,6 @@ class VacuumGripperControllerMock(VacuumGripperController):
     pass
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='[%(levelname)-5s] %(module)-25s,%(lineno)-3s| %(message)s', level=logging.DEBUG)
 
     unittest.main()

@@ -1,12 +1,14 @@
 import json as json
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 
+import logging
+
 class JSONParser:
 
     @staticmethod
     def parse(obj) -> str:
         s = json.dumps(obj.to_dict(), default=str)
-        print(s)
+        logging.debug(s)
         return s
 
 

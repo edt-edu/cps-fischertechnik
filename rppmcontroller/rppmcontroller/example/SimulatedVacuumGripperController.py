@@ -36,7 +36,7 @@ class SimulatedVacuumGripperController(VacuumGripperController):
 
         logging.debug('init started')
 
-        super().__init__()
+        super().__init__(simulatedRevPiModIO=True)
         
         # TODO read from a configuration file
         #the list of all machines that are connected to this core

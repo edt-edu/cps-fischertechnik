@@ -55,6 +55,9 @@ class RevPiPyMachineController:
         self.currentlyExecuting = {}
         #dict, which keys are the machines, feedback as the values
         self.feedback = {}
+
+        self.mainLoopDelay = 3.0
+
         
 
     def receiveCommandMessages(self, s: socket.socket) -> None:
@@ -367,7 +370,7 @@ class RevPiPyMachineController:
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()
-        time.sleep(3.0)
+        time.sleep(self.mainLoopDelay)
 
 def signal_custom_handler(sig, frame, name: str):
     process_id = os.getpid()
