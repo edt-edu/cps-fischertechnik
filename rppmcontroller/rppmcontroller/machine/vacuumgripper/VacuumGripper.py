@@ -219,6 +219,9 @@ class VacuumGripper(MovingMachine):
     def vacuumActRotLeft(self, value):
         self.__vacuumActRotLeft = value
 
+    def sensorStatusString(self) -> str:
+        return f"[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}][{self.vacuumSensVerticalEndUp}, {self.vacuumSensRotEnd}, {self.vacuumSensArmEndIn}]"
+
     def executeHelper(self) -> Tuple[bool, bool, bool]:
         """
         Returns whether each counter can be reset after the setup process

@@ -38,7 +38,6 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         return self.__controlledVacuumGripper
     
     def simulatedRead(self) -> None:
-        logging.debug("simulatedRead")
         if not (self.controlledVacuumGripper.vacuumActArmIn and self.controlledVacuumGripper.vacuumActArmOut):
             # if both vacuumActArmIn and vacuumActArmOut are True -> they cancel each other (no move) 
             if self.controlledVacuumGripper.vacuumActArmOut:
@@ -71,6 +70,8 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
             self.controlledVacuumGripper.vacuumSensRotEnd= self.controlledVacuumGripper.vacuumSensRotEncoderCounter <= -self.initialRotationDistToSensor
 
         # nothing special to do to simulate compressor and valve as there are no observable IO for them
+        
+        logging.debug(f"simulatedRead {self.controlledVacuumGripper.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
         pass

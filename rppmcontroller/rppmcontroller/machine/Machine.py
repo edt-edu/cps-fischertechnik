@@ -66,6 +66,13 @@ class Machine:
     def execute(self, *args):
         pass
 
+    @abstractmethod
+    def sensorStatusString(self) -> str:
+        """return a human readable version of the sensors value
+
+        most used for logging and testing purposes
+        """
+        return ""
 
     def incrementNbMinimumRequiredExecutionCycles(self) -> None:
         """increment nbMinimumRequiredExecutionCycles. """
