@@ -61,9 +61,9 @@ class VacuumGripper(MovingMachine):
         res = self.__vacuumActRotRight or self.__vacuumActRotLeft or self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or \
             self.__vacuumActCompressorOn or self.__vacuumActValve or self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.nbMinimumRequiredExecutionCycles != 0 or \
-            self.__moveList is not None and (len(self.__moveList) > 0)
+            self.hasRemainingMove()
         
-        logging.debug(f'called isExecuting({self.id}) = {res} [{self.__moveList}]')
+        logging.debug(f'called isExecuting({self.id}) = {res} [{self.nbRemainingMove()}/{self.nbMove()}]')
         
         return res
 
@@ -320,6 +320,8 @@ class VacuumGripper(MovingMachine):
         self.__isExecutingCount = 0
         print("move")
         moveList = self.generateTransferMoveList(startPos, endPos)
+        for move in moveList:
+            logging.debug(f'    {move}')
         # TODO make this execution function be called multiple times in the background until the execution is finished
         # or do this in JSONProcessingIntegrationMain by keeping all currently executing functions in a list and call them from there (detecting change probably more easily)
         #self.execute(startPos, endPos, moveList)

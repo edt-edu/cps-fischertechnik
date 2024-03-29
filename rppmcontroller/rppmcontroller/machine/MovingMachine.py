@@ -96,6 +96,7 @@ class MovingMachine(Machine):
             self.setupFinishedHelper = self.__setupFinished
             self.__configReached = True
         else:
+            logging.debug('populating move list')
             self.__moveList = []
             ########################################
             # TODO check this change and think about the above reset functionalities
@@ -106,10 +107,11 @@ class MovingMachine(Machine):
             #fahre zur position
             if self.__configReached:
                 logging.debug("config reached")
+                logging.info(f'moveList size {len(self.__moveList)}')
                 self.__configReached = False
                 #weitere moves vorhanden
                 if self.__pc < len(self.__moveList):
-                    logging.debug("next move")
+                    logging.debug(f"next move {self.__moveList[self.__pc]}")
                     self.__configGoal = self.__moveList[self.__pc]
                     self.__pc += 1
                     logging.debug('new pc is ' + str(self.__pc))
@@ -117,6 +119,7 @@ class MovingMachine(Machine):
                     #TODO reactivate if necessary self.__pc = 0
                     pass
             self.__configReached = self.gotoconfig(self.__configGoal)
+            logging.debug(f'nbRemainingMove {self.nbRemainingMove()}/{len(self.__moveList)}')
 
     @property
     def pc(self) -> int:
@@ -131,3 +134,18 @@ class MovingMachine(Machine):
     @pc.setter
     def pc(self, value):
         self.__pc = value
+
+    def nbMove(self) -> int:
+        """Total number of moves that the Machine has to perform"""
+        return len(self.__moveList)
+    
+    def nbRemainingMove(self) -> int:
+        """Number of remaining moves that the Machine has to perform"""
+        if self.__moveList is not None:
+            return len(self.__moveList) - self.pc 
+        else:
+            return 0
+    
+    def hasRemainingMove(self) -> bool:
+        """The Machine has some remaining move to perform"""
+        return self.nbRemainingMove() != 0

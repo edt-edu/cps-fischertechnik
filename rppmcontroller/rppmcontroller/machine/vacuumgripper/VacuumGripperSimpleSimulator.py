@@ -14,7 +14,7 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
 
     def __init__(self, controlledVacuumGripper : VacuumGripper, 
                  initialVerticalDistToSensor : int = 250 , initialHorizontalDistToSensor : int = 250, initialRotationDistToSensor : int = 250,
-                 encoderIncrement : int = 20):
+                 encoderIncrement : int = 50):
         """Initialize a simulator connected to a VacuumGripper Machine
 
         Parameters:

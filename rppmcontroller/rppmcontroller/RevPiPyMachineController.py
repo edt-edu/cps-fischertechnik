@@ -10,7 +10,7 @@ import signal
 import socket
 import sys
 import time
-from typing import List
+import inspect
 
 from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
@@ -281,12 +281,14 @@ class RevPiPyMachineController:
             # call method
             if not self.currentlyExecuting[key][0] is None:
                 #print(key)
-                logging.debug(f'currentlyExecuting {self.currentlyExecuting[key][0]}')
+                
+                logging.debug(f'currentlyExecuting {self.currentlyExecuting[key][0]} [{inspect.getsource(self.currentlyExecuting[key][0]).strip()}]')
                 #print(self.currentlyExecuting[key][0])
                 #if key == self.robot41:
                     #print(self.currentlyExecuting[key][0])
                 # noinspection PyCallingNonCallable
-                self.currentlyExecuting[key][0]()
+                ret = self.currentlyExecuting[key][0]()
+                logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
 
             # remove currentlyExecuting function once it is finished
             if key.feedback() == ExecutionStatus.FINISHED and self.currentlyExecuting[key][0] != None:
