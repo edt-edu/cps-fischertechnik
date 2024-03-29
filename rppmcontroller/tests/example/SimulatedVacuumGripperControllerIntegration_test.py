@@ -245,6 +245,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
+                self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 2 FINISHED")
                 logging.debug(f"MOVE FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
@@ -259,6 +260,161 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         for _ in range(2):
             self.controller.mainLoopIteration()
             self.assertEqual(ctHelper.readNotification(self.controller), "")
+
+
+    def test_two_identical_moveCommands(self):
+        """Ensure that the pick command is performed and and send feedback"""
+        logging.debug(f'{inspect.stack()[0][3]} start')
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ FEEDBACK 0 FINISHED")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readNotification(self.controller), "")
+
+        # send a setup command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE", [
+            Position("START", 500, 200, 400),
+            Position("END", 500, 1000, 1200)
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 INACTION")
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readNotification(self.controller)
+            if (notification == "") :
+                iterationDone += 1
+            else:
+                self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
+                logging.debug(f"MOVE FINISHED reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 200, "MOVE FINISHED not reached in less than 200 iterations" )
+
+
+        
+        # check current position via feedback and/or by reading machine IO
+        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+            
+        # controller is idle
+        for _ in range(2):
+            self.controller.mainLoopIteration()
+            self.assertEqual(ctHelper.readNotification(self.controller), "")
+    
+
+        # send a setup command
+        message = MachineCommand("COMMAND", "VACUUM", 2, "MOVE", [
+            Position("START", 500, 200, 400),
+            Position("END", 500, 1000, 1200)
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ FEEDBACK 2 INACTION")
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readNotification(self.controller)
+            if (notification == "") :
+                iterationDone += 1
+            else:
+                self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 2 FINISHED")
+                logging.debug(f"MOVE FINISHED reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 200, "MOVE FINISHED not reached in less than 200 iterations" )
+
+
+        
+        # check current position via feedback and/or by reading machine IO
+        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+
+
+    def test_two_different_moveCommands(self):
+        """Ensure that the pick command is performed and and send feedback"""
+        logging.debug(f'{inspect.stack()[0][3]} start')
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ FEEDBACK 0 FINISHED")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readNotification(self.controller), "")
+
+        # send a setup command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE", [
+            Position("START", 500, 200, 400),
+            Position("END", 500, 1000, 1200)
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 INACTION")
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readNotification(self.controller)
+            if (notification == "") :
+                iterationDone += 1
+            else:
+                self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
+                logging.debug(f"MOVE FINISHED reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 200, "MOVE FINISHED not reached in less than 200 iterations" )
+
+
+        
+        # check current position via feedback and/or by reading machine IO
+        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+            
+        # controller is idle
+        for _ in range(2):
+            self.controller.mainLoopIteration()
+            self.assertEqual(ctHelper.readNotification(self.controller), "")
+    
+
+        # send a setup command
+        message = MachineCommand("COMMAND", "VACUUM", 2, "MOVE", [
+            Position("START", 550, 250, 450),
+            Position("END", 550, 1050, 1250)
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ FEEDBACK 2 INACTION")
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readNotification(self.controller)
+            if (notification == "") :
+                iterationDone += 1
+            else:
+                self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 2 FINISHED")
+                logging.debug(f"MOVE FINISHED reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 200, "MOVE FINISHED not reached in less than 200 iterations" )
+
+
+        
+        # check current position via feedback and/or by reading machine IO
+        self.checkVGRPosition(550 - 250,1050,1250) # 250 is the offset of the move command # TODO have a better management of this offset
+
 
 
     # TODO move to a test helper module
