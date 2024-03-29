@@ -100,14 +100,7 @@ class MovingMachine(Machine):
             self.setupFinishedHelper = self.__setupFinished
             self.__configReached = True
         else:
-            logging.debug('processing move list')
-            # self.__moveList = []
-            ########################################
-            # TODO check this change and think about the above reset functionalities
-            #self.__moveList.extend(self.generateTransferMoveList(start,fin))
-            # self.__moveList.extend(moveList)
-            ########################################
-            #fahre zur position
+            logging.debug('processing move list')            
             if self.__configReached:
                 if self.__configGoal is None:
                     logging.debug(f"config reached setup()")
@@ -127,7 +120,12 @@ class MovingMachine(Machine):
             self.__configReached = self.gotoconfig(self.__configGoal)
             logging.debug(f'nbRemainingMove {self.nbRemainingMove()}/{len(self.__moveList)}')
 
-            # TODO if this config goal is the last of the movelist and the cing is reached, we can now reset the pc ?
+            if self.__configReached and self.nbRemainingMove() == 0:
+                logging.debug(f'self.__configReached and self.nbRemainingMove() == 0 {self.__configReached and self.nbRemainingMove() == 0}')
+                # if this config goal is the last of the movelist and the config is reached, we can now reset the pc 
+                # self.__configGoal =  None
+                self.__pc = 0
+                self.__moveList = []
 
     @property
     def pc(self) -> int:
