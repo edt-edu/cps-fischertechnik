@@ -82,6 +82,10 @@ class MovingMachine(Machine):
         logging.debug("execute")
         super().execute(start, fin, moveList) # ensure that the nbMinimumRequiredExecutionCycles is updated
 
+
+        self.__moveList = []
+        self.__moveList.extend(moveList)
+
         #Reset pc for new move list if input from start or target position changes
         if self.start != start or self.fin != fin:
             self.start = start
@@ -96,20 +100,22 @@ class MovingMachine(Machine):
             self.setupFinishedHelper = self.__setupFinished
             self.__configReached = True
         else:
-            logging.debug('populating move list')
-            self.__moveList = []
+            logging.debug('processing move list')
+            # self.__moveList = []
             ########################################
             # TODO check this change and think about the above reset functionalities
             #self.__moveList.extend(self.generateTransferMoveList(start,fin))
-            self.__moveList.extend(moveList)
+            # self.__moveList.extend(moveList)
             ########################################
-            #print(self.__moveList)
             #fahre zur position
             if self.__configReached:
-                logging.debug("config reached")
-                logging.info(f'moveList size {len(self.__moveList)}')
+                if self.__configGoal is None:
+                    logging.debug(f"config reached setup()")
+                else:
+                    logging.debug(f"config reached {self.__configGoal}")
+                # logging.info(f'moveList size {len(self.__moveList)}')
                 self.__configReached = False
-                #weitere moves vorhanden
+                # more moves available
                 if self.__pc < len(self.__moveList):
                     logging.debug(f"next move {self.__moveList[self.__pc]}")
                     self.__configGoal = self.__moveList[self.__pc]
@@ -120,6 +126,8 @@ class MovingMachine(Machine):
                     pass
             self.__configReached = self.gotoconfig(self.__configGoal)
             logging.debug(f'nbRemainingMove {self.nbRemainingMove()}/{len(self.__moveList)}')
+
+            # TODO if this config goal is the last of the movelist and the cing is reached, we can now reset the pc ?
 
     @property
     def pc(self) -> int:
@@ -148,4 +156,4 @@ class MovingMachine(Machine):
     
     def hasRemainingMove(self) -> bool:
         """The Machine has some remaining move to perform"""
-        return self.nbRemainingMove() != 0
+        return self.nbRemainingMove() > 0

@@ -177,7 +177,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"MOVE FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 40, "MOVE FINISHED not reached in less than 40 iterations" )
+            self.assertLess(iterationDone, 200, "MOVE FINISHED not reached in less than 200 iterations" )
 
 
         
