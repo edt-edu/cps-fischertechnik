@@ -39,7 +39,8 @@ class RevPiPyMachineController:
         logging.debug('init started')
 
         # TODO read configuration file
-        self.host: str = "localhost"
+        #self.host: str = "localhost"
+        self.host: str = "RevPi103156.local"
         self.command_port: int = 6001
         self.notification_port: int = 6011 
         
@@ -56,7 +57,7 @@ class RevPiPyMachineController:
         #dict, which keys are the machines, feedback as the values
         self.feedback = {}
 
-        self.mainLoopDelay = 3.0
+        self.mainLoopDelay = 0.25
 
         
 
@@ -111,7 +112,7 @@ class RevPiPyMachineController:
                 logging.debug(messageSend)
             except Empty:
                 logging.debug("nothing in queue to send")
-                time.sleep(1.0) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
+                time.sleep(self.mainLoopDelay) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
 
 
     def processJson(self, inputBuffer: Queue):
@@ -346,11 +347,11 @@ class RevPiPyMachineController:
 
         # listen for connection and process commandMessages in a dedicated Process
         # start the function socketConnexionHelper.listenSocket("localhost", 8888, self.receiveCommandMessage) in a Process
-        Process(target=socketConnexionHelper.listenSocket, args=["localhost", self.command_port, self.receiveCommandMessages]).start()
+        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.receiveCommandMessages]).start()
         
         # listen for connection and send notification in a dedicated Process
-        Process(target=socketConnexionHelper.listenSocket, args=["localhost", self.notification_port, self.sendNotificationMessages]).start()
+        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.notification_port, self.sendNotificationMessages]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.sendNotificationMessages]).start()
         
 

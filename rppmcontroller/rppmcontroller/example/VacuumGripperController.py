@@ -70,23 +70,23 @@ class VacuumGripperController(RevPiPyMachineController):
     def write(self):
         # TODO find a way to read from a configuration file
         assert self.rpi.io is not None
-        self.rpi.io.dio3_O_1.value = self.vacuumGripperMachine.vacuumActVerticalUp
-        self.rpi.io.dio3_O_2.value = self.vacuumGripperMachine.vacuumActVerticalDown
-        self.rpi.io.dio3_O_3.value = self.vacuumGripperMachine.vacuumActArmIn
-        self.rpi.io.dio3_O_4.value = self.vacuumGripperMachine.vacuumActArmOut
-        self.rpi.io.dio3_O_5.value = self.vacuumGripperMachine.vacuumActRotRight
-        self.rpi.io.dio3_O_6.value = self.vacuumGripperMachine.vacuumActRotLeft
-        self.rpi.io.dio3_O_7.value = self.vacuumGripperMachine.vacuumActCompressorOn
-        self.rpi.io.dio3_O_8.value = self.vacuumGripperMachine.vacuumActValve
+        self.rpi.io.dio1_O_1.value = self.vacuumGripperMachine.vacuumActVerticalUp
+        self.rpi.io.dio1_O_2.value = self.vacuumGripperMachine.vacuumActVerticalDown
+        self.rpi.io.dio1_O_3.value = self.vacuumGripperMachine.vacuumActArmIn
+        self.rpi.io.dio1_O_4.value = self.vacuumGripperMachine.vacuumActArmOut
+        self.rpi.io.dio1_O_5.value = self.vacuumGripperMachine.vacuumActRotRight
+        self.rpi.io.dio1_O_6.value = self.vacuumGripperMachine.vacuumActRotLeft
+        self.rpi.io.dio1_O_7.value = self.vacuumGripperMachine.vacuumActCompressorOn
+        self.rpi.io.dio1_O_8.value = self.vacuumGripperMachine.vacuumActValve
     
     def reset(self) -> None:
         # TODO find a way to read from a configuration file
         assert self.rpi.io is not None
         vg = self.vacuumGripperMachine.executeHelper()
         if vg[0]:
-            self.rpi.io.dio3_Counter_5.reset()
-            self.rpi.io.dio3_Counter_7.reset()
-            self.rpi.io.dio3_Counter_9.reset()
+            self.rpi.io.dio1_Counter_5.reset()
+            self.rpi.io.dio1_Counter_7.reset()
+            self.rpi.io.dio1_Counter_9.reset()
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
