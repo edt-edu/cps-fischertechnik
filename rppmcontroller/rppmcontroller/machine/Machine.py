@@ -68,11 +68,20 @@ class Machine:
 
     @abstractmethod
     def sensorStatusString(self) -> str:
-        """return a human readable version of the sensors value
+        """return a human readable version of the sensors values
 
         most used for logging and testing purposes
         """
         return ""
+
+    @abstractmethod
+    def actuatorStatusString(self) -> str:
+        """return a human readable version of the actuator values
+
+        most used for logging and testing purposes
+        """
+        return ""
+
 
     def incrementNbMinimumRequiredExecutionCycles(self) -> None:
         """increment nbMinimumRequiredExecutionCycles. """

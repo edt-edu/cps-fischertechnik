@@ -58,12 +58,17 @@ class VacuumGripper(MovingMachine):
     @property
     def isExecuting(self) -> bool:
 
-        res = self.__vacuumActRotRight or self.__vacuumActRotLeft or self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or \
-            self.__vacuumActCompressorOn or self.__vacuumActValve or self.__vacuumActArmOut or self.__vacuumActArmIn or \
+        res = self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
+            self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.nbMinimumRequiredExecutionCycles != 0 or \
             self.hasRemainingMove()
+            
+            # self.__vacuumActCompressorOn or self.__vacuumActValve or  we have pick command that doesn't finish with an iddle machine
         
-        logging.debug(f'called isExecuting({self.id}) = {res} [{self.nbRemainingMove()}/{self.nbMove()}]')
+        logging.debug(f'{self.sensorStatusString()}')
+        logging.debug(f'{self.actuatorStatusString()}')
+        logging.debug(f'called isExecuting({self.id}) = {res} [{self.nbRemainingMove()}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
+        
         
         return res
 
@@ -223,6 +228,10 @@ class VacuumGripper(MovingMachine):
 
     def sensorStatusString(self) -> str:
         return f"[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}][{self.vacuumSensVerticalEndUp}, {self.vacuumSensRotEnd}, {self.vacuumSensArmEndIn}]"
+
+    def actuatorStatusString(self) -> str:
+        return f"[{self.__vacuumActVerticalUp}, {self.__vacuumActVerticalDown}], [{self.__vacuumActRotRight}, {self.__vacuumActRotLeft}], [{self.__vacuumActArmOut}, {self.__vacuumActArmIn}], [{self.__vacuumActCompressorOn}, {self.__vacuumActValve}]"
+
 
     def executeHelper(self) -> Tuple[bool, bool, bool]:
         """
