@@ -11,6 +11,8 @@ import socket
 import sys
 import time
 import inspect
+import yaml
+from typing import List
 
 from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
@@ -31,18 +33,12 @@ class RevPiPyMachineController:
     Abstract Class allowing to stream commands to and from  machines controlled by a RevPi
     """
 
-    def __init__(self):
+    def __init__(self, configurationFile : str = ""):
         """
         Init method of this class, prepares the configuration
         """
 
         logging.debug('init started')
-
-        # TODO read configuration file
-        #self.host: str = "localhost"
-        self.host: str = "RevPi103156.local"
-        self.command_port: int = 6001
-        self.notification_port: int = 6011 
         
         # init a buffer to store all incoming/outgoing messages, received in a different thread than the one executing the revpi functions
         # stored as python objects, so parse/deserialize before putting into buffer
@@ -57,7 +53,17 @@ class RevPiPyMachineController:
         #dict, which keys are the machines, feedback as the values
         self.feedback = {}
 
-        self.mainLoopDelay = 0.25
+        # read configuration from file
+        self.controller_config = {}
+        if os.path.isfile(configurationFile):
+            logging.debug(f'reading configuration file {configurationFile}')
+            with open(configurationFile, 'r') as file:
+                self.controller_config = yaml.safe_load(file)
+
+        self.host = self.controller_config.get('connection', {}).get('host', socket.gethostname()+ ".local")
+        self.command_port =  self.controller_config.get('connection', {}).get('command_port', 6001)
+        self.notification_port =  self.controller_config.get('connection', {}).get('notification_port', 6011)
+        self.mainLoopDelay =   self.controller_config.get('controller', {}).get('mainLoopDelay', 0.25)
 
         
 
@@ -69,10 +75,8 @@ class RevPiPyMachineController:
 
         isBrokenConnection = False
 
-        while not isBrokenConnection:#not lFlag.wait(0.01):
-                #print("loop client listen", flush=True)
+        while not isBrokenConnection:
                 data = s.recv(1024)
-                #print("got data, evaluating", flush=True)
                 if data == b'':
                     logging.info("receiveCommandMessages socket connection broken")
                     isBrokenConnection = True
@@ -81,19 +85,6 @@ class RevPiPyMachineController:
                         logging.debug(f"Received {data!r}")
                         objdata = JSONReader.read(data)
                         self.inputBuffer.put(objdata)
-        # if not self.funcMustExit:
-        #     received_data = s.recv(1024).decode("utf-8")
-        #     if received_data:
-                
-        #         logging.info(f"MyClientClass received data: {received_data}")
-
-        #         s.sendall("test response".encode("utf-8"))
-        #     else:
-        #         # Client closed the connection
-        #         logging.info('Server closed the connection')
-        # else:
-        #     logging.info(f"MyClientClass must exit")
-        # time.sleep(0.2)
 
     def sendNotificationMessages(self, s: socket.socket) -> None:
         """
@@ -105,7 +96,6 @@ class RevPiPyMachineController:
                 if self.outputBuffer.qsize() > 0:
                     logging.debug("self.outputBuffer not empty!!!")
                 messageSend = self.outputBuffer.get(block=False)
-                #print("not executed bc of exception")
                 message = JSONParser.parse(messageSend)
                 message = message + "\n"
                 s.sendall(bytes(message, "utf-8"))
@@ -309,21 +299,6 @@ class RevPiPyMachineController:
         Also update the self.feedback[m] dictionnary
         """
         for m in self.machines:
-            # if self.feedback[m] != m.fakeFeedback():
-            #     self.feedback[m] = m.fakeFeedback()
-            #     # bei allererstem Feedback ohne command als id 0 senden (evtl. problematisch weil ungewünschter Programm-
-            #     # fluss in späterer realer Ausführung in Fehlerfällen, bislang keine Probleme bekannt)
-            #     # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
-            #     # flow in later real execution in error cases, no problems known so far)
-            #     if self.currentlyExecuting[m][1] is None:
-            #         jsonid = 0
-            #     else:
-            #         jsonid = self.currentlyExecuting[m][1]
-            #     # append feedback to outputBuffer
-            #     f = MachineCommandFeedback("FEEDBACK", jsonid, m.fakeFeedback().name,  "")
-            #     j = JSONOutput(m.id, time.time(), f)
-            #     #logging.debug("created Feedback")
-            #     self.outputBuffer.put(j, block=False)
             if self.feedback[m] != m.feedback():
                 self.feedback[m] = m.feedback()
                 # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
@@ -345,6 +320,7 @@ class RevPiPyMachineController:
         """
         logging.debug('start')
 
+        # TODO manage connectinOpening modes : opend by controller or by orchestrator
         # listen for connection and process commandMessages in a dedicated Process
         # start the function socketConnexionHelper.listenSocket("localhost", 8888, self.receiveCommandMessage) in a Process
         Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages]).start()

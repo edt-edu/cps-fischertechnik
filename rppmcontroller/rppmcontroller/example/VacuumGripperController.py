@@ -28,21 +28,18 @@ class VacuumGripperController(RevPiPyMachineController):
     Class allowing to stream commands to and from  a vacuum gripper
     """
 
-    def __init__(self, simulatedRevPiModIO: bool = False):
+    def __init__(self, simulatedRevPiModIO: bool = False, configurationFile : str = ""):
         """
         Init method of this class, starts all threads and everything is ready for receiving commands via Sockets and executing them
         """
 
-        logging.debug('init started')
-
-        super().__init__()
+        super().__init__(configurationFile)
         
-
         # Instantiate RevPiModIO
         if(not simulatedRevPiModIO):
             self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
 
-        # TODO read from a configuration file
+        # TODO find a way to read from a configuration file
         #the list of all machines that are connected to this core
         self.machines = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])

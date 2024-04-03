@@ -1,0 +1,12 @@
+
+# Configuration for VacuumGripperController
+---
+connection:
+  host: "localhost"
+  command_port: 6001
+  notification_port: 6011
+  # connectionListening: "controller" or "orchestrator"
+  connectionListening: "controller"
+
+controller:
+  mainLoopDelay: 0.25

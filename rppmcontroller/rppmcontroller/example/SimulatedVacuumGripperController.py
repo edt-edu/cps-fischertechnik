@@ -10,7 +10,6 @@ import time
 import json
 import os
 
-import revpimodio2
 
 import rppmcontroller
 import rppmcontroller.machine
@@ -29,14 +28,12 @@ class SimulatedVacuumGripperController(VacuumGripperController):
     Class allowing to stream commands to and from  a simulated vacuum gripper
     """
 
-    def __init__(self):
+    def __init__(self, configurationFile : str = ""):
         """
         Init method of this class, starts all threads and everything is ready for receiving commands via Sockets and executing them
         """
 
-        logging.debug('init started')
-
-        super().__init__(simulatedRevPiModIO=True)
+        super().__init__(simulatedRevPiModIO=True, configurationFile=configurationFile)
         
         # TODO read from a configuration file
         #the list of all machines that are connected to this core
@@ -63,7 +60,6 @@ class SimulatedVacuumGripperController(VacuumGripperController):
         self.vaccumGripperSimulator.simulatedWrite()
    
     def reset(self) -> None:
-        # TODO find a way to simulated reset
         vg = self.vacuumGripperMachine.executeHelper()
         if vg[0]:
             self.vaccumGripperSimulator.simulatedReset()
@@ -72,6 +68,7 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
     logging.debug('main')
     # Start VacuumGripperStreamer app
-    root = SimulatedVacuumGripperController()
+    root = SimulatedVacuumGripperController("config.yml")
+    
     # start communication threads and main control loop
     root.start()
