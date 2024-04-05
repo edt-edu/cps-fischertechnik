@@ -285,8 +285,9 @@ class VacuumGripper(MovingMachine):
     # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
     # already considered by execute
     def setup(self):
-        #self.__isExecutingCount = 0
-
+        
+        # activate engines toward the sensors if necessary
+        self.vacuumActArmOut = self.vacuumActRotLeft = self.vacuumActVerticalDown = False
         t1 = t2 = t3 = False
         if self.vacuumSensArmEndIn:
             self.vacuumActArmIn = False
@@ -297,25 +298,22 @@ class VacuumGripper(MovingMachine):
         if self.vacuumSensVerticalEndUp:
             self.vacuumActVerticalUp = False
             t1 = True
-        # elif t3:  # useful if we want to move engines one by one ?
         else:
             self.vacuumActVerticalUp = True
 
         if self.vacuumSensRotEnd:
             self.vacuumActRotRight = False
             t2 = True
-        # elif t1:
         else:
             self.vacuumActRotRight = True
 
         self.vacuumActCompressorOn = False
         self.vacuumActValve = False
 
-        #return (t1 and t2 and t3)
         self.setupFinished = (t1 and t2 and t3)
         
         if not self.setupFinished:
-            self.setupFirst = True
+            self.setupFirst = True 
         else:
             self.setupFinishedHelper = True # ask for a counter reset in the main loop
         if self.setupFirst:

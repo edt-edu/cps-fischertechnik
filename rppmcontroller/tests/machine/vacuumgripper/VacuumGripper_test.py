@@ -39,22 +39,51 @@ class VacuumGripperTestCase(unittest.TestCase):
 
 
 
-    def testSetup(self):
-        """Tests, whether setup activity is performed in correct order"""
+    def testSetupOnExecuteMove(self):
+        """Tests, whether setup activity is performed on start of exceute command"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = False
         self.robot1.vacuumSensVerticalEndUp = False
+        self.robot1.vacuumActArmIn = False
+        self.robot1.vacuumActArmOut = False
+        self.robot1.vacuumActRotLeft = False
+        self.robot1.vacuumActRotRight = False
+        self.robot1.vacuumActVerticalDown = False
+        self.robot1.vacuumActVerticalUp = False
+        self.assertFalse(self.robot1.setupFinished)
         startPos = Position("START", 0,0,0)
         endPos = Position("START", 0,0,0)
 
         self.robot1.execute(startPos, endPos, [])
         self.assertEqual(self.robot1.setupFinishedHelper, False)
-        self.robot1.setup()
+
+
+        self.assertTrue(self.robot1.vacuumActArmIn)
+        self.assertFalse(self.robot1.vacuumActArmOut)
+        self.assertFalse(self.robot1.vacuumActRotLeft)
+        self.assertTrue(self.robot1.vacuumActRotRight)
+        self.assertFalse(self.robot1.vacuumActVerticalDown)
+        self.assertTrue(self.robot1.vacuumActVerticalUp)
+
+        # simulate move
+        # we suppose that it finish to touch the sensor
+        self.robot1.vacuumSensRotEnd = True
+        self.robot1.vacuumSensArmEndIn = True
+        self.robot1.vacuumSensVerticalEndUp = True
+
+        self.robot1.execute(startPos, endPos, [])
         self.assertEqual(self.robot1.setupFinishedHelper, True)
-        self.robot1.execute(startPos, endPos, [])
-        self.robot1.execute(startPos, endPos, [])
-        self.robot1.execute(startPos, endPos, [])
+
+        self.assertFalse(self.robot1.vacuumActArmIn)
+        self.assertFalse(self.robot1.vacuumActArmOut)
+        self.assertFalse(self.robot1.vacuumActRotLeft)
+        self.assertFalse(self.robot1.vacuumActRotRight)
+        self.assertFalse(self.robot1.vacuumActVerticalDown)
+        self.assertFalse(self.robot1.vacuumActVerticalUp)
+
+        self.assertEqual(self.robot1.pc, 0)
+        self.assertFalse(self.robot1.hasRemainingMove())
 
 
     # def testSetup(self):
