@@ -114,15 +114,17 @@ class Axis:
 
             else:
                 self.__counter.counter = self.__counterinput
-            if self.howtoCounterPos(counterGoal, self.__counter.counter, self.__tolerance) == PlusMinusStop.PLUS:
+            counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.__tolerance)
+            # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.__tolerance})={counterPos}')            
+            if counterPos == PlusMinusStop.PLUS:
                 self.__outputminus = False
                 self.__outputplus = True
                 d = PlusMinusStop.PLUS
-            elif self.howtoCounterPos(counterGoal, self.__counter.counter, self.__tolerance) == PlusMinusStop.MINUS:
+            elif counterPos == PlusMinusStop.MINUS:
                 self.__outputminus = True
                 self.__outputplus = False
                 d = PlusMinusStop.MINUS
-            elif self.howtoCounterPos(counterGoal, self.__counter.counter, self.__tolerance) == PlusMinusStop.STOP:
+            elif counterPos == PlusMinusStop.STOP:
                 self.__outputminus = False
                 self.__outputplus = False
                 t = True
