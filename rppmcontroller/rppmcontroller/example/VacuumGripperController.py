@@ -9,6 +9,7 @@ import sys
 import time
 import json
 import os
+import ctypes
 
 import revpimodio2
 
@@ -60,9 +61,19 @@ class VacuumGripperController(RevPiPyMachineController):
         self.vacuumGripperMachine.vacuumSensVerticalEndUp = self.rpi.io.dio1_I_1.value
         self.vacuumGripperMachine.vacuumSensArmEndIn = self.rpi.io.dio1_I_2.value
         self.vacuumGripperMachine.vacuumSensRotEnd = self.rpi.io.dio1_I_3.value
-        self.vacuumGripperMachine.vacuumSensVerticalEncoderCounter = self.rpi.io.dio1_Counter_5.value
-        self.vacuumGripperMachine.vacuumSensArmEncoderCounter = self.rpi.io.dio1_Counter_7.value
-        self.vacuumGripperMachine.vacuumSensRotEncoderCounter = self.rpi.io.dio1_Counter_9.value
+        # use signed int32 to deal with possible negative values of the encoders
+        self.vacuumGripperMachine.vacuumSensVerticalEncoderCounter = ctypes.c_int32(self.rpi.io.dio1_Counter_5.value).value
+        self.vacuumGripperMachine.vacuumSensArmEncoderCounter = ctypes.c_int32(self.rpi.io.dio1_Counter_7.value).value
+        # note: the rotation encoder counts in negative when going counterclockwise
+        self.vacuumGripperMachine.vacuumSensRotEncoderCounter = -ctypes.c_int32(self.rpi.io.dio1_Counter_9.value).value
+
+
+
+        # once setup: maximum physical observed values are:
+        # -12 <= vacuumSensVerticalEncoderCounter <= 1779
+        # -1 <= vacuumSensArmEncoderCounter <= 2017
+        # -1 <= vacuumSensRotEncoderCounter <= 3053
+
 
     def write(self):
         # TODO find a way to read from a configuration file
@@ -75,6 +86,9 @@ class VacuumGripperController(RevPiPyMachineController):
         self.rpi.io.dio1_O_6.value = self.vacuumGripperMachine.vacuumActRotLeft
         self.rpi.io.dio1_O_7.value = self.vacuumGripperMachine.vacuumActCompressorOn
         self.rpi.io.dio1_O_8.value = self.vacuumGripperMachine.vacuumActValve
+
+
+         
     
     def reset(self) -> None:
         # TODO find a way to read from a configuration file
@@ -87,7 +101,11 @@ class VacuumGripperController(RevPiPyMachineController):
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
+    handler = logging.FileHandler("logfile.log")
+    logFormatter = logging.Formatter("%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s")
+    handler.setFormatter(logFormatter)
+    logging.getLogger().addHandler(handler)
     # Start VacuumGripperStreamer app
-    root = VacuumGripperController()
+    root = VacuumGripperController(configurationFile="config.yml")
     # start communication threads and main control loop
     root.start()

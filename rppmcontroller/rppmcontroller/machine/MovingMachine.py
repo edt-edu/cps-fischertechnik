@@ -25,8 +25,8 @@ class MovingMachine(Machine):
         """
         super().__init__(id1, dictMap)
         self.__configGoal = None
-        self.__configReached = False
-        self.__setupFinished = self.setupFinishedHelper = False
+        self._configReached = False
+        self._setupFinished = self.setupFinishedHelper = False
         self.__pc = 0
         self.__moveList = []
         self.start = Position("START", 0, 0, 0)
@@ -36,11 +36,11 @@ class MovingMachine(Machine):
     @property
     def setupFinished(self):
         """Record if a setup has been performed and finished on this machine"""
-        return self.__setupFinished
+        return self._setupFinished
 
     @setupFinished.setter
     def setupFinished(self, value):
-        self.__setupFinished = value
+        self._setupFinished = value
 
     @abstractmethod
     def generateTransferMoveList(self, numPickup: Position, numPlace: Position) -> list:
@@ -92,22 +92,22 @@ class MovingMachine(Machine):
             self.fin = fin
             self.__pc = 0
         #TODO also reset pc when re-executing
-        if not self.__setupFinished:
+        if not self._setupFinished:
             logging.debug('setup from execute')
             #self.isExecuting = True
             #self.__setupFinished = self.setup()
             self.setup()
-            self.setupFinishedHelper = self.__setupFinished
-            self.__configReached = True
+            self.setupFinishedHelper = self._setupFinished
+            self._configReached = True
         else:
             logging.debug('processing move list')            
-            if self.__configReached:
+            if self._configReached:
                 if self.__configGoal is None:
                     logging.debug(f"config reached setup()")
                 else:
                     logging.debug(f"config reached {self.__configGoal}")
                 # logging.info(f'moveList size {len(self.__moveList)}')
-                self.__configReached = False
+                self._configReached = False
                 # more moves available
                 if self.__pc < len(self.__moveList):
                     logging.debug(f"next move {self.__moveList[self.__pc]}")
@@ -117,11 +117,11 @@ class MovingMachine(Machine):
                 else:
                     #TODO reactivate if necessary self.__pc = 0
                     pass
-            self.__configReached = self.gotoconfig(self.__configGoal)
+            self._configReached = self.gotoconfig(self.__configGoal)
             logging.debug(f'nbRemainingMove {self.nbRemainingMove()}/{len(self.__moveList)}')
 
-            if self.__configReached and self.nbRemainingMove() == 0:
-                logging.debug(f'self.__configReached and self.nbRemainingMove() == 0 {self.__configReached and self.nbRemainingMove() == 0}')
+            if self._configReached and self.nbRemainingMove() == 0:
+                logging.debug(f'self.__configReached and self.nbRemainingMove() == 0 {self._configReached and self.nbRemainingMove() == 0}')
                 # if this config goal is the last of the movelist and the config is reached, we can now reset the pc 
                 # self.__configGoal =  None
                 self.__pc = 0

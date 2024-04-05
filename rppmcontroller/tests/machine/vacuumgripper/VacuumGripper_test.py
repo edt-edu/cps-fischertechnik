@@ -37,13 +37,26 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertEqual(self.robot1.vacuumActCompressorOn, False)
         
 
-    # def testSetup(self):
-    #     """Tests, whether setup activity is performed in correct order"""
-    #     self.robot1.vacuumSensRotEnd = False
-    #     self.robot1.vacuumSensArmEndIn = False
-    #     self.robot1.vacuumSensVerticalEndUp = False
-    #     self.robot1.execute(0,1)
-    #     self.assertEqual(self.robot1.setupFinishedHelper, False)
+
+
+    def testSetup(self):
+        """Tests, whether setup activity is performed in correct order"""
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        self.robot1.vacuumSensRotEnd = False
+        self.robot1.vacuumSensArmEndIn = False
+        self.robot1.vacuumSensVerticalEndUp = False
+        startPos = Position("START", 0,0,0)
+        endPos = Position("START", 0,0,0)
+
+        self.robot1.execute(startPos, endPos, [])
+        self.assertEqual(self.robot1.setupFinishedHelper, False)
+        self.robot1.setup()
+        self.assertEqual(self.robot1.setupFinishedHelper, True)
+        self.robot1.execute(startPos, endPos, [])
+        self.robot1.execute(startPos, endPos, [])
+        self.robot1.execute(startPos, endPos, [])
+
+
     # def testSetup(self):
     #     """Tests, whether setup activity is performed in correct order"""
     #     self.robot1.vacuumSensRotEnd = False

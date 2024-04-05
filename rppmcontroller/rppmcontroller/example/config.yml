@@ -2,7 +2,8 @@
 # Configuration for VacuumGripperController
 ---
 connection:
-  host: "localhost"
+  # if host is commented, will default to "<hostname>.local"
+  #host: "localhost"
   command_port: 6001
   notification_port: 6011
   # connectionListening: "controller" or "orchestrator"

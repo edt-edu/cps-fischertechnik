@@ -67,7 +67,7 @@ class VacuumGripper(MovingMachine):
         
         logging.debug(f'{self.sensorStatusString()}')
         logging.debug(f'{self.actuatorStatusString()}')
-        logging.debug(f'called isExecuting({self.id}) = {res} [{self.nbRemainingMove()}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
+        logging.debug(f'called isExecuting({self.id}) = {res} [{self.pc}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
         
         
         return res
@@ -322,6 +322,14 @@ class VacuumGripper(MovingMachine):
             logging.debug("setup first True")
             self.setupFirst = False
         return lambda: self.setup()
+
+    def gotopos(self, endPos : Position) :
+        """Go move gropper to reach the given position without changing the valve or compressor status
+        """
+
+        self.setupFirst = True
+        moveList = [VacuumGripperConfig(counterVertical=endPos.vertical, counterRot = endPos.rot, counterArm=endPos.horizontal, gripperActive=self.vacuumActValve )]
+        return lambda: self.execute(endPos, endPos, moveList)
 
     def move(self, startPos, endPos):
         self.setupFirst = True
