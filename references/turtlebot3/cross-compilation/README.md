@@ -16,6 +16,7 @@ mkdir turtlebot3_ws && mkdir turtlebot3_ws/src
 cd turtlebot3_ws/src
 git clone -b humble-devel https://github.com/ROBOTIS-GIT/turtlebot3.git
 git clone -b ros2-devel https://github.com/ROBOTIS-GIT/ld08_driver.git
+git clone -b humble-devel https://github.com/ROBOTIS-GIT/turtlebot3_manipulation.git
 cd turtlebot3
 rm turtlebot3_cartographer
 rm turtlebot3_navigation2
