@@ -11,15 +11,15 @@ Instructions to cross compile using docker:
 3. Change dir to this folder: `cd references/turtlebot3/cross-compilation`
 4. Build the Dockerfile in this dir WITH THE PLATFROM `arm64` which is used by the turtlebot3: `docker build --platform linux/arm64 -t turtlebot3-builder .`
 5. Prepare the modules(any adjustments to the modules can be done before this step)
-```
+```bash
 mkdir turtlebot3_ws && mkdir turtlebot3_ws/src
 cd turtlebot3_ws/src
 git clone -b humble-devel https://github.com/ROBOTIS-GIT/turtlebot3.git
 git clone -b ros2-devel https://github.com/ROBOTIS-GIT/ld08_driver.git
 git clone -b humble-devel https://github.com/ROBOTIS-GIT/turtlebot3_manipulation.git
 cd turtlebot3
-rm turtlebot3_cartographer
-rm turtlebot3_navigation2
+rm -r turtlebot3_cartographer
+rm -r turtlebot3_navigation2
 cd ..
 cd ..
 cd ..
