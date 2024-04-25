@@ -40,7 +40,20 @@ exit
   - Either using ssh or using an sd card reader
   - The ros workspace in the container and the ros workspace on the turtlebots PI MUST have the same abosulte path!
     - If you copy pasted the commands, it is `/home/pi/turtlebot3_ws/`
-8. On the RaspberryPI Adapt your `.bashrc` to load the compiled modules and load them in the current session
+
+8. On the RaspberryPI install the following packages 
+```
+apt install -y python3-argcomplete python3-colcon-common-extensions libboost-system-dev build-essential
+apt install -y ros-humble-hls-lfcd-lds-driver
+apt install -y ros-humble-turtlebot3-msgs
+apt install -y ros-humble-dynamixel-sdk
+apt install -y libudev-dev
+apt install -y ros-humble-hardware-interface
+apt install -y ros-humble-xacro
+apt install -y ros-humble-controller-manager
+
+```
+9. On the RaspberryPI Adapt your `.bashrc` to load the compiled modules and load them in the current session
   - `echo 'source ~/turtlebot3_ws/install/setup.bash' >> ~/.bashrc`
   - `source ~/.bashrc`
 
