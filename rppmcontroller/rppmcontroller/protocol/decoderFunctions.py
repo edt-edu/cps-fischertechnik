@@ -79,7 +79,7 @@ def customDecoder(idict):
             requestedList = []
             # extract the request Parameters into a list
             for requ in params:
-                requestedList.append(RequestedParameter[requ])
+                requestedList.append(requ)
             # create the python-objects from the information gathered and return them
             r = MachineStatusRequest(jsonType, type, requestId, requestedList)
             jsonOutput = JSONOutput(topicName, timestamp, r)
