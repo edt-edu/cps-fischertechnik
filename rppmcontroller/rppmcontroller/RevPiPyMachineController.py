@@ -21,8 +21,10 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.Direction import Direction
 
 
 # commandServer will be on PORT_BASE+1
@@ -158,8 +160,8 @@ class RevPiPyMachineController:
                             #     func = getattr(IndexedLine, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
                             #     func = getattr(MultiProcessing, str.lower(inputBufferItem.message.name))
-                            # elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, Conveyor):
-                            #     func = getattr(Conveyor, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
+                                func = getattr(ConveyorBelt, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
                             #     func = getattr(PunchingMachine, str.lower(inputBufferItem.message.name))
                             else:
@@ -214,18 +216,19 @@ class RevPiPyMachineController:
                             #         ret = func(m, colour[0])
                             # elif inputBufferItem.message.type == "PUNCHING":
                             #     ret = func(m)
-                            # elif inputBufferItem.message.type == "CONVEYOR":
-                            #     mix = inputBufferItem.message.parameters
-                            #     i = len(mix)
-                            #     if i == 0:
-                            #         ret = func(m)
-                            #     if i == 1:
-                            #         ret = func(m, mix[0])
-                            #     if i == 2:
-                            #         if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
-                            #             ret = func(m, mix[0], mix[1])
-                            #         else:
-                            #             ret = func(m, mix[1], mix[0])
+                            elif inputBufferItem.message.type == "CONVEYOR":
+                                mix = inputBufferItem.message.parameters
+                                i = len(mix)
+                                if i == 0:
+                                    ret = func(m)
+                                if i == 1:
+                                    ret = func(m, mix[0])
+                                if i == 2:
+                                    ret = func(m, mix[0], mix[1])
+                                    if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
+                                        ret = func(m, mix[0], mix[1])
+                                    else:
+                                        ret = func(m, mix[1], mix[0])
 
                             # holds the function that is currently executed on each machine
                             self.currentlyExecuting[m] = [ret, inputBufferItem.message.commandId]

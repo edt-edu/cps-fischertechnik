@@ -59,6 +59,12 @@ class ConveyorBeltController(RevPiPyMachineController):
         assert self.rpi.io is not None
         self.conveyorBeltMachine.conveyorSensFeed = self.rpi.io.dio2_I_1.value
         self.conveyorBeltMachine.conveyorSensSwap = self.rpi.io.dio2_I_2.value 
+        self.conveyorBeltMachine.conveyorSensImpulse= self.rpi.io.dio2_I_3.value 
+    
+    def write(self) -> None:
+        assert self.rpi.io is not None
+        self.rpi.io.dio2_O_1.value = self.conveyorBeltMachine.conveyorActForward
+        self.rpi.io.dio2_O_2.value = self.conveyorBeltMachine.conveyorActBackward
        
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)

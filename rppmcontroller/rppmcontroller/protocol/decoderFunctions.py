@@ -54,7 +54,14 @@ def customDecoder(idict):
                     parameterList.append(numberstring)
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'DIRECTION':
                     passable = param['passable']
-                    parameterList.append(Direction[passable])
+                    direction = passable['direction']
+                    parameterList.append(Direction[direction])
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'CONVEYORDIRECTION':
+                    passable = param['passable']
+                    direction = passable['direction']
+                    steps = passable['steps']
+                    parameterList.append(Direction[direction])
+                    parameterList.append(steps)
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'TURTLEBOTPOSITION':
                     passable = param['passable']
                     meaning = passable['meaning']
