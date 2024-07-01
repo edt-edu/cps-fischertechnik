@@ -10,12 +10,13 @@ class ConveyorBelt(Machine):
 
     @property
     def isExecuting(self) -> bool:
+        #logging.debug(f"Is executing ! {self.__conveyorActForward or self.__conveyorActBackward}")
         return self.__conveyorActForward or self.__conveyorActBackward
 
 
     def __init__(self, id1):
         self.__conveyorSensImpulseCounterRaw = 0
-        self.__conveyorSensFeed = self.__conveyorSensSwap = True
+        self.__conveyorSensFeed = self.__conveyorSensSwap = True #True is the value when there is no object in front of the sensor
         self.__conveyorActForward = self.__conveyorActBackward = False
         self.__counter = ImpulseCounter()
         self.current = 0
@@ -147,6 +148,7 @@ class ConveyorBelt(Machine):
     def stop(self):
         """Stop the conveyor"""
         self.__conveyorActForward = self.__conveyorActBackward = False
+        return None
 
     def execute(self):
         pass

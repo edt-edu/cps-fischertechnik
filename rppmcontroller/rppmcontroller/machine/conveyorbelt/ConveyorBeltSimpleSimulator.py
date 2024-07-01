@@ -24,7 +24,7 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
         logging.debug(f"simulatedRead {self.controlledConveyorBelt.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
-        pass
+        logging.debug(f"simulatedWrite {self.controlledConveyorBelt.sensorStatusString()} ")
 
     def simulatedReset(self) -> None:
         pass

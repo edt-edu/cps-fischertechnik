@@ -146,7 +146,7 @@ class RevPiPyMachineController:
                     elif inputBufferItem.message.jsonType == "COMMAND":
                         logging.debug("command")
                         try:
-                            logging.debug(inputBufferItem.message.name)
+                            logging.debug(f"Nom de message : {inputBufferItem.message.name}")
                             # map between functions and the name of functions sent with the JSON
                             if inputBufferItem.message.type == "VACUUM" and isinstance(m, VacuumGripper):
                                 func = getattr(VacuumGripper, str.lower(inputBufferItem.message.name))
@@ -168,6 +168,7 @@ class RevPiPyMachineController:
                                 #TODO raise an exception here
                                 logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
                             # Funktionsparameter in korrekte Reihenfolge bringen und mit Funktion zusammenbringen
+                            logging.debug(f"Type de message : {inputBufferItem.message.type}")
                             if inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM":
                                 pos = inputBufferItem.message.parameters
                                 i = len(pos)
@@ -224,7 +225,6 @@ class RevPiPyMachineController:
                                 if i == 1:
                                     ret = func(m, mix[0])
                                 if i == 2:
-                                    ret = func(m, mix[0], mix[1])
                                     if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
                                         ret = func(m, mix[0], mix[1])
                                     else:
