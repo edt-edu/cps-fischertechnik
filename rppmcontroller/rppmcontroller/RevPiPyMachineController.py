@@ -126,9 +126,9 @@ class RevPiPyMachineController:
         if inputBufferItem is not None:
             for m in self.machines:
                 # überprüfe ob maschinen-id bekannt
+                logging.debug(f"machines: {self.machines}")
                 if m.id == inputBufferItem.topicName:
                     foundMatchingMachine = True
-                    logging.debug(f"found matching machine {inputBufferItem.topicName}")
                     # find diff btw command and request
                     if inputBufferItem.message.jsonType == "STATUSREQUEST":
                         logging.debug("Status")
@@ -271,7 +271,7 @@ class RevPiPyMachineController:
         """
         The execute loop, which activates all the necessary functions on each machine
         """
-        for key in self.currentlyExecuting.keys():
+        for key  in self.currentlyExecuting.keys():
             # call method
             if not self.currentlyExecuting[key][0] is None:
                 #print(key)

@@ -76,24 +76,6 @@ class ConveyorBelt(Machine):
     def conveyorCounterValue(self):
         return self.__counter.counter
 
-    def forward(self):
-        """Move the package from left sensor to right sensor"""
-        if not self.__conveyorSensFeed:
-            self.__conveyorActForward = True
-        if not self.__conveyorSensSwap:
-            self.__conveyorActForward = False
-            return True
-        return False
-
-    def backward(self):
-        """Move the package from right sensor to left sensor"""
-        if not self.__conveyorSensSwap:
-            self.__conveyorActBackward = True
-        if not self.__conveyorSensFeed:
-            self.__conveyorActBackward = False
-            return True
-        return False
-
     def forwardFromAnywhere(self):
         """Move the package from any place on the conveyor to the right sensor"""
         self.__conveyorActForward = True
