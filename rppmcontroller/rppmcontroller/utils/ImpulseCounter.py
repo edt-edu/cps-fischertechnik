@@ -25,4 +25,6 @@ class ImpulseCounter(Counter):
             self.counter += (num - self.__numalt)
         elif direction == PlusMinusStop.MINUS:
             self.counter -= (num - self.__numalt)
+        self.__numalt = num
+        logging.debug("counter " + str(self.counter))
         return self.counter

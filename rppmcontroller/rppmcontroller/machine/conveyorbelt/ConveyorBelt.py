@@ -141,9 +141,9 @@ class ConveyorBelt(Machine):
 
     def countSteps(self):
         """Count the number of steps when the conveyor is moving """
-        steps = self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
-        logging.debug(f"Step counter : {steps}")
-        return steps
+        self.current  = self.current + self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        logging.debug(f"Step counter : {self.current }")
+        return self.current 
 
     def stop(self):
         """Stop the conveyor"""
