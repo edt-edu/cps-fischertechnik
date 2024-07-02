@@ -34,7 +34,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a stop command
+        # send a move command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE", [
             Direction.FORWARD
           ] )
@@ -65,9 +65,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
-                logging.debug(f"STOP FINISHED reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 30, "STOP not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
     def test_moveBackardCommand(self):
         '''
@@ -83,7 +83,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a stop command
+        # send a move command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE", [
             Direction.BACKWARD
           ] )
@@ -114,9 +114,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
-                logging.debug(f"STOP FINISHED reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 30, "STOP not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
     ### ______ MOVE LIGHT BASED ________    
     def test_moveLbForwardCommand(self):
@@ -133,7 +133,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a stop command
+        # send a move light based command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVELB", [
             Direction.FORWARD
           ] )
@@ -160,9 +160,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
-                logging.debug(f"STOP FINISHED reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 30, "STOP not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
     def test_moveLbBackardCommand(self):
         '''
@@ -178,7 +178,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a stop command
+        # send a move light based command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVELB", [
             Direction.BACKWARD
           ] )
@@ -205,9 +205,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
-                logging.debug(f"STOP FINISHED reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 30, "STOP not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
     ### ______ GOTOCONFIG ________    
     def test_GoToConfigForwardCommand(self):
@@ -224,7 +224,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a stop command
+        # send a go to config command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "GOTOCONFIG", [
             Direction.FORWARD,
             3
@@ -256,9 +256,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
-                logging.debug(f"STOP FINISHED reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 30, "STOP not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
     def test_GoToConfigBackardCommand(self):
         '''
@@ -274,7 +274,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a stop command
+        # send a go to config command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "GOTOCONFIG", [
             Direction.BACKWARD,
             3
@@ -306,9 +306,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
-                logging.debug(f"STOP FINISHED reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 30, "STOP not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
 
 
