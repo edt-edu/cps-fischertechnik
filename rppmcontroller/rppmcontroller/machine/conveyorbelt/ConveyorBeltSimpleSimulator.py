@@ -1,7 +1,6 @@
 import logging
-from typing import Tuple
-import traceback
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.MachineSimpleSimulator import MachineSimpleSimulator
 
 
@@ -28,3 +27,13 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
 
     def simulatedReset(self) -> None:
         pass
+
+    def fakeSensor(self, parameter : RequestedParameter, value: bool):
+        if parameter == RequestedParameter.LIGHTBARRIERFEEDSTATION:
+            self.controlledConveyorBelt.conveyorSensFeed = value
+        if parameter == RequestedParameter.LIGHTBARRIERSWAPSTATION:
+            self.controlledConveyorBelt.conveyorSensSwap = value
+        if parameter == RequestedParameter.PULSECOUNTER:
+            self.controlledConveyorBelt.conveyorSensImpulse = value
+        else :
+            logging.warning("Wrong parameter in fakeSensor function")

@@ -53,13 +53,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
             if iterationDone%2 == 0:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
             else:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
             if (notification == "") :
                 iterationDone += 1
@@ -102,13 +102,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
             if iterationDone%2 == 0:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
             else:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
             if (notification == "") :
                 iterationDone += 1
@@ -152,9 +152,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
 
             if (notification == "") :
                 iterationDone += 1
@@ -197,9 +197,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
 
             if (notification == "") :
                 iterationDone += 1
@@ -244,13 +244,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
             if iterationDone%2 == 0:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
             else:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
             if (notification == "") :
                 iterationDone += 1
@@ -294,13 +294,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
-                self.controller.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
             if iterationDone%2 == 0:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,True)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
             else:
-                self.controller.fakeSensor(RequestedParameter.PULSECOUNTER,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
             if (notification == "") :
                 iterationDone += 1

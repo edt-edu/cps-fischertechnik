@@ -1,15 +1,7 @@
 import logging
-
-
 import rppmcontroller
 import rppmcontroller.machine
 import rppmcontroller.machine.conveyorbelt
-from rppmcontroller.protocol import socketConnexionHelper
-from rppmcontroller.protocol.JSONParser import JSONParser
-from rppmcontroller.protocol.JSONOutput import JSONOutput
-from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.example.ConveyorBeltController import ConveyorBeltController
 from rppmcontroller.machine.conveyorbelt.ConveyorBeltSimpleSimulator import ConveyorBeltSimpleSimulator
@@ -48,17 +40,6 @@ class SimulatedConveyorBeltController(ConveyorBeltController):
 
     def write(self) -> None:
         self.conveyorBeltSimulator.simulatedWrite()
-
-    def fakeSensor(self, parameter : RequestedParameter, value: bool):
-        if parameter == RequestedParameter.LIGHTBARRIERFEEDSTATION:
-            self.conveyorBeltMachine.conveyorSensFeed = value
-        if parameter == RequestedParameter.LIGHTBARRIERSWAPSTATION:
-            self.conveyorBeltMachine.conveyorSensSwap = value
-        if parameter == RequestedParameter.PULSECOUNTER:
-            self.conveyorBeltMachine.conveyorSensImpulse = value
-        else :
-            logging.warning("Wrong parameter in fakeSensor function")
-   
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
