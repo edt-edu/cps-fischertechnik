@@ -46,7 +46,8 @@ def customDecoder(idict):
                     parameterList.append(BoxNumber[passable])
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'COLOUR':
                     passable = param['passable']
-                    parameterList.append(Colour[passable])
+                    colour = passable['colour']
+                    parameterList.append(Colour[colour])
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'NUMBERNATURAL':
                     passable = param['passable']
                     numberstring = passable['number']
