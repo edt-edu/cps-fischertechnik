@@ -142,11 +142,12 @@ class SortingLine(Machine):
 
     def eject(self, colour: Colour):
         logging.debug('eject loop ' + str(colour))
+        if  not (colour == Colour.BLUE or colour == Colour.RED or colour == Colour.WHITE):
+            raise ValueError(f"{colour} is not a supported colour")
         whiteCounter = 1
         redCounter = 3
         blueCounter = 5
         self.current = self.current + self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
-        logging.debug(f"NOMBRE PAS : {self.current}")
         if not self.__packageCountSteps :
             self.startOfProcess(True)
             if not self.__packageCountSteps:
@@ -161,7 +162,6 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActBlueEjector = False
-                    #return
             if self.current > redCounter and colour == Colour.RED:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
@@ -171,7 +171,6 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActRedEjector = False
-                    #return
             if self.current > whiteCounter and colour == Colour.WHITE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
@@ -181,9 +180,9 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActWhiteEjector = False
-                    #return
         return lambda: self.eject(colour)
 
-    #TODO
     def stop(self):
-        pass
+        self.__sortingLineActMotorConveyor = False
+        self.__sortingLineActCompressorOn = False
+        self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False

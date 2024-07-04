@@ -32,7 +32,7 @@ class ConveyorBeltTestCase(unittest.TestCase):
     def test_conveyorActForwardAndBackward(self):
         '''
             Test if the functions action the conveyor in the good direction
-            These tests does not verify the logics of fucntions relating with sensors and counter
+            These tests does not verify the logics of functions relating with sensors and counter
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -77,14 +77,6 @@ class ConveyorBeltTestCase(unittest.TestCase):
         self.assertEqual(self.conveyor1.conveyorActForward, False)
         self.assertEqual(self.conveyor1.conveyorActBackward, True)
         self.conveyor1.stop()
-
-    def simulateCounter(self, steps: int):
-        '''
-        This function is used by the tests to simulate the counter depending the number of steps given in parameter
-        '''
-        for i in range(steps):
-            self.conveyor1.__conveyorSensImpulseCounterRaw = 1
-            self.conveyor1.__conveyorSensImpulseCounterRaw = 0
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
