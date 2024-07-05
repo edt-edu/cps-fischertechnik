@@ -1,21 +1,13 @@
 
 import inspect
 import logging
-import time
 import unittest
 from unittest.mock import patch, Mock
 
 from rppmcontroller.example.SimulatedVacuumGripperController import SimulatedVacuumGripperController
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.protocol.JSONReader import JSONReader
-from rppmcontroller.protocol.JSONParser import JSONParser
-from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.machine.Position import Position
-from rppmcontroller.machine.BoxNumber import BoxNumber
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.Colour import Colour
 from rppmcontroller.protocol.MachineCommand import MachineCommand
-from typing import Union
 
 import tests.controllerTestHelper as ctHelper
 
