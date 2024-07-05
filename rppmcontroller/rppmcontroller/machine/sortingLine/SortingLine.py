@@ -3,7 +3,7 @@ import logging
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.machine.Colour import Colour
+from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
@@ -140,20 +140,21 @@ class SortingLine(Machine):
                 logging.debug('set count steps true')
                 self.__packageCountSteps = True
 
-    def eject(self, colour: Colour):
-        logging.debug('eject loop ' + str(colour))
-        if  not (colour == Colour.BLUE or colour == Colour.RED or colour == Colour.WHITE):
-            raise ValueError(f"{colour} is not a supported colour")
+    def eject(self, color: Color):
+        logging.debug('eject loop ' + str(color))
+        if  not (color == Color.BLUE or color == Color.RED or color == Color.WHITE):
+            raise ValueError(f"{color} is not a supported color")
         whiteCounter = 1
         redCounter = 3
         blueCounter = 5
         self.current = self.current + self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        logging.debug(f" current counter {self.current}")
         if not self.__packageCountSteps :
             self.startOfProcess(True)
             if not self.__packageCountSteps:
                 self.current = 0
         else:
-            if self.current > blueCounter and colour == Colour.BLUE:
+            if self.current > blueCounter and color == Color.BLUE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActBlueEjector = True
@@ -162,7 +163,7 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActBlueEjector = False
-            if self.current > redCounter and colour == Colour.RED:
+            if self.current > redCounter and color == Color.RED:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActRedEjector = True
@@ -171,7 +172,7 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActRedEjector = False
-            if self.current > whiteCounter and colour == Colour.WHITE:
+            if self.current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActWhiteEjector = True
@@ -180,7 +181,7 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActWhiteEjector = False
-        return lambda: self.eject(colour)
+        return lambda: self.eject(color)
 
     def stop(self):
         self.__sortingLineActMotorConveyor = False

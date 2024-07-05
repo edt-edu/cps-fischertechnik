@@ -43,3 +43,6 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
             self.controlledSortingLine.sortingLineSensImpulseCounterRaw = value
         else :
             logging.warning("Wrong parameter in fakeSensor function")
+
+    def getCounter(self):
+        return self.controlledSortingLine.current

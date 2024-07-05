@@ -210,12 +210,12 @@ class RevPiPyMachineController:
                             #     if i == 2:
                             #         ret = func(m, box[0], box[1])
                             elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
-                                colour = inputBufferItem.message.parameters
-                                i = len(colour)
+                                color = inputBufferItem.message.parameters
+                                i = len(color)
                                 if i == 0:
                                     ret = func(m)
                                 if i == 1:
-                                    ret = func(m, colour[0])
+                                    ret = func(m, color[0])
                             #elif inputBufferItem.message.type == "PUNCHING":
                             #    ret = func(m)
                             elif inputBufferItem.message.type == "CONVEYOR":

@@ -6,7 +6,7 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.BoxNumber import BoxNumber
 from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.Colour import Colour
+from rppmcontroller.machine.Color import Color
 from rppmcontroller.protocol.RequestedParameter import RequestedParameter
 
 
@@ -44,10 +44,10 @@ def customDecoder(idict):
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'BOXNUMBER':
                     passable = param['passable']
                     parameterList.append(BoxNumber[passable])
-                elif 'passableType' and 'passable' in param and param['passableType'] == 'COLOUR':
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'COLOR':
                     passable = param['passable']
-                    colour = passable['colour']
-                    parameterList.append(Colour[colour])
+                    color = passable['color']
+                    parameterList.append(Color[color])
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'NUMBERNATURAL':
                     passable = param['passable']
                     numberstring = passable['number']

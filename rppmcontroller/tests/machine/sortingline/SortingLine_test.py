@@ -2,7 +2,7 @@ import inspect
 import logging
 
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
-from rppmcontroller.machine.Colour import Colour
+from rppmcontroller.machine.Color import Color
 
 import unittest
 
@@ -38,15 +38,15 @@ class SortingLineTestCase(unittest.TestCase):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # white
-        self.sortingLine1.eject(Colour.WHITE)
+        self.sortingLine1.eject(Color.WHITE)
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
         self.sortingLine1.stop()
         # blue
-        self.sortingLine1.eject(Colour.BLUE)
+        self.sortingLine1.eject(Color.BLUE)
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
         self.sortingLine1.stop()
         # red
-        self.sortingLine1.eject(Colour.RED)
+        self.sortingLine1.eject(Color.RED)
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
         self.sortingLine1.stop()
 
