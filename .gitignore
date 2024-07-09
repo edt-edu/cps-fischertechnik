@@ -21,3 +21,4 @@ __pycache__/
 .virtualenv/
 *.pyc
 .coverage
+references/physical_dimensions/MachinesSVGMap/package-lock.json
