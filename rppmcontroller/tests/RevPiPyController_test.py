@@ -8,7 +8,7 @@ from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.BoxNumber import BoxNumber
 from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.Colour import Colour
+from rppmcontroller.machine.Color import Color
 from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineCommand import MachineCommand

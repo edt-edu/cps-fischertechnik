@@ -6,7 +6,7 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.BoxNumber import BoxNumber
 from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.Colour import Colour
+from rppmcontroller.machine.Color import Color
 from rppmcontroller.protocol.RequestedParameter import RequestedParameter
 
 
@@ -44,9 +44,10 @@ def customDecoder(idict):
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'BOXNUMBER':
                     passable = param['passable']
                     parameterList.append(BoxNumber[passable])
-                elif 'passableType' and 'passable' in param and param['passableType'] == 'COLOUR':
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'COLOR':
                     passable = param['passable']
-                    parameterList.append(Colour[passable])
+                    color = passable['color']
+                    parameterList.append(Color[color])
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'NUMBERNATURAL':
                     passable = param['passable']
                     numberstring = passable['number']
@@ -54,7 +55,14 @@ def customDecoder(idict):
                     parameterList.append(numberstring)
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'DIRECTION':
                     passable = param['passable']
-                    parameterList.append(Direction[passable])
+                    direction = passable['direction']
+                    parameterList.append(Direction[direction])
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'CONVEYORDIRECTION':
+                    passable = param['passable']
+                    direction = passable['direction']
+                    steps = passable['steps']
+                    parameterList.append(Direction[direction])
+                    parameterList.append(steps)
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'TURTLEBOTPOSITION':
                     passable = param['passable']
                     meaning = passable['meaning']
@@ -79,7 +87,7 @@ def customDecoder(idict):
             requestedList = []
             # extract the request Parameters into a list
             for requ in params:
-                requestedList.append(RequestedParameter[requ])
+                requestedList.append(requ)
             # create the python-objects from the information gathered and return them
             r = MachineStatusRequest(jsonType, type, requestId, requestedList)
             jsonOutput = JSONOutput(topicName, timestamp, r)

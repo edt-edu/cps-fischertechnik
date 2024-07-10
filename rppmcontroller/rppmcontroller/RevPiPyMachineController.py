@@ -21,8 +21,11 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
+from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.Direction import Direction
 
 
 # commandServer will be on PORT_BASE+1
@@ -124,9 +127,9 @@ class RevPiPyMachineController:
         if inputBufferItem is not None:
             for m in self.machines:
                 # überprüfe ob maschinen-id bekannt
+                logging.debug(f"machines: {self.machines}")
                 if m.id == inputBufferItem.topicName:
                     foundMatchingMachine = True
-                    logging.debug(f"found matching machine {inputBufferItem.topicName}")
                     # find diff btw command and request
                     if inputBufferItem.message.jsonType == "STATUSREQUEST":
                         logging.debug("Status")
@@ -144,7 +147,7 @@ class RevPiPyMachineController:
                     elif inputBufferItem.message.jsonType == "COMMAND":
                         logging.debug("command")
                         try:
-                            logging.debug(inputBufferItem.message.name)
+                            logging.debug(f"Nom de message : {inputBufferItem.message.name}")
                             # map between functions and the name of functions sent with the JSON
                             if inputBufferItem.message.type == "VACUUM" and isinstance(m, VacuumGripper):
                                 func = getattr(VacuumGripper, str.lower(inputBufferItem.message.name))
@@ -152,20 +155,21 @@ class RevPiPyMachineController:
                             #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, Warehouse):
                             #     func = getattr(Warehouse, str.lower(inputBufferItem.message.name))
-                            # elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
-                            #     func = getattr(SortingLine, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
+                                func = getattr(SortingLine, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
                             #     func = getattr(IndexedLine, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
                             #     func = getattr(MultiProcessing, str.lower(inputBufferItem.message.name))
-                            # elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, Conveyor):
-                            #     func = getattr(Conveyor, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
+                                func = getattr(ConveyorBelt, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
                             #     func = getattr(PunchingMachine, str.lower(inputBufferItem.message.name))
                             else:
                                 #TODO raise an exception here
                                 logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
                             # Funktionsparameter in korrekte Reihenfolge bringen und mit Funktion zusammenbringen
+                            logging.debug(f"Type de message : {inputBufferItem.message.type}")
                             if inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM":
                                 pos = inputBufferItem.message.parameters
                                 i = len(pos)
@@ -205,27 +209,27 @@ class RevPiPyMachineController:
                             #     #currently: first arg: in, second argument: out
                             #     if i == 2:
                             #         ret = func(m, box[0], box[1])
-                            # elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
-                            #     colour = inputBufferItem.message.parameters
-                            #     i = len(colour)
-                            #     if i == 0:
-                            #         ret = func(m)
-                            #     if i == 1:
-                            #         ret = func(m, colour[0])
-                            # elif inputBufferItem.message.type == "PUNCHING":
-                            #     ret = func(m)
-                            # elif inputBufferItem.message.type == "CONVEYOR":
-                            #     mix = inputBufferItem.message.parameters
-                            #     i = len(mix)
-                            #     if i == 0:
-                            #         ret = func(m)
-                            #     if i == 1:
-                            #         ret = func(m, mix[0])
-                            #     if i == 2:
-                            #         if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
-                            #             ret = func(m, mix[0], mix[1])
-                            #         else:
-                            #             ret = func(m, mix[1], mix[0])
+                            elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
+                                color = inputBufferItem.message.parameters
+                                i = len(color)
+                                if i == 0:
+                                    ret = func(m)
+                                if i == 1:
+                                    ret = func(m, color[0])
+                            #elif inputBufferItem.message.type == "PUNCHING":
+                            #    ret = func(m)
+                            elif inputBufferItem.message.type == "CONVEYOR":
+                                mix = inputBufferItem.message.parameters
+                                i = len(mix)
+                                if i == 0:
+                                    ret = func(m)
+                                if i == 1:
+                                    ret = func(m, mix[0])
+                                if i == 2:
+                                    if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
+                                        ret = func(m, mix[0], mix[1])
+                                    else:
+                                        ret = func(m, mix[1], mix[0])
 
                             # holds the function that is currently executed on each machine
                             self.currentlyExecuting[m] = [ret, inputBufferItem.message.commandId]
@@ -268,7 +272,7 @@ class RevPiPyMachineController:
         """
         The execute loop, which activates all the necessary functions on each machine
         """
-        for key in self.currentlyExecuting.keys():
+        for key  in self.currentlyExecuting.keys():
             # call method
             if not self.currentlyExecuting[key][0] is None:
                 #print(key)

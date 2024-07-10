@@ -109,6 +109,7 @@ class Machine:
         logging.debug('called request with: %s', params)
         result = []
         for p in params:
+            p = RequestedParameter[p]
             if p == RequestedParameter.ALL:
                 for key in self.__dictMap.keys():
                     result.append(ParameterRequestAnswer(key, self.__dictMap[key], self.__dictMap[key].__class__))

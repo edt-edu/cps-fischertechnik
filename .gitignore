@@ -21,9 +21,4 @@ __pycache__/
 .virtualenv/
 *.pyc
 .coverage
-
-# gradle build
-
-/REN_Setups/physical-impl/factoryscada/backend/.gradle
-/REN_Setups/physical-impl/factoryscada/backend/build/
-/REN_Setups/physical-impl/factoryscada/backend/src/main/java/io/github/mbdo/factoryscada/__init__/
+references/physical_dimensions/MachinesSVGMap/package-lock.json
