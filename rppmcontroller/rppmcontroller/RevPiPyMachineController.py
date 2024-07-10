@@ -23,6 +23,7 @@ from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedbac
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
+from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
 from rppmcontroller.machine.Direction import Direction
@@ -159,8 +160,8 @@ class RevPiPyMachineController:
                                 func = getattr(SortingLine, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
                             #     func = getattr(IndexedLine, str.lower(inputBufferItem.message.name))
-                            # elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
-                            #     func = getattr(MultiProcessing, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
+                                func = getattr(MultiProcessing, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
                                 func = getattr(ConveyorBelt, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
