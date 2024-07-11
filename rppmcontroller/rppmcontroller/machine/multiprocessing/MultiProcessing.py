@@ -11,7 +11,6 @@ class MultiProcessing(Machine):
 
     @property
     def isExecuting(self) -> bool:
-        logging.debug(f"IS EXECUTING {self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw            or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable            or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve            or self.__multiProcessingValveFeeder}")
         return self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder
 
     def __init__(self, id1):
@@ -54,7 +53,6 @@ class MultiProcessing(Machine):
                    RequestedParameter.VALVEOVENDOOR: self.__multiProcessingValveOvenDoor,
                    RequestedParameter.VALVEFEEDER: self.__multiProcessingValveFeeder}
         super().__init__(id1, dictMap)
-
         self.setupFinished = False
         self.sawCount = 0
         self.ovenCount = 0
@@ -250,18 +248,9 @@ class MultiProcessing(Machine):
     def multiProcessingValveFeeder(self, value: bool):
         self.__multiProcessingValveFeeder = value
 
-    def startPosition(self):
-        """Starting position is as follows:
-        The feeder is out, the oven door is closed, the vacuum gripper is at the turntable.
-        Turntable is pointing at the vacuum"""
-        self.moveVacuumToTurntable
-        self.moveTurntableToVacuum
-        self.moveFeederOut
-
     ###____________ Turntable and Saw_______________
     def moveTurntableToSaw(self):
-        logging.debug("turntableToSaw")
-        """Rotates the turntable to the saw."""
+        """Rotate the turntable to the saw"""
         if not self.__multiProcessingSensTurntablePosSaw:
             if self.turnTableDirection is Direction.NONE:
                 #If it is the fisrt movement, get direction
@@ -283,9 +272,9 @@ class MultiProcessing(Machine):
             self.__multiProcessingActRotCounterclockwise = False
             self.actionDone += 1
 
+
     def moveTurntableToConveyor(self):
-        logging.debug("turntableToConveyor")
-        """Rotates the turntable to conveyor."""
+        """Rotate the turntable to conveyor"""
         if not self.__multiProcessingSensTurntablePosBelt:
             self.__multiProcessingActRotClockwise = True
             self.__multiProcessingActRotCounterclockwise = False
@@ -295,7 +284,7 @@ class MultiProcessing(Machine):
 
 
     def moveTurntableToVacuum(self):
-        """Rotates the turntable to the vacuum."""
+        """Rotate the turntable to the vacuum"""
         if not self.__multiProcessingSensTurntablePosVacuum:
             self.__multiProcessingActRotCounterclockwise = True
             self.__multiProcessingActRotClockwise = False
@@ -305,7 +294,7 @@ class MultiProcessing(Machine):
 
 
     def useSaw(self):
-        """Uses the saw on the package. maxCount can be determined here """
+        """Use the saw on the package for a specific number of iteration who can be determined here with maxCount"""
         maxCount = 5
         if self.__multiProcessingSensTurntablePosSaw and self.sawCount < maxCount:
         #if self.sawCount < maxCount:
@@ -317,7 +306,7 @@ class MultiProcessing(Machine):
 
 
     def ejectProductToConveyor(self):
-        logging.debug(f"EJECTOR {self.ejectorCount}")
+        """Eject the package from the turtable to the conveyor"""
         if not self.__multiProcessingSensTurntablePosBelt:
             self.moveTurntableToConveyor
         if self.ejectorCount > 1:
@@ -332,20 +321,23 @@ class MultiProcessing(Machine):
 
     ###____________ Conveyor belt ______________
     def moveConveyorToEnd(self):
+        """Moves the package with the conveyor unitl it reached the light barrier"""
         if self.__multiProcessingSensEndConveyor:
             self.__multiProcessingActConveyorForward = True
         else :
             self.__multiProcessingActConveyorForward = False
             self.actionDone += 1
 
+
     ###____________ Oven _______________
     def heatProduct(self):
+        """Simulate heating by blicking a led."""
         maxCount = 30
         if not self.heated:
             if not self.__multiProcessingSensOvenFeederIn:
                 self.moveFeederIn
             self.ovenCount += 1
-            #simulating heating by flashing light
+
             if self.ovenCount % 2 == 1:
                 self.__multiProcessingOvenLight = True
             else:
@@ -358,8 +350,9 @@ class MultiProcessing(Machine):
                 self.moveFeederOut
                 self.actionDone += 1
 
+
     def moveFeederIn(self):
-        """Moves the feeder inside the oven."""
+        """Move the feeder inside the oven."""
         if not self.__multiProcessingSensOvenFeederIn:
             self.__multiProcessingCompressor = True
             self.__multiProcessingValveOvenDoor = True
@@ -370,8 +363,9 @@ class MultiProcessing(Machine):
             self.__multiProcessingValveOvenDoor = False
             self.actionDone += 1
 
+
     def moveFeederOut(self):
-        """Moves the feeder outside of the oven."""
+        """Movs the feeder outside of the oven."""
         if not self.__multiProcessingSensOvenFeederOut:
             self.__multiProcessingCompressor = True
             self.__multiProcessingValveOvenDoor = True
@@ -384,15 +378,16 @@ class MultiProcessing(Machine):
 
     ###____________ Vacuum gripper _______________
     def moveVacuumToOven(self):
-        """Moves the vacuum gripper to the oven."""
+        """Move the vacuum gripper to the oven."""
         if not self.__multiProcessingSensVacuumGripperAtOven:
             self.__multiProcessingActGripperToOven = True
         else:
             self.__multiProcessingActGripperToOven = False
             self.actionDone += 1
 
+
     def moveVacuumToTurntable(self):
-        """Moves the vacuum gripper to the turntable."""
+        """Move the vacuum gripper to the turntable."""
         if not self.__multiProcessingSensVacuumGripperAtTurntable:
             self.__multiProcessingActGripperToTurntable = True
         else:
@@ -425,9 +420,9 @@ class MultiProcessing(Machine):
             self.__multiProcessingActLowerValve = True
             self.vacuumCount += 1
 
+
     def releaseProduct(self):
         """Release the product with the vacuum gripper"""
-
         if self.__multiProcessingSensVacuumGripperAtTurntable:
             if not self.__multiProcessingSensTurntablePosVacuum:
                 self.moveTurntableToVacuum
@@ -449,10 +444,10 @@ class MultiProcessing(Machine):
             self.__multiProcessingActLowerValve = True
             self.vacuumCount += 1
 
+
     ### __________ Other functions ______________
     def resetStation(self):
-        logging.debug("resetStation")
-        """Sets all valuables and the ovenReady flag to the starting values."""
+        """Set all valuables and the ovenReady flag to the starting values."""
         self.sawCount = 0
         self.ovenCount = 0
         self.vacuumCount = 0
@@ -463,12 +458,9 @@ class MultiProcessing(Machine):
         self.actionDone +=1
 
 
-
     ### ____________ Functions callable from orchestrator ________________
-
-
     def setup(self):
-        """reset the station and move some parts to the initial postion."""
+        """Reset the station and move some parts to the initial postion."""
         actions = [
             self.resetStation,
             self.moveTurntableToVacuum,
@@ -485,28 +477,19 @@ class MultiProcessing(Machine):
     
         return lambda: self.setup()  
 
-       
-    
-    
+
     def process1(self):
-        """ execute process 1 : 
-            The package is on the turntable at setup and will be delivered at the conveyor end
-        """
-        logging.debug("START PROCESS 1")
+        """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
         actions = [
-            self.moveTurntableToSaw,
-            self.useSaw,
-            self.moveTurntableToVacuum,
-            self.moveVacuumToTurntable,
-            self.gripProduct,
-            self.moveVacuumToOven,
-            self.releaseProduct,
             self.moveFeederIn,
             self.heatProduct,
             self.moveFeederOut,
             self.gripProduct,
             self.moveVacuumToTurntable,
+            self.moveTurntableToVacuum,
             self.releaseProduct,
+            self.moveTurntableToSaw,
+            self.useSaw,
             self.moveTurntableToConveyor,
             self.ejectProductToConveyor,
             self.moveConveyorToEnd
@@ -520,9 +503,9 @@ class MultiProcessing(Machine):
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
 
-        return lambda:self.process1()
-    
+        return lambda:self.process1()    
     
 
     def stop(self):
-        self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw          = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self._multiProcessingActLowerValve = self.__multiProcessingValveFeeder = False
+        """ Stop the machine """
+        self.__isExecuting = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self._multiProcessingActLowerValve = self.__multiProcessingValveFeeder = False
