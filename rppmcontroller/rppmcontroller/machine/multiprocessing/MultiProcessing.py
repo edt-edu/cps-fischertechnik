@@ -449,10 +449,8 @@ class MultiProcessing(Machine):
             self.__multiProcessingActLowerValve = True
             self.vacuumCount += 1
 
-
-
-    ### ____________ Functions callable from orchestrator ________________
-    def resetstation(self):
+    ### __________ Other functions ______________
+    def resetStation(self):
         logging.debug("resetStation")
         """Sets all valuables and the ovenReady flag to the starting values."""
         self.sawCount = 0
@@ -462,28 +460,37 @@ class MultiProcessing(Machine):
         self.toVac = False
         self.heated = False
         self.delivered = False
+        self.actionDone +=1
+
+
+
+    ### ____________ Functions callable from orchestrator ________________
+
 
     def setup(self):
         """reset the station and move some parts to the initial postion."""
-        self.resetstation
-        self.moveTurntableToVacuum
-        self.moveVacuumToOven
-        self.moveFeederOut
+        actions = [
+            self.resetStation,
+            self.moveTurntableToVacuum,
+            self.moveVacuumToOven,
+            self.moveFeederOut,
+        ]
+        self.processing = True
+        if len(actions) <= self.actionDone:
+            self.processing = False
+            self.actionDone = 0
+        else:
+            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
+            actions[self.actionDone]()
+    
         return lambda: self.setup()  
+
+       
     
     
     def process1(self):
         """ execute process 1 : 
-            - move package to saw
-            - saw the package
-            - move package to vacuum
-            - pick package from truntable
-            - drop package to oven feeder
-            - heat package
-            - pick package from oven
-            - drop package to turntable
-            - eject package to conveyor belt
-            - move package at the end of the conveyor
+            The package is on the turntable at setup and will be delivered at the conveyor end
         """
         logging.debug("START PROCESS 1")
         actions = [
@@ -506,13 +513,14 @@ class MultiProcessing(Machine):
         ]
 
         self.processing = True
-        logging.debug("ACTION n° {self.actionDone} : {action[self.actionDone]}")
-        actions[self.actionDone]()
-    #    if len(actions) < self.actionDone:
-    #        self.processing = False
+        if len(actions) <= self.actionDone:
+            self.processing = False
+            self.actionDone = 0
+        else:
+            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
+            actions[self.actionDone]()
 
         return lambda:self.process1()
-        #return lambda: self.gripProduct()
     
     
 
