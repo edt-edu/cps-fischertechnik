@@ -1,9 +1,6 @@
 import logging
 
 from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.Axis import AxisType, Axis
-from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import VacuumGripperConfig
-from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 
@@ -248,6 +245,7 @@ class MultiProcessing(Machine):
     def multiProcessingValveFeeder(self, value: bool):
         self.__multiProcessingValveFeeder = value
 
+
     ###____________ Turntable and Saw_______________
     def moveTurntableToSaw(self):
         """Rotate the turntable to the saw"""
@@ -318,6 +316,7 @@ class MultiProcessing(Machine):
             self.__multiProcessingCompressor = True
             self.__multiProcessingValveFeeder = True
             self.ejectorCount += 1
+
 
     ###____________ Conveyor belt ______________
     def moveConveyorToEnd(self):
