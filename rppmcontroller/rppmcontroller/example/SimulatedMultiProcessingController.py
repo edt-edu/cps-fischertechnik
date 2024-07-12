@@ -1,0 +1,50 @@
+import logging
+import rppmcontroller.machine
+import rppmcontroller.machine.multiprocessing
+from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
+from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.multiprocessing.MultiProcessingSimpleSimulator import MultiProcessingSimpleSimulator
+
+class SimulatedMultiProcessingController(RevPiPyMachineController):
+    """
+    Class allowing to stream commands to and from a simulated sorting line
+    """
+
+    def __init__(self, configurationFile : str = ""):
+        """
+        Init method of this class, starts all threads and everything is ready for receiving commands via Sockets and executing them
+        """
+
+        super().__init__(configurationFile=configurationFile)
+        
+        #the list of all machines that are connected to this core
+        self.machines = []
+        #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
+        self.currentlyExecuting = {}
+        self.multiProcessingMachine = MultiProcessing("MultiProcessing01")
+        self.machines = [self.multiProcessingMachine]
+        self.currentlyExecuting = {
+            self.multiProcessingMachine: [None, None]
+        }
+
+        self.feedback = {
+            self.multiProcessingMachine: None
+        }
+
+        self.multiProcessingSimulator = MultiProcessingSimpleSimulator(self.multiProcessingMachine)
+        """Simulator for the Sorting Line"""
+
+    def read(self) -> None:
+        self.multiProcessingSimulator.simulatedRead()
+
+    def write(self) -> None:
+        self.multiProcessingSimulator.simulatedWrite()
+
+if __name__ == "__main__":
+    logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
+    logging.debug('main')
+    # Start ConveyorBeltStreamer app
+    root = SimulatedMultiProcessingController("config.yml")
+    
+    # start communication threads and main control loop
+    root.start()
