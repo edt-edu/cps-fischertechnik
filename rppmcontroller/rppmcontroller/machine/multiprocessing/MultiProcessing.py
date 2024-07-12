@@ -218,7 +218,7 @@ class MultiProcessing(Machine):
         return self.__multiProcessingValveVacuum
 
     @multiProcessingValveVacuum.setter
-    def multiProcessingValve(self, value: bool):
+    def multiProcessingValveVacuum(self, value: bool):
         self.__multiProcessingValveVacuum = value
 
     @property
@@ -295,7 +295,6 @@ class MultiProcessing(Machine):
         """Use the saw on the package for a specific number of iteration who can be determined here with maxCount"""
         maxCount = 5
         if self.__multiProcessingSensTurntablePosSaw and self.sawCount < maxCount:
-        #if self.sawCount < maxCount:
             self.__multiProcessingActSaw  = True
             self.sawCount += 1
         else:
@@ -507,4 +506,4 @@ class MultiProcessing(Machine):
 
     def stop(self):
         """ Stop the machine """
-        self.__isExecuting = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self._multiProcessingActLowerValve = self.__multiProcessingValveFeeder = False
+        self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
