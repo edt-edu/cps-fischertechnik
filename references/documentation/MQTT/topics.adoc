@@ -1,0 +1,649 @@
+= Machine Sensors MQTT Documentation
+:doctype: book
+:toc: macro
+:toclevels: 2
+
+== Overview
+This document describes the MQTT topics used for publishing the state of sensors in different types of machines.
+
+== Server
+* URL: mqtt://broker.example.com:1883
+* Protocol: MQTT
+
+== Topics
+
+=== Conveyor Belt
+
+==== Topic: `conveyorBelt/{id}/sensor/LIGHTBARRIERFEEDSTATION`
+*Description*: Topic for publishing LIGHTBARRIERFEEDSTATION sensor data of conveyor belts.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `conveyorBelt/{id}/sensor/LIGHTBARRIERSWAPSTATION`
+*Description*: Topic for publishing LIGHTBARRIERSWAPSTATION sensor data of conveyor belts.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `conveyorBel/{id}/sensor/PULSECOUNTER`
+*Description*: Topic for publishing PULSECOUNTER sensor data of conveyor belt machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `conveyorBel/{id}/action/MOTORCONVEYORBELTFORWARD`
+*Description*: Topic for publishing MOTORCONVEYORBELTFORWARD output state of conveyor belt machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `conveyorBel/{id}/action/MOTORCONVEYORBELTBACKWARD`
+*Description*: Topic for publishing MOTORCONVEYORBELTBACKWARD output state of conveyor belt machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+
+=== Sorting Line
+
+==== Topic: `sortingLine/{id}/sensor/PULSECOUNTER`
+*Description*: Topic for publishing PULSECOUNTER sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "number",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERINLET`
+*Description*: Topic for publishing LIGHTBARRIERINLET sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERBEHINDCOLORSENSOR`
+*Description*: Topic for publishing LIGHTBARRIERBEHINDCOLORSENSOR sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERWHITE`
+*Description*: Topic for publishing LIGHTBARRIERWHITE sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERRED`
+*Description*: Topic for publishing LIGHTBARRIERRED sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERBLUE`
+*Description*: Topic for publishing LIGHTBARRIERBLUE sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+=== Sorting Line
+
+==== Topic: `sortingLine/{id}/action/MOTORCONVEYORBELT`
+*Description*: Topic for publishing MOTORCONVEYORBELT output state of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/action/COMPRESSOR`
+*Description*: Topic for publishing COMPRESSOR output state of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/action/VALVEFIRSTEJECTORWHITE`
+*Description*: Topic for publishing VALVEFIRSTEJECTORWHITE output state of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/action/VALVESECONDEJECTORRED`
+*Description*: Topic for publishing VALVESECONDEJECTORRED output state of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `sortingLine/{id}/action/VALVETHIRDEJECTORBLUE`
+*Description*: Topic for publishing VALVETHIRDEJECTORBLUE output state of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+
+=== Vacuum Gripper
+
+==== Topic: `vacuumGripper/{id}/sensor/REFERENCESWITCHVERTICALAXIS`
+*Description*: Topic for publishing REFERENCESWITCHVERTICALAXIS sensor data of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/sensor/REFERENCESWITCHHORIZONTALAXIS`
+*Description*: Topic for publishing REFERENCESWITCHHORIZONTALAXIS sensor data of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/sensor/REFERENCESWITCHROTATE`
+*Description*: Topic for publishing REFERENCESWITCHROTATE sensor data of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/sensor/VERTICALAXISSTEP`
+*Description*: Topic for publishing VERTICALAXISSTEP counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "integer",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/sensor/HORIZONTALAXISSTEP`
+*Description*: Topic for publishing HORIZONTALAXISSTEP counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "integer",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/sensor/ROTATESTEP`
+*Description*: Topic for publishing ROTATESTEP counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "integer",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORVERTICALAXISUP`
+*Description*: Topic for publishing MOTORVERTICALAXISUP counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORVERTICALAXISDOWN`
+*Description*: Topic for publishing MOTORVERTICALAXISDOWN counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"com
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORHORIZONTALAXISBACKWARD`
+*Description*: Topic for publishing MOTORHORIZONTALAXISBACKWARD counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORHORIZONTALAXISFORWARD`
+*Description*: Topic for publishing MOTORHORIZONTALAXISFORWARD counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORROTATECLOCKWISE`
+*Description*: Topic for publishing MOTORROTATECLOCKWISE counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORROTATECOUNTERCLOCKWISE`
+*Description*: Topic for publishing MOTORROTATECOUNTERCLOCKWISE counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/COMPRESSOR`
+*Description*: Topic for publishing COMPRESSOR output state of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/VALVEVACUUM`
+*Description*: Topic for publishing VALVEVACUUM output state of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+
+=== Multi Processing
+
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHTURNTABLEPOSITOINVACUUM`
+*Description*: Topic for publishing REFERENCESWITCHTURNTABLEPOSITOINVACUUM sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/REFERNCESWITCHTURNTABLEPOSITIONBELT`
+*Description*: Topic for publishing REFERNCESWITCHTURNTABLEPOSITIONBELT sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/LIGHTBARRIERENDOFCONVEYORBELT`
+*Description*: Topic for publishing LIGHTBARRIERENDOFCONVEYORBELT sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHTURNTABLEPOSITIONSAW`
+*Description*: Topic for publishing REFERENCESWITCHTURNTABLEPOSITIONSAW sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHVACUUMPOSITIONTURNTABLE`
+*Description*: Topic for publishing REFERENCESWITCHVACUUMPOSITIONTURNTABLE sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHOVENFEEDERINSIDE`
+*Description*: Topic for publishing REFERENCESWITCHOVENFEEDERINSIDE sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHOVENFEEDEROUTSIDE`
+*Description*: Topic for publishing REFERENCESWITCHOVENFEEDEROUTSIDE sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHVACUUMPOSITIONOVEN`
+*Description*: Topic for publishing REFERENCESWITCHVACUUMPOSITIONOVEN sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/sensor/LIGHTBARRIEROVEN`
+*Description*: Topic for publishing LIGHTBARRIEROVEN sensor data of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORTURNTABLECLOCKWISE`
+*Description*: Topic for publishing MOTORTURNTABLECLOCKWISE output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORTURNTABLECOUNTERCLOCKWISE`
+*Description*: Topic for publishing MOTORTURNTABLECOUNTERCLOCKWISE output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORSAW`
+*Description*: Topic for publishing MOTORSAW output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTOROVENFEEDERRETRACT`
+*Description*: Topic for publishing MOTOROVENFEEDERRETRACT output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTOROVENFEEDEREXTEND`
+*Description*: Topic for publishing MOTOROVENFEEDEREXTEND output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORVACUUMTOWARDSOVEN`
+*Description*: Topic for publishing MOTORVACUUMTOWARDSOVEN output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORVACUUMTOWARDSTURNTABLE`
+*Description*: Topic for publishing MOTORVACUUMTOWARDSTURNTABLE output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/LIGHTOVEN`
+*Description*: Topic for publishing LIGHTOVEN output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVEVACUUM`
+*Description*: Topic for publishing VALVEVACUUM output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVELOWERING`
+*Description*: Topic for publishing VALVELOWERING output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVEOVENDOOR`
+*Description*: Topic for publishing VALVEOVENDOOR output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVEFEEDER`
+*Description*: Topic for publishing VALVEFEEDER output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/COMPRESSOR`
+*Description*: Topic for publishing COMPRESSOR output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
