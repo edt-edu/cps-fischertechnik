@@ -31,11 +31,11 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
     def fakeSensor(self, parameter : RequestedParameter, value: bool):
         if parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosVacuum = value
-        elif parameter == RequestedParameter.REFERNCESWITCHTURNTABLEPOSITIONBELT:
+        elif parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosBelt = value
         elif parameter == RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT:
             self.controlledMultiProcessing.multiProcessingSensEndConveyor = value
-        elif parameter == RequestedParameter.REFERENCEWITCHTURNTABLEPOSITIONSAW:
+        elif parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosSaw = value
         elif parameter == RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE:
             self.controlledMultiProcessing.multiProcessingSensVacuumGripperAtTurntable = value
