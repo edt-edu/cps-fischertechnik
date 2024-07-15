@@ -35,7 +35,7 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
             self.controlledMultiProcessing.multiProcessingSensTurntablePosBelt = value
         elif parameter == RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT:
             self.controlledMultiProcessing.multiProcessingSensEndConveyor = value
-        elif parameter == RequestedParameter.REFERENCEWITCHTURNTABLEPOSITIONSAW:
+        elif parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosSaw = value
         elif parameter == RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE:
             self.controlledMultiProcessing.multiProcessingSensVacuumGripperAtTurntable = value
