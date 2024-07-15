@@ -78,7 +78,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             elif iterationDone == 68:
                 #simulate tuntable moved to conveyor belt
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW, False)
-                self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERNCESWITCHTURNTABLEPOSITIONBELT, True)
+                self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT, True)
             elif iterationDone == 72:
                 #simulate package ejected to conveyor belt and came at the end of the belt
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT, False)
