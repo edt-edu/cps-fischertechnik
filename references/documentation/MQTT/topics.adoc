@@ -14,8 +14,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 
 === Conveyor Belt
 
-==== Topic: `conveyorBelt/{id}/sensor/LightBarrierFeedStation`
-*Description*: Topic for publishing LightBarrierFeedStation sensor data of conveyor belts.
+==== Topic: `conveyorBelt/{id}/sensor/LIGHTBARRIERFEEDSTATION`
+*Description*: Topic for publishing LIGHTBARRIERFEEDSTATION sensor data of conveyor belts.
 
 *Payload*:
 [source,json]
@@ -26,8 +26,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `conveyorBelt/{id}/sensor/LightBarrierSwapStation`
-*Description*: Topic for publishing LightBarrierSwapStation sensor data of conveyor belts.
+==== Topic: `conveyorBelt/{id}/sensor/LIGHTBARRIERSWAPSTATION`
+*Description*: Topic for publishing LIGHTBARRIERSWAPSTATION sensor data of conveyor belts.
 
 *Payload*:
 [source,json]
@@ -38,8 +38,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `conveyorBelt/{id}/sensor/PulseCounter`
-*Description*: Topic for publishing PulseCounter sensor data of conveyor belt machines.
+==== Topic: `conveyorBel/{id}/sensor/PULSECOUNTER`
+*Description*: Topic for publishing PULSECOUNTER sensor data of conveyor belt machines.
 
 *Payload*:
 [source,json]
@@ -50,8 +50,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `conveyorBelt/{id}/action/MotorConveyorBeltForward`
-*Description*: Topic for publishing MotorConveyorBeltForward output state of conveyor belt machines.
+==== Topic: `conveyorBel/{id}/action/MOTORCONVEYORBELTFORWARD`
+*Description*: Topic for publishing MOTORCONVEYORBELTFORWARD output state of conveyor belt machines.
 
 *Payload*:
 [source,json]
@@ -62,8 +62,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `conveyorBelt/{id}/action/MotorConveyorBeltBackward`
-*Description*: Topic for publishing MotorConveyorBeltBackward output state of conveyor belt machines.
+==== Topic: `conveyorBel/{id}/action/MOTORCONVEYORBELTBACKWARD`
+*Description*: Topic for publishing MOTORCONVEYORBELTBACKWARD output state of conveyor belt machines.
 
 *Payload*:
 [source,json]
@@ -77,8 +77,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 
 === Sorting Line
 
-==== Topic: `sortingLine/{id}/sensor/PulseCounter`
-*Description*: Topic for publishing PulseCounter sensor data of sorting lines.
+==== Topic: `sortingLine/{id}/sensor/PULSECOUNTER`
+*Description*: Topic for publishing PULSECOUNTER sensor data of sorting lines.
 
 *Payload*:
 [source,json]
@@ -89,8 +89,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/sensor/LightBarrierInlet`
-*Description*: Topic for publishing LightBarrierInlet sensor data of sorting lines.
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERINLET`
+*Description*: Topic for publishing LIGHTBARRIERINLET sensor data of sorting lines.
 
 *Payload*:
 [source,json]
@@ -101,8 +101,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/sensor/LightBarrierBehindColorSensor`
-*Description*: Topic for publishing LightBarrierBehindColorSensor sensor data of sorting lines.
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERBEHINDCOLORSENSOR`
+*Description*: Topic for publishing LIGHTBARRIERBEHINDCOLORSENSOR sensor data of sorting lines.
 
 *Payload*:
 [source,json]
@@ -113,8 +113,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/sensor/LightBarrierWhite`
-*Description*: Topic for publishing LightBarrierWhite sensor data of sorting lines.
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERWHITE`
+*Description*: Topic for publishing LIGHTBARRIERWHITE sensor data of sorting lines.
 
 *Payload*:
 [source,json]
@@ -125,8 +125,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/sensor/LightBarrierRed`
-*Description*: Topic for publishing LightBarrierRed sensor data of sorting lines.
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERRED`
+*Description*: Topic for publishing LIGHTBARRIERRED sensor data of sorting lines.
 
 *Payload*:
 [source,json]
@@ -137,8 +137,21 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/sensor/LightBarrierBlue`
-*Description*: Topic for publishing LightBarrierBlue sensor data of sorting lines.
+==== Topic: `sortingLine/{id}/sensor/LIGHTBARRIERBLUE`
+*Description*: Topic for publishing LIGHTBARRIERBLUE sensor data of sorting lines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+=== Sorting Line
+
+==== Topic: `sortingLine/{id}/action/MOTORCONVEYORBELT`
+*Description*: Topic for publishing MOTORCONVEYORBELT output state of sorting lines.
 
 *Payload*:
 [source,json]
@@ -149,8 +162,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/action/MotorConveyorBelt`
-*Description*: Topic for publishing MotorConveyorBelt output state of sorting lines.
+==== Topic: `sortingLine/{id}/action/COMPRESSOR`
+*Description*: Topic for publishing COMPRESSOR output state of sorting lines.
 
 *Payload*:
 [source,json]
@@ -161,8 +174,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/action/Compressor`
-*Description*: Topic for publishing Compressor output state of sorting lines.
+==== Topic: `sortingLine/{id}/action/VALVEFIRSTEJECTORWHITE`
+*Description*: Topic for publishing VALVEFIRSTEJECTORWHITE output state of sorting lines.
 
 *Payload*:
 [source,json]
@@ -173,8 +186,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/action/ValveFirstEjectorWhite`
-*Description*: Topic for publishing ValveFirstEjectorWhite output state of sorting lines.
+==== Topic: `sortingLine/{id}/action/VALVESECONDEJECTORRED`
+*Description*: Topic for publishing VALVESECONDEJECTORRED output state of sorting lines.
 
 *Payload*:
 [source,json]
@@ -185,20 +198,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `sortingLine/{id}/action/ValveSecondEjectorRed`
-*Description*: Topic for publishing ValveSecondEjectorRed output state of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/action/ValveThirdEjectorBlue`
-*Description*: Topic for publishing ValveThirdEjectorBlue output state of sorting lines.
+==== Topic: `sortingLine/{id}/action/VALVETHIRDEJECTORBLUE`
+*Description*: Topic for publishing VALVETHIRDEJECTORBLUE output state of sorting lines.
 
 *Payload*:
 [source,json]
@@ -212,8 +213,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 
 === Vacuum Gripper
 
-==== Topic: `vacuumGripper/{id}/sensor/ReferenceSwitchVerticalAxis`
-*Description*: Topic for publishing ReferenceSwitchVerticalAxis sensor data of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/sensor/REFERENCESWITCHVERTICALAXIS`
+*Description*: Topic for publishing REFERENCESWITCHVERTICALAXIS sensor data of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -224,8 +225,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/sensor/ReferenceSwitchHorizontalAxis`
-*Description*: Topic for publishing ReferenceSwitchHorizontalAxis sensor data of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/sensor/REFERENCESWITCHHORIZONTALAXIS`
+*Description*: Topic for publishing REFERENCESWITCHHORIZONTALAXIS sensor data of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -236,8 +237,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/sensor/ReferenceSwitchRotate`
-*Description*: Topic for publishing ReferenceSwitchRotate sensor data of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/sensor/REFERENCESWITCHROTATE`
+*Description*: Topic for publishing REFERENCESWITCHROTATE sensor data of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -248,8 +249,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/sensor/VerticalAxisStep`
-*Description*: Topic for publishing VerticalAxisStep counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/sensor/VERTICALAXISSTEP`
+*Description*: Topic for publishing VERTICALAXISSTEP counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -260,8 +261,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/sensor/HorizontalAxisStep`
-*Description*: Topic for publishing HorizontalAxisStep counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/sensor/HORIZONTALAXISSTEP`
+*Description*: Topic for publishing HORIZONTALAXISSTEP counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -272,8 +273,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/sensor/RotateStep`
-*Description*: Topic for publishing RotateStep counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/sensor/ROTATESTEP`
+*Description*: Topic for publishing ROTATESTEP counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -284,8 +285,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/action/MotorVerticalAxisUp`
-*Description*: Topic for publishing MotorVerticalAxisUp counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/action/MOTORVERTICALAXISUP`
+*Description*: Topic for publishing MOTORVERTICALAXISUP counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -296,8 +297,20 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/action/MotorVerticalAxisDown`
-*Description*: Topic for publishing MotorVerticalAxisDown counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/action/MOTORVERTICALAXISDOWN`
+*Description*: Topic for publishing MOTORVERTICALAXISDOWN counter value of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"com
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/MOTORHORIZONTALAXISBACKWARD`
+*Description*: Topic for publishing MOTORHORIZONTALAXISBACKWARD counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -308,8 +321,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/action/MotorHorizontalAxisBackward`
-*Description*: Topic for publishing MotorHorizontalAxisBackward counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/action/MOTORHORIZONTALAXISFORWARD`
+*Description*: Topic for publishing MOTORHORIZONTALAXISFORWARD counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -320,8 +333,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/action/MotorHorizontalAxisForward`
-*Description*: Topic for publishing MotorHorizontalAxisForward counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/action/MOTORROTATECLOCKWISE`
+*Description*: Topic for publishing MOTORROTATECLOCKWISE counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -332,8 +345,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/action/MotorRotateClockwise`
-*Description*: Topic for publishing MotorRotateClockwise counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/action/MOTORROTATECOUNTERCLOCKWISE`
+*Description*: Topic for publishing MOTORROTATECOUNTERCLOCKWISE counter value of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -344,8 +357,20 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `vacuumGripper/{id}/action/MotorRotateCounterclockwise`
-*Description*: Topic for publishing MotorRotateCounterclockwise counter value of vacuum grippers.
+==== Topic: `vacuumGripper/{id}/action/COMPRESSOR`
+*Description*: Topic for publishing COMPRESSOR output state of vacuum grippers.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `vacuumGripper/{id}/action/VALVEVACUUM`
+*Description*: Topic for publishing VALVEVACUUM output state of vacuum grippers.
 
 *Payload*:
 [source,json]
@@ -359,8 +384,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 
 === Multi Processing
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchTurntablePositionVacuum`
-*Description*: Topic for publishing ReferenceSwitchTurntablePositionVacuum sensor data of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHTURNTABLEPOSITOINVACUUM`
+*Description*: Topic for publishing REFERENCESWITCHTURNTABLEPOSITOINVACUUM sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -371,8 +396,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchTurntablePositionBelt`
-*Description*: Topic for publishing ReferenceSwitchTurntablePositionBelt sensor data of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERNCESWITCHTURNTABLEPOSITIONBELT`
+*Description*: Topic for publishing REFERNCESWITCHTURNTABLEPOSITIONBELT sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -383,8 +408,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/sensor/VacuumGripperVerticalAxis`
-*Description*: Topic for publishing VacuumGripperVerticalAxis sensor data of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/LIGHTBARRIERENDOFCONVEYORBELT`
+*Description*: Topic for publishing LIGHTBARRIERENDOFCONVEYORBELT sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -395,8 +420,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/sensor/VacuumGripperHorizontalAxis`
-*Description*: Topic for publishing VacuumGripperHorizontalAxis sensor data of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHTURNTABLEPOSITIONSAW`
+*Description*: Topic for publishing REFERENCESWITCHTURNTABLEPOSITIONSAW sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -407,8 +432,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/sensor/VacuumGripperRotate`
-*Description*: Topic for publishing VacuumGripperRotate sensor data of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHVACUUMPOSITIONTURNTABLE`
+*Description*: Topic for publishing REFERENCESWITCHVACUUMPOSITIONTURNTABLE sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -419,8 +444,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorTurntablePositionVacuum`
-*Description*: Topic for publishing MotorTurntablePositionVacuum output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHOVENFEEDERINSIDE`
+*Description*: Topic for publishing REFERENCESWITCHOVENFEEDERINSIDE sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -431,8 +456,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorTurntablePositionBelt`
-*Description*: Topic for publishing MotorTurntablePositionBelt output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHOVENFEEDEROUTSIDE`
+*Description*: Topic for publishing REFERENCESWITCHOVENFEEDEROUTSIDE sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -443,8 +468,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorVacuumGripperVerticalAxisUp`
-*Description*: Topic for publishing MotorVacuumGripperVerticalAxisUp output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/REFERENCESWITCHVACUUMPOSITIONOVEN`
+*Description*: Topic for publishing REFERENCESWITCHVACUUMPOSITIONOVEN sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -455,8 +480,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorVacuumGripperVerticalAxisDown`
-*Description*: Topic for publishing MotorVacuumGripperVerticalAxisDown output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/sensor/LIGHTBARRIEROVEN`
+*Description*: Topic for publishing LIGHTBARRIEROVEN sensor data of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -467,8 +492,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorVacuumGripperHorizontalAxisBackward`
-*Description*: Topic for publishing MotorVacuumGripperHorizontalAxisBackward output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/action/MOTORTURNTABLECLOCKWISE`
+*Description*: Topic for publishing MOTORTURNTABLECLOCKWISE output state of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -479,8 +504,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorVacuumGripperHorizontalAxisForward`
-*Description*: Topic for publishing MotorVacuumGripperHorizontalAxisForward output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/action/MOTORTURNTABLECOUNTERCLOCKWISE`
+*Description*: Topic for publishing MOTORTURNTABLECOUNTERCLOCKWISE output state of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -491,8 +516,8 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorVacuumGripperRotateClockwise`
-*Description*: Topic for publishing MotorVacuumGripperRotateClockwise output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/action/MOTORSAW`
+*Description*: Topic for publishing MOTORSAW output state of multi-processing machines.
 
 *Payload*:
 [source,json]
@@ -503,8 +528,116 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
-==== Topic: `multiProcessing/{id}/action/MotorVacuumGripperRotateCounterclockwise`
-*Description*: Topic for publishing MotorVacuumGripperRotateCounterclockwise output state of multi-processing machines.
+==== Topic: `multiProcessing/{id}/action/MOTOROVENFEEDERRETRACT`
+*Description*: Topic for publishing MOTOROVENFEEDERRETRACT output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTOROVENFEEDEREXTEND`
+*Description*: Topic for publishing MOTOROVENFEEDEREXTEND output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORVACUUMTOWARDSOVEN`
+*Description*: Topic for publishing MOTORVACUUMTOWARDSOVEN output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/MOTORVACUUMTOWARDSTURNTABLE`
+*Description*: Topic for publishing MOTORVACUUMTOWARDSTURNTABLE output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/LIGHTOVEN`
+*Description*: Topic for publishing LIGHTOVEN output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVEVACUUM`
+*Description*: Topic for publishing VALVEVACUUM output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVELOWERING`
+*Description*: Topic for publishing VALVELOWERING output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVEOVENDOOR`
+*Description*: Topic for publishing VALVEOVENDOOR output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/VALVEFEEDER`
+*Description*: Topic for publishing VALVEFEEDER output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/COMPRESSOR`
+*Description*: Topic for publishing COMPRESSOR output state of multi-processing machines.
 
 *Payload*:
 [source,json]
