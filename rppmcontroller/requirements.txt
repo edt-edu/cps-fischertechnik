@@ -4,3 +4,4 @@ coverage
 pytest
 pyyaml
 revpimodio2
+paho-mqtt
