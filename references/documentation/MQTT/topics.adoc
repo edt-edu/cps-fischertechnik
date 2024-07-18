@@ -513,6 +513,18 @@ This document describes the MQTT topics used for publishing the state of sensors
 }
 ----
 
+==== Topic: `multiProcessing/{id}/action/MotorConveyorBelt`
+*Description*: Topic for publishing MotorConveyorBelt output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
 ==== Topic: `multiProcessing/{id}/action/MotorSaw`
 *Description*: Topic for publishing MotorSaw output state of multi-processing machines.
 
@@ -575,6 +587,18 @@ This document describes the MQTT topics used for publishing the state of sensors
 
 ==== Topic: `multiProcessing/{id}/action/LightOven`
 *Description*: Topic for publishing LightOven output state of multi-processing machines.
+
+*Payload*:
+[source,json]
+----
+{
+  "value": "boolean",
+  "timestamp": "string (format: date-time)"
+}
+----
+
+==== Topic: `multiProcessing/{id}/action/Compressor`
+*Description*: Topic for publishing Compressor output state of multi-processing machines.
 
 *Payload*:
 [source,json]
