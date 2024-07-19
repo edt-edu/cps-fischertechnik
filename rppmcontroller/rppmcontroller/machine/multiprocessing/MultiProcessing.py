@@ -482,6 +482,7 @@ class MultiProcessing(Machine):
             self.moveFeederIn,
             self.heatProduct,
             self.moveFeederOut,
+            self.moveVacuumToOven,
             self.gripProduct,
             self.moveVacuumToTurntable,
             self.moveTurntableToVacuum,
