@@ -51,3 +51,13 @@ This will install the packages the project depends on in production as well as p
 Refer to the [pip install documentation](https://pip.pypa.io/en/stable/reference/pip_install/#) for more information on these options.
 
 At this point, you are ready to start modifying to template for your own needs.
+
+
+# Informations about the machines
+
+## Vacuum Gripper Robot (VGR)
+
+Once setup: maximum physical observed values are:
+- -12 <= vacuumSensVerticalEncoderCounter <= 1779
+- -1 <= vacuumSensArmEncoderCounter <= 2017
+- -1 <= vacuumSensRotEncoderCounter <= 3053
