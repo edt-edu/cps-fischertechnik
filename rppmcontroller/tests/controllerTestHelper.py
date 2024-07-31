@@ -13,6 +13,8 @@ def readNotification(controller : RevPiPyMachineController ) -> str :
     get the output buffer content as string
     it doesn't block on the queue 
 
+    this function act like a filter to block COMMAND_FEEDBACK notification
+
     Returns:
         str:  the queue content (string) if it contains data or an empty string
     """
