@@ -45,7 +45,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -87,7 +87,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -116,7 +116,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 2 FINISHED")
@@ -163,7 +163,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -206,7 +206,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -234,7 +234,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -281,7 +281,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -316,7 +316,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -358,7 +358,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -393,7 +393,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "MOVE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -435,7 +435,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "PLACE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -473,7 +473,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "PLACE FINISHED reached in less than 50 iterations, it was probably not done" )
@@ -511,7 +511,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertGreater(iterationDone, 50, "PLACE FINISHED reached in less than 50 iterations, it was probably not done" )

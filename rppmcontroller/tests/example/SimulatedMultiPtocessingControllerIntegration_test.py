@@ -83,7 +83,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 #simulate package ejected to conveyor belt and came at the end of the belt
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT, False)
             
-            if not (" FEEDBACK " is notification) :
+            if not (" FEEDBACK " in notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ FEEDBACK 1 FINISHED")
