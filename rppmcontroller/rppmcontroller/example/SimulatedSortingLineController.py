@@ -32,6 +32,10 @@ class SimulatedSortingLineController(RevPiPyMachineController):
             self.sortingLineMachine: None
         }
 
+        self.commandFeedback = {
+            self.sortingLineMachine: None
+        }
+
         self.sortingLineSimulator = SortingLineSimpleSimulator(self.sortingLineMachine)
         """Simulator for the Sorting Line"""
 

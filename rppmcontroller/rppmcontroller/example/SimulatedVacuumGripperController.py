@@ -50,6 +50,10 @@ class SimulatedVacuumGripperController(VacuumGripperController):
             self.vacuumGripperMachine: None
         }
 
+        self.commandFeedback = {
+            self.vacuumGripperMachine: None
+        }
+
         self.vaccumGripperSimulator = VacuumGripperSimpleSimulator(self.vacuumGripperMachine)
         """Simulator for the Vacuum Gripper"""
 

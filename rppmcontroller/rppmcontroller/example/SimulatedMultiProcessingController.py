@@ -31,6 +31,10 @@ class SimulatedMultiProcessingController(RevPiPyMachineController):
             self.multiProcessingMachine: None
         }
 
+        self.commandFeedback = {
+            self.multiProcessingMachine: None
+        }
+
         self.multiProcessingSimulator = MultiProcessingSimpleSimulator(self.multiProcessingMachine)
         """Simulator for the Sorting Line"""
 

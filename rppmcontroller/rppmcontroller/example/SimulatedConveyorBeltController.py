@@ -32,6 +32,10 @@ class SimulatedConveyorBeltController(ConveyorBeltController):
             self.conveyorBeltMachine: None
         }
 
+        self.commandFeedback = {
+            self.conveyorBeltMachine: None
+        }
+
         self.conveyorBeltSimulator = ConveyorBeltSimpleSimulator(self.conveyorBeltMachine)
         """Simulator for the Conveyor Belt"""
 
