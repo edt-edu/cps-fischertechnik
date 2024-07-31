@@ -61,7 +61,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not ("FEEDBACK " is notification) :
+            if not (" FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -110,7 +110,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not ("FEEDBACK " is notification) :
+            if not (" FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -156,7 +156,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
 
-            if not ("FEEDBACK " is notification) :
+            if not (" FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -201,7 +201,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
 
-            if not ("FEEDBACK " is notification) :
+            if not (" FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -252,7 +252,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not ("FEEDBACK " is notification) :
+            if not (" FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -302,7 +302,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not ("FEEDBACK " is notification) :
+            if not (" FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
