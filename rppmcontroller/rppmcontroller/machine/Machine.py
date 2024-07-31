@@ -4,6 +4,7 @@ from time import time
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 import logging
 
 
@@ -19,8 +20,11 @@ class Machine:
         self.__id = id1
         self.__dictMap = dictMap
         self.__isExecuting = False
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = False
+        self.__isCommandTimedOut = False
         self.__lastExecutionTime = -math.inf
-        self.__isExecutingCount = 0
+        self.__isExecuting  = 0
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
 
     @property
@@ -43,7 +47,45 @@ class Machine:
         if value:
             self.__lastExecutionTime = time()
 
+    @property
+    @abstractmethod
+    def isCommandSuccessed(self) -> bool:
+        """Returns whether the command successed
 
+        :return bool: the command status
+        """
+        return self.__isCommandSuccessed
+
+    @isCommandSuccessed.setter
+    def isCommandSuccessed(self, value: bool):
+        self.__isCommandSuccessed = value
+
+    @property
+    @abstractmethod
+    def isCommandRunning(self) -> bool:
+        """Returns whether the command Running
+
+        :return bool: the command status
+        """
+        return self.__isCommandRunning
+
+    @isCommandRunning.setter
+    def isCommandRunning(self, value: bool):
+        self.__isCommandRunning = value
+
+    @property
+    @abstractmethod
+    def isCommandTimedOut(self) -> bool:
+        """Returns whether the command TimedOut
+
+        :return bool: the command status
+        """
+        return self.__isCommandTimedOut
+
+    @isCommandTimedOut.setter
+    def isCommandTimedOut(self, value: bool):
+        self.__isCommandTimedOut = value
+    
     
     @property
     def nbMinimumRequiredExecutionCycles(self) -> int:
@@ -120,10 +162,24 @@ class Machine:
                     print("unknown attribute")
         return result
 
-    #TODO implement me
     def feedback(self):
         if self.isExecuting:
             return ExecutionStatus.INACTION
         else:
             return ExecutionStatus.FINISHED
+        
+    def commandFeedback(self):
+        if self.isCommandSuccessed:
+            self.isCommandSuccessed = False #reset variable
+            return CommandExecutionStatus.SUCCESS
+        elif self.isCommandRunning:
+            ###self.isCommandRunning = False #reset variable
+            return CommandExecutionStatus.RUNNING
+        elif self.isCommandTimedOut:
+            self.isCommandTimedOut = False #reset variable
+            return CommandExecutionStatus.ABORTED_TIMEOUT
+        else:
+            return CommandExecutionStatus.FEEDBACK_ERROR
+
+
 

@@ -8,10 +8,22 @@ import logging
 
 class ConveyorBelt(Machine):
 
-    @property
+    @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         #logging.debug(f"Is executing ! {self.__conveyorActForward or self.__conveyorActBackward}")
         return self.__conveyorActForward or self.__conveyorActBackward
+    
+    @Machine.isCommandSuccessed.getter
+    def isCommandSuccessed(self) -> bool:
+        return self.__isCommandSuccessed
+
+    @Machine.isCommandRunning.getter
+    def isCommandRunning(self) -> bool:
+        return self.__isCommandRunning
+    
+    @Machine.isCommandTimedOut.getter
+    def isCommandTimedOut(self) -> bool:
+        return self.__isCommandTimedOut
 
 
     def __init__(self, id1):
@@ -19,6 +31,9 @@ class ConveyorBelt(Machine):
         self.__conveyorSensFeed = self.__conveyorSensSwap = True #True is the value when there is no object in front of the sensor
         self.__conveyorActForward = self.__conveyorActBackward = False
         self.__counter = ImpulseCounter()
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = False
+        self.__isCommandTimedOut = False
         self.current = 0
         self.sensed = False
         dictMap = {RequestedParameter.LIGHTBARRIERFEEDSTATION: self.__conveyorSensSwap,
@@ -82,16 +97,22 @@ class ConveyorBelt(Machine):
         self.__conveyorActForward = True
         if not self.__conveyorSensSwap:
             self.__conveyorActForward = False
+            self.__isCommandRunning = False
+            self.__isCommandSuccessed = True
             return True
         return False
+
 
     def backwardFromAnywhere(self):
         """Move the package from any place on the conveyor to the left sensor"""
         self.__conveyorActBackward = True
         if not self.__conveyorSensFeed:
             self.__conveyorActBackward = False
+            self.__isCommandRunning = False
+            self.__isCommandSuccessed = True
             return True
         return False
+
 
     def forwardLeaveConveyor(self):
         """Move the package from anywhere on the line to the left, until it leaves the conveyor. Then stop the conveyor."""
@@ -100,9 +121,13 @@ class ConveyorBelt(Machine):
         else:
             if self.countSteps() >= 6:
                 self.__conveyorActForward = False
+                self.__isCommandRunning = False
+                self.__isCommandSuccessed = True
+
         if not self.__conveyorSensSwap:
-            self.__counter.counter = 0
+            self.current = 0
             self.arrived = True
+
 
     def backwardLeaveConveyor(self):
         """Move the package from anywhere on the line to the right, until it leaves the conveyor. Then stop the conveyor."""
@@ -111,9 +136,13 @@ class ConveyorBelt(Machine):
         else:
             if self.countSteps() >= 6:
                 self.__conveyorActBackward = False
+                self.__isCommandRunning = False
+                self.__isCommandSuccessed = True
+
         if not self.__conveyorSensFeed:
-            self.__counter.counter = 0
+            self.current = 0
             self.arrived = True
+
 
     def forwardGoto(self, steps: int):
         """Move the package to the right, with a given number of steps
@@ -126,6 +155,9 @@ class ConveyorBelt(Machine):
         if self.current >= steps :
             self.__conveyorActForward = False
             self.current = 0
+            self.__isCommandRunning = False
+            self.__isCommandSuccessed = True
+
 
     def backwardGoto(self, steps: int):
         """Move the package to the left, with a given number of steps
@@ -138,6 +170,9 @@ class ConveyorBelt(Machine):
         if self.current >= steps :
             self.__conveyorActBackward = False
             self.current = 0
+            self.__isCommandRunning = False
+            self.__isCommandSuccessed = True
+
 
     def countSteps(self):
         """Count the number of steps when the conveyor is moving """
@@ -145,13 +180,14 @@ class ConveyorBelt(Machine):
         logging.debug(f"Step counter : {self.current }")
         return self.current 
 
+
     def stop(self):
         """Stop the conveyor"""
         self.__conveyorActForward = self.__conveyorActBackward = False
+        self.__isCommandRunning = False
+        self.__isCommandSuccessed = True
         return None
 
-    def execute(self):
-        pass
 
     def move(self, dir: Direction):
         """Move the package to a given direction until it leaves the conveyor
@@ -161,10 +197,13 @@ class ConveyorBelt(Machine):
             The conveyor will stop after few steps when the package leaves the coveyor.
         """
         self.arrived = False
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = True
         if dir == Direction.FORWARD:
             return lambda: self.forwardLeaveConveyor()
         if dir == Direction.BACKWARD:
             return lambda: self.backwardLeaveConveyor()
+
 
     def gotoconfig(self, dir: Direction, steps: int):
         """Move the package to a given direction with a given number of steps
@@ -174,21 +213,24 @@ class ConveyorBelt(Machine):
 
             There is no control of the position of the package. The conveyor wont stop until it reach the number of steps
         """
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = True
         self.sensed = False
-        self.__counter.counter = 0
         if dir == Direction.FORWARD:
             return lambda: self.forwardGoto(steps)
         if dir == Direction.BACKWARD:
             return lambda: self.backwardGoto(steps)
         else:
             logging.error(f"Invalid direction {dir}")
-            raise ValueError("Invalid direction")
+
 
     def movelb(self, dir: Direction):
         """Move the package to a given direction until it is detected in the station
             Args:
                 dir (Direction) : the direction where to move the package
         """
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = True
         if dir == Direction.FORWARD:
             return lambda: self.forwardFromAnywhere()
         if dir == Direction.BACKWARD:

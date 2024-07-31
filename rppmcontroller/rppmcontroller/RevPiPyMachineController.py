@@ -56,6 +56,7 @@ class RevPiPyMachineController:
         self.currentlyExecuting = {}
         #dict, which keys are the machines, feedback as the values
         self.feedback = {}
+        self.commandFeedback = {}
 
         # read configuration from file
         self.controller_config = {}
@@ -306,8 +307,6 @@ class RevPiPyMachineController:
         for m in self.machines:
             if self.feedback[m] != m.feedback():
                 self.feedback[m] = m.feedback()
-                # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
-                # flow in later real execution in error cases, no problems known so far)
                 if self.currentlyExecuting[m][1] is None:
                     jsonid = 0
                 else:
@@ -316,6 +315,25 @@ class RevPiPyMachineController:
                 f = MachineCommandFeedback("FEEDBACK", jsonid, m.feedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
+                self.outputBuffer.put(j, block=False)
+
+    def createCommandFeedbackOnChange(self) -> None:
+        """Whenever the state of the command changes, feedback is created
+        Also update the self.commandFeedback[m] dictionnary
+        """
+        for m in self.machines:
+            if self.commandFeedback[m] != m.commandFeedback():
+                self.commandFeedback[m] = m.commandFeedback()
+                # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
+                # flow in later real execution in error cases, no problems known so far)
+                if self.currentlyExecuting[m][1] is None:
+                    jsonid = 0
+                else:
+                    jsonid = self.currentlyExecuting[m][1]
+                # append feedback to outputBuffer
+                f = MachineCommandFeedback("COMMAND_FEEDBACK", jsonid, m.commandFeedback().name,  "")
+                j = JSONOutput(m.id, time.time(), f)
+                
                 self.outputBuffer.put(j, block=False)
 
     def start(self):
@@ -350,6 +368,7 @@ class RevPiPyMachineController:
         self.reset()
         # # logging.debug(self.currentlyExecuting)
         self.createFeedbackOnChange()
+        self.createCommandFeedbackOnChange()
         
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
