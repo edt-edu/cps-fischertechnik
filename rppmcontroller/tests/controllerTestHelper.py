@@ -21,7 +21,8 @@ def readNotification(controller : RevPiPyMachineController ) -> str :
         logging.debug(f'notification sent={notificationSent}')
         # msg = JSONParser.parse(notificationSent)            
         # logging.debug(f'notification sent={msg}')
-        return str(notificationSent)
+        if not "COMMAND_FEEDBACK" in notificationSent:
+                    return str(notificationSent)
     else:
         logging.debug(f'no notification sent')
         return ""
