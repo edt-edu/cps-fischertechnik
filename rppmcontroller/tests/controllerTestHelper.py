@@ -16,18 +16,17 @@ def readNotification(controller : RevPiPyMachineController ) -> str :
     Returns:
         str:  the queue content (string) if it contains data or an empty string
     """
-    if controller.outputBuffer.qsize() > 0:
+    while controller.outputBuffer.qsize() > 0:
         notificationSent = controller.outputBuffer.get(block=False)
         logging.debug(f'notification sent={notificationSent}')
         # msg = JSONParser.parse(notificationSent)            
         # logging.debug(f'notification sent={msg}')
-        while "COMMAND_FEEDBACK" in str(notificationSent):
-            notificationSent = controller.outputBuffer.get(block=False)
-            logging.debug(f'notification sent={notificationSent}')
-        return str(notificationSent)
-    else:
-        logging.debug(f'no notification sent')
-        return ""
+        if not "COMMAND_FEEDBACK" in str(notificationSent):
+            logging.debug(f'notification sent and conform ={notificationSent}')
+            return str(notificationSent)
+    
+    logging.debug(f'no notification sent')
+    return ""
 
 def sendMessage(controller : RevPiPyMachineController, machineId : str, message) -> None :
     """ send a message after encoding it as a JSONOutput to the inputBuffer queue
