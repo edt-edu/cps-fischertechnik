@@ -65,7 +65,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if (notification == "") :
+            if not ("FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -119,7 +119,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if (notification == "") :
+            if not ("FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -173,7 +173,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if (notification == "") :
+            if not ("FEEDBACK " is notification) :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ FEEDBACK 1 FINISHED")
