@@ -144,6 +144,7 @@ class SortingLine(Machine):
         return self.__counter.counter
 
     def startOfProcess(self, packageIncoming):
+        self.__isCommandSuccessed = False
         self.__isCommandRunning = True
         if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
             self.__packageOnLine = True
@@ -209,3 +210,5 @@ class SortingLine(Machine):
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
+        self.__isCommandSuccessed = True
+        

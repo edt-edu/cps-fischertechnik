@@ -6,9 +6,21 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 
 class MultiProcessing(Machine):
 
-    @property
+    @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         return self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder
+
+    @Machine.isCommandSuccessed.getter
+    def isCommandSuccessed(self) -> bool:
+        return self.__isCommandSuccessed
+
+    @Machine.isCommandRunning.getter
+    def isCommandRunning(self) -> bool:
+        return self.__isCommandRunning
+    
+    @Machine.isCommandTimedOut.getter
+    def isCommandTimedOut(self) -> bool:
+        return self.__isCommandTimedOut
 
     def __init__(self, id1):
         self.__multiProcessingSensTurntablePosVacuum = self.__multiProcessingSensTurntablePosBelt = False
@@ -27,6 +39,9 @@ class MultiProcessing(Machine):
         self.__multiProcessingActLowerValve = False
         self.__multiProcessingValveOvenDoor = False
         self.__multiProcessingValveFeeder = False
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = False
+        self.__isCommandTimedOut = False
         dictMap = {RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM: self.__multiProcessingSensTurntablePosVacuum,
                    RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT: self.__multiProcessingSensTurntablePosBelt,
                    RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT: self.__multiProcessingSensEndConveyor,
@@ -496,9 +511,13 @@ class MultiProcessing(Machine):
 
         self.processing = True
         if len(actions) <= self.actionDone:
+            self.__isCommandSuccessed = True
+            self.__isCommandRunning = False
             self.processing = False
             self.actionDone = 0
         else:
+            self.__isCommandSuccessed = False
+            self.__isCommandRunning = True
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
 
@@ -508,3 +527,5 @@ class MultiProcessing(Machine):
     def stop(self):
         """ Stop the machine """
         self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
+        self.__isCommandSuccessed = True
+        self.__isCommandRunning = False

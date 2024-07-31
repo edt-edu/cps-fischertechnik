@@ -170,13 +170,15 @@ class Machine:
         
     def commandFeedback(self):
         if self.isCommandSuccessed:
-            self.isCommandSuccessed = False #reset variable
+            #self.isCommandSuccessed = False #reset variable
+            self.isCommandRunning = False #reset variable
             return CommandExecutionStatus.SUCCESS
         elif self.isCommandRunning:
-            ###self.isCommandRunning = False #reset variable
+            #self.isCommandRunning = False #reset variable
             return CommandExecutionStatus.RUNNING
         elif self.isCommandTimedOut:
-            self.isCommandTimedOut = False #reset variable
+            #self.isCommandTimedOut = False #reset variable
+            self.isCommandRunning = False #reset variable
             return CommandExecutionStatus.ABORTED_TIMEOUT
         else:
             return CommandExecutionStatus.FEEDBACK_ERROR
