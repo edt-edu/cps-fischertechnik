@@ -61,9 +61,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not (" FEEDBACK " in notification) :
+            if notification == "":
                 iterationDone += 1
-            else:
+            elif not("COMMAND_FEEDBACK" in notification):
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
@@ -110,9 +110,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not (" FEEDBACK " in notification) :
+            if notification == "":
                 iterationDone += 1
-            else:
+            elif not("COMMAND_FEEDBACK" in notification):
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
@@ -156,9 +156,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
 
-            if not (" FEEDBACK " in notification) :
+            if notification == "":
                 iterationDone += 1
-            else:
+            elif not("COMMAND_FEEDBACK" in notification):
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
@@ -201,9 +201,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
 
-            if not (" FEEDBACK " in notification) :
+            if notification == "":
                 iterationDone += 1
-            else:
+            elif not("COMMAND_FEEDBACK" in notification):
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
@@ -252,9 +252,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not (" FEEDBACK " in notification) :
+            if notification == "":
                 iterationDone += 1
-            else:
+            elif not("COMMAND_FEEDBACK" in notification):
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
@@ -302,9 +302,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
 
-            if not (" FEEDBACK " in notification) :
+            if notification == "":
                 iterationDone += 1
-            else:
+            elif not("COMMAND_FEEDBACK" in notification):
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ FEEDBACK 1 FINISHED")
                 logging.debug(f"COMMAND FINISHED reached in {iterationDone} iterations")
                 endCommandReached = True
