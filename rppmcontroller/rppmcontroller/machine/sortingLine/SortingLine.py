@@ -10,10 +10,22 @@ from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 class SortingLine(Machine):
 
-    @property
+    @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         logging.debug('is executing ' + str(self.__packageOnLine))
         return self.__packageOnLine
+    
+    @Machine.isCommandSuccessed.getter
+    def isCommandSuccessed(self) -> bool:
+        return self.__isCommandSuccessed
+
+    @Machine.isCommandRunning.getter
+    def isCommandRunning(self) -> bool:
+        return self.__isCommandRunning
+    
+    @Machine.isCommandTimedOut.getter
+    def isCommandTimedOut(self) -> bool:
+        return self.__isCommandTimedOut
 
     def __init__(self, id1: str):
         self.current = 0
@@ -21,6 +33,9 @@ class SortingLine(Machine):
         self.__sortingLineSensInputLightBarrier = self.__sortingLineSensMiddleLightBarrier = self.__sortingLineSensWhiteLightBarrier = self.__sortingLineSensBlueLightBarrier = self.__sortingLineSensRedLightBarrier = True
         self.__sortingLineActMotorConveyor = self.__sortingLineActCompressorOn = self.__sortingLineActWhiteEjector = self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = False
         self.__counter = ImpulseCounter()
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = False
+        self.__isCommandTimedOut = False
         dictMap = {RequestedParameter.PULSECOUNTER: self.__counter.counter,
                    RequestedParameter.LIGHTBARRIERINLET: self.__sortingLineSensInputLightBarrier,
                    RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR: self.__sortingLineSensMiddleLightBarrier,
@@ -129,6 +144,7 @@ class SortingLine(Machine):
         return self.__counter.counter
 
     def startOfProcess(self, packageIncoming):
+        self.__isCommandRunning = True
         if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
             self.__packageOnLine = True
             print("packageOnLine True")
@@ -163,6 +179,8 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActBlueEjector = False
+                    self.__isCommandRunning = False
+                    self.__isCommandSuccessed = True
             if self.current > redCounter and color == Color.RED:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
@@ -172,6 +190,8 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActRedEjector = False
+                    self.__isCommandRunning = False
+                    self.__isCommandSuccessed = True
             if self.current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
@@ -181,6 +201,8 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActWhiteEjector = False
+                    self.__isCommandRunning = False
+                    self.__isCommandSuccessed = True
         return lambda: self.eject(color)
 
     def stop(self):
