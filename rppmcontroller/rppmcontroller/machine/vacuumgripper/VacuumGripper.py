@@ -69,8 +69,20 @@ class VacuumGripper(MovingMachine):
         logging.debug(f'{self.actuatorStatusString()}')
         logging.debug(f'called isExecuting({self.id}) = {res} [{self.pc}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
         
-        
         return res
+    
+    #@MovingMachine.isCommandSuccessed.getter
+    #def isCommandSuccessed(self) -> bool:
+    #    return self.__isCommandSuccessed
+    
+    #
+    #@MovingMachine.isCommandRunning.getter
+    #def isCommandRunning(self) -> bool:
+    #    return self.__isCommandRunning
+    #
+    #@MovingMachine.isCommandTimedOut.getter
+    #def isCommandTimedOut(self) -> bool:
+    #    return self.__isCommandTimedOut
 
 
     def __init__(self, id1):
@@ -316,6 +328,7 @@ class VacuumGripper(MovingMachine):
             self.setupFirst = True 
         else:
             self.setupFinishedHelper = True # ask for a counter reset in the main loop
+
         if self.setupFirst:
             logging.debug("setup first True")
             self.setupFirst = False

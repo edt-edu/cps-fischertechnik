@@ -11,11 +11,21 @@ import logging
 # this class should be used for all machines, that have no strict movement path, but can follow various paths
 # examples: Warehouse, 3D Robot
 class MovingMachine(Machine):
-
-    @property
-    @abstractmethod
-    def isExecuting(self) -> bool:
+    @Machine.isExecuting.getter
+    def isExecuting(self):
         pass
+
+    @Machine.isCommandSuccessed.getter
+    def isCommandSuccessed(self) -> bool:
+        return self.__isCommandSuccessed
+
+    @Machine.isCommandRunning.getter
+    def isCommandRunning(self) -> bool:
+        return self.__isCommandRunning
+    
+    @Machine.isCommandTimedOut.getter
+    def isCommandTimedOut(self) -> bool:
+        return self.__isCommandTimedOut
 
     def __init__(self, id1: str, dictMap: dict) -> None:
         """Init for a moving machine, additionally needs a list of places where pick/place operations could be performed
@@ -32,6 +42,10 @@ class MovingMachine(Machine):
         self.start = Position("START", 0, 0, 0)
         self.fin = Position("END", 0, 0, 0)
         self.setupFirst = True
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = False
+        self.__isCommandTimedOut = False
+        
 
     @property
     def setupFinished(self):
@@ -79,6 +93,9 @@ class MovingMachine(Machine):
         :param Position fin: see method generate transferMoveList
         :param list moveList:
         """
+        self.__isCommandSuccessed = False
+        self.__isCommandRunning = True
+
         logging.debug("execute")
         super().execute(start, fin, moveList) # ensure that the nbMinimumRequiredExecutionCycles is updated
 
@@ -126,6 +143,8 @@ class MovingMachine(Machine):
                 # self.__configGoal =  None
                 self.__pc = 0
                 self.__moveList = []
+                self.__isCommandRunning = False
+                self.__isCommandSuccessed = True
 
     @property
     def pc(self) -> int:
