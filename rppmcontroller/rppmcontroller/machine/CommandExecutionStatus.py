@@ -8,3 +8,5 @@ class CommandExecutionStatus(Enum):
     ABORTED = 3
     ABORTED_TIMEOUT = 4
     IGNORED = 5
+    SETUP_RUNNING = 6
+    SETUP_DONE = 7

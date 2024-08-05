@@ -23,6 +23,8 @@ class Machine:
         self.__isCommandSuccessed = False
         self.__isCommandRunning = False
         self.__isCommandTimedOut = False
+        self.__isSetupRunning = False
+        self.__isSetupDone = False
         self.__lastExecutionTime = -math.inf
         self.__isExecuting  = 0
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
@@ -85,6 +87,32 @@ class Machine:
     @isCommandTimedOut.setter
     def isCommandTimedOut(self, value: bool):
         self.__isCommandTimedOut = value
+
+    @property
+    @abstractmethod
+    def isSetupRunning(self) -> bool:
+        """Returns whether the setup is running
+
+        :return bool: the setup status
+        """
+        return self.__isSetupRunning
+
+    @isSetupRunning.setter
+    def isSetupRunning(self, value: bool):
+        self.__isSetupRunning = value
+
+    @property
+    @abstractmethod
+    def isSetupDone(self) -> bool:
+        """Returns whether the setup is Done
+
+        :return bool: the setup status
+        """
+        return self.__isSetupDone
+
+    @isSetupDone.setter
+    def isSetupDone(self, value: bool):
+        self.__isSetupDone = value
     
     
     @property
@@ -170,16 +198,19 @@ class Machine:
         
     def commandFeedback(self):
         if self.isCommandSuccessed:
-            #self.isCommandSuccessed = False #reset variable
             self.isCommandRunning = False #reset variable
             return CommandExecutionStatus.SUCCESS
-        elif self.isCommandRunning:
-            #self.isCommandRunning = False #reset variable
-            return CommandExecutionStatus.RUNNING
         elif self.isCommandTimedOut:
-            #self.isCommandTimedOut = False #reset variable
             self.isCommandRunning = False #reset variable
             return CommandExecutionStatus.ABORTED_TIMEOUT
+        elif self.isSetupDone:
+            self.isSetupRunning = False 
+            self.isSetupDone = False #ensure only one message is sent
+            return CommandExecutionStatus.SETUP_DONE
+        elif self.isSetupRunning:
+            return CommandExecutionStatus.SETUP_RUNNING
+        elif self.isCommandRunning:
+            return CommandExecutionStatus.RUNNING
         else:
             return CommandExecutionStatus.FEEDBACK_ERROR
 

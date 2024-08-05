@@ -70,19 +70,6 @@ class VacuumGripper(MovingMachine):
         logging.debug(f'called isExecuting({self.id}) = {res} [{self.pc}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
         
         return res
-    
-    #@MovingMachine.isCommandSuccessed.getter
-    #def isCommandSuccessed(self) -> bool:
-    #    return self.__isCommandSuccessed
-    
-    #
-    #@MovingMachine.isCommandRunning.getter
-    #def isCommandRunning(self) -> bool:
-    #    return self.__isCommandRunning
-    #
-    #@MovingMachine.isCommandTimedOut.getter
-    #def isCommandTimedOut(self) -> bool:
-    #    return self.__isCommandTimedOut
 
 
     def __init__(self, id1):
@@ -296,8 +283,7 @@ class VacuumGripper(MovingMachine):
     #von execute bereits berücksichtigt
     # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
     # already considered by execute
-    def setup(self):
-        
+    def setup(self):       
         # activate engines toward the sensors if necessary
         self.vacuumActArmOut = self.vacuumActRotLeft = self.vacuumActVerticalDown = False
         t1 = t2 = t3 = False

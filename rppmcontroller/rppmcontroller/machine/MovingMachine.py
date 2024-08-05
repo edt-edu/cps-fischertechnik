@@ -27,6 +27,15 @@ class MovingMachine(Machine):
     def isCommandTimedOut(self) -> bool:
         return self.__isCommandTimedOut
 
+    @Machine.isSetupRunning.getter
+    def isSetupRunning(self) -> bool:
+        return self.__isSetupRunning
+
+    @Machine.isSetupDone.getter
+    def isSetupDone(self) -> bool:
+        return self.__isSetupDone
+
+
     def __init__(self, id1: str, dictMap: dict) -> None:
         """Init for a moving machine, additionally needs a list of places where pick/place operations could be performed
 
@@ -45,6 +54,8 @@ class MovingMachine(Machine):
         self.__isCommandSuccessed = False
         self.__isCommandRunning = False
         self.__isCommandTimedOut = False
+        self.__isSetupRunning = False
+        self.__isSetupDone = False
         
 
     @property
@@ -93,8 +104,6 @@ class MovingMachine(Machine):
         :param Position fin: see method generate transferMoveList
         :param list moveList:
         """
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = True
 
         logging.debug("execute")
         super().execute(start, fin, moveList) # ensure that the nbMinimumRequiredExecutionCycles is updated
@@ -113,11 +122,17 @@ class MovingMachine(Machine):
             logging.debug('setup from execute')
             #self.isExecuting = True
             #self.__setupFinished = self.setup()
+            self.__isSetupRunning = True
             self.setup()
             self.setupFinishedHelper = self._setupFinished
             self._configReached = True
+            self.__isSetupDone = True
+            self.__isSetupRunning = False
         else:
-            logging.debug('processing move list')            
+            logging.debug('processing move list')    
+            self.__isCommandSuccessed = False
+            self.__isSetupDone = False
+            self.__isCommandRunning = True
             if self._configReached:
                 if self.__configGoal is None:
                     logging.debug(f"config reached setup()")
