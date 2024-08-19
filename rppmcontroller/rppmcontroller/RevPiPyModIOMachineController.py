@@ -30,6 +30,26 @@ class RevPiPyModIOMachineController(RevPiPyMachineController):
     def updateValueRead(self, machineType, machineNumber, valName, valDIO, parameter, typeOfValue=Type.BOOLEAN):
         """
         Called by read() in the controller. This function update the machine attribute and send a message via MQTT
+
+        Parameters
+        ----------
+        machineType : str
+            The type of machine associated with the value. Example : VacuumGripper
+    
+        machineNumber : int
+            The position of the machine in the array machines[]. Example: 0
+    
+        valName : str
+            The name of the value as defined in the code of the machine. Example : vacuumSensVerticalEndUp
+        
+        valDIO : str
+            The Digital Input/Output (DIO) port name. Example : dio3_I_1
+        
+        parameter : str
+            The name of the parameter as defined in the documentation of the protocol for the project (in CamelCase). Example : ReferenceSwitchVerticalAxis
+        
+        typeOfValue : Type, optional
+            The type of the value to be updated. Default is Type.BOOLEAN. Possible values are : Type.BOOLEAN, Type.POSITIVEINT32 or Type.NEGATIVEINT32
         """
         valBefore = getattr(self.machines[machineNumber], valName)
         if typeOfValue == Type.POSITIVEINT32:
@@ -46,6 +66,26 @@ class RevPiPyModIOMachineController(RevPiPyMachineController):
     def updateValueWrite(self, machineType, machineNumber, valName, valDIO, parameter):
         """
         Called by write() in the controller. This function update the value on the DIO and send a message via MQTT
+        
+        Parameters
+        ----------
+        machineType : str
+            The type of machine associated with the value. Example : VacuumGripper
+    
+        machineNumber : int
+            The position of the machine in the array machines[]. Example: 0
+    
+        valName : str
+            The name of the value as defined in the code of the machine. Example : vacuumSensVerticalEndUp
+        
+        valDIO : str
+            The Digital Input/Output (DIO) port name. Example : dio3_I_1
+        
+        parameter : str
+            The name of the parameter as defined in the documentation of the protocol for the project (in CamelCase). Example : ReferenceSwitchVerticalAxis
+        
+        typeOfValue : Type, optional
+            The type of the value to be updated. Default is Type.BOOLEAN. Possible values are : Type.BOOLEAN, Type.POSITIVEINT32 or Type.NEGATIVEINT32
         """
         valBefore = getattr(self.rpi.io, valDIO).value
         valAfter = getattr(self.machines[machineNumber], valName)
