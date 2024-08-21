@@ -3,9 +3,9 @@
 ---
 connection:
   # if host is commented, will default to "<hostname>.local"
-  #host: "localhost"
-  command_port: 6001
-  notification_port: 6011
+  host: "localhost"
+  command_port: 6000
+  notification_port: 6010
   # connectionListening: "controller" or "orchestrator"
   connectionListening: "controller"
 
