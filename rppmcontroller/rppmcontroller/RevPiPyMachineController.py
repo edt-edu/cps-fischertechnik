@@ -63,6 +63,8 @@ class RevPiPyMachineController:
             logging.debug(f'reading configuration file {configurationFile}')
             with open(configurationFile, 'r') as file:
                 self.controller_config = yaml.safe_load(file)
+        else:
+            logging.warning(f'configuration file {configurationFile} not found; using default values')
 
         self.host = self.controller_config.get('connection', {}).get('host', socket.gethostname()+ ".local")
         self.command_port =  self.controller_config.get('connection', {}).get('command_port', 6001)

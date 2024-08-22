@@ -3,9 +3,10 @@
 ---
 connection:
   # if host is commented, will default to "<hostname>.local"
-  host: "localhost"
-  command_port: 6000
-  notification_port: 6010
+  # host: "localhost"
+  host: "RevPi103156.local"
+  command_port: 6001
+  notification_port: 6011
   # connectionListening: "controller" or "orchestrator"
   connectionListening: "controller"
 
