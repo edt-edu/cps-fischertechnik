@@ -26,7 +26,7 @@ def listenSocket(host: str, port: int, func: Callable[[socket.socket], None], au
         while nbconnexions < 1 or auto_reconnect:            
             logging.info(f"Listening on {host}:{port} , handled by {func.__name__}() once connected")
             client_socket, _ = server_socket.accept()
-            logging.info(f"Accepted connection from {_}")
+            logging.info(f"Accepted connection on {host}:{port} from {_}")
             nbconnexions = nbconnexions + 1
             
             # self.process_commands(server_socket)

@@ -65,10 +65,11 @@ class VacuumGripper(MovingMachine):
             
             # self.__vacuumActCompressorOn or self.__vacuumActValve or  we have pick command that doesn't finish with an iddle machine
         
-        logging.debug(f'{self.sensorStatusString()}')
-        logging.debug(f'{self.actuatorStatusString()}')
-        logging.debug(f'called isExecuting({self.id}) = {res} [{self.pc}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
-        
+        # log isexcuting and debug info only if message has changed
+        isExecuting_log = f'isExecuting({self.id})={res} | pc={self.pc}/nbMove={self.nbMove()} | Sensors={self.pc}/{self.nbMove()} | Actuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
         
         return res
 
@@ -103,6 +104,7 @@ class VacuumGripper(MovingMachine):
         self.__moveList = None
         self.__pc = 0
         self.configGoal = None
+        self.previous_isExecuting_log = None
 
 
     @property
