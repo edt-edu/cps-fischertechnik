@@ -8,6 +8,7 @@ import os
 from queue import Empty
 import signal
 import socket
+import select
 import sys
 import time
 import inspect
@@ -57,6 +58,10 @@ class RevPiPyMachineController:
         #dict, which keys are the machines, feedback as the values
         self.feedback = {}
 
+        # used to indicate to the notification socket to stop too even if no notification message needs to be send 
+        # use of multiprocessing.Value to cross processes
+        self.brokenCommandSocketDetected = multiprocessing.Value('b', False)
+
         # read configuration from file
         self.controller_config = {}
         if os.path.isfile(configurationFile):
@@ -76,28 +81,37 @@ class RevPiPyMachineController:
     def receiveCommandMessages(self, s: socket.socket) -> None:
         """
         receive command message from the provided socket
+        WARNING: runs in dedicated Process
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "receiveCommandMessages Process"))
 
         isBrokenConnection = False
+        self.brokenCommandSocketDetected.value = False
 
         while not isBrokenConnection:
                 data = s.recv(1024)
                 if data == b'':
                     logging.info("receiveCommandMessages socket connection broken")
                     isBrokenConnection = True
+                    self.brokenCommandSocketDetected.value = True
+                    time.sleep(self.mainLoopDelay) # wait enough before possible connection so that sendNotificationMessages has time to consider the brokenCommandSocketDetected flag
                 else:
                     if not data.isspace():
                         logging.debug(f"Received {data!r}")
                         objdata = JSONReader.read(data)
                         self.inputBuffer.put(objdata)
+        # reset boolean (required if notificationSocket is opened first)
+        self.brokenCommandSocketDetected.value = False
+        
 
     def sendNotificationMessages(self, s: socket.socket) -> None:
         """
         send notification message to the provided socket
+        WARNING: runs in dedicated Process
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "sendNotificationMessages Process"))
-        while True:
+        isBrokenConnection = False
+        while not isBrokenConnection:
             try:
                 if self.outputBuffer.qsize() > 0:
                     logging.debug("self.outputBuffer not empty!!!")
@@ -107,9 +121,23 @@ class RevPiPyMachineController:
                 s.sendall(bytes(message, "utf-8"))
                 logging.debug(messageSend)
             except Empty:
-                logging.debug("nothing in queue to send")
-                time.sleep(self.mainLoopDelay) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
-
+                if self.brokenCommandSocketDetected.value == True:
+                    logging.info(f"sendNotificationMessages socket connection closed - cause: receiveCommandMessages socket connection broken")
+                    s.close()
+                    isBrokenConnection = True
+                else:
+                    readable, writable, exceptional = select.select([s], [s], [s], 0)
+                    if exceptional:
+                        logging.info(f"sendNotificationMessages socket connection broken - cause: exceptional={exceptional}")
+                        isBrokenConnection = True
+                    elif s.fileno() == -1:
+                        logging.info("sendNotificationMessages socket connection broken = cause: fileno() == -1")
+                        isBrokenConnection = True
+                    else:
+                        # logging.debug("nothing in queue to send")
+                        time.sleep(self.mainLoopDelay) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
+        
+                    
 
     def processJson(self, inputBuffer: Queue):
         #maybe output buffer als parameter übergeben wie inputbuffer???
@@ -330,11 +358,11 @@ class RevPiPyMachineController:
         # TODO manage connectinOpening modes : opend by controller or by orchestrator
         # listen for connection and process commandMessages in a dedicated Process
         # start the function socketConnexionHelper.listenSocket("localhost", 8888, self.receiveCommandMessage) in a Process
-        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages]).start()
+        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages, True]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.receiveCommandMessages]).start()
         
         # listen for connection and send notification in a dedicated Process
-        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.notification_port, self.sendNotificationMessages]).start()
+        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.notification_port, self.sendNotificationMessages, True]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.sendNotificationMessages]).start()
         
 
@@ -344,7 +372,7 @@ class RevPiPyMachineController:
             self.mainLoopIteration()
 
     def mainLoopIteration(self):
-        logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
+        #logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
         self.processJson(self.inputBuffer)
         self.read()
         self.exLoop()
