@@ -12,7 +12,7 @@ class SortingLine(Machine):
 
     @property
     def isExecuting(self) -> bool:
-        logging.debug('is executing ' + str(self.__packageOnLine))
+        # logging.debug('is executing ' + str(self.__packageOnLine))
         return self.__packageOnLine
 
     def __init__(self, id1: str):
