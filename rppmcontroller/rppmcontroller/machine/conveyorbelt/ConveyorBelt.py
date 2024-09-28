@@ -77,6 +77,13 @@ class ConveyorBelt(Machine):
     def conveyorCounterValue(self):
         return self.__counter.counter
 
+    def sensorStatusString(self) -> str:
+        return f"[{self.conveyorSensFeed}, {self.conveyorSensSwap}], {self.conveyorSensImpulse}"
+
+    def actuatorStatusString(self) -> str:
+        return f"[{self.conveyorActForward}, {self.conveyorActBackward}]"
+
+
     def forwardFromAnywhere(self):
         """Move the package from any place on the conveyor to the right sensor"""
         self.__conveyorActForward = True
@@ -145,6 +152,10 @@ class ConveyorBelt(Machine):
         logging.debug(f"Step counter : {self.current }")
         return self.current 
 
+
+
+    ### ____________ Functions callable from orchestrator ________________
+    #   function name must be lowercase (cf. RevPiPyMachineController)
     def stop(self):
         """Stop the conveyor"""
         self.__conveyorActForward = self.__conveyorActBackward = False

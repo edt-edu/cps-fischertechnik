@@ -72,7 +72,7 @@ class Machine:
 
         most used for logging and testing purposes
         """
-        return ""
+        return "(not implemented)"
 
     @abstractmethod
     def actuatorStatusString(self) -> str:
@@ -80,7 +80,7 @@ class Machine:
 
         most used for logging and testing purposes
         """
-        return ""
+        return "(not implemented)"
 
 
     def incrementNbMinimumRequiredExecutionCycles(self) -> None:
