@@ -25,13 +25,13 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
     def simulatedRead(self) -> None:        
         if not (self.controlledConveyorBelt.conveyorActForward and self.controlledConveyorBelt.conveyorActBackward):
             # if both conveyorActForward and conveyorActBackward are True -> they cancel each other (no move) 
-            # if moving (either direction) set impulse to 1
+            # if moving (either direction) alternate impulse signal
             if self.controlledConveyorBelt.conveyorActForward:
-                self.controlledConveyorBelt.conveyorSensImpulse = 1
+                self.controlledConveyorBelt.conveyorSensImpulse = not self.controlledConveyorBelt.conveyorSensImpulse
             if self.controlledConveyorBelt.conveyorActBackward:
-                self.controlledConveyorBelt.conveyorSensImpulse = 1
+                self.controlledConveyorBelt.conveyorSensImpulse = not self.controlledConveyorBelt.conveyorSensImpulse
         else:
-            self.controlledConveyorBelt.conveyorSensImpulse = 0
+            self.controlledConveyorBelt.conveyorSensImpulse = False
 
         logging.debug(f"simulatedRead {self.controlledConveyorBelt.sensorStatusString()} ")
 
