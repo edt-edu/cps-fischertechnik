@@ -12,7 +12,7 @@ from rppmcontroller.protocol.MachineCommand import MachineCommand
 import tests.controllerTestHelper as ctHelper
 
 
-class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
+class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         logging.debug("setup called")
@@ -55,11 +55,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
-            if iterationDone%2 == 0:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)            
 
             if (notification == "") :
                 iterationDone += 1
@@ -105,11 +101,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
-            if iterationDone%2 == 0:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
+            
             if (notification == "") :
                 iterationDone += 1
             else:
