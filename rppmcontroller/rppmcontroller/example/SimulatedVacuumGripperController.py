@@ -65,10 +65,13 @@ class SimulatedVacuumGripperController(VacuumGripperController):
             self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
                         level=logging.DEBUG,
                         datefmt='%Y-%m-%d %H:%M:%S')
-    logging.debug('main')
+    handler = logging.FileHandler("logfile.log")
+    logFormatter = logging.Formatter("%(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s")
+    handler.setFormatter(logFormatter)
+    logging.getLogger().addHandler(handler)
     # Start VacuumGripperStreamer app
     root = SimulatedVacuumGripperController("config.yml")
     

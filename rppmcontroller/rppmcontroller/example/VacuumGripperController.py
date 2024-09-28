@@ -100,9 +100,11 @@ class VacuumGripperController(RevPiPyMachineController):
             self.rpi.io.dio1_Counter_9.reset()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+                        level=logging.DEBUG,
+                        datefmt='%Y-%m-%d %H:%M:%S')
     handler = logging.FileHandler("logfile.log")
-    logFormatter = logging.Formatter("%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s")
+    logFormatter = logging.Formatter("%(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s")
     handler.setFormatter(logFormatter)
     logging.getLogger().addHandler(handler)
     # Start VacuumGripperStreamer app
