@@ -27,9 +27,9 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
             # if both conveyorActForward and conveyorActBackward are True -> they cancel each other (no move) 
             # if moving (either direction) alternate impulse signal
             if self.controlledConveyorBelt.conveyorActForward:
-                self.controlledConveyorBelt.conveyorSensImpulse = not self.controlledConveyorBelt.conveyorSensImpulse
+                self.controlledConveyorBelt.conveyorSensImpulse += 1
             if self.controlledConveyorBelt.conveyorActBackward:
-                self.controlledConveyorBelt.conveyorSensImpulse = not self.controlledConveyorBelt.conveyorSensImpulse
+                self.controlledConveyorBelt.conveyorSensImpulse += 1
         else:
             self.controlledConveyorBelt.conveyorSensImpulse = False
 

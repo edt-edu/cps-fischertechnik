@@ -10,8 +10,16 @@ class ConveyorBelt(Machine):
 
     @property
     def isExecuting(self) -> bool:
+        res = self.__conveyorActForward or self.__conveyorActBackward
         #logging.debug(f"Is executing ! {self.__conveyorActForward or self.__conveyorActBackward}")
-        return self.__conveyorActForward or self.__conveyorActBackward
+
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
+
+        return res
 
 
     def __init__(self, id1):
@@ -32,6 +40,7 @@ class ConveyorBelt(Machine):
         self.arrived = False
         self.once = True
         self.__isExecutingCount = 0
+        self.previous_isExecuting_log = None
 
     @property
     def conveyorSensFeed(self) -> bool:
@@ -149,7 +158,7 @@ class ConveyorBelt(Machine):
     def countSteps(self):
         """Count the number of steps when the conveyor is moving """
         self.current  = self.current + self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
-        logging.debug(f"Step counter : {self.current }")
+        # logging.debug(f"Step counter : {self.current }")
         return self.current 
 
 
@@ -164,7 +173,7 @@ class ConveyorBelt(Machine):
     def execute(self):
         pass
 
-    def move(self, dir: Direction):
+    def move_out(self, dir: Direction):
         """Move the package to a given direction until it leaves the conveyor
             Args:
                 dir (Direction) : the direction where to move the package
@@ -177,8 +186,8 @@ class ConveyorBelt(Machine):
         if dir == Direction.BACKWARD:
             return lambda: self.backwardLeaveConveyor()
 
-    def gotoconfig(self, dir: Direction, steps: int):
-        """Move the package to a given direction with a given number of steps
+    def move_nb_steps(self, dir: Direction, steps: int):
+        """Move the conveyor belt to a given direction with a given number of steps
             Args:
                 dir (Direction) : the direction where to move the package
                 steps (int) : the number of steps you want to move the package
@@ -195,8 +204,8 @@ class ConveyorBelt(Machine):
             logging.error(f"Invalid direction {dir}")
             raise ValueError("Invalid direction")
 
-    def movelb(self, dir: Direction):
-        """Move the package to a given direction until it is detected in the station
+    def move_to_sensor(self, dir: Direction):
+        """Move the package to a given direction until it is detected by the destination sensor
             Args:
                 dir (Direction) : the direction where to move the package
         """
