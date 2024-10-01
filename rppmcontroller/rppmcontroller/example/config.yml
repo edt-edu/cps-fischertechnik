@@ -3,12 +3,12 @@
 ---
 connection:
   # if host is commented, will default to "<hostname>.local"
-  # host: "localhost"
-  host: "RevPi103156.local"
+  host: "localhost"
+  # host: "RevPi103156.local"
   command_port: 6001
   notification_port: 6011
   # connectionListening: "controller" or "orchestrator"
   connectionListening: "controller"
 
 controller:
-  mainLoopDelay: 0.25
+  mainLoopDelay: 1.0
