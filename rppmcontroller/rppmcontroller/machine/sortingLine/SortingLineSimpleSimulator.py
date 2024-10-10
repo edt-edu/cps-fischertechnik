@@ -20,10 +20,10 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         return self.__controlledSortingLine
     
     def simulatedRead(self) -> None:        
-        logging.debug(f"simulatedRead {self.controlledSortingLine.sensorStatusString()} ")
+        logging.debug(f"simulatedRead  {self.controlledSortingLine.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
-        logging.debug(f"simulatedWrite {self.controlledSortingLine.sensorStatusString()} ")
+        logging.debug(f"simulatedWrite {self.controlledSortingLine.actuatorStatusString()} ")
 
     def simulatedReset(self) -> None:
         pass

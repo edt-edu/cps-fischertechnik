@@ -128,6 +128,14 @@ class SortingLine(Machine):
     def sortingLineCounterValue(self):
         return self.__counter.counter
 
+
+    def sensorStatusString(self) -> str:
+        return f"[{self.sortingLineSensInputLightBarrier}, {self.sortingLineSensMiddleLightBarrier}], [{self.sortingLineSensWhiteLightBarrier}, {self.sortingLineSensBlueLightBarrier}, {self.sortingLineSensRedLightBarrier}], {self.sortingLineSensImpulseCounterRaw}"
+
+    def actuatorStatusString(self) -> str:
+        return f"{self.sortingLineActMotorConveyor}, {self.sortingLineActCompressorOn}, [{self.sortingLineActWhiteEjector}, {self.sortingLineActRedEjector}, {self.sortingLineActBlueEjector}]"
+ 
+
     def startOfProcess(self, packageIncoming):
         if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
             self.__packageOnLine = True

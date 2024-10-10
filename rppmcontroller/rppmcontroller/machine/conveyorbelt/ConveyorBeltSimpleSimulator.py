@@ -33,7 +33,7 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
         else:
             self.controlledConveyorBelt.conveyorSensImpulse = False
 
-        logging.debug(f"simulatedRead {self.controlledConveyorBelt.sensorStatusString()} ")
+        logging.debug(f"simulatedRead  {self.controlledConveyorBelt.sensorStatusString()} ")
 
 
     def simulatedWrite(self) -> None:
