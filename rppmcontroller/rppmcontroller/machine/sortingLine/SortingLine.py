@@ -139,10 +139,10 @@ class SortingLine(Machine):
     def startOfProcess(self, packageIncoming):
         if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
             self.__packageOnLine = True
-            print("packageOnLine True")
+            logging.debug("packageOnLine True (1)")
         if self.__packageOnLine or packageIncoming:
             self.__packageOnLine = True
-            print("packageOnLine True")
+            logging.debug("packageOnLine True (2)")
             self.__sortingLineActMotorConveyor = True
             if not self.__sortingLineSensMiddleLightBarrier:
                 logging.debug('set count steps true')
@@ -195,3 +195,4 @@ class SortingLine(Machine):
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
+        self.__packageOnLine = False

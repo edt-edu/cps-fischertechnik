@@ -15,11 +15,21 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         """
         self.__controlledSortingLine = controlledSortingLine
 
+        #True is the value when there is no object in front of light sensors
+        self.controlledSortingLine.sortingLineSensRedLightBarrier = True
+        self.controlledSortingLine.sortingLineSensWhiteLightBarrier = True
+        self.controlledSortingLine.sortingLineSensBlueLightBarrier = True
+        self.controlledSortingLine.sortingLineSensInputLightBarrier = True
+        self.controlledSortingLine.sortingLineSensMiddleLightBarrier = True
+
     @property
     def controlledSortingLine(self):
         return self.__controlledSortingLine
     
-    def simulatedRead(self) -> None:        
+    def simulatedRead(self) -> None:   
+        # if moving increase counter
+        if self.controlledSortingLine.sortingLineActMotorConveyor:
+            self.controlledSortingLine.sortingLineSensImpulseCounterRaw += 1   
         logging.debug(f"simulatedRead  {self.controlledSortingLine.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
