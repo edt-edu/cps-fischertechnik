@@ -1,3 +1,4 @@
+#from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
 
 from rppmcontroller.machine.Machine import Machine
@@ -10,13 +11,14 @@ from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 class SortingLine(Machine):
 
+    #TODO self.once: implement reset possibility from execute
+
     @property
     def isExecuting(self) -> bool:
-        # logging.debug('is executing ' + str(self.__packageOnLine))
+        logging.debug('is executing ' + str(self.__packageOnLine))
         return self.__packageOnLine
 
     def __init__(self, id1: str):
-        self.current = 0
         self.__sortingLineSensImpulseCounterRaw = 0
         self.__sortingLineSensInputLightBarrier = self.__sortingLineSensMiddleLightBarrier = self.__sortingLineSensWhiteLightBarrier = self.__sortingLineSensBlueLightBarrier = self.__sortingLineSensRedLightBarrier = True
         self.__sortingLineActMotorConveyor = self.__sortingLineActCompressorOn = self.__sortingLineActWhiteEjector = self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = False
@@ -35,6 +37,7 @@ class SortingLine(Machine):
         super().__init__(id1, dictMap)
 
         self.__packageOnLine = self.__packageCountSteps = False
+        self.once = True
 
     @property
     def sortingLineSensImpulseCounterRaw(self):
@@ -128,7 +131,6 @@ class SortingLine(Machine):
     def sortingLineCounterValue(self):
         return self.__counter.counter
 
-
     def sensorStatusString(self) -> str:
         return f"[{self.sortingLineSensInputLightBarrier}, {self.sortingLineSensMiddleLightBarrier}], [{self.sortingLineSensWhiteLightBarrier}, {self.sortingLineSensBlueLightBarrier}, {self.sortingLineSensRedLightBarrier}], {self.sortingLineSensImpulseCounterRaw}"
 
@@ -136,33 +138,31 @@ class SortingLine(Machine):
         return f"{self.sortingLineActMotorConveyor}, {self.sortingLineActCompressorOn}, [{self.sortingLineActWhiteEjector}, {self.sortingLineActRedEjector}, {self.sortingLineActBlueEjector}]"
  
 
+
     def startOfProcess(self, packageIncoming):
         if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
             self.__packageOnLine = True
-            logging.debug("packageOnLine True (1)")
+            print("packageOnLine True")
         if self.__packageOnLine or packageIncoming:
             self.__packageOnLine = True
-            logging.debug("packageOnLine True (2)")
+            print("packageOnLine True")
             self.__sortingLineActMotorConveyor = True
             if not self.__sortingLineSensMiddleLightBarrier:
                 logging.debug('set count steps true')
                 self.__packageCountSteps = True
 
     def eject(self, color: Color):
-        logging.debug('eject loop ' + str(color))
-        if  not (color == Color.BLUE or color == Color.RED or color == Color.WHITE):
-            raise ValueError(f"{color} is not a supported color")
+        logging.debug('eject ' + str(color))
         whiteCounter = 1
-        redCounter = 3
-        blueCounter = 5
-        self.current = self.current + self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
-        logging.debug(f" current counter {self.current}")
-        if not self.__packageCountSteps :
+        redCounter = 7
+        blueCounter = 12
+        current = self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        if not self.__packageCountSteps and self.once:
             self.startOfProcess(True)
             if not self.__packageCountSteps:
-                self.current = 0
+                self.__counter.counter = 0
         else:
-            if self.current > blueCounter and color == Color.BLUE:
+            if current > blueCounter and color == color.BLUE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActBlueEjector = True
@@ -171,16 +171,22 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActBlueEjector = False
-            if self.current > redCounter and color == Color.RED:
+                    self.once = False
+                    #return
+            if current > redCounter and color == Color.RED:
+                logging.debug('red ejector out!!!')
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActRedEjector = True
                 if not self.__sortingLineSensRedLightBarrier:
-                    self.__packageOnLine = self.__packageCountSteps= False
+                    self.__packageOnLine = False
+                    self.__packageCountSteps = False
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActRedEjector = False
-            if self.current > whiteCounter and color == Color.WHITE:
+                    self.once = False
+                    #return
+            if current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActWhiteEjector = True
@@ -189,6 +195,8 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActWhiteEjector = False
+                    self.once = False
+                    #return
         return lambda: self.eject(color)
 
     def stop(self):
