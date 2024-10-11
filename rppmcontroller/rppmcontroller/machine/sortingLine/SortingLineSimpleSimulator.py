@@ -26,13 +26,14 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
     def controlledSortingLine(self):
         return self.__controlledSortingLine
     
-    def simulatedRead(self) -> None:   
-        # if moving increase counter
-        if self.controlledSortingLine.sortingLineActMotorConveyor:
-            self.controlledSortingLine.sortingLineSensImpulseCounterRaw += 1   
+    def simulatedRead(self) -> None:    
         logging.debug(f"simulatedRead  {self.controlledSortingLine.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
+        # if moving increase counter
+        if self.controlledSortingLine.sortingLineActMotorConveyor:
+            self.controlledSortingLine.sortingLineSensImpulseCounterRaw += 1  
+            
         logging.debug(f"simulatedWrite {self.controlledSortingLine.actuatorStatusString()} ")
 
     def simulatedReset(self) -> None:
