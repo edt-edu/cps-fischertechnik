@@ -15,7 +15,14 @@ class SortingLine(Machine):
 
     @property
     def isExecuting(self) -> bool:
-        logging.debug('is executing ' + str(self.__packageOnLine))
+        res = self.__packageOnLine
+
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
+
         return self.__packageOnLine
 
     def __init__(self, id1: str):
@@ -38,6 +45,8 @@ class SortingLine(Machine):
 
         self.__packageOnLine = self.__packageCountSteps = False
         self.once = True
+
+        self.previous_isExecuting_log = None # 
 
     @property
     def sortingLineSensImpulseCounterRaw(self):
