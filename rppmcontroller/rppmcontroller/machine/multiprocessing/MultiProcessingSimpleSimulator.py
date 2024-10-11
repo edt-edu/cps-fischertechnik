@@ -20,10 +20,10 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
         return self.__controlledMutiProcessing
     
     def simulatedRead(self) -> None:        
-        logging.debug(f"simulatedRead {self.controlledMultiProcessing.sensorStatusString()} ")
+        logging.debug(f"simulatedRead  {self.controlledMultiProcessing.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
-        logging.debug(f"simulatedWrite {self.controlledMultiProcessing.sensorStatusString()} ")
+        logging.debug(f"simulatedWrite {self.controlledMultiProcessing.actuatorStatusString()} ")
 
     def simulatedReset(self) -> None:
         pass

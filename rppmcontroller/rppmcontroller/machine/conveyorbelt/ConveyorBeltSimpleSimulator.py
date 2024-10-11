@@ -14,7 +14,7 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
             controlledConveyorBelt (ConveyorBelt): ConveyorBelt that is connected to this simulator
         """
         self.__controlledConveyorBelt = controlledConveyorBelt
-        #True is the value when there is no object in front of the sensors
+        #True is the value when there is no object in front of light sensors
         self.controlledConveyorBelt.conveyorSensSwap = True
         self.controlledConveyorBelt.conveyorSensFeed = True
 
@@ -23,6 +23,10 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
         return self.__controlledConveyorBelt
     
     def simulatedRead(self) -> None:        
+        logging.debug(f"simulatedRead  {self.controlledConveyorBelt.sensorStatusString()} ")
+
+
+    def simulatedWrite(self) -> None:
         if not (self.controlledConveyorBelt.conveyorActForward and self.controlledConveyorBelt.conveyorActBackward):
             # if both conveyorActForward and conveyorActBackward are True -> they cancel each other (no move) 
             # if moving (either direction) alternate impulse signal
@@ -30,13 +34,6 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
                 self.controlledConveyorBelt.conveyorSensImpulse += 1
             if self.controlledConveyorBelt.conveyorActBackward:
                 self.controlledConveyorBelt.conveyorSensImpulse += 1
-        else:
-            self.controlledConveyorBelt.conveyorSensImpulse = False
-
-        logging.debug(f"simulatedRead {self.controlledConveyorBelt.sensorStatusString()} ")
-
-
-    def simulatedWrite(self) -> None:
         logging.debug(f"simulatedWrite {self.controlledConveyorBelt.actuatorStatusString()} ")
 
     def simulatedReset(self) -> None:

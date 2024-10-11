@@ -15,15 +15,26 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         """
         self.__controlledSortingLine = controlledSortingLine
 
+        #True is the value when there is no object in front of light sensors
+        self.controlledSortingLine.sortingLineSensRedLightBarrier = True
+        self.controlledSortingLine.sortingLineSensWhiteLightBarrier = True
+        self.controlledSortingLine.sortingLineSensBlueLightBarrier = True
+        self.controlledSortingLine.sortingLineSensInputLightBarrier = True
+        self.controlledSortingLine.sortingLineSensMiddleLightBarrier = True
+
     @property
     def controlledSortingLine(self):
         return self.__controlledSortingLine
     
-    def simulatedRead(self) -> None:        
-        logging.debug(f"simulatedRead {self.controlledSortingLine.sensorStatusString()} ")
+    def simulatedRead(self) -> None:    
+        logging.debug(f"simulatedRead  {self.controlledSortingLine.sensorStatusString()} ")
 
     def simulatedWrite(self) -> None:
-        logging.debug(f"simulatedWrite {self.controlledSortingLine.sensorStatusString()} ")
+        # if moving increase counter
+        if self.controlledSortingLine.sortingLineActMotorConveyor:
+            self.controlledSortingLine.sortingLineSensImpulseCounterRaw += 1  
+
+        logging.debug(f"simulatedWrite {self.controlledSortingLine.actuatorStatusString()} ")
 
     def simulatedReset(self) -> None:
         pass
@@ -44,5 +55,5 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         else :
             logging.warning("Wrong parameter in fakeSensor function")
 
-    def getCounter(self):
-        return self.controlledSortingLine.current
+    def getCounter(self) -> int:
+        return self.controlledSortingLine.sortingLineCounterValue

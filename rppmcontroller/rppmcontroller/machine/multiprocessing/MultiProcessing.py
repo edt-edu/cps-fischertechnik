@@ -246,6 +246,20 @@ class MultiProcessing(Machine):
         self.__multiProcessingValveFeeder = value
 
 
+    def sensorStatusString(self) -> str:
+        return f"TT[{self.multiProcessingSensTurntablePosVacuum}, {self.multiProcessingSensTurntablePosBelt}, {self.multiProcessingSensTurntablePosSaw}], " + \
+            f"LB[{self.multiProcessingSensEndConveyor}, {self.multiProcessingSensOven}], " + \
+            f"VG[{self.multiProcessingSensVacuumGripperAtTurntable}, {self.multiProcessingSensVacuumGripperAtOven}], " + \
+            f"OF[{self.multiProcessingSensOvenFeederIn}, {self.multiProcessingSensOvenFeederOut}]" 
+
+    def actuatorStatusString(self) -> str:
+        return f"TT[{self.multiProcessingActRotClockwise}, {self.multiProcessingActRotCounterclockwise}], " + \
+            f"{self.multiProcessingActConveyorForward}, {self.multiProcessingActSaw}, " + \
+            f"O[{self.multiProcessingActOvenInward}, {self.multiProcessingActOvenOutward}], " + \
+            f"VG[{self.__multiProcessingActGripperToOven}, {self.__multiProcessingActGripperToTurntable}], " + \
+            f"{self.__multiProcessingOvenLight}, {self.__multiProcessingCompressor}, {self.__multiProcessingValveVacuum}, {self.__multiProcessingActLowerValve},{self.__multiProcessingValveOvenDoor}, {self.__multiProcessingValveFeeder}"
+ 
+
     ###____________ Turntable and Saw_______________
     def moveTurntableToSaw(self):
         """Rotate the turntable to the saw"""
