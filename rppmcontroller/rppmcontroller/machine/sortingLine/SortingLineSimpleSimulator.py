@@ -33,7 +33,7 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         # if moving increase counter
         if self.controlledSortingLine.sortingLineActMotorConveyor:
             self.controlledSortingLine.sortingLineSensImpulseCounterRaw += 1  
-            
+
         logging.debug(f"simulatedWrite {self.controlledSortingLine.actuatorStatusString()} ")
 
     def simulatedReset(self) -> None:
@@ -55,5 +55,5 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         else :
             logging.warning("Wrong parameter in fakeSensor function")
 
-    def getCounter(self):
-        return self.controlledSortingLine.current
+    def getCounter(self) -> int:
+        return self.controlledSortingLine.sortingLineCounterValue
