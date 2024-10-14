@@ -161,12 +161,12 @@ class SortingLine(Machine):
                 self.__packageCountSteps = True
 
     def eject(self, color: Color):
-        logging.debug('eject ' + str(color))
-        whiteCounter = 1
-        redCounter = 7
-        blueCounter = 12
+        whiteCounter = 2
+        redCounter = 11
+        blueCounter = 20
         current = self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
-        if not self.__packageCountSteps and self.once:
+        logging.debug(f'eject color={str(color)}, current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, once={self.once}')
+        if not self.__packageCountSteps : # and self.once:
             self.startOfProcess(True)
             if not self.__packageCountSteps:
                 self.__counter.counter = 0
@@ -180,7 +180,7 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActBlueEjector = False
-                    self.once = False
+                    # self.once = False
                     #return
             if current > redCounter and color == Color.RED:
                 logging.debug('red ejector out!!!')
@@ -193,7 +193,7 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActRedEjector = False
-                    self.once = False
+                    # self.once = False
                     #return
             if current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
@@ -204,7 +204,7 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActWhiteEjector = False
-                    self.once = False
+                    # self.once = False
                     #return
         return lambda: self.eject(color)
 
@@ -213,4 +213,6 @@ class SortingLine(Machine):
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
         self.__packageOnLine = False
-        self.once = False
+        self.__packageCountSteps = False
+        # self.once = True
+        self.__counter.counter = 0
