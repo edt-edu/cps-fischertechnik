@@ -213,3 +213,4 @@ class SortingLine(Machine):
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
         self.__packageOnLine = False
+        self.once = False
