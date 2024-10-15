@@ -18,12 +18,18 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
         self.controlledConveyorBelt.conveyorSensSwap = True
         self.controlledConveyorBelt.conveyorSensFeed = True
 
+        self.previous_simulatedReadLog = None
+        self.previous_simulatedWriteLog = None
+
     @property
     def controlledConveyorBelt(self):
         return self.__controlledConveyorBelt
     
-    def simulatedRead(self) -> None:        
-        logging.debug(f"simulatedRead  {self.controlledConveyorBelt.sensorStatusString()} ")
+    def simulatedRead(self) -> None:  
+        simulatedReadLog = f"simulatedRead  {self.controlledConveyorBelt.sensorStatusString()} "
+        if simulatedReadLog != self.previous_simulatedReadLog :
+            logging.debug(simulatedReadLog)
+            self.previous_simulatedReadLog = simulatedReadLog      
 
 
     def simulatedWrite(self) -> None:
@@ -34,7 +40,12 @@ class ConveyorBeltSimpleSimulator(MachineSimpleSimulator):
                 self.controlledConveyorBelt.conveyorSensImpulse += 1
             if self.controlledConveyorBelt.conveyorActBackward:
                 self.controlledConveyorBelt.conveyorSensImpulse += 1
-        logging.debug(f"simulatedWrite {self.controlledConveyorBelt.actuatorStatusString()} ")
+        
+        
+        simulatedWriteLog = f"simulatedWrite  {self.controlledConveyorBelt.sensorStatusString()} "
+        if simulatedWriteLog != self.previous_simulatedWriteLog :
+            logging.debug(simulatedWriteLog)
+            self.previous_simulatedWriteLog = simulatedWriteLog 
 
     def simulatedReset(self) -> None:
         pass
