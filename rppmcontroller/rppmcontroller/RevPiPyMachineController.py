@@ -84,7 +84,7 @@ class RevPiPyMachineController:
         WARNING: runs in dedicated Process
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "receiveCommandMessages Process"))
-
+        socket_list.append(s)
         isBrokenConnection = False
         self.brokenCommandSocketDetected.value = False
 
@@ -96,7 +96,9 @@ class RevPiPyMachineController:
                     self.brokenCommandSocketDetected.value = True
                     time.sleep(self.mainLoopDelay) # wait enough before possible connection so that sendNotificationMessages has time to consider the brokenCommandSocketDetected flag
                 else:
-                    if not data.isspace():
+                    if data.startswith(b'WATCHDOG'):
+                        logging.info(f"IGNORED Received {data!r}")
+                    elif not data.isspace():
                         logging.debug(f"Received {data!r}")
                         objdata = JSONReader.read(data)
                         self.inputBuffer.put(objdata)
@@ -110,6 +112,7 @@ class RevPiPyMachineController:
         WARNING: runs in dedicated Process
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "sendNotificationMessages Process"))
+        socket_list.append(s)
         isBrokenConnection = False
         while not isBrokenConnection:
             try:
@@ -386,7 +389,13 @@ class RevPiPyMachineController:
             m.decrementNbMinimumRequiredExecutionCycles()
         time.sleep(self.mainLoopDelay)
 
+# Create an empty list
+socket_list : List[socket.socket] = []
+
 def signal_custom_handler(sig, frame, name: str):
     process_id = os.getpid()
-    logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).")    
+    logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).") 
+    for s in socket_list:
+        logging.info(f"Closing socket {s}") 
+        s.close()  
     sys.exit(0)
