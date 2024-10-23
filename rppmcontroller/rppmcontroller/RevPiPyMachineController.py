@@ -96,7 +96,7 @@ class RevPiPyMachineController:
                     self.brokenCommandSocketDetected.value = True
                     time.sleep(self.mainLoopDelay) # wait enough before possible connection so that sendNotificationMessages has time to consider the brokenCommandSocketDetected flag
                 else:
-                    if data.startswith(b'WATCHDOG'):
+                    if data.decode().strip('\n').startswith('WATCHDOG'):
                         logging.info(f"IGNORED Received {data!r}")
                     elif not data.isspace():
                         logging.debug(f"Received {data!r}")
