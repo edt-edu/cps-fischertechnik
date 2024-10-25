@@ -68,12 +68,12 @@ class SimulatedVacuumGripperController(VacuumGripperController):
 
         currentInternalStatus = self.vacuumGripperMachine.internalStatus()
         if self.previousInternalStatus != currentInternalStatus:
-            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.OUTPUT ,self.vacuumGripperMachine.internalStatus())
+            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INTERNAL ,self.vacuumGripperMachine.internalStatus())
         self.previousInternalStatus = currentInternalStatus
         
         currentOutput = self.vacuumGripperMachine.outputStatus()
         if self.previousOuputStatus != currentOutput:
-            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INTERNAL ,self.vacuumGripperMachine.outputStatus())
+            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.OUTPUT ,self.vacuumGripperMachine.outputStatus())
         self.previousOuputStatus = currentOutput
    
     def reset(self) -> None:

@@ -55,13 +55,15 @@ class VacuumGripper(MovingMachine):
                 robotPlaceConf4,
                 robotPlaceConf5]
 
-    @property
-    def isExecuting(self) -> bool:
-
-        res = self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
+    def __isExecuting(self) -> bool:
+        return self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.nbMinimumRequiredExecutionCycles != 0 or \
             self.hasRemainingMove()
+    @property
+    def isExecuting(self) -> bool:
+
+        res = self.__isExecuting()
             
             # self.__vacuumActCompressorOn or self.__vacuumActValve or  we have pick command that doesn't finish with an iddle machine
         
@@ -247,10 +249,24 @@ class VacuumGripper(MovingMachine):
         return status
 
     def outputStatus(self) -> Dict[str, Any]:
-        return super().outputStatus()
+        
+        status = {
+            "vacuumActVerticalUp": self.__vacuumActVerticalUp,
+            "vacuumActVerticalDown": self.__vacuumActVerticalDown,
+            "vacuumActRotRight": self.__vacuumActRotRight,
+            "vacuumActRotLeft": self.__vacuumActRotLeft,
+            "vacuumActArmOut": self.__vacuumActArmOut,
+            "vacuumActArmIn": self.__vacuumActArmIn,
+            "vacuumActCompressorOn": self.__vacuumActCompressorOn,
+            "vacuumActValve": self.__vacuumActValve,
+        }
+        return status
     
     def internalStatus(self) -> Dict[str, Any]:
-        return super().internalStatus()
+        status = {
+            "isExecuting": self.__isExecuting(),
+        }
+        return status
 
     def executeHelper(self) -> Tuple[bool, bool, bool]:
         """
