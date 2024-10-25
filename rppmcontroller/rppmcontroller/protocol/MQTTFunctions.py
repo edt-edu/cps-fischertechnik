@@ -4,6 +4,10 @@ import paho.mqtt.client as mqtt
 import json
 import logging
 
+from rppmcontroller.machine.StatusKind import StatusKind
+
+from typing import Any, Dict
+
 class MQTTFunctions:
     def __init__(self, server, port, keepalive):
         self.server = server
@@ -48,5 +52,27 @@ class MQTTFunctions:
             self.client.publish(topic, json.dumps(payload),2,True) #With QOS2 and message retention 
             logging.debug(f"Published message to topic {topic}: {payload}")
 
+        except Exception as e:
+            logging.error(f"Failed to publish message: {e}")
+
+    def publishStatus(self, plcId : str, machineType : str, machineId : str, statusKind : StatusKind, status : Dict[str, Any], parent_key = ''):
+        """Publish the status dict in dedicated topics
+        """
+        try:
+            if status:
+                if not self.connected:
+                    self.connect()
+                # recursively compute topics and send status in these topics
+                for k, v in status.items():
+                    full_key = f"{parent_key}/{k}" if parent_key else k
+                    if isinstance(v, dict):
+                        self.publishStatus( plcId, machineType, machineId, statusKind, v, full_key)
+                    else:
+                        topic = f"{plcId}/{machineType}/{machineId}/{statusKind.name.lower()}/{full_key}"
+                        payload = {
+                            "value": v,
+                            "timestamp": datetime.now(timezone.utc).isoformat() + 'Z'  # Current timestamp in ISO 8601 format
+                        }
+                        self.client.publish(topic, json.dumps(payload),2,True) #With QOS2 and message retention
         except Exception as e:
             logging.error(f"Failed to publish message: {e}")

@@ -1,6 +1,8 @@
 
 # Configuration for VacuumGripperController
 ---
+plc:
+  id: "LocalDevPLC"
 connection:
   # if host is commented, will default to "<hostname>.local"
   host: "localhost"
@@ -12,3 +14,9 @@ connection:
 
 controller:
   mainLoopDelay: 1.0
+
+mqtt:
+  server: "localhost"
+  port: 1883
+  keepalive: 60
+

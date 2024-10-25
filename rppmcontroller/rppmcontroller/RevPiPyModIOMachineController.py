@@ -25,7 +25,6 @@ class RevPiPyModIOMachineController(RevPiPyMachineController):
         self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
 
         self.machines = []
-        self.MQTT : MQTTFunctions
 
     def updateValueRead(self, machineType, machineNumber, valName, valDIO, parameter, typeOfValue=Type.BOOLEAN):
         """

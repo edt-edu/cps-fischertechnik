@@ -13,7 +13,7 @@ import sys
 import time
 import inspect
 import yaml
-from typing import List
+from typing import Any, Dict, List
 
 from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
@@ -21,6 +21,7 @@ from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
+from rppmcontroller.protocol.MQTTFunctions import MQTTFunctions
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
@@ -58,6 +59,16 @@ class RevPiPyMachineController:
         #dict, which keys are the machines, feedback as the values
         self.feedback = {}
 
+
+        self.previousInputStatus : Dict[str, Any]= {}
+        """Dict resulting from Machine.inputStatus(), used to detect changes in the input"""
+
+        self.previousOuputStatus : Dict[str, Any]= {}
+        """Dict resulting from Machine.outputStatus(), used to detect changes in the output"""
+
+        self.previousInternalStatus : Dict[str, Any]= {}
+        """Dict resulting from Machine.internalStatus(), used to detect changes in the internal status"""
+
         # used to indicate to the notification socket to stop too even if no notification message needs to be send 
         # use of multiprocessing.Value to cross processes
         self.brokenCommandSocketDetected = multiprocessing.Value('b', False)
@@ -71,12 +82,16 @@ class RevPiPyMachineController:
         else:
             logging.warning(f'configuration file {configurationFile} not found; using default values')
 
+        self.plcId = self.controller_config.get('plc', {}).get('id', "PLC")
         self.host = self.controller_config.get('connection', {}).get('host', socket.gethostname()+ ".local")
         self.command_port =  self.controller_config.get('connection', {}).get('command_port', 6001)
         self.notification_port =  self.controller_config.get('connection', {}).get('notification_port', 6011)
         self.mainLoopDelay =   self.controller_config.get('controller', {}).get('mainLoopDelay', 0.25)
 
         
+        self.MQTT = MQTTFunctions(self.controller_config.get('mqtt', {}).get('server', 'localhost'),
+                                  self.controller_config.get('mqtt', {}).get('port', 1883), 
+                                  self.controller_config.get('mqtt', {}).get('keepalive', 60))
 
     def receiveCommandMessages(self, s: socket.socket) -> None:
         """

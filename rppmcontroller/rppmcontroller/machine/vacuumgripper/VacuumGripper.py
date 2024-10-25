@@ -6,7 +6,7 @@ from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from math import isclose
 import logging
-from typing import Tuple
+from typing import Any, Dict, Tuple
 import traceback
 
 
@@ -234,6 +234,23 @@ class VacuumGripper(MovingMachine):
     def actuatorStatusString(self) -> str:
         return f"[{self.__vacuumActVerticalUp}, {self.__vacuumActVerticalDown}], [{self.__vacuumActRotRight}, {self.__vacuumActRotLeft}], [{self.__vacuumActArmOut}, {self.__vacuumActArmIn}], [{self.__vacuumActCompressorOn}, {self.__vacuumActValve}]"
 
+
+    def inputStatus(self) -> Dict[str, Any]:
+        status = {
+            "vacuumSensVerticalEncoderCounter": self.vacuumSensVerticalEncoderCounter,
+            "vacuumSensRotEncoderCounter": self.vacuumSensRotEncoderCounter,
+            "vacuumSensArmEncoderCounter": self.vacuumSensArmEncoderCounter,
+            "vacuumSensVerticalEndUp": self.vacuumSensVerticalEndUp,
+            "vacuumSensRotEnd": self.vacuumSensRotEnd,
+            "vacuumSensArmEndIn": self.vacuumSensArmEndIn,
+        }
+        return status
+
+    def outputStatus(self) -> Dict[str, Any]:
+        return super().outputStatus()
+    
+    def internalStatus(self) -> Dict[str, Any]:
+        return super().internalStatus()
 
     def executeHelper(self) -> Tuple[bool, bool, bool]:
         """

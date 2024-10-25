@@ -4,6 +4,7 @@ from time import time
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from typing import Dict, Any
 import logging
 
 
@@ -81,6 +82,28 @@ class Machine:
         most used for logging and testing purposes
         """
         return "(not implemented)"
+
+    @abstractmethod
+    def inputStatus(self) -> Dict[str, Any]:
+        """return a dict of input of the machine
+        Can be used to build MQTT messages
+        """
+        pass
+
+    @abstractmethod
+    def outputStatus(self) -> Dict[str, Any]:
+        """return a dict of output of the machine
+        Can be used to build MQTT messages
+        """
+        pass
+    
+    @abstractmethod
+    def internalStatus(self) -> Dict[str, Any]:
+        """return a dict of internal values of the machine
+        Note: it may contain nested dictionnaries 
+        Can be used to build MQTT messages
+        """
+        pass
 
 
     def incrementNbMinimumRequiredExecutionCycles(self) -> None:
