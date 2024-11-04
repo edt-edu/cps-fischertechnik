@@ -68,7 +68,7 @@ class MQTTFunctions:
                     if isinstance(v, dict):
                         self.publishStatus( plcId, machineType, machineId, statusKind, v, full_key)
                     else:
-                        topic = f"{plcId}/{machineType}/{machineId}/{statusKind.name.lower()}/{full_key}"
+                        topic = f"PLC/{plcId}/{machineType}/{machineId}/{statusKind.name.lower()}/{full_key}"
                         payload = {
                             "value": v,
                             "timestamp": datetime.now(timezone.utc).isoformat() + 'Z'  # Current timestamp in ISO 8601 format
