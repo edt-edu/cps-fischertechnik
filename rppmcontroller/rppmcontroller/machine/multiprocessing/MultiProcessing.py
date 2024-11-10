@@ -3,12 +3,24 @@ import logging
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from typing import Any, Dict
 
 class MultiProcessing(Machine):
 
+
+    def __isExecuting(self) -> bool:
+        return self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder
+
     @property
     def isExecuting(self) -> bool:
-        return self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder
+        res = self.__isExecuting()
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
+
+        return res
 
     def __init__(self, id1):
         self.__multiProcessingSensTurntablePosVacuum = self.__multiProcessingSensTurntablePosBelt = False
@@ -259,6 +271,45 @@ class MultiProcessing(Machine):
             f"VG[{self.__multiProcessingActGripperToOven}, {self.__multiProcessingActGripperToTurntable}], " + \
             f"{self.__multiProcessingOvenLight}, {self.__multiProcessingCompressor}, {self.__multiProcessingValveVacuum}, {self.__multiProcessingActLowerValve},{self.__multiProcessingValveOvenDoor}, {self.__multiProcessingValveFeeder}"
  
+    def inputStatus(self) -> Dict[str, Any]:
+        status = {
+            "multiProcessingSensTurntablePosVacuum": self.multiProcessingSensTurntablePosVacuum,
+            "multiProcessingSensTurntablePosBelt": self.multiProcessingSensTurntablePosBelt,
+            "multiProcessingSensTurntablePosSaw": self.multiProcessingSensTurntablePosSaw,
+            "multiProcessingSensEndConveyor": self.multiProcessingSensEndConveyor,
+            "multiProcessingSensOven": self.multiProcessingSensOven,
+            "multiProcessingSensVacuumGripperAtTurntable": self.multiProcessingSensVacuumGripperAtTurntable,
+            "multiProcessingSensVacuumGripperAtOven": self.multiProcessingSensVacuumGripperAtOven,
+            "multiProcessingSensOvenFeederIn": self.multiProcessingSensOvenFeederIn,
+            "multiProcessingSensOvenFeederOut": self.multiProcessingSensOvenFeederOut,
+        }
+        return status
+
+    def outputStatus(self) -> Dict[str, Any]:
+        
+        status = {
+            "multiProcessingActRotClockwise": self.multiProcessingActRotClockwise,
+            "multiProcessingActRotCounterclockwise": self.multiProcessingActRotCounterclockwise,
+            "multiProcessingActConveyorForward": self.multiProcessingActConveyorForward,
+            "multiProcessingActSaw": self.multiProcessingActSaw,
+            "multiProcessingActOvenInward": self.multiProcessingActOvenInward,
+            "multiProcessingActOvenOutward": self.multiProcessingActOvenOutward,
+            "multiProcessingActGripperToOven": self.__multiProcessingActGripperToOven,
+            "multiProcessingActGripperToTurntable": self.__multiProcessingActGripperToTurntable,
+            "multiProcessingOvenLight": self.__multiProcessingOvenLight,
+            "multiProcessingCompressor": self.__multiProcessingCompressor,
+            "multiProcessingValveVacuum": self.__multiProcessingValveVacuum,
+            "multiProcessingActLowerValve": self.__multiProcessingActLowerValve,
+            "multiProcessingValveOvenDoor": self.__multiProcessingValveOvenDoor,
+            "multiProcessingValveFeeder": self.__multiProcessingValveFeeder,
+        }
+        return status
+    
+    def internalStatus(self) -> Dict[str, Any]:
+        status = {
+            "isExecuting": self.__isExecuting(),
+        }
+        return status
 
     ###____________ Turntable and Saw_______________
     def moveTurntableToSaw(self):

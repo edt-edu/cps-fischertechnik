@@ -7,15 +7,20 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
+from typing import Any, Dict
 
 
 class SortingLine(Machine):
 
     #TODO self.once: implement reset possibility from execute
 
+
+    def __isExecuting(self) -> bool:
+        return self.__packageOnLine
+
     @property
     def isExecuting(self) -> bool:
-        res = self.__packageOnLine
+        res = self.__isExecuting()
 
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
@@ -146,6 +151,34 @@ class SortingLine(Machine):
     def actuatorStatusString(self) -> str:
         return f"{self.sortingLineActMotorConveyor}, {self.sortingLineActCompressorOn}, [{self.sortingLineActWhiteEjector}, {self.sortingLineActRedEjector}, {self.sortingLineActBlueEjector}]"
  
+
+    def inputStatus(self) -> Dict[str, Any]:
+        status = {
+            "sortingLineSensInputLightBarrier": self.sortingLineSensInputLightBarrier,
+            "sortingLineSensMiddleLightBarrier": self.sortingLineSensMiddleLightBarrier,
+            "sortingLineSensWhiteLightBarrier": self.sortingLineSensWhiteLightBarrier,
+            "sortingLineSensBlueLightBarrier": self.sortingLineSensBlueLightBarrier,
+            "sortingLineSensRedLightBarrier": self.sortingLineSensRedLightBarrier,
+            "sortingLineSensImpulseCounterRaw": self.sortingLineSensImpulseCounterRaw,
+        }
+        return status
+
+    def outputStatus(self) -> Dict[str, Any]:
+        
+        status = {
+            "sortingLineActMotorConveyor": self.sortingLineActMotorConveyor,
+            "sortingLineActCompressorOn": self.sortingLineActCompressorOn,
+            "sortingLineActWhiteEjector": self.sortingLineActWhiteEjector,
+            "sortingLineActRedEjector": self.sortingLineActRedEjector,
+            "sortingLineActBlueEjector": self.sortingLineActBlueEjector,
+        }
+        return status
+    
+    def internalStatus(self) -> Dict[str, Any]:
+        status = {
+            "isExecuting": self.__isExecuting(),
+        }
+        return status
 
 
     def startOfProcess(self, packageIncoming):

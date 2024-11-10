@@ -3,14 +3,19 @@ from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from typing import Any, Dict, Tuple
 import logging
 
 
 class ConveyorBelt(Machine):
 
+
+    def __isExecuting(self) -> bool:
+        return self.__conveyorActForward or self.__conveyorActBackward
+
     @property
     def isExecuting(self) -> bool:
-        res = self.__conveyorActForward or self.__conveyorActBackward
+        res = self.__isExecuting()
         #logging.debug(f"Is executing ! {self.__conveyorActForward or self.__conveyorActBackward}")
 
         # log isexecuting and debug info only if message has changed
@@ -91,6 +96,28 @@ class ConveyorBelt(Machine):
 
     def actuatorStatusString(self) -> str:
         return f"[{self.conveyorActForward}, {self.conveyorActBackward}]"
+
+    def inputStatus(self) -> Dict[str, Any]:
+        status = {
+            "conveyorSensFeed": self.conveyorSensFeed,
+            "conveyorSensSwap": self.conveyorSensSwap,
+            "conveyorSensImpulse": self.conveyorSensImpulse,
+        }
+        return status
+
+    def outputStatus(self) -> Dict[str, Any]:
+        
+        status = {
+            "conveyorActForward": self.conveyorActForward,
+            "conveyorActBackward": self.conveyorActBackward,
+        }
+        return status
+    
+    def internalStatus(self) -> Dict[str, Any]:
+        status = {
+            "isExecuting": self.__isExecuting(),
+        }
+        return status
 
 
     def forwardFromAnywhere(self):
