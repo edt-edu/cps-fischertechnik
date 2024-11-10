@@ -87,11 +87,11 @@ class RevPiPyMachineController:
         self.command_port =  self.controller_config.get('connection', {}).get('command_port', 6001)
         self.notification_port =  self.controller_config.get('connection', {}).get('notification_port', 6011)
         self.mainLoopDelay =   self.controller_config.get('controller', {}).get('mainLoopDelay', 0.25)
-
         
         self.MQTT = MQTTFunctions(self.controller_config.get('mqtt', {}).get('server', 'localhost'),
                                   self.controller_config.get('mqtt', {}).get('port', 1883), 
                                   self.controller_config.get('mqtt', {}).get('keepalive', 60))
+        logging.debug(f'plc= {self.plcId}, controller_sockets={self.host}:{self.command_port}/{self.notification_port}, mqtt={self.MQTT.server}:{self.MQTT.port}')
 
     def receiveCommandMessages(self, s: socket.socket) -> None:
         """
