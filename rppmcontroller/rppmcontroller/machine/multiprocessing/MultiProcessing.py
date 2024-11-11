@@ -72,6 +72,7 @@ class MultiProcessing(Machine):
         self.delivered = False
         self.processing = False
         self.turnTableDirection: Direction = Direction.NONE
+        self.previous_isExecuting_log = None
 
     @property
     def multiProcessingSensTurntablePosVacuum(self) -> bool:
