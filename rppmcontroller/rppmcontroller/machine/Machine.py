@@ -44,7 +44,8 @@ class Machine:
         if value:
             self.__lastExecutionTime = time()
 
-
+    def machineTypeName(self) -> str:
+        return self.__class__.__name__
     
     @property
     def nbMinimumRequiredExecutionCycles(self) -> int:

@@ -29,6 +29,7 @@ from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessi
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
 from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.StatusKind import StatusKind
 
 
 # commandServer will be on PORT_BASE+1
@@ -366,6 +367,28 @@ class RevPiPyMachineController:
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
 
+    def publishMQTTStatus(self) -> None:
+        """for each machines publish the input, output and internal status to MQTT if the MQTT is set
+        """
+        for m in self.machines:
+            currentInputStatus = m.inputStatus()
+            if self.previousInputStatus.get(m.id, None) != currentInputStatus:
+                logging.debug(f'publishing {m.id} inputStatus to MQTT {self.previousInputStatus.get(m.id, None)} != {currentInputStatus}')
+                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)            
+                self.previousInputStatus[m.id] =  currentInputStatus
+                
+            currentInternalStatus = m.internalStatus()
+            if self.previousInternalStatus.get(m.id, None) != currentInternalStatus:
+                logging.debug(f'publishing {m.id} internalStatus to MQTT')
+                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
+                self.previousInternalStatus[m.id] = currentInternalStatus
+            
+            currentOutputStatus = m.outputStatus()
+            if self.previousOuputStatus.get(m.id, None) != currentOutputStatus:
+                logging.debug(f'publishing {m.id} outputStatus to MQTT')
+                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
+                self.previousOuputStatus[m.id] = currentOutputStatus
+
     def start(self):
         """
         Starts communication threads for receiving commands via Sockets and executing them
@@ -395,6 +418,7 @@ class RevPiPyMachineController:
         self.read()
         self.exLoop()
         self.write()
+        self.publishMQTTStatus()
         self.reset()
         # # logging.debug(self.currentlyExecuting)
         self.createFeedbackOnChange()

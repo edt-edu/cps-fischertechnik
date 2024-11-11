@@ -57,24 +57,24 @@ class SimulatedVacuumGripperController(VacuumGripperController):
 
     def read(self) -> None:
         self.vaccumGripperSimulator.simulatedRead()
-        currentInput = self.vacuumGripperMachine.inputStatus()
-        if self.previousInputStatus != currentInput:
-            logging.info(f'VGR inputs are differents ')
-            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INPUT ,self.vacuumGripperMachine.inputStatus())
-        self.previousInputStatus = currentInput
+        # currentInput = self.vacuumGripperMachine.inputStatus()
+        # if self.previousInputStatus != currentInput:
+        #     logging.info(f'VGR inputs are differents ')
+        #     self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INPUT ,self.vacuumGripperMachine.inputStatus())
+        # self.previousInputStatus = currentInput
 
     def write(self) -> None:
         self.vaccumGripperSimulator.simulatedWrite()
 
-        currentInternalStatus = self.vacuumGripperMachine.internalStatus()
-        if self.previousInternalStatus != currentInternalStatus:
-            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INTERNAL ,self.vacuumGripperMachine.internalStatus())
-        self.previousInternalStatus = currentInternalStatus
+        # currentInternalStatus = self.vacuumGripperMachine.internalStatus()
+        # if self.previousInternalStatus != currentInternalStatus:
+        #     self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INTERNAL ,self.vacuumGripperMachine.internalStatus())
+        # self.previousInternalStatus = currentInternalStatus
         
-        currentOutput = self.vacuumGripperMachine.outputStatus()
-        if self.previousOuputStatus != currentOutput:
-            self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.OUTPUT ,self.vacuumGripperMachine.outputStatus())
-        self.previousOuputStatus = currentOutput
+        # currentOutput = self.vacuumGripperMachine.outputStatus()
+        # if self.previousOuputStatus != currentOutput:
+        #     self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.OUTPUT ,self.vacuumGripperMachine.outputStatus())
+        # self.previousOuputStatus = currentOutput
    
     def reset(self) -> None:
         vg = self.vacuumGripperMachine.executeHelper()
