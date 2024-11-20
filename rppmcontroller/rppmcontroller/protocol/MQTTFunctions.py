@@ -55,7 +55,7 @@ class MQTTFunctions:
         except Exception as e:
             logging.error(f"Failed to publish message: {e}")
 
-    def publishStatus(self, plcId : str, machineType : str, machineId : str, statusKind : StatusKind, status : Dict[str, Any], parent_key = ''):
+    def publishMeasurementStatus(self, plcId : str, machineType : str, machineId : str, statusKind : StatusKind, status : Dict[str, Any], parent_key = ''):
         """Publish the status dict in dedicated topics
         """
         try:
@@ -66,9 +66,9 @@ class MQTTFunctions:
                 for k, v in status.items():
                     full_key = f"{parent_key}/{k}" if parent_key else k
                     if isinstance(v, dict):
-                        self.publishStatus( plcId, machineType, machineId, statusKind, v, full_key)
+                        self.publishMeasurementStatus( plcId, machineType, machineId, statusKind, v, full_key)
                     else:
-                        topic = f"PLC/{plcId}/{machineType}/{machineId}/{statusKind.name.lower()}/{full_key}"
+                        topic = f"PLC/{plcId}/{machineType}/{machineId}/measurements/{statusKind.name.lower()}/{full_key}"
                         payload = {
                             "value": v,
                             "timestamp": datetime.now(timezone.utc).isoformat() + 'Z'  # Current timestamp in ISO 8601 format
