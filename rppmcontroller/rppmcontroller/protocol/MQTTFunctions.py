@@ -5,6 +5,7 @@ import json
 import logging
 
 from rppmcontroller.machine.StatusKind import StatusKind
+from rppmcontroller.machine.EventKind import EventKind
 
 from typing import Any, Dict
 
@@ -76,3 +77,22 @@ class MQTTFunctions:
                         self.client.publish(topic, json.dumps(payload),2,True) #With QOS2 and message retention
         except Exception as e:
             logging.error(f"Failed to publish message: {e}")
+
+    def publishEvent(self, plcId : str, machineType : str, machineId : str, eventKind : EventKind, eventGroup : str, event : Any):
+        """Publish the status dict in dedicated topics
+        """
+        try:
+            if not self.connected:
+                self.connect()
+                
+            if( machineType and machineId):
+                topic = f"PLC/{plcId}/{machineType}/{machineId}/events/{eventKind.name.lower()}/{eventGroup}"
+            else:
+                topic = f"PLC/{plcId}/events/{eventKind.name.lower()}/{eventGroup}"
+            payload = {
+                "value": event,
+                "timestamp": datetime.now(timezone.utc).isoformat() + 'Z'  # Current timestamp in ISO 8601 format
+            }
+            self.client.publish(topic, json.dumps(payload),2,True) #With QOS2 and message retention
+        except Exception as e:
+            logging.error(f"Failed to publish message: {e}")            
