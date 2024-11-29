@@ -19,7 +19,7 @@ This is due to the module that is a bit too close to the floor (see <<img-sl-pis
 
 .Piston with correct gap 
 [#img-sl-piston-with_correct_gap]
-image::./img/SortingLine/SL_piston_with_correct_gap.jpg[role="related thumb right", 240]
+image::./img/SortingLine/SL_piston_with_correct_gap.jpg[float="left",align="center", 240]
 
 
 **Fix:** verify that a gap is  present below each piston (see <<img-sl-piston-with_correct_gap>>) 
