@@ -8,11 +8,11 @@ After ejection the piston may not come back to its idle position (see <<img-sl-b
 
 .Blocked piston 
 [#img-sl-blocked-piston]
-image::./img/SortingLine/SL_blocked_piston.jpg[role="related thumb right", 240]
+image::./img/SortingLine/SL_blocked_piston.jpg[float="left",align="center", 240]
 
 .Piston too low 
 [#img-sl-piston-too-low]
-image::./img/SortingLine/SL_piston_too_low.jpg[role="related thumb right", 240]
+image::./img/SortingLine/SL_piston_too_low.jpg[float="right",align="center", 240]
 
 
 This is due to the module that is a bit too close to the floor (see <<img-sl-piston-too-low>>)
