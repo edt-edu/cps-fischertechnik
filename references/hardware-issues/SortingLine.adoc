@@ -1,0 +1,15 @@
+
+## Sorting Line hardware issues
+
+
+### Ejector may not retract correctly
+ 
+After ejection the piston may not come back to its idle position (see <<img-sl-blocked-piston>>)
+
+.Blocked piston 
+[#img-sl-blocked-piston]
+image::./img/SortingLine/SL_blocked_piston.jpg[role="related thumb right", 240]
+
+
+This is due to the module that is a bit too close to the floor 
+ 
