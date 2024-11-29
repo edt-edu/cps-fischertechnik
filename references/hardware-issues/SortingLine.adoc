@@ -10,15 +10,17 @@ After ejection the piston may not come back to its idle position (see <<img-sl-b
 [#img-sl-blocked-piston]
 image::./img/SortingLine/SL_blocked_piston.jpg[role="related thumb right", 240]
 
-
-This is due to the module that is a bit too close to the floor (see <<img-sl-piston-too-low>>)
-
 .Piston too low 
 [#img-sl-piston-too-low]
 image::./img/SortingLine/SL_piston_too_low.jpg[role="related thumb right", 240]
 
-**Fix:** verify that a gap is  present below each piston (see <<>>) 
+
+This is due to the module that is a bit too close to the floor (see <<img-sl-piston-too-low>>)
 
 .Piston with correct gap 
 [#img-sl-piston-with_correct_gap]
 image::./img/SortingLine/SL_piston_with_correct_gap.jpg[role="related thumb right", 240]
+
+
+**Fix:** verify that a gap is  present below each piston (see <<img-sl-piston-with_correct_gap>>) 
+
