@@ -1,0 +1,28 @@
+
+## Vacuum gripper harware issues
+
+### Problem: Arm extension can come loose
+
+The extension arm may become imprecise (about 5mm) depending on the direction it comes from.
+
+.VGR with gap on left or right 
+[#img-vgr-arm-extesion-with-gap]
+[cols="a,a"]
+|===
+| image::./img/VacuumGripper/VGR_arm_extension_gap_on_left.jpg[float="left",align="center", 240]
+| image::./img/VacuumGripper/VGR_arm_extension_gap_on_right.jpg[float="left",align="center", 240]
+|===
+
+
+This is due to a gap that may appear when extending the arm too far outwards. (see the 2 figures <<img-vgr-arm-extesion-with-gap>>)
+
+
+
+
+.VGR without arm exension gap 
+[#img-vgr-arm-extension-without-gap]
+image::./img/VacuumGripper/VGR_arm-extension-without-gap.jpg[float="left",align="center", 240]
+
+**Fix:** by adjusting the screw at the base of the axis. (see <<img-vgr-arm-extension-without-gap>>)
+
+Idea: use some soft glue to prevent this gap
