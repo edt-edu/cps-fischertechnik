@@ -4,7 +4,7 @@
 
 ### Problem: turntable may not rotate correctly
  
-The gears driving the turntable may not correctly touch together (red gear/black gear) (see <<img-sl-blocked-piston>>)
+The gears driving the turntable may not correctly touch together (red gear/black gear) (see <<img-mps-turntable-gear-issue>>)
 
 
 .Turntable gears not touching correcly 
