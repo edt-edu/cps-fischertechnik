@@ -28,4 +28,4 @@ __pycache__/
 references/physical_dimensions/MachinesSVGMap/package-lock.json
 
 
-
+*/.venv/
