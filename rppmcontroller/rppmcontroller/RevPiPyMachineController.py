@@ -1,7 +1,7 @@
 
 from abc import abstractmethod
 import logging
-import multiprocessing 
+import multiprocessing
 from multiprocessing import Process
 from multiprocessing import Queue
 import os
@@ -34,6 +34,7 @@ from rppmcontroller.machine.StatusKind import StatusKind
 
 # commandServer will be on PORT_BASE+1
 # notificationServer will be on PORT_BASE+11
+running = True
 
 class RevPiPyMachineController:
     """
@@ -46,7 +47,7 @@ class RevPiPyMachineController:
         """
 
         logging.debug('init started')
-        
+
         # init a buffer to store all incoming/outgoing messages, received in a different thread than the one executing the revpi functions
         # stored as python objects, so parse/deserialize before putting into buffer
         self.inputBuffer = multiprocessing.Queue()
@@ -70,7 +71,7 @@ class RevPiPyMachineController:
         self.previousInternalStatus : Dict[str, Any]= {}
         """Dict resulting from Machine.internalStatus(), used to detect changes in the internal status"""
 
-        # used to indicate to the notification socket to stop too even if no notification message needs to be send 
+        # used to indicate to the notification socket to stop too even if no notification message needs to be send
         # use of multiprocessing.Value to cross processes
         self.brokenCommandSocketDetected = multiprocessing.Value('b', False)
 
@@ -88,9 +89,9 @@ class RevPiPyMachineController:
         self.command_port =  self.controller_config.get('connection', {}).get('command_port', 6001)
         self.notification_port =  self.controller_config.get('connection', {}).get('notification_port', 6011)
         self.mainLoopDelay =   self.controller_config.get('controller', {}).get('mainLoopDelay', 0.25)
-        
+
         self.MQTT = MQTTFunctions(self.controller_config.get('mqtt', {}).get('server', 'localhost'),
-                                  self.controller_config.get('mqtt', {}).get('port', 1883), 
+                                  self.controller_config.get('mqtt', {}).get('port', 1883),
                                   self.controller_config.get('mqtt', {}).get('keepalive', 60))
         logging.debug(f'plc= {self.plcId}, controller_sockets={self.host}:{self.command_port}/{self.notification_port}, mqtt={self.MQTT.server}:{self.MQTT.port}')
 
@@ -120,7 +121,7 @@ class RevPiPyMachineController:
                         self.inputBuffer.put(objdata)
         # reset boolean (required if notificationSocket is opened first)
         self.brokenCommandSocketDetected.value = False
-        
+
 
     def sendNotificationMessages(self, s: socket.socket) -> None:
         """
@@ -155,8 +156,8 @@ class RevPiPyMachineController:
                     else:
                         # logging.debug("nothing in queue to send")
                         time.sleep(self.mainLoopDelay) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
-        
-                    
+
+
 
     def processJson(self, inputBuffer: Queue):
         #maybe output buffer als parameter übergeben wie inputbuffer???
@@ -289,7 +290,7 @@ class RevPiPyMachineController:
                             #raise JSONCommandNotSupportedOnThisMachineException()
                             logging.warning(f"command not supported: \n{e}")
                             break
-            if not foundMatchingMachine : 
+            if not foundMatchingMachine :
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
 
     @abstractmethod
@@ -326,7 +327,7 @@ class RevPiPyMachineController:
             # call method
             if not self.currentlyExecuting[key][0] is None:
                 #print(key)
-                
+
                 logging.debug(f'currentlyExecuting {self.currentlyExecuting[key][0]} [{inspect.getsource(self.currentlyExecuting[key][0]).strip()}]')
                 #print(self.currentlyExecuting[key][0])
                 #if key == self.robot41:
@@ -339,9 +340,9 @@ class RevPiPyMachineController:
             if key.feedback() == ExecutionStatus.FINISHED and self.currentlyExecuting[key][0] != None:
                 logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
                 self.currentlyExecuting[key][0] = None
-            # DVK    
+            # DVK
             # if key.fakeFeedback() == ExecutionStatus.FINISHED:
-            
+
             # #if (key.fakeFeedback() == ExecutionStatus.FINISHED) and (key.feedback() == ExecutionStatus.FINISHED):
             #     #logging.debug(str(key) + 'finished execution')
             #     self.currentlyExecuting[key][0] = None
@@ -374,15 +375,15 @@ class RevPiPyMachineController:
             currentInputStatus = m.inputStatus()
             if self.previousInputStatus.get(m.id, None) != currentInputStatus:
                 logging.debug(f'publishing {m.id} inputStatus to MQTT {self.previousInputStatus.get(m.id, None)} != {currentInputStatus}')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)            
+                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)
                 self.previousInputStatus[m.id] =  currentInputStatus
-                
+
             currentInternalStatus = m.internalStatus()
             if self.previousInternalStatus.get(m.id, None) != currentInternalStatus:
                 logging.debug(f'publishing {m.id} internalStatus to MQTT')
                 self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
                 self.previousInternalStatus[m.id] = currentInternalStatus
-            
+
             currentOutputStatus = m.outputStatus()
             if self.previousOuputStatus.get(m.id, None) != currentOutputStatus:
                 logging.debug(f'publishing {m.id} outputStatus to MQTT')
@@ -392,7 +393,7 @@ class RevPiPyMachineController:
     def start(self):
         """
         Starts communication threads for receiving commands via Sockets and executing them
-        Initiate the main loop 
+        Initiate the main loop
         """
         logging.debug('start')
 
@@ -401,15 +402,15 @@ class RevPiPyMachineController:
         # start the function socketConnexionHelper.listenSocket("localhost", 8888, self.receiveCommandMessage) in a Process
         Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages, True]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.receiveCommandMessages]).start()
-        
+
         # listen for connection and send notification in a dedicated Process
         Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.notification_port, self.sendNotificationMessages, True]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.sendNotificationMessages]).start()
-        
+
 
         logging.debug('all threads started')
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "Main"))
-        while True:
+        while running:
             self.mainLoopIteration()
 
     def mainLoopIteration(self):
@@ -422,7 +423,7 @@ class RevPiPyMachineController:
         self.reset()
         # # logging.debug(self.currentlyExecuting)
         self.createFeedbackOnChange()
-        
+
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()
@@ -433,8 +434,9 @@ socket_list : List[socket.socket] = []
 
 def signal_custom_handler(sig, frame, name: str):
     process_id = os.getpid()
-    logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).") 
+    logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).")
     for s in socket_list:
-        logging.info(f"Closing socket {s}") 
-        s.close()  
+        logging.info(f"Closing socket {s}")
+        s.close()
+    running = False
     sys.exit(0)
