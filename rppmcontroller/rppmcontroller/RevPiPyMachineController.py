@@ -34,7 +34,6 @@ from rppmcontroller.machine.StatusKind import StatusKind
 
 # commandServer will be on PORT_BASE+1
 # notificationServer will be on PORT_BASE+11
-running = True
 
 class RevPiPyMachineController:
     """
@@ -410,7 +409,7 @@ class RevPiPyMachineController:
 
         logging.debug('all threads started')
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "Main"))
-        while running:
+        while True:
             self.mainLoopIteration()
 
     def mainLoopIteration(self):
@@ -438,5 +437,4 @@ def signal_custom_handler(sig, frame, name: str):
     for s in socket_list:
         logging.info(f"Closing socket {s}")
         s.close()
-    running = False
     sys.exit(0)
