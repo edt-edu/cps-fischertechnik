@@ -1,0 +1,26 @@
+
+## Sorting Line hardware issues
+
+
+### Problem: Ejector may not retract correctly
+ 
+After ejection the piston may not come back to its idle position (see <<img-sl-blocked-piston>>)
+
+.Blocked piston 
+[#img-sl-blocked-piston]
+image::./img/SortingLine/SL_blocked_piston.jpg[float="left",align="center", 240]
+
+.Piston too low 
+[#img-sl-piston-too-low]
+image::./img/SortingLine/SL_piston_too_low.jpg[float="right",align="center", 240]
+
+
+This is due to the module that is a bit too close to the floor (see <<img-sl-piston-too-low>>)
+
+.Piston with correct gap 
+[#img-sl-piston-with_correct_gap]
+image::./img/SortingLine/SL_piston_with_correct_gap.jpg[float="left",align="center", 240]
+
+
+**Fix:** verify that a gap is  present below each piston (see <<img-sl-piston-with_correct_gap>>) 
+

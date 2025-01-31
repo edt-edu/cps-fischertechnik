@@ -19,8 +19,7 @@ class ImpulseCounter(Counter):
     def dirBackward(self):
         return self.__dirBackward
 
-    def compute(self, num, direction):
-        num = int(num) #in case of bad typing, the fucntion may receive a boolean
+    def compute(self, num : int, direction : PlusMinusStop):
         if direction == PlusMinusStop.PLUS:
             self.counter += (num - self.__numalt)
         elif direction == PlusMinusStop.MINUS:

@@ -12,7 +12,7 @@ from rppmcontroller.protocol.MachineCommand import MachineCommand
 import tests.controllerTestHelper as ctHelper
 
 
-class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
+class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         logging.debug("setup called")
@@ -35,7 +35,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE", [
+        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_OUT", [
             Direction.FORWARD
           ] )
         
@@ -55,11 +55,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
-            if iterationDone%2 == 0:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
+                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)            
 
             if (notification == "") :
                 iterationDone += 1
@@ -84,7 +80,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE", [
+        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_OUT", [
             Direction.BACKWARD
           ] )
         
@@ -105,11 +101,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
-            if iterationDone%2 == 0:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
+            
             if (notification == "") :
                 iterationDone += 1
             else:
@@ -134,7 +126,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move light based command
-        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVELB", [
+        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_TO_SENSOR", [
             Direction.FORWARD
           ] )
         
@@ -179,7 +171,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move light based command
-        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVELB", [
+        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_TO_SENSOR", [
             Direction.BACKWARD
           ] )
         
@@ -225,7 +217,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a go to config command
-        message = MachineCommand("COMMAND", "CONVEYOR", 1, "GOTOCONFIG", [
+        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_NB_STEPS", [
             Direction.FORWARD,
             3
           ] )
@@ -247,11 +239,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
-            if iterationDone%2 == 0:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
+            
             if (notification == "") :
                 iterationDone += 1
             else:
@@ -275,7 +263,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a go to config command
-        message = MachineCommand("COMMAND", "CONVEYOR", 1, "GOTOCONFIG", [
+        message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_NB_STEPS", [
             Direction.BACKWARD,
             3
           ] )
