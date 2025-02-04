@@ -81,7 +81,8 @@ class RevPiPyMachineController:
             with open(configurationFile, 'r') as file:
                 self.controller_config = yaml.safe_load(file)
         else:
-            logging.warning(f'configuration file {configurationFile} not found; using default values')
+            logging.warning(f'configuration file {configurationFile} not found; stopping the process')
+            sys.exit(1)
 
         self.plcId = self.controller_config.get('plc', {}).get('id', "PLC")
         self.host = self.controller_config.get('connection', {}).get('host', socket.gethostname()+ ".local")
