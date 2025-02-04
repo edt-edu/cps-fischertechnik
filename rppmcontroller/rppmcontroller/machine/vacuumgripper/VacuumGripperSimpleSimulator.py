@@ -81,9 +81,6 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
 
         # nothing special to do to simulate compressor and valve as there are no observable IO for them
         
-        # logging.debug(f"simulatedRead {self.controlledVacuumGripper.sensorStatusString()} ")
-
-    def simulatedWrite(self) -> None:
         simulatedWriteLog = f"simulatedWrite  {self.controlledVacuumGripper.sensorStatusString()} "
         if simulatedWriteLog != self.previous_simulatedWriteLog :
             logging.debug(simulatedWriteLog)
