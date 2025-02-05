@@ -18,6 +18,7 @@ class MQTTFunctions:
 
     def connect(self):
         try:
+            logging.info(f"Connecting to MQTT server at {self.server} on port {self.port}")
             self.client.connect(self.server, self.port, self.keepalive)
             self.client.loop_start()
             self.connected = True
