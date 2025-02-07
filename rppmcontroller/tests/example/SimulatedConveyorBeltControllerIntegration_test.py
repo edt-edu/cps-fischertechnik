@@ -1,5 +1,6 @@
 import inspect
 import logging
+import os
 import unittest
 from unittest.mock import patch, Mock
 
@@ -15,8 +16,14 @@ import tests.controllerTestHelper as ctHelper
 class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
+        script_path = os.path.abspath(__file__)
+        logging.warning(f'script path : {script_path}')
+        dir_path = os.path.dirname(__file__)
+        config_path = os.path.join(dir_path, "config.yml")
+        logging.warning(f'config file path : {config_path}')
+
         logging.debug("setup called")
-        self.controller = SimulatedConveyorBeltController()
+        self.controller = SimulatedConveyorBeltController(config_path)
         self.controller.mainLoopDelay = 0.1
 
     ### ______ MOVE ________    
