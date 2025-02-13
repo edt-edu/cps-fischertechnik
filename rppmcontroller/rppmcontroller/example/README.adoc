@@ -8,7 +8,18 @@ NOTE:  The controllers use the `config.yml` file located in this folder, make su
 
 == Quick start
 
-Activate your python environment
+===  Install un run a mqtt broker
+
+an easy way to get a mqtt broker running on you machine:
+
+go to `REN_Setups/REN_shared/config/server/mosquito` and run 
+
+[source,shell]
+----
+docker compose up
+----
+
+=== Activate your python environment
 
 NOTE: you must make sure to have added the folder containing the rppmcontroller code as dev (see https://git.rwth-aachen.de/mbdo/mbdo-impl/-/blob/master/rppmcontroller/README.md?ref_type=heads#install-the-development-environment)
 
@@ -20,7 +31,9 @@ conda activate rppmcontroller
 ----
 
 
-Start your simulated machine controller, for example for a VGR
+=== Start your simulated machine controller
+
+for example for a VGR
 
 [source,shell]
 ----
