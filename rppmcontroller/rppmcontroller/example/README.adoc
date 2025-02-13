@@ -37,5 +37,5 @@ for example for a VGR, from the directoy `rppmcontroller\example\rppmcontroller`
 
 [source,shell]
 ----
-pyhton3 SimulatedVacuumGripperController.py
+python3 SimulatedVacuumGripperController.py
 ----
