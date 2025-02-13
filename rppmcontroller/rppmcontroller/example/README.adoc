@@ -21,7 +21,7 @@ docker compose up
 
 === Activate your python environment
 
-NOTE: you must make sure to have added the folder containing the rppmcontroller code as dev (see https://git.rwth-aachen.de/mbdo/mbdo-impl/-/blob/master/rppmcontroller/README.md?ref_type=heads#install-the-development-environment)
+NOTE: you must make sure to have added the folder containing the rppmcontroller code in development mode in the python environment (see https://git.rwth-aachen.de/mbdo/mbdo-impl/-/blob/master/rppmcontroller/README.md?ref_type=heads#install-the-development-environment)
 
 if  you use the conda environment:
 
