@@ -8,7 +8,7 @@ NOTE:  The controllers use the `config.yml` file located in this folder, make su
 
 == Quick start
 
-===  Install un run a mqtt broker
+===  Install and run a mqtt broker
 
 an easy way to get a mqtt broker running on you machine:
 
@@ -33,7 +33,7 @@ conda activate rppmcontroller
 
 === Start your simulated machine controller
 
-for example for a VGR
+for example for a VGR, from the directoy `rppmcontroller\example\rppmcontroller`
 
 [source,shell]
 ----
