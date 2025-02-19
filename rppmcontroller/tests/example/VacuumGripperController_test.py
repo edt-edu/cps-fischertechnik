@@ -1,6 +1,7 @@
 
 import inspect
 import logging
+import os
 import time
 import unittest
 from unittest.mock import patch, Mock
@@ -16,12 +17,18 @@ from rppmcontroller.protocol.MachineCommand import MachineCommand
 class VacuumGripperControllerTestCase(unittest.TestCase):
 
     def setUp(self):
+        script_path = os.path.abspath(__file__)
+        logging.warning(f'script path : {script_path}')
+        dir_path = os.path.dirname(__file__)
+        config_path = os.path.join(dir_path, "config.yml")
+        logging.warning(f'config file path : {config_path}')
+
         logging.debug("setup called")
         # pickupRobot1 = [2600,3550,25]
         # placeConveyorRobot1 = [2000,100,100]
         # placeRand = [2,3,4,5]
         # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
-        self.controller = VacuumGripperControllerMock()
+        self.controller = VacuumGripperControllerMock(config_path)
 
         
 
@@ -155,8 +162,8 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
     
 
 class VacuumGripperControllerMock(VacuumGripperController):
-  def __init__(self):
-     super().__init__(simulatedRevPiModIO=True)
+  def __init__(self, configurationFile : str = ""):
+     super().__init__(simulatedRevPiModIO=True, configurationFile=configurationFile)
 
   def read(self):
     logging.debug("mocked VacuumGripperController read called")

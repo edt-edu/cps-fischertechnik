@@ -1,0 +1,41 @@
+This folder contains various versions of simulated machines
+
+This allows testing the controller or testing orchestrators without access to the physical Fishertechnik machines.
+
+
+NOTE:  The controllers use the `config.yml` file located in this folder, make sure to adapt the value for your use case. (hostname, mqtt broker host, ...)
+
+
+== Quick start
+
+===  Install and run a mqtt broker
+
+an easy way to get a mqtt broker running on you machine:
+
+go to `REN_Setups/REN_shared/config/server/mosquito` and run 
+
+[source,shell]
+----
+docker compose up
+----
+
+=== Activate your python environment
+
+NOTE: you must make sure to have added the folder containing the rppmcontroller code in development mode in the python environment (see https://git.rwth-aachen.de/mbdo/mbdo-impl/-/blob/master/rppmcontroller/README.md?ref_type=heads#install-the-development-environment)
+
+if  you use the conda environment:
+
+[source,shell]
+----
+conda activate rppmcontroller
+----
+
+
+=== Start your simulated machine controller
+
+for example for a VGR, from the directoy `rppmcontroller\example\rppmcontroller`
+
+[source,shell]
+----
+python3 SimulatedVacuumGripperController.py
+----
