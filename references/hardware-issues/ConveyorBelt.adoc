@@ -1,0 +1,27 @@
+
+## Conveyor belt hardware issues
+
+### Problem: Conveyor belt can get stuck
+
+The Conveyor belt can collide with the black axle at the one end of the conveyor when the black axle is mounted in the wrong way.
+
+.CB axle mounted wrong
+[#img-cb-axle-mounted-wrong]
+[cols="a,a"]
+|===
+| image::./img/ConveyorBelt/CB_axle_mounted_wrong.jpg[float="left",align="center", 240]
+| image::./img/ConveyorBelt/CB_axle_mounted_wrong2.jpg[float="left",align="center", 240]
+|===
+
+Out of the box the axle should be mounted correctly but when it falls of and is reattatched this mistake can happen.
+
+**Fix:** watch out that the two red parts of the mounting blocks are pointing downwards. (see <<img-cb-axle-mounted-correctly>>)
+
+
+.CB axle mounted correctly
+[#img-cb-axle-mounted-correctly]
+[cols="a,a"]
+|===
+| image::./img/ConveyorBelt/CB_axle_mounted_correct.jpg[float="left",align="center", 240]
+| image::./img/ConveyorBelt/CB_axle_mounted_correct2.jpg[float="left",align="center", 240]
+|===

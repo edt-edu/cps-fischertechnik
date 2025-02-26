@@ -1,0 +1,15 @@
+
+## Multi Processing Station hardware issues
+
+
+### Problem: turntable may not rotate correctly
+ 
+The gears driving the turntable may not correctly touch together (red gear/black gear) (see <<img-mps-turntable-gear-issue>>)
+
+
+.Turntable gears not touching correcly 
+[#img-mps-turntable-gear-issue]
+image::./img/MultiProcessingStation/MPS_turntable_gear_issue.jpg[float="left",align="center", 240]
+
+
+**Fix:** No clear solution so far. Any suggestion ?
