@@ -1,6 +1,7 @@
 
 from abc import abstractmethod
 import logging
+import json as json
 import multiprocessing 
 from multiprocessing import Process
 from multiprocessing import Queue
@@ -29,6 +30,7 @@ from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessi
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
 from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.StatusKind import StatusKind
 
 
@@ -117,6 +119,7 @@ class RevPiPyMachineController:
                         logging.info(f"IGNORED Received {data!r}")
                     elif not data.isspace():
                         logging.debug(f"Received {data!r}")
+                        self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{data!r}")
                         objdata = JSONReader.read(data)
                         self.inputBuffer.put(objdata)
         # reset boolean (required if notificationSocket is opened first)
@@ -181,9 +184,13 @@ class RevPiPyMachineController:
                 logging.debug(f"machines: {self.machines}")
                 if m.id == inputBufferItem.topicName:
                     foundMatchingMachine = True
+
                     # find diff btw command and request
                     if inputBufferItem.message.jsonType == "STATUSREQUEST":
                         logging.debug("Status")
+
+                        #self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", JSONParser.parse(inputBufferItem.message))
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", json.dumps(inputBufferItem.message, default=str))
                         # Status abfragen und Ergebnis an outputBuffer anfügen
                         try:
                             statusanswer = m.request(inputBufferItem.message.parameters)
@@ -197,6 +204,8 @@ class RevPiPyMachineController:
                             break
                     elif inputBufferItem.message.jsonType == "COMMAND":
                         logging.debug("command")
+                        # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
                         try:
                             logging.debug(f"Nom de message : {inputBufferItem.message.name}")
                             # map between functions and the name of functions sent with the JSON
@@ -290,8 +299,11 @@ class RevPiPyMachineController:
                             #raise JSONCommandNotSupportedOnThisMachineException()
                             logging.warning(f"command not supported: \n{e}")
                             break
+                    else:
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
             if not foundMatchingMachine : 
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
+                self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
 
     @abstractmethod
     def read(self) -> None:
@@ -367,27 +379,28 @@ class RevPiPyMachineController:
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
+                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "feedback", JSONParser.parse(f))
 
-    def publishMQTTStatus(self) -> None:
-        """for each machines publish the input, output and internal status to MQTT if the MQTT is set
+    def publishMQTTMeasurementStatus(self) -> None:
+        """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
         """
         for m in self.machines:
             currentInputStatus = m.inputStatus()
             if self.previousInputStatus.get(m.id, None) != currentInputStatus:
                 logging.debug(f'publishing {m.id} inputStatus to MQTT {self.previousInputStatus.get(m.id, None)} != {currentInputStatus}')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)            
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)            
                 self.previousInputStatus[m.id] =  currentInputStatus
                 
             currentInternalStatus = m.internalStatus()
             if self.previousInternalStatus.get(m.id, None) != currentInternalStatus:
                 logging.debug(f'publishing {m.id} internalStatus to MQTT')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
                 self.previousInternalStatus[m.id] = currentInternalStatus
             
             currentOutputStatus = m.outputStatus()
             if self.previousOuputStatus.get(m.id, None) != currentOutputStatus:
                 logging.debug(f'publishing {m.id} outputStatus to MQTT')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
                 self.previousOuputStatus[m.id] = currentOutputStatus
 
     def start(self):
@@ -419,7 +432,7 @@ class RevPiPyMachineController:
         self.read()
         self.exLoop()
         self.write()
-        self.publishMQTTStatus()
+        self.publishMQTTMeasurementStatus()
         self.reset()
         # # logging.debug(self.currentlyExecuting)
         self.createFeedbackOnChange()

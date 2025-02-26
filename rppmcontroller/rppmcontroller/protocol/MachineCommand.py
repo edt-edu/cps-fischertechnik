@@ -17,6 +17,9 @@ class MachineCommand(object):
     def __repr__(self):
         return str(self.__jsonType) + " " + str(self.__type) + " " + str(self.__commandId) + " " + str(self.__name) + " " + str(self.__parameters)
 
+    def to_dict(self):
+        return {"jsonType": self.__jsonType, "type": str(self.__type), "commandId": self.__commandId, "name": self.__name, "parameters": self.__parameters}
+    
     @property
     def jsonType(self):
         return self.__jsonType
