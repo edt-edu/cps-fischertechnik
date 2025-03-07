@@ -319,7 +319,7 @@ class VacuumGripper(MovingMachine):
     #von execute bereits berücksichtigt
     # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
     # already considered by execute
-    def setup(self):       
+    def setup(self) -> bool:       
         # activate engines toward the sensors if necessary
         self.vacuumActArmOut = self.vacuumActRotLeft = self.vacuumActVerticalDown = False
         t1 = t2 = t3 = False

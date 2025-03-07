@@ -1,9 +1,11 @@
 import math
 from abc import abstractmethod
 from time import time
+from typing import Any, Dict
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 import logging
 
 
@@ -25,7 +27,6 @@ class Machine:
         self.__isSetupRunning = False
         self.__isSetupDone = False
         self.__lastExecutionTime = -math.inf
-        self.__isExecuting  = 0
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
 
     @property
@@ -49,7 +50,9 @@ class Machine:
             self.__lastExecutionTime = time()
 
     def machineTypeName(self) -> str:
-        return self.__class__.__name__    @property
+        return self.__class__.__name__
+    
+    @property
     @abstractmethod
     def isCommandSuccessed(self) -> bool:
         """Returns whether the command successed
