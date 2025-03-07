@@ -124,7 +124,7 @@ class ConveyorBelt(Machine):
     
     def internalStatus(self) -> Dict[str, Any]:
         status = {
-            "isExecuting": self.__isExecuting(),
+            "isExecuting": self.isExecuting,
         }
         return status
 
