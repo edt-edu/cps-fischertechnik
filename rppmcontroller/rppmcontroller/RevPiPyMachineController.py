@@ -378,6 +378,26 @@ class RevPiPyMachineController:
                 self.outputBuffer.put(j, block=False)
                 self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
+    def createCommandFeedbackOnChange(self) -> None:
+        """Whenever the state of the command changes, feedback is created
+        Also update the self.commandFeedback[m] dictionnary
+        """
+        for m in self.machines:
+            if self.commandFeedback[m] != m.commandFeedback():
+                self.commandFeedback[m] = m.commandFeedback()
+                # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
+                # flow in later real execution in error cases, no problems known so far)
+                if self.currentlyExecuting[m][1] is None:
+                    jsonid = 0
+                else:
+                    jsonid = self.currentlyExecuting[m][1]
+                # append feedback to outputBuffer
+                f = CommandFeedback("COMMAND_FEEDBACK", jsonid, m.commandFeedback().name,  "")
+                j = JSONOutput(m.id, time.time(), f)
+                
+                self.outputBuffer.put(j, block=False)
+                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
+
     def publishMQTTMeasurementStatus(self) -> None:
         """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
         """
@@ -399,27 +419,7 @@ class RevPiPyMachineController:
                 logging.debug(f'publishing {m.id} outputStatus to MQTT')
                 self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
                 self.previousOuputStatus[m.id] = currentOutputStatus
-
-    def createCommandFeedbackOnChange(self) -> None:
-        """Whenever the state of the command changes, feedback is created
-        Also update the self.commandFeedback[m] dictionnary
-        """
-        for m in self.machines:
-            if self.commandFeedback[m] != m.commandFeedback():
-                self.commandFeedback[m] = m.commandFeedback()
-                # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
-                # flow in later real execution in error cases, no problems known so far)
-                if self.currentlyExecuting[m][1] is None:
-                    jsonid = 0
-                else:
-                    jsonid = self.currentlyExecuting[m][1]
-                # append feedback to outputBuffer
-                f = CommandFeedback("COMMAND_FEEDBACK", jsonid, m.commandFeedback().name,  "")
-                j = JSONOutput(m.id, time.time(), f)
                 
-                self.outputBuffer.put(j, block=False)
-                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
-
     def start(self):
         """
         Starts communication threads for receiving commands via Sockets and executing them
