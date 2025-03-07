@@ -232,7 +232,7 @@ class SortingLine(Machine):
                     self.__sortingLineActBlueEjector = False
                     self.__isCommandRunning = False
                     self.__isCommandSuccessed = True
-            if self.current > redCounter and color == Color.RED:
+            if current > redCounter and color == Color.RED:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActRedEjector = True
@@ -244,7 +244,7 @@ class SortingLine(Machine):
                     self.__sortingLineActRedEjector = False
                     self.__isCommandRunning = False
                     self.__isCommandSuccessed = True
-            if self.current > whiteCounter and color == Color.WHITE:
+            if current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
                 self.__sortingLineActWhiteEjector = True
