@@ -1,0 +1,14 @@
+
+# Configuration for VacuumGripperController
+---
+connection:
+  # if host is commented, will default to "<hostname>.local"
+  host: "localhost"
+  # host: "RevPi103156.local"
+  command_port: 6002
+  notification_port: 6012
+  # connectionListening: "controller" or "orchestrator"
+  connectionListening: "controller"
+
+controller:
+  mainLoopDelay: 1.0

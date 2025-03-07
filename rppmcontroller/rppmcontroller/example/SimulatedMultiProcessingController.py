@@ -45,8 +45,13 @@ class SimulatedMultiProcessingController(RevPiPyMachineController):
         self.multiProcessingSimulator.simulatedWrite()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
-    logging.debug('main')
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+                        level=logging.DEBUG,
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    handler = logging.FileHandler("logfile.log")
+    logFormatter = logging.Formatter("%(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s")
+    handler.setFormatter(logFormatter)
+    logging.getLogger().addHandler(handler)
     # Start ConveyorBeltStreamer app
     root = SimulatedMultiProcessingController("config.yml")
     

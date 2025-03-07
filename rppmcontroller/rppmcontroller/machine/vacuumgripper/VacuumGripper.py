@@ -6,7 +6,7 @@ from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from math import isclose
 import logging
-from typing import Tuple
+from typing import Any, Dict, Tuple
 import traceback
 
 
@@ -55,19 +55,23 @@ class VacuumGripper(MovingMachine):
                 robotPlaceConf4,
                 robotPlaceConf5]
 
-    @property
-    def isExecuting(self) -> bool:
-
-        res = self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
+    def __isExecuting(self) -> bool:
+        return self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.nbMinimumRequiredExecutionCycles != 0 or \
             self.hasRemainingMove()
+    @property
+    def isExecuting(self) -> bool:
+
+        res = self.__isExecuting()
             
             # self.__vacuumActCompressorOn or self.__vacuumActValve or  we have pick command that doesn't finish with an iddle machine
         
-        logging.debug(f'{self.sensorStatusString()}')
-        logging.debug(f'{self.actuatorStatusString()}')
-        logging.debug(f'called isExecuting({self.id}) = {res} [{self.pc}/{self.nbMove()}] hasRemainingMove={self.hasRemainingMove()}')
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'isExecuting({self.id})={res} | pc={self.pc}/nbMove={self.nbMove()} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
         
         return res
 
@@ -102,6 +106,7 @@ class VacuumGripper(MovingMachine):
         self.__moveList = None
         self.__pc = 0
         self.configGoal = None
+        self.previous_isExecuting_log = None
 
 
     @property
@@ -231,6 +236,37 @@ class VacuumGripper(MovingMachine):
     def actuatorStatusString(self) -> str:
         return f"[{self.__vacuumActVerticalUp}, {self.__vacuumActVerticalDown}], [{self.__vacuumActRotRight}, {self.__vacuumActRotLeft}], [{self.__vacuumActArmOut}, {self.__vacuumActArmIn}], [{self.__vacuumActCompressorOn}, {self.__vacuumActValve}]"
 
+
+    def inputStatus(self) -> Dict[str, Any]:
+        status = {
+            "vacuumSensVerticalEncoderCounter": self.vacuumSensVerticalEncoderCounter,
+            "vacuumSensRotEncoderCounter": self.vacuumSensRotEncoderCounter,
+            "vacuumSensArmEncoderCounter": self.vacuumSensArmEncoderCounter,
+            "vacuumSensVerticalEndUp": self.vacuumSensVerticalEndUp,
+            "vacuumSensRotEnd": self.vacuumSensRotEnd,
+            "vacuumSensArmEndIn": self.vacuumSensArmEndIn,
+        }
+        return status
+
+    def outputStatus(self) -> Dict[str, Any]:
+        
+        status = {
+            "vacuumActVerticalUp": self.__vacuumActVerticalUp,
+            "vacuumActVerticalDown": self.__vacuumActVerticalDown,
+            "vacuumActRotRight": self.__vacuumActRotRight,
+            "vacuumActRotLeft": self.__vacuumActRotLeft,
+            "vacuumActArmOut": self.__vacuumActArmOut,
+            "vacuumActArmIn": self.__vacuumActArmIn,
+            "vacuumActCompressorOn": self.__vacuumActCompressorOn,
+            "vacuumActValve": self.__vacuumActValve,
+        }
+        return status
+    
+    def internalStatus(self) -> Dict[str, Any]:
+        status = {
+            "isExecuting": self.__isExecuting(),
+        }
+        return status
 
     def executeHelper(self) -> Tuple[bool, bool, bool]:
         """

@@ -1,6 +1,7 @@
 
 from abc import abstractmethod
 import logging
+import json as json
 import multiprocessing 
 from multiprocessing import Process
 from multiprocessing import Queue
@@ -8,11 +9,12 @@ import os
 from queue import Empty
 import signal
 import socket
+import select
 import sys
 import time
 import inspect
 import yaml
-from typing import List
+from typing import Any, Dict, List
 
 from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
@@ -20,6 +22,7 @@ from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
 from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
+from rppmcontroller.protocol.MQTTFunctions import MQTTFunctions
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
@@ -27,6 +30,8 @@ from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessi
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
 from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.EventKind import EventKind
+from rppmcontroller.machine.StatusKind import StatusKind
 
 
 # commandServer will be on PORT_BASE+1
@@ -58,45 +63,79 @@ class RevPiPyMachineController:
         self.feedback = {}
         self.commandFeedback = {}
 
+
+        self.previousInputStatus : Dict[str, Any]= {}
+        """Dict resulting from Machine.inputStatus(), used to detect changes in the input"""
+
+        self.previousOuputStatus : Dict[str, Any]= {}
+        """Dict resulting from Machine.outputStatus(), used to detect changes in the output"""
+
+        self.previousInternalStatus : Dict[str, Any]= {}
+        """Dict resulting from Machine.internalStatus(), used to detect changes in the internal status"""
+
+        # used to indicate to the notification socket to stop too even if no notification message needs to be send 
+        # use of multiprocessing.Value to cross processes
+        self.brokenCommandSocketDetected = multiprocessing.Value('b', False)
+
         # read configuration from file
         self.controller_config = {}
         if os.path.isfile(configurationFile):
             logging.debug(f'reading configuration file {configurationFile}')
             with open(configurationFile, 'r') as file:
                 self.controller_config = yaml.safe_load(file)
+        else:
+            logging.warning(f'configuration file {configurationFile} not found; stopping the process')
+            sys.exit(1)
 
+        self.plcId = self.controller_config.get('plc', {}).get('id', "PLC")
         self.host = self.controller_config.get('connection', {}).get('host', socket.gethostname()+ ".local")
         self.command_port =  self.controller_config.get('connection', {}).get('command_port', 6001)
         self.notification_port =  self.controller_config.get('connection', {}).get('notification_port', 6011)
         self.mainLoopDelay =   self.controller_config.get('controller', {}).get('mainLoopDelay', 0.25)
-
         
+        self.MQTT = MQTTFunctions(self.controller_config.get('mqtt', {}).get('server', 'localhost'),
+                                  self.controller_config.get('mqtt', {}).get('port', 1883), 
+                                  self.controller_config.get('mqtt', {}).get('keepalive', 60))
+        logging.debug(f'plc= {self.plcId}, controller_sockets={self.host}:{self.command_port}/{self.notification_port}, mqtt={self.MQTT.server}:{self.MQTT.port}')
 
     def receiveCommandMessages(self, s: socket.socket) -> None:
         """
         receive command message from the provided socket
+        WARNING: runs in dedicated Process
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "receiveCommandMessages Process"))
-
+        socket_list.append(s)
         isBrokenConnection = False
+        self.brokenCommandSocketDetected.value = False
 
         while not isBrokenConnection:
                 data = s.recv(1024)
                 if data == b'':
                     logging.info("receiveCommandMessages socket connection broken")
                     isBrokenConnection = True
+                    self.brokenCommandSocketDetected.value = True
+                    time.sleep(self.mainLoopDelay) # wait enough before possible connection so that sendNotificationMessages has time to consider the brokenCommandSocketDetected flag
                 else:
-                    if not data.isspace():
+                    if data.decode().strip('\n').startswith('WATCHDOG'):
+                        logging.info(f"IGNORED Received {data!r}")
+                    elif not data.isspace():
                         logging.debug(f"Received {data!r}")
+                        self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{data!r}")
                         objdata = JSONReader.read(data)
                         self.inputBuffer.put(objdata)
+        # reset boolean (required if notificationSocket is opened first)
+        self.brokenCommandSocketDetected.value = False
+        
 
     def sendNotificationMessages(self, s: socket.socket) -> None:
         """
         send notification message to the provided socket
+        WARNING: runs in dedicated Process
         """
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "sendNotificationMessages Process"))
-        while True:
+        socket_list.append(s)
+        isBrokenConnection = False
+        while not isBrokenConnection:
             try:
                 if self.outputBuffer.qsize() > 0:
                     logging.debug("self.outputBuffer not empty!!!")
@@ -106,9 +145,23 @@ class RevPiPyMachineController:
                 s.sendall(bytes(message, "utf-8"))
                 logging.debug(messageSend)
             except Empty:
-                logging.debug("nothing in queue to send")
-                time.sleep(self.mainLoopDelay) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
-
+                if self.brokenCommandSocketDetected.value == True:
+                    logging.info(f"sendNotificationMessages socket connection closed - cause: receiveCommandMessages socket connection broken")
+                    s.close()
+                    isBrokenConnection = True
+                else:
+                    readable, writable, exceptional = select.select([s], [s], [s], 0)
+                    if exceptional:
+                        logging.info(f"sendNotificationMessages socket connection broken - cause: exceptional={exceptional}")
+                        isBrokenConnection = True
+                    elif s.fileno() == -1:
+                        logging.info("sendNotificationMessages socket connection broken = cause: fileno() == -1")
+                        isBrokenConnection = True
+                    else:
+                        # logging.debug("nothing in queue to send")
+                        time.sleep(self.mainLoopDelay) # TO DO  find a way to make sure that we don't spend to much time in the loop, we should block on the buffer ...
+        
+                    
 
     def processJson(self, inputBuffer: Queue):
         #maybe output buffer als parameter übergeben wie inputbuffer???
@@ -132,9 +185,13 @@ class RevPiPyMachineController:
                 logging.debug(f"machines: {self.machines}")
                 if m.id == inputBufferItem.topicName:
                     foundMatchingMachine = True
+
                     # find diff btw command and request
                     if inputBufferItem.message.jsonType == "STATUSREQUEST":
                         logging.debug("Status")
+
+                        #self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", JSONParser.parse(inputBufferItem.message))
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", json.dumps(inputBufferItem.message, default=str))
                         # Status abfragen und Ergebnis an outputBuffer anfügen
                         try:
                             statusanswer = m.request(inputBufferItem.message.parameters)
@@ -148,6 +205,8 @@ class RevPiPyMachineController:
                             break
                     elif inputBufferItem.message.jsonType == "COMMAND":
                         logging.debug("command")
+                        # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
                         try:
                             logging.debug(f"Nom de message : {inputBufferItem.message.name}")
                             # map between functions and the name of functions sent with the JSON
@@ -241,8 +300,11 @@ class RevPiPyMachineController:
                             #raise JSONCommandNotSupportedOnThisMachineException()
                             logging.warning(f"command not supported: \n{e}")
                             break
+                    else:
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
             if not foundMatchingMachine : 
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
+                self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
 
     @abstractmethod
     def read(self) -> None:
@@ -316,6 +378,29 @@ class RevPiPyMachineController:
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
+                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "feedback", JSONParser.parse(f))
+
+    def publishMQTTMeasurementStatus(self) -> None:
+        """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
+        """
+        for m in self.machines:
+            currentInputStatus = m.inputStatus()
+            if self.previousInputStatus.get(m.id, None) != currentInputStatus:
+                logging.debug(f'publishing {m.id} inputStatus to MQTT {self.previousInputStatus.get(m.id, None)} != {currentInputStatus}')
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)            
+                self.previousInputStatus[m.id] =  currentInputStatus
+                
+            currentInternalStatus = m.internalStatus()
+            if self.previousInternalStatus.get(m.id, None) != currentInternalStatus:
+                logging.debug(f'publishing {m.id} internalStatus to MQTT')
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
+                self.previousInternalStatus[m.id] = currentInternalStatus
+            
+            currentOutputStatus = m.outputStatus()
+            if self.previousOuputStatus.get(m.id, None) != currentOutputStatus:
+                logging.debug(f'publishing {m.id} outputStatus to MQTT')
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
+                self.previousOuputStatus[m.id] = currentOutputStatus
 
     def createCommandFeedbackOnChange(self) -> None:
         """Whenever the state of the command changes, feedback is created
@@ -346,11 +431,11 @@ class RevPiPyMachineController:
         # TODO manage connectinOpening modes : opend by controller or by orchestrator
         # listen for connection and process commandMessages in a dedicated Process
         # start the function socketConnexionHelper.listenSocket("localhost", 8888, self.receiveCommandMessage) in a Process
-        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages]).start()
+        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.command_port, self.receiveCommandMessages, True]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.receiveCommandMessages]).start()
         
         # listen for connection and send notification in a dedicated Process
-        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.notification_port, self.sendNotificationMessages]).start()
+        Process(target=socketConnexionHelper.listenSocket, args=[self.host, self.notification_port, self.sendNotificationMessages, True]).start()
         #Process(target=socketConnexionHelper.connectSocket, args=["localhost", self.command_port, self.sendNotificationMessages]).start()
         
 
@@ -360,11 +445,12 @@ class RevPiPyMachineController:
             self.mainLoopIteration()
 
     def mainLoopIteration(self):
-        logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
+        #logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
         self.processJson(self.inputBuffer)
         self.read()
         self.exLoop()
         self.write()
+        self.publishMQTTMeasurementStatus()
         self.reset()
         # # logging.debug(self.currentlyExecuting)
         self.createFeedbackOnChange()
@@ -375,7 +461,13 @@ class RevPiPyMachineController:
             m.decrementNbMinimumRequiredExecutionCycles()
         time.sleep(self.mainLoopDelay)
 
+# Create an empty list
+socket_list : List[socket.socket] = []
+
 def signal_custom_handler(sig, frame, name: str):
     process_id = os.getpid()
-    logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).")    
+    logging.debug(f"Signal '{sig}' received in process {name} (PID: {process_id}).") 
+    for s in socket_list:
+        logging.info(f"Closing socket {s}") 
+        s.close()  
     sys.exit(0)

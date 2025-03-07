@@ -1,6 +1,7 @@
 
 import inspect
 import logging
+import os
 import time
 import unittest
 
@@ -18,12 +19,18 @@ from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 class RevPiPyControllerTestCase(unittest.TestCase):
 
     def setUp(self):
+        script_path = os.path.abspath(__file__)
+        logging.warning(f'script path : {script_path}')
+        dir_path = os.path.dirname(__file__)
+        config_path = os.path.join(dir_path, "example/config.yml")
+        logging.warning(f'config file path : {config_path}')
+
         logging.debug("setup called")
         # pickupRobot1 = [2600,3550,25]
         # placeConveyorRobot1 = [2000,100,100]
         # placeRand = [2,3,4,5]
         # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
-        self.controller = RevPiPyMachineController()
+        self.controller = RevPiPyMachineController(config_path)
 
         self.gripperMachine = VacuumGripper("VacuumGripper01")
         self.controller.machines = [self.gripperMachine]

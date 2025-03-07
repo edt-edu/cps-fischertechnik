@@ -33,11 +33,21 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.hasBeenCalibrated : bool = False 
         """indicate if the setup() has been called at least once. ie. via reset()"""
 
+        self.previous_simulatedReadLog = None
+        self.previous_simulatedWriteLog = None
+
+
     @property
     def controlledVacuumGripper(self):
         return self.__controlledVacuumGripper
     
-    def simulatedRead(self) -> None:
+    def simulatedRead(self) -> None:        
+        simulatedReadLog = f"simulatedRead  {self.controlledVacuumGripper.sensorStatusString()} "
+        if simulatedReadLog != self.previous_simulatedReadLog :
+            logging.debug(simulatedReadLog)
+            self.previous_simulatedReadLog = simulatedReadLog   
+
+    def simulatedWrite(self) -> None:
         if not (self.controlledVacuumGripper.vacuumActArmIn and self.controlledVacuumGripper.vacuumActArmOut):
             # if both vacuumActArmIn and vacuumActArmOut are True -> they cancel each other (no move) 
             if self.controlledVacuumGripper.vacuumActArmOut:
@@ -71,10 +81,10 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
 
         # nothing special to do to simulate compressor and valve as there are no observable IO for them
         
-        logging.debug(f"simulatedRead {self.controlledVacuumGripper.sensorStatusString()} ")
-
-    def simulatedWrite(self) -> None:
-        pass
+        simulatedWriteLog = f"simulatedWrite  {self.controlledVacuumGripper.sensorStatusString()} "
+        if simulatedWriteLog != self.previous_simulatedWriteLog :
+            logging.debug(simulatedWriteLog)
+            self.previous_simulatedWriteLog = simulatedWriteLog 
 
     def simulatedReset(self) -> None:
         self.hasBeenCalibrated = True

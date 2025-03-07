@@ -1,5 +1,6 @@
 import inspect
 import logging
+import os
 import unittest
 from unittest.mock import patch, Mock
 
@@ -12,11 +13,17 @@ from rppmcontroller.protocol.MachineCommand import MachineCommand
 import tests.controllerTestHelper as ctHelper
 
 
-class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
+class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
+        script_path = os.path.abspath(__file__)
+        logging.warning(f'script path : {script_path}')
+        dir_path = os.path.dirname(__file__)
+        config_path = os.path.join(dir_path, "config.yml")
+        logging.warning(f'config file path : {config_path}')
+
         logging.debug("setup called")
-        self.controller = SimulatedSortingLineController()
+        self.controller = SimulatedSortingLineController(config_path)
         self.controller.mainLoopDelay = 0.1
 
     ### ________ EJECT ___________
@@ -34,7 +41,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a move command
+        # send a eject command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.WHITE])
         
         ctHelper.sendMessage(self.controller, "SortingLine01", message)
@@ -49,6 +56,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readNotification(self.controller)
+            
+        
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
@@ -58,14 +67,10 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-            if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 1:
+            if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERWHITE,False)
-            if iterationDone%2 == 0:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
-            if notification == "":
+            logging.debug(f"{iterationDone} iterations")
+            if (notification == "") :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -114,12 +119,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
             if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 3:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBLUE,False)
-            if iterationDone%2 == 0:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
-            if notification == "":
+            
+            if (notification == "") :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ FEEDBACK 1 FINISHED")
@@ -168,12 +169,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
             if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 5:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERRED,False)
-            if iterationDone%2 == 0:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
-            if notification == "":
+            
+            if (notification == "") :
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ FEEDBACK 1 FINISHED")

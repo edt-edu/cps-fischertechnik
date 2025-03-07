@@ -4,7 +4,6 @@ from time import time
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
-from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 import logging
 
 
@@ -49,7 +48,8 @@ class Machine:
         if value:
             self.__lastExecutionTime = time()
 
-    @property
+    def machineTypeName(self) -> str:
+        return self.__class__.__name__    @property
     @abstractmethod
     def isCommandSuccessed(self) -> bool:
         """Returns whether the command successed
@@ -142,7 +142,7 @@ class Machine:
 
         most used for logging and testing purposes
         """
-        return ""
+        return "(not implemented)"
 
     @abstractmethod
     def actuatorStatusString(self) -> str:
@@ -150,7 +150,29 @@ class Machine:
 
         most used for logging and testing purposes
         """
-        return ""
+        return "(not implemented)"
+
+    @abstractmethod
+    def inputStatus(self) -> Dict[str, Any]:
+        """return a dict of input of the machine
+        Can be used to build MQTT messages
+        """
+        pass
+
+    @abstractmethod
+    def outputStatus(self) -> Dict[str, Any]:
+        """return a dict of output of the machine
+        Can be used to build MQTT messages
+        """
+        pass
+    
+    @abstractmethod
+    def internalStatus(self) -> Dict[str, Any]:
+        """return a dict of internal values of the machine
+        Note: it may contain nested dictionnaries 
+        Can be used to build MQTT messages
+        """
+        pass
 
 
     def incrementNbMinimumRequiredExecutionCycles(self) -> None:

@@ -11,7 +11,7 @@ The project is ready to run as is. You will need Python 3 or later.
 
 ## Use a Virtual Environment
 
-Yuou should use a virtual environment `conda` or `venv`
+You should use a virtual environment `conda` or `venv`
 
 ### With conda
 use conda environment (where my-env is he name of the environment in the environment.yml file)

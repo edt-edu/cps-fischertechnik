@@ -15,15 +15,24 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
         """
         self.__controlledMutiProcessing = controlledMultiProcessing
 
+        self.previous_simulatedReadLog = None
+        self.previous_simulatedWriteLog = None
+
     @property
     def controlledMultiProcessing(self):
         return self.__controlledMutiProcessing
     
     def simulatedRead(self) -> None:        
-        logging.debug(f"simulatedRead {self.controlledMultiProcessing.sensorStatusString()} ")
+        simulatedReadLog = f"simulatedRead  {self.controlledMultiProcessing.sensorStatusString()} "
+        if simulatedReadLog != self.previous_simulatedReadLog :
+            logging.debug(simulatedReadLog)
+            self.previous_simulatedReadLog = simulatedReadLog  
 
     def simulatedWrite(self) -> None:
-        logging.debug(f"simulatedWrite {self.controlledMultiProcessing.sensorStatusString()} ")
+        simulatedWriteLog = f"simulatedWrite  {self.controlledMultiProcessing.sensorStatusString()} "
+        if simulatedWriteLog != self.previous_simulatedWriteLog :
+            logging.debug(simulatedWriteLog)
+            self.previous_simulatedWriteLog = simulatedWriteLog
 
     def simulatedReset(self) -> None:
         pass

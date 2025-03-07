@@ -18,6 +18,7 @@ from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
+from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.example.VacuumGripperController import VacuumGripperController
 from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import VacuumGripperSimpleSimulator
@@ -50,6 +51,7 @@ class SimulatedVacuumGripperController(VacuumGripperController):
             self.vacuumGripperMachine: None
         }
 
+
         self.commandFeedback = {
             self.vacuumGripperMachine: None
         }
@@ -59,9 +61,24 @@ class SimulatedVacuumGripperController(VacuumGripperController):
 
     def read(self) -> None:
         self.vaccumGripperSimulator.simulatedRead()
+        # currentInput = self.vacuumGripperMachine.inputStatus()
+        # if self.previousInputStatus != currentInput:
+        #     logging.info(f'VGR inputs are differents ')
+        #     self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INPUT ,self.vacuumGripperMachine.inputStatus())
+        # self.previousInputStatus = currentInput
 
     def write(self) -> None:
         self.vaccumGripperSimulator.simulatedWrite()
+
+        # currentInternalStatus = self.vacuumGripperMachine.internalStatus()
+        # if self.previousInternalStatus != currentInternalStatus:
+        #     self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.INTERNAL ,self.vacuumGripperMachine.internalStatus())
+        # self.previousInternalStatus = currentInternalStatus
+        
+        # currentOutput = self.vacuumGripperMachine.outputStatus()
+        # if self.previousOuputStatus != currentOutput:
+        #     self.MQTT.publishStatus(self.plcId, "VacuumGripper", self.vacuumGripperMachine.id, StatusKind.OUTPUT ,self.vacuumGripperMachine.outputStatus())
+        # self.previousOuputStatus = currentOutput
    
     def reset(self) -> None:
         vg = self.vacuumGripperMachine.executeHelper()
@@ -69,8 +86,13 @@ class SimulatedVacuumGripperController(VacuumGripperController):
             self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
-    logging.debug('main')
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+                        level=logging.DEBUG,
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    handler = logging.FileHandler("logfile.log")
+    logFormatter = logging.Formatter("%(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s")
+    handler.setFormatter(logFormatter)
+    logging.getLogger().addHandler(handler)
     # Start VacuumGripperStreamer app
     root = SimulatedVacuumGripperController("config.yml")
     

@@ -15,15 +15,35 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         """
         self.__controlledSortingLine = controlledSortingLine
 
+        #True is the value when there is no object in front of light sensors
+        self.controlledSortingLine.sortingLineSensRedLightBarrier = True
+        self.controlledSortingLine.sortingLineSensWhiteLightBarrier = True
+        self.controlledSortingLine.sortingLineSensBlueLightBarrier = True
+        self.controlledSortingLine.sortingLineSensInputLightBarrier = True
+        self.controlledSortingLine.sortingLineSensMiddleLightBarrier = True
+        
+        self.previous_simulatedReadLog = None
+        self.previous_simulatedWriteLog = None
+
     @property
     def controlledSortingLine(self):
         return self.__controlledSortingLine
     
-    def simulatedRead(self) -> None:        
-        logging.debug(f"simulatedRead {self.controlledSortingLine.sensorStatusString()} ")
+    def simulatedRead(self) -> None:    
+        simulatedReadLog = f"simulatedRead  {self.controlledSortingLine.sensorStatusString()} "
+        if simulatedReadLog != self.previous_simulatedReadLog :
+            logging.debug(simulatedReadLog)
+            self.previous_simulatedReadLog = simulatedReadLog   
 
     def simulatedWrite(self) -> None:
-        logging.debug(f"simulatedWrite {self.controlledSortingLine.sensorStatusString()} ")
+        # if moving increase counter
+        if self.controlledSortingLine.sortingLineActMotorConveyor:
+            self.controlledSortingLine.sortingLineSensImpulseCounterRaw += 1  
+
+        simulatedWriteLog = f"simulatedWrite  {self.controlledSortingLine.sensorStatusString()} "
+        if simulatedWriteLog != self.previous_simulatedWriteLog :
+            logging.debug(simulatedWriteLog)
+            self.previous_simulatedWriteLog = simulatedWriteLog 
 
     def simulatedReset(self) -> None:
         pass
@@ -44,5 +64,5 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         else :
             logging.warning("Wrong parameter in fakeSensor function")
 
-    def getCounter(self):
-        return self.controlledSortingLine.current
+    def getCounter(self) -> int:
+        return self.controlledSortingLine.sortingLineCounterValue

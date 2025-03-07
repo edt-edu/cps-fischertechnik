@@ -4,6 +4,11 @@ import paho.mqtt.client as mqtt
 import json
 import logging
 
+from rppmcontroller.machine.StatusKind import StatusKind
+from rppmcontroller.machine.EventKind import EventKind
+
+from typing import Any, Dict
+
 class MQTTFunctions:
     def __init__(self, server, port, keepalive):
         self.server = server
@@ -50,3 +55,44 @@ class MQTTFunctions:
 
         except Exception as e:
             logging.error(f"Failed to publish message: {e}")
+
+    def publishMeasurementStatus(self, plcId : str, machineType : str, machineId : str, statusKind : StatusKind, status : Dict[str, Any], parent_key = ''):
+        """Publish the status dict in dedicated topics
+        """
+        try:
+            if status:
+                if not self.connected:
+                    self.connect()
+                # recursively compute topics and send status in these topics
+                for k, v in status.items():
+                    full_key = f"{parent_key}/{k}" if parent_key else k
+                    if isinstance(v, dict):
+                        self.publishMeasurementStatus( plcId, machineType, machineId, statusKind, v, full_key)
+                    else:
+                        topic = f"PLC/{plcId}/{machineType}/{machineId}/measurements/{statusKind.name.lower()}/{full_key}"
+                        payload = {
+                            "value": v,
+                            "timestamp": datetime.now(timezone.utc).isoformat() + 'Z'  # Current timestamp in ISO 8601 format
+                        }
+                        self.client.publish(topic, json.dumps(payload),2,True) #With QOS2 and message retention
+        except Exception as e:
+            logging.error(f"Failed to publish message: {e}")
+
+    def publishEvent(self, plcId : str, machineType : str, machineId : str, eventKind : EventKind, eventGroup : str, event : Any):
+        """Publish the status dict in dedicated topics
+        """
+        try:
+            if not self.connected:
+                self.connect()
+                
+            if( machineType and machineId):
+                topic = f"PLC/{plcId}/{machineType}/{machineId}/events/{eventKind.name.lower()}/{eventGroup}"
+            else:
+                topic = f"PLC/{plcId}/events/{eventKind.name.lower()}/{eventGroup}"
+            payload = {
+                "value": event,
+                "timestamp": datetime.now(timezone.utc).isoformat() + 'Z'  # Current timestamp in ISO 8601 format
+            }
+            self.client.publish(topic, json.dumps(payload),2,True) #With QOS2 and message retention
+        except Exception as e:
+            logging.error(f"Failed to publish message: {e}")            
