@@ -136,7 +136,8 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         self.controller.read()
         self.controller.exLoop()
         self.controller.write()
-        self.controller.createFeedbackOnChange()
+        self.controller.createMachineFeedbackOnChange()
+        self.controller.createCommandFeedbackOnChange()
 
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
         assert currentlyExecutting is not None
@@ -153,7 +154,8 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         self.controller.read()
         self.controller.exLoop()
         self.controller.write()
-        self.controller.createFeedbackOnChange()
+        self.controller.createMachineFeedbackOnChange()
+        self.controller.createCommandFeedbackOnChange()
 
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
         assert currentlyExecutting is not None

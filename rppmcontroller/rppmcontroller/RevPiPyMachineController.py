@@ -20,8 +20,9 @@ from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.JSONOutput import JSONOutput
+from rppmcontroller.protocol.CommandFeedback import CommandFeedback
 from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
-from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
+from rppmcontroller.protocol.MachineFeedback import MachineFeedback
 from rppmcontroller.protocol.MQTTFunctions import MQTTFunctions
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
@@ -360,25 +361,21 @@ class RevPiPyMachineController:
             #     #logging.debug(str(key) + 'finished execution')
             #     self.currentlyExecuting[key][0] = None
 
-    def createFeedbackOnChange(self) -> None:
+    def createMachineFeedbackOnChange(self) -> None:
         """Whenever the state of the machine changes, feedback is created
-        a machine can be in several states as definded in the ExecutionStatus enum
+        a machine can be in several states as defined in the ExecutionStatus enum
         (currently, only INACTION and FINISHED are used)
         Also update the self.feedback[m] dictionnary
         """
         for m in self.machines:
             if self.feedback[m] != m.feedback():
                 self.feedback[m] = m.feedback()
-                if self.currentlyExecuting[m][1] is None:
-                    jsonid = 0
-                else:
-                    jsonid = self.currentlyExecuting[m][1]
                 # append feedback to outputBuffer
-                f = MachineCommandFeedback("MACHINE_FEEDBACK", jsonid, m.feedback().name,  "")
+                f = MachineFeedback("MACHINE_FEEDBACK",  m.feedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
-                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "feedback", JSONParser.parse(f))
+                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
     def publishMQTTMeasurementStatus(self) -> None:
         """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
@@ -416,10 +413,11 @@ class RevPiPyMachineController:
                 else:
                     jsonid = self.currentlyExecuting[m][1]
                 # append feedback to outputBuffer
-                f = MachineCommandFeedback("COMMAND_FEEDBACK", jsonid, m.commandFeedback().name,  "")
+                f = CommandFeedback("COMMAND_FEEDBACK", jsonid, m.commandFeedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 
                 self.outputBuffer.put(j, block=False)
+                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
 
     def start(self):
         """
@@ -453,7 +451,7 @@ class RevPiPyMachineController:
         self.publishMQTTMeasurementStatus()
         self.reset()
         # # logging.debug(self.currentlyExecuting)
-        self.createFeedbackOnChange()
+        self.createMachineFeedbackOnChange()
         self.createCommandFeedbackOnChange()
         
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
