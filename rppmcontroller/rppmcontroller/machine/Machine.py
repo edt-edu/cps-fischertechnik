@@ -219,7 +219,7 @@ class Machine:
         if self.isExecuting:
             return MachineStatus.INACTION
         else:
-            return MachineStatus.FINISHED
+            return MachineStatus.IDLE
         
     def commandFeedback(self):
         if self.isCommandSuccessed:

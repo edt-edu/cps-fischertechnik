@@ -352,7 +352,7 @@ class RevPiPyMachineController:
                 logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
 
             # remove currentlyExecuting function once it is finished
-            if key.feedback() == MachineStatus.FINISHED and self.currentlyExecuting[key][0] != None:
+            if key.feedback() == MachineStatus.IDLE and self.currentlyExecuting[key][0] != None:
                 logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
                 self.currentlyExecuting[key][0] = None
             # DVK    

@@ -35,7 +35,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -67,7 +67,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
@@ -82,7 +82,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -114,7 +114,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
@@ -130,7 +130,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -162,7 +162,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
@@ -177,7 +177,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -209,7 +209,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
@@ -225,7 +225,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -258,7 +258,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
@@ -273,7 +273,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -310,7 +310,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK FINISHED")
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
