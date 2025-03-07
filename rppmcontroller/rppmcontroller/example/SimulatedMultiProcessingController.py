@@ -27,7 +27,7 @@ class SimulatedMultiProcessingController(RevPiPyMachineController):
             self.multiProcessingMachine: [None, None]
         }
 
-        self.feedback = {
+        self.machineFeedback = {
             self.multiProcessingMachine: None
         }
 

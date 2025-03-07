@@ -54,6 +54,9 @@ class VacuumGripperController(RevPiPyMachineController):
         self.feedback = {
             self.vacuumGripperMachine: None
         }
+        self.commandFeedback = {
+            self.vacuumGripperMachine: None
+        }
 
     def read(self):
         # TODO find a way to read from a configuration file

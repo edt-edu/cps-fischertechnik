@@ -28,7 +28,7 @@ class SimulatedConveyorBeltController(ConveyorBeltController):
             self.conveyorBeltMachine: [None, None]
         }
 
-        self.feedback = {
+        self.machineFeedback = {
             self.conveyorBeltMachine: None
         }
 

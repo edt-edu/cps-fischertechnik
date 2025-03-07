@@ -29,7 +29,7 @@ from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
 from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
 from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.MachineStatus import MachineStatus
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.StatusKind import StatusKind
@@ -56,12 +56,13 @@ class RevPiPyMachineController:
         self.outputBuffer = multiprocessing.Queue()
         self.__parent_pid = os.getppid()
 
-        #the list of all machines that are connected to this core
+        #the list of all machines that are connected to this controller
         self.machines : List[Machine] = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
-        #dict, which keys are the machines, feedback as the values
-        self.feedback = {}
+        #dict, which keys are the machines, machine_feedback as the values
+        self.machineFeedback = {}
+        #dict, which keys are the machines, command_feedback as the values
         self.commandFeedback = {}
 
 
@@ -351,7 +352,7 @@ class RevPiPyMachineController:
                 logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
 
             # remove currentlyExecuting function once it is finished
-            if key.feedback() == ExecutionStatus.FINISHED and self.currentlyExecuting[key][0] != None:
+            if key.feedback() == MachineStatus.FINISHED and self.currentlyExecuting[key][0] != None:
                 logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
                 self.currentlyExecuting[key][0] = None
             # DVK    
@@ -368,8 +369,8 @@ class RevPiPyMachineController:
         Also update the self.feedback[m] dictionnary
         """
         for m in self.machines:
-            if self.feedback[m] != m.feedback():
-                self.feedback[m] = m.feedback()
+            if self.machineFeedback[m] != m.feedback():
+                self.machineFeedback[m] = m.feedback()
                 # append feedback to outputBuffer
                 f = MachineFeedback("MACHINE_FEEDBACK",  m.feedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)

@@ -45,7 +45,13 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
             self.sortingLineMachine: [None, None]
         }
 
-        self.feedback = {
+        self.machineFeedback = {
+            self.conveyorBeltMachine: None,
+            self.vacuumGripperMachine: None,
+            self.multiProcessingMachine: None,
+            self.sortingLineMachine: None
+        }
+        self.commandFeedback = {
             self.conveyorBeltMachine: None,
             self.vacuumGripperMachine: None,
             self.multiProcessingMachine: None,

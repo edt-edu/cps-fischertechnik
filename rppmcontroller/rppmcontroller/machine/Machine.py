@@ -4,7 +4,7 @@ from time import time
 from typing import Any, Dict
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
-from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.MachineStatus import MachineStatus
 from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 import logging
 
@@ -217,9 +217,9 @@ class Machine:
 
     def feedback(self):
         if self.isExecuting:
-            return ExecutionStatus.INACTION
+            return MachineStatus.INACTION
         else:
-            return ExecutionStatus.FINISHED
+            return MachineStatus.FINISHED
         
     def commandFeedback(self):
         if self.isCommandSuccessed:

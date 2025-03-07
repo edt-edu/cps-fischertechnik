@@ -28,7 +28,7 @@ class SimulatedSortingLineController(RevPiPyMachineController):
             self.sortingLineMachine: [None, None]
         }
 
-        self.feedback = {
+        self.machineFeedback = {
             self.sortingLineMachine: None
         }
 
