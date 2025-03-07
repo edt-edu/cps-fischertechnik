@@ -374,7 +374,7 @@ class RevPiPyMachineController:
                 else:
                     jsonid = self.currentlyExecuting[m][1]
                 # append feedback to outputBuffer
-                f = MachineCommandFeedback("FEEDBACK", jsonid, m.feedback().name,  "")
+                f = MachineCommandFeedback("MACHINE_FEEDBACK", jsonid, m.feedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
