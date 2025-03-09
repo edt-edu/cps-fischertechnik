@@ -389,6 +389,10 @@ class VacuumGripper(MovingMachine):
         moveList = moveList[6:]
         return lambda: self.execute(endPos, endPos, moveList)
 
-    def stop(self):
+    def _doStop(self):
+        self.clearMoveList()
         self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
-        return None
+        self.isCommandSuccessed = True
+
+    def stop(self):
+        return lambda: self._doStop()

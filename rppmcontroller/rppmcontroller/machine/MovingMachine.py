@@ -27,11 +27,11 @@ class MovingMachine(Machine):
         self.start = Position("START", 0, 0, 0)
         self.fin = Position("END", 0, 0, 0)
         self.setupFirst = True
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = False
-        self.__isCommandTimedOut = False
-        self.__isSetupRunning = False
-        self.__isSetupDone = False
+        self.isCommandSuccessed = False
+        self.isCommandRunning = False
+        self.isCommandTimedOut = False
+        self.isSetupRunning = False
+        self.isSetupDone = False
         
 
     @property
@@ -98,17 +98,18 @@ class MovingMachine(Machine):
             logging.debug('setup from execute')
             #self.isExecuting = True
             #self.__setupFinished = self.setup()
-            self.__isSetupRunning = True
+            self.isSetupRunning = True
             self.setup()
             self.setupFinishedHelper = self._setupFinished
             self._configReached = True
-            self.__isSetupDone = True
-            self.__isSetupRunning = False
+            # self.isSetupDone = True
+            # self.isSetupRunning = False
         else:
             logging.debug('processing move list')    
-            self.__isCommandSuccessed = False
-            self.__isSetupDone = False
-            self.__isCommandRunning = True
+            self.isCommandSuccessed = False
+            self.isSetupDone = False
+            self.isSetupRunning = False
+            self.isCommandRunning = True
             if self._configReached:
                 if self.__configGoal is None:
                     logging.debug(f"config reached setup()")
@@ -134,8 +135,8 @@ class MovingMachine(Machine):
                 # self.__configGoal =  None
                 self.__pc = 0
                 self.__moveList = []
-                self.__isCommandRunning = False
-                self.__isCommandSuccessed = True
+                self.isCommandRunning = False
+                self.isCommandSuccessed = True
 
     def clearMoveList(self) -> None:
         """execute performs the action indicated by the input numbers to move the product between the two specified places
