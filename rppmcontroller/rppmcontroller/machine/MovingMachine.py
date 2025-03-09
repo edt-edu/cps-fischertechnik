@@ -11,30 +11,6 @@ import logging
 # this class should be used for all machines, that have no strict movement path, but can follow various paths
 # examples: Warehouse, 3D Robot
 class MovingMachine(Machine):
-    @Machine.isExecuting.getter
-    def isExecuting(self):
-        pass
-
-    @Machine.isCommandSuccessed.getter
-    def isCommandSuccessed(self) -> bool:
-        return self.__isCommandSuccessed
-
-    @Machine.isCommandRunning.getter
-    def isCommandRunning(self) -> bool:
-        return self.__isCommandRunning
-    
-    @Machine.isCommandTimedOut.getter
-    def isCommandTimedOut(self) -> bool:
-        return self.__isCommandTimedOut
-
-    @Machine.isSetupRunning.getter
-    def isSetupRunning(self) -> bool:
-        return self.__isSetupRunning
-
-    @Machine.isSetupDone.getter
-    def isSetupDone(self) -> bool:
-        return self.__isSetupDone
-
 
     def __init__(self, id1: str, dictMap: dict) -> None:
         """Init for a moving machine, additionally needs a list of places where pick/place operations could be performed
@@ -160,6 +136,16 @@ class MovingMachine(Machine):
                 self.__moveList = []
                 self.__isCommandRunning = False
                 self.__isCommandSuccessed = True
+
+    def clearMoveList(self) -> None:
+        """execute performs the action indicated by the input numbers to move the product between the two specified places
+
+        :param Position start: see method generate transferMoveList
+        :param Position fin: see method generate transferMoveList
+        :param list moveList:
+        """
+        self.__moveList = []
+        self.__pc = 0
 
     @property
     def pc(self) -> int:
