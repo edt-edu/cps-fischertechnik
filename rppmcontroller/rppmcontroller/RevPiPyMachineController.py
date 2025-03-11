@@ -206,34 +206,35 @@ class RevPiPyMachineController:
                             print("status not supported")
                             break
                     elif inputBufferItem.message.jsonType == "COMMAND":
-                        logging.debug("command")
+                        logging.debug(f'Command {inputBufferItem.message.type} {inputBufferItem.message.name}')
                         # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
                         self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
                         try:
-                            logging.debug(f"Nom de message : {inputBufferItem.message.name}")
-                            # map between functions and the name of functions sent with the JSON
+                            # find a function in the machine class with name = "{message.name}_Command"
                             if inputBufferItem.message.type == "VACUUM" and isinstance(m, VacuumGripper):
-                                func = getattr(VacuumGripper, str.lower(inputBufferItem.message.name))
+                                func = getattr(VacuumGripper, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
                             #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, Warehouse):
                             #     func = getattr(Warehouse, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
-                                func = getattr(SortingLine, str.lower(inputBufferItem.message.name))
+                                func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
                             #     func = getattr(IndexedLine, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
-                                func = getattr(MultiProcessing, str.lower(inputBufferItem.message.name))
+                                func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
-                                func = getattr(ConveyorBelt, str.lower(inputBufferItem.message.name))
+                                func = getattr(ConveyorBelt, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
                             #     func = getattr(PunchingMachine, str.lower(inputBufferItem.message.name))
                             else:
                                 #TODO raise an exception here
+                                #TODO send a COMMAND_FEEDBACK  IGNORED message
                                 logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
-                            # Funktionsparameter in korrekte Reihenfolge bringen und mit Funktion zusammenbringen
-                            logging.debug(f"Type de message : {inputBufferItem.message.type}")
-                            if inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM":
+                            # Call the command function: it must return either None if nothing else is required 
+                            #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
+                            # Arrange the function parameters in the correct order and match them with the function.
+                            if func != None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
                                 pos = inputBufferItem.message.parameters
                                 i = len(pos)
                                 if i == 0:
@@ -272,7 +273,7 @@ class RevPiPyMachineController:
                             #     #currently: first arg: in, second argument: out
                             #     if i == 2:
                             #         ret = func(m, box[0], box[1])
-                            elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
+                            elif func != None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING"):
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
                                 if i == 0:
@@ -281,7 +282,7 @@ class RevPiPyMachineController:
                                     ret = func(m, color[0])
                             #elif inputBufferItem.message.type == "PUNCHING":
                             #    ret = func(m)
-                            elif inputBufferItem.message.type == "CONVEYOR":
+                            elif func != None and (inputBufferItem.message.type == "CONVEYOR"):
                                 mix = inputBufferItem.message.parameters
                                 i = len(mix)
                                 if i == 0:
@@ -299,8 +300,8 @@ class RevPiPyMachineController:
                             break
                         except AttributeError as e:
                             #TODO activate:
-                            #raise JSONCommandNotSupportedOnThisMachineException()
-                            logging.warning(f"command not supported: \n{e}")
+                            #TODO send a COMMAND_FEEDBACK  IGNORED message
+                            logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
                             break
                     else:
                         self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))

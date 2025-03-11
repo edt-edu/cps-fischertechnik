@@ -218,19 +218,22 @@ class ConveyorBelt(Machine):
         return self.current 
 
 
-
-    ### ____________ Functions callable from orchestrator ________________
-    #   function name must be lowercase (cf. RevPiPyMachineController)
-
-    def stop(self):
+    def stop_cycleStep(self):
         """Stop the conveyor"""
         self.__conveyorActForward = self.__conveyorActBackward = False
         self.__isCommandRunning = False
         self.__isCommandSuccessed = True
-        return None
+
+        
+    ### ____________ Functions callable from orchestrator ________________
+    #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
+
+    def stop_Command(self):
+        """Stop the conveyor"""
+        return lambda: self.stop_cycleStep()
 
 
-    def move_out(self, dir: Direction):
+    def move_out_Command(self, dir: Direction):
         """Move the package to a given direction until it leaves the conveyor
             Args:
                 dir (Direction) : the direction where to move the package
@@ -245,7 +248,7 @@ class ConveyorBelt(Machine):
         if dir == Direction.BACKWARD:
             return lambda: self.backwardLeaveConveyor()
 
-    def move_nb_steps(self, dir: Direction, steps: int):
+    def move_nb_steps_Command(self, dir: Direction, steps: int):
         """Move the conveyor belt to a given direction with a given number of steps
             Args:
                 dir (Direction) : the direction where to move the package
@@ -264,7 +267,7 @@ class ConveyorBelt(Machine):
             logging.error(f"Invalid direction {dir}")
 
 
-    def move_to_sensor(self, dir: Direction):
+    def move_to_sensor_Command(self, dir: Direction):
         """Move the package to a given direction until it is detected by the destination sensor
             Args:
                 dir (Direction) : the direction where to move the package

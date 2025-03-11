@@ -188,7 +188,7 @@ class Machine:
             self.__nbMinimumRequiredExecutionCycles -= 1
 
     @abstractmethod
-    def stop(self):
+    def stop_cycleStep(self):
         """
         Used to stop the execution immediately by setting all outputs to false
         """

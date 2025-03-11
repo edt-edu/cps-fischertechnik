@@ -3,7 +3,7 @@ import logging
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 class MultiProcessing(Machine):
 
@@ -533,8 +533,8 @@ class MultiProcessing(Machine):
         self.actionDone +=1
 
 
-    ### ____________ Functions callable from orchestrator ________________
-    def setup(self):
+    ### _________ Functions intended to run in the main loop cycle ____________
+    def setup_cycleStep(self):
         """Reset the station and move some parts to the initial postion."""
         actions = [
             self.resetStation,
@@ -549,11 +549,33 @@ class MultiProcessing(Machine):
         else:
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
-    
-        return lambda: self.setup()  
 
+    def process_cycleStep(self, actions: List):
+        """call the actions in the actions list, each action must increment self.actionDone in order to proceed to next action of the list"""
+        self.processing = True
+        if len(actions) <= self.actionDone:
+            self.__isCommandSuccessed = True
+            self.__isCommandRunning = False
+            self.processing = False
+            self.actionDone = 0
+        else:
+            self.__isCommandSuccessed = False
+            self.__isCommandRunning = True
+            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
+            actions[self.actionDone]()
 
-    def process1(self):
+    def stop_cycleStep(self):
+        """ Stop the machine """
+        self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
+        self.__isCommandSuccessed = True
+        self.__isCommandRunning = False
+
+    ### ____________ Functions callable from orchestrator ________________
+    #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
+    def setup_Command(self):
+        return lambda: self.setup_cycleStep()  
+
+    def process1_Command(self):
         """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
         actions = [
             self.moveFeederIn,
@@ -570,24 +592,8 @@ class MultiProcessing(Machine):
             self.ejectProductToConveyor,
             self.moveConveyorToEnd
         ]
-
-        self.processing = True
-        if len(actions) <= self.actionDone:
-            self.__isCommandSuccessed = True
-            self.__isCommandRunning = False
-            self.processing = False
-            self.actionDone = 0
-        else:
-            self.__isCommandSuccessed = False
-            self.__isCommandRunning = True
-            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
-            actions[self.actionDone]()
-
-        return lambda:self.process1()    
+        return lambda:self.process_cycleStep(actions)    
     
-
-    def stop(self):
+    def stop_Command(self):
         """ Stop the machine """
-        self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
-        self.__isCommandSuccessed = True
-        self.__isCommandRunning = False
+        return lambda:self.stop_cycleStep() 

@@ -319,7 +319,7 @@ class VacuumGripper(MovingMachine):
     #von execute bereits berücksichtigt
     # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
     # already considered by execute
-    def setup(self) -> bool:       
+    def setup(self) :       
         # activate engines toward the sensors if necessary
         self.vacuumActArmOut = self.vacuumActRotLeft = self.vacuumActVerticalDown = False
         t1 = t2 = t3 = False
@@ -354,17 +354,22 @@ class VacuumGripper(MovingMachine):
         if self.setupFirst:
             logging.debug("setup first True")
             self.setupFirst = False
+    
+    ### ____________ Functions callable from orchestrator ________________
+    #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
+
+    def setup_Command(self):
         return lambda: self.setup()
 
-    def gotopos(self, endPos : Position) :
-        """Go move gropper to reach the given position without changing the valve or compressor status
+    def gotopos_Command(self, endPos : Position) :
+        """Go move gripper to reach the given position without changing the valve or compressor status
         """
 
         self.setupFirst = True
         moveList = [VacuumGripperConfig(counterVertical=endPos.vertical, counterRot = endPos.rot, counterArm=endPos.horizontal, gripperActive=self.vacuumActValve )]
         return lambda: self.execute(endPos, endPos, moveList)
 
-    def move(self, startPos, endPos):
+    def move_Command(self, startPos, endPos):
         self.setupFirst = True
         self.setupCount = 0
         self.__isExecutingCount = 0
@@ -377,22 +382,22 @@ class VacuumGripper(MovingMachine):
         #self.execute(startPos, endPos, moveList)
         return lambda: self.execute(startPos, endPos, moveList)
 
-    def pick(self, startPos):
+    def pick_Command(self, startPos):
         self.setupFirst = True
         moveList = self.generateTransferMoveList(startPos, startPos)
         moveList = moveList[:6]
         return lambda: self.execute(startPos, startPos, moveList)
 
-    def place(self, endPos):
+    def place_Command(self, endPos):
         self.setupFirst = True
         moveList = self.generateTransferMoveList(endPos, endPos)
         moveList = moveList[6:]
         return lambda: self.execute(endPos, endPos, moveList)
 
-    def _doStop(self):
+    def stop_cycleStep(self):
         self.clearMoveList()
         self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
         self.isCommandSuccessed = True
 
-    def stop(self):
-        return lambda: self._doStop()
+    def stop_Command(self):
+        return lambda: self.stop_cycleStep()
