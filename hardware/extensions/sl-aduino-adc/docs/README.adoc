@@ -1,0 +1,172 @@
+:stem: asciimath
+
+This README file aims to describe the code and the wiring of the color sensor sibling system (arduino).
+In this file you will find the wiring, explaination of important code blocks and some issues you can encounter with it.
+
+The goal of this system is to interprete the analog signal sent by the color sensor and change it to a digital value understandable by the raspberry and power leds according to the color detected.
+
+## Hardware
+For the analog to digital part, only an arduino is required since it possesses a built analog to digital converter.
+
+You will also need two resistors (100kohm) to create a voltage divider and reduce the voltage of the analog signal sent by the color sensor.
+
+For the leds part, you only need the arduino, your leds and the resistors.
+
+### Wiring
+
+The voltage of the analog signal sent by the color sensor is reduced (from Vmax = 10V to Vmax = 5V) thanks to a voltage divider and is then received in the A0 analog pin of the arduino.
+
+#### Voltage divider formula
+
+[stem]
+Vout = Vin * /frac{R2}{R1+R2}$ = 10 * $/frac{100k}{100k+100k}$ = 5V
+
+
+Each digital pin (10, 11, 12, 13) are connected to resistors (to reduce the current and voltage in the leds) and then to the the leds.
+
+#### Led's resistors calculation
+
+[stem]
+Red ;
+Typ voltage : 2V
+Typ current : 20mA = 0.02A
+Résistor : R = $/frac{5V-2V}{0.02A}$ = 150ohm
+
+White ;
+Typ voltage : 2V
+Typ current : 20mA = 0.02A
+Résistor : R = $/frac{5V-2V}{0.02A}$ = 150ohm
+
+Blue ;
+Typ voltage : 3.5V
+Typ current : 20mA = 0.02A
+Résistor : R = $/frac{5V-3.5V}{0.02A}$ = 75ohm
+
+Green ;
+Typ voltage : 3.6V
+Typ current : 20mA = 0.02A
+Résistor : R = $/frac{5V-3.6V}{0.02A}$ = 70ohm
+
+
+
+include::Scheme_arduino.png[]
+
+## Code
+
+### Setup
+----
+void setup() {
+  Serial.begin(9600); // initialize serial communication at 9600 bits per second
+  pinMode(A0, INPUT); //pin of the data of the color sensor
+  pinMode(13, OUTPUT); //Green LED pin for for different colors
+  pinMode(12, OUTPUT); //Red LED pin
+  pinMode(11, OUTPUT); //Blue LED pin
+  pinMode(10, OUTPUT); //White LED pin
+}
+----
+
+In the setup, the pinMode is used to set pins as output or input.
+The pins 10, 11, 12 and 13 are used for the leds and so they are outputs while the A0 pin is used as an input to get the analog signal sent by the color sensor.
+
+### Variables initialization
+
+----
+  int analogValue = 0;
+  int onTime = 3000;
+  int sensTime = 175;
+  int digitalValue = 0;
+  int sensorPin = A0;
+  float initialVoltage = 0.0;
+  unsigned long conditionStartTime = 0;
+  bool conditionMet = false;
+----
+
+This bloc of code initializes the variables used in the code.
+
+- analogValue : the analog value received by the arduino
+- onTime : the time the leds will be on
+- sensTime : the time the sensor will be on
+- digitalValue : the digital value of the analog signal
+- sensorPin : the pin allowed to the sensor
+- initialVoltage : the initial voltage of the analog signal
+- conditionStartTime : the time when the condition is met
+- conditionMet : boolean to know if the condition is met
+
+### Values display
+
+----
+  digitalValue = analogRead(sensorPin);
+  Serial.print("Digital Value: ");
+  Serial.print(digitalValue);
+
+  analogValue = digitalValue * (5.0 / 1023.0);
+  Serial.print(", Analog Value: ");
+  Serial.print(analogValue);
+  Serial.println(" V");
+
+  initialVoltage = analogValue * 2.0;
+  Serial.print(", Initial Voltage: ");
+  Serial.print(initialVoltage);
+  Serial.println(" V");
+----
+
+This bloc of code reads the analog signal sent by the color sensor and displays the digital value, the analog value and the initial voltage of the signal for debugging purposes.
+
+### Color detection
+
+----
+  while (digitalValue > 810 || digitalValue < 780) {
+      digitalValue = analogRead(sensorPin);
+      printf("green");  
+      digitalWrite(13, HIGH); // Green LED on
+      digitalWrite(12, LOW);
+      digitalWrite(11, LOW);
+      digitalWrite(10, LOW);
+      if (digitalValue >= 720 && digitalValue <= 757) { // Blue span
+        if (!conditionMet) {
+          conditionStartTime = millis();
+          conditionMet = true;
+        } else if (millis() - conditionStartTime >= sensTime) {
+        printf("temps Blue = ", millis() - conditionStartTime);
+        // Condition met for at least sensTime * milliseconds
+        digitalWrite(12, LOW);
+        digitalWrite(11, HIGH); // Blue LED on
+        digitalWrite(10, LOW);
+        delay(onTime);
+      }
+    } else if (digitalValue >= 650 && digitalValue <= 710) { // Red span
+      if (!conditionMet) {
+        conditionStartTime = millis();
+        conditionMet = true;
+      } else if (millis() - conditionStartTime >= sensTime) {
+        printf("temps Red = ", millis() - conditionStartTime);
+        // Condition met for at least sensTime * milliseconds
+        digitalWrite(12, HIGH); // Red LED on
+        digitalWrite(11, LOW);
+        digitalWrite(10, LOW);
+        delay(onTime);
+      }
+    } else if (digitalValue >= 295 && digitalValue <= 420) { // White span
+      if (!conditionMet) {
+        conditionStartTime = millis();
+        conditionMet = true;
+      } else if (millis() - conditionStartTime >= sensTime) {
+        printf("temps White = ", millis() - conditionStartTime);
+        // Condition met for at least sensTime * milliseconds
+        digitalWrite(12, LOW);
+        digitalWrite(11, LOW);
+        digitalWrite(10, HIGH); // White LED on
+        delay(onTime);
+      }
+    } else { // Other colors
+      conditionMet = false;
+    }
+  }
+  digitalWrite(13, LOW);
+  digitalWrite(12, LOW);
+  digitalWrite(11, LOW);
+  digitalWrite(10, LOW);
+----
+
+This bloc of code is used to detect the color of the analog signal sent by the color sensor and light the corresponding led.
+The color detection is done by checking the digital value of the analog signal and comparing it to the values of the different colors.
