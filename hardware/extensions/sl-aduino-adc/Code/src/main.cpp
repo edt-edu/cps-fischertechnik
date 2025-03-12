@@ -10,7 +10,7 @@ void setup() {
 }
 
 void loop() {
-  int analogValue = 0;
+  int analogValue = 0; // variable to store the voltage value received from the sensor
   int onTime = 3000;
   int sensTime = 175;
   int digitalValue = 0;
@@ -46,7 +46,7 @@ void loop() {
         conditionMet = true;
       } else if (millis() - conditionStartTime >= sensTime) {
         printf("temps Blue = ", millis() - conditionStartTime);
-        // Condition met for at least 3 seconds
+        // Condition met for at least sensTime * milliseconds
         digitalWrite(12, LOW);
         digitalWrite(11, HIGH); // Blue LED on
         digitalWrite(10, LOW);
@@ -58,7 +58,7 @@ void loop() {
         conditionMet = true;
       } else if (millis() - conditionStartTime >= sensTime) {
         printf("temps Red = ", millis() - conditionStartTime);
-        // Condition met for at least 3 seconds
+        // Condition met for at least sensTime * milliseconds
         digitalWrite(12, HIGH); // Red LED on
         digitalWrite(11, LOW);
         digitalWrite(10, LOW);
@@ -70,7 +70,7 @@ void loop() {
         conditionMet = true;
       } else if (millis() - conditionStartTime >= sensTime) {
         printf("temps White = ", millis() - conditionStartTime);
-        // Condition met for at least 3 seconds
+        // Condition met for at least sensTime * milliseconds
         digitalWrite(12, LOW);
         digitalWrite(11, LOW);
         digitalWrite(10, HIGH); // White LED on
