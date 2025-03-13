@@ -38,42 +38,42 @@ class ConveyorBeltTestCase(unittest.TestCase):
 
         # forward from anywhere
         logging.debug("forward from anywhere")
-        self.conveyor1.forwardFromAnywhere()
+        self.conveyor1.forwardFromAnywhere_CycleStep()
         self.assertEqual(self.conveyor1.conveyorActForward, True)
         self.assertEqual(self.conveyor1.conveyorActBackward, False)
         self.conveyor1.stop_cycleStep()
 
         # backward from anywhere
         logging.debug("backward from anywhere")
-        self.conveyor1.backwardFromAnywhere()
+        self.conveyor1.backwardFromAnywhere_CycleStep()
         self.assertEqual(self.conveyor1.conveyorActForward, False)
         self.assertEqual(self.conveyor1.conveyorActBackward, True)
         self.conveyor1.stop_cycleStep()
 
         # forward leave conveyor
         logging.debug("forward leave conveyor")
-        self.conveyor1.forwardLeaveConveyor()
+        self.conveyor1.forwardLeaveConveyor_CycleStep()
         self.assertEqual(self.conveyor1.conveyorActForward, True)
         self.assertEqual(self.conveyor1.conveyorActBackward, False)
         self.conveyor1.stop_cycleStep()
         
         # backward from anywhere
         logging.debug("backward leave conveyor")
-        self.conveyor1.backwardLeaveConveyor()
+        self.conveyor1.backwardLeaveConveyor_CycleStep()
         self.assertEqual(self.conveyor1.conveyorActForward, False)
         self.assertEqual(self.conveyor1.conveyorActBackward, True)
         self.conveyor1.stop_cycleStep()
         
         # forward go to
         logging.debug("forward go to")
-        self.conveyor1.forwardGoto(3)
+        self.conveyor1.forwardGoto_CycleStep(3)
         self.assertEqual(self.conveyor1.conveyorActForward, True)
         self.assertEqual(self.conveyor1.conveyorActBackward, False)
         self.conveyor1.stop_cycleStep()
 
         # backward go to
         logging.debug("backward go to")
-        self.conveyor1.backwardGoto(3)
+        self.conveyor1.backwardGoto_CycleStep(3)
         self.assertEqual(self.conveyor1.conveyorActForward, False)
         self.assertEqual(self.conveyor1.conveyorActBackward, True)
         self.conveyor1.stop_cycleStep()

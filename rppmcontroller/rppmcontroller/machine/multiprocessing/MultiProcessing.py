@@ -533,7 +533,8 @@ class MultiProcessing(Machine):
         self.actionDone +=1
 
 
-    ### _________ Functions intended to run in the main loop cycle ____________
+    ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
+
     def setup_cycleStep(self):
         """Reset the station and move some parts to the initial postion."""
         actions = [

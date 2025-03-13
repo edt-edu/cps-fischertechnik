@@ -129,7 +129,16 @@ class ConveyorBelt(Machine):
         return status
 
 
-    def forwardFromAnywhere(self):
+    def countSteps(self):
+        """Count the number of steps when the conveyor is moving """
+        self.current  = self.current + self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        # logging.debug(f"Step counter : {self.current }")
+        return self.current 
+
+
+    ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
+
+    def forwardFromAnywhere_CycleStep(self):
         """Move the package from any place on the conveyor to the right sensor"""
         self.__conveyorActForward = True
         if not self.__conveyorSensSwap:
@@ -140,7 +149,7 @@ class ConveyorBelt(Machine):
         return False
 
 
-    def backwardFromAnywhere(self):
+    def backwardFromAnywhere_CycleStep(self):
         """Move the package from any place on the conveyor to the left sensor"""
         self.__conveyorActBackward = True
         if not self.__conveyorSensFeed:
@@ -151,7 +160,7 @@ class ConveyorBelt(Machine):
         return False
 
 
-    def forwardLeaveConveyor(self):
+    def forwardLeaveConveyor_CycleStep(self):
         """Move the package from anywhere on the line to the left, until it leaves the conveyor. Then stop the conveyor."""
         if not self.arrived:
             self.__conveyorActForward = True
@@ -166,7 +175,7 @@ class ConveyorBelt(Machine):
             self.arrived = True
 
 
-    def backwardLeaveConveyor(self):
+    def backwardLeaveConveyor_CycleStep(self):
         """Move the package from anywhere on the line to the right, until it leaves the conveyor. Then stop the conveyor."""
         if not self.arrived:
             self.__conveyorActBackward = True
@@ -181,7 +190,7 @@ class ConveyorBelt(Machine):
             self.arrived = True
 
 
-    def forwardGoto(self, steps: int):
+    def forwardGoto_CycleStep(self, steps: int):
         """Move the package to the right, with a given number of steps
         Args:
             steps (int) : the number of steps you want to move the package
@@ -196,7 +205,7 @@ class ConveyorBelt(Machine):
             self.__isCommandSuccessed = True
 
 
-    def backwardGoto(self, steps: int):
+    def backwardGoto_CycleStep(self, steps: int):
         """Move the package to the left, with a given number of steps
             Args:
                 steps (int) : the number of steps you want to move the package
@@ -209,13 +218,6 @@ class ConveyorBelt(Machine):
             self.current = 0
             self.__isCommandRunning = False
             self.__isCommandSuccessed = True
-
-
-    def countSteps(self):
-        """Count the number of steps when the conveyor is moving """
-        self.current  = self.current + self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
-        # logging.debug(f"Step counter : {self.current }")
-        return self.current 
 
 
     def stop_cycleStep(self):
@@ -244,9 +246,9 @@ class ConveyorBelt(Machine):
         self.__isCommandSuccessed = False
         self.__isCommandRunning = True
         if dir == Direction.FORWARD:
-            return lambda: self.forwardLeaveConveyor()
+            return lambda: self.forwardLeaveConveyor_CycleStep()
         if dir == Direction.BACKWARD:
-            return lambda: self.backwardLeaveConveyor()
+            return lambda: self.backwardLeaveConveyor_CycleStep()
 
     def move_nb_steps_Command(self, dir: Direction, steps: int):
         """Move the conveyor belt to a given direction with a given number of steps
@@ -260,9 +262,9 @@ class ConveyorBelt(Machine):
         self.__isCommandRunning = True
         self.sensed = False
         if dir == Direction.FORWARD:
-            return lambda: self.forwardGoto(steps)
+            return lambda: self.forwardGoto_CycleStep(steps)
         if dir == Direction.BACKWARD:
-            return lambda: self.backwardGoto(steps)
+            return lambda: self.backwardGoto_CycleStep(steps)
         else:
             logging.error(f"Invalid direction {dir}")
 
@@ -275,7 +277,7 @@ class ConveyorBelt(Machine):
         self.__isCommandSuccessed = False
         self.__isCommandRunning = True
         if dir == Direction.FORWARD:
-            return lambda: self.forwardFromAnywhere()
+            return lambda: self.forwardFromAnywhere_CycleStep()
         if dir == Direction.BACKWARD:
-            return lambda: self.backwardFromAnywhere()
+            return lambda: self.backwardFromAnywhere_CycleStep()
 

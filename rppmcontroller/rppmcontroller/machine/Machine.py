@@ -136,9 +136,6 @@ class Machine:
         else:
             return time() - self.__lastExecutionTime
 
-    def execute(self, *args):
-        pass
-
     @abstractmethod
     def sensorStatusString(self) -> str:
         """return a human readable version of the sensors values

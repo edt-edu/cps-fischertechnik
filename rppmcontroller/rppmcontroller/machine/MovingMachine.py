@@ -56,7 +56,7 @@ class MovingMachine(Machine):
         pass
 
     @abstractmethod
-    def setup(self) -> bool:
+    def setup(self) -> None:
         """Performs the setup of the machine to ensure all counters are correctly set
 
         :return bool: True if the setup is finished
@@ -73,7 +73,7 @@ class MovingMachine(Machine):
         pass
 
     
-    def execute(self, start: Position, fin: Position, moveList: list) -> None:
+    def execute_CycleStep(self, start: Position, fin: Position, moveList: list) -> None:
         """execute performs the action indicated by the input numbers to move the product between the two specified places
 
         :param Position start: see method generate transferMoveList
@@ -81,10 +81,8 @@ class MovingMachine(Machine):
         :param list moveList:
         """
 
-        logging.debug("execute")
-        super().execute(start, fin, moveList) # ensure that the nbMinimumRequiredExecutionCycles is updated
-
-
+        logging.debug("execute_CycleStep")
+        
         self.__moveList = []
         self.__moveList.extend(moveList)
 
@@ -95,7 +93,7 @@ class MovingMachine(Machine):
             self.__pc = 0
         #TODO also reset pc when re-executing
         if not self._setupFinished:
-            logging.debug('setup from execute')
+            logging.debug('setup from execute_CycleStep')
             #self.isExecuting = True
             #self.__setupFinished = self.setup()
             self.isSetupRunning = True
