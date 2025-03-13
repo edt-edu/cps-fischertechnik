@@ -292,7 +292,7 @@ class HighBay(MovingMachine):
     def gotoconfig(self, config: Optional[HighBayConfig] = HighBayConfig()) -> bool:
 
         self.__axisHorizontal.update(self.highbaySensHorizontal, self.highbaySensHorizontalEncoderCounter)
-
+        # TODO remaining moves; make sure cantilever is retracted before moving
 
         pass
 
