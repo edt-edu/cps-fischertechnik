@@ -2,15 +2,16 @@ import logging
 from typing import Dict, Any, Optional
 
 from rppmcontroller.machine.Axis import AxisType, Axis
-from rppmcontroller.machine.ConveyorState import ConveyorState
-from rppmcontroller.machine.MovingMachine import MovingMachine
-from rppmcontroller.machine.Position import Position
+from rppmcontroller.machine.AxisConfig import AxisConfig
+from rppmcontroller.machine.ConveyorState import ConveyorState, \
+    conveyor_state_from_movements
+from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import \
     RequestedParameter
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 
 
-class HighBay(MovingMachine):
+class HighBay(Machine):
     def __init__(self, id1):
         #  inputs
         self.__highbaySensHorizontal = False
@@ -66,15 +67,14 @@ class HighBay(MovingMachine):
                 self.__highbayActHorizontalToRack or
                 self.__highbayActCantileverForward or
                 self.__highbayActCantileverBackward or
-                self.nbMinimumRequiredExecutionCycles > 0 or
-                self.hasRemainingMove())
+                self.nbMinimumRequiredExecutionCycles > 0)
 
     @property
     def isExecuting(self) -> bool:
         res = self.__isExecuting()
 
         # log isExecuting and debug info only if message has changed
-        isExecuting_log = f'isExecuting({self.id})={res} | pc={self.pc}/nbMove={self.nbMove()} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log:
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
@@ -247,28 +247,47 @@ class HighBay(MovingMachine):
             "highbayActUp": self.__highbayActUp,
         }
 
-    def generateTransferMoveList(self, numPickup: Position,
-                                 numPlace: Position) -> list:
-        pass # TODO
-
     def setup(self) -> bool:
-        self.setupFinished = self.gotoconfig()
-        self.setupFinishedHelper = self.setupFinished
+        """
+        Set up the highbay and calibrate the counters.
+        :return: True if the setup has been completed, False if it is still running
+        """
+        return self.goto_config()
 
-        # no idea why other implementations return a lambda here but documentations states that this method returns True when setup is finished
-        return self.setupFinished
+    def get_current_config(self) -> HighBayConfig:
+        """
+        Get the config describing the state in which the machine currently resides
+        :return: The current config
+        """
+        return HighBayConfig(AxisConfig(self.highbaySensHorizontal,
+                                        self.highbaySensHorizontalEncoderCounter),
+                             AxisConfig(self.highbaySensVertical,
+                                        self.highbaySensVerticalEncoderCounter),
+                             not self.highbaySensCantileverBack,
+                             conveyor_state_from_movements(
+                                 self.highbayActConveyorForward,
+                                 self.highbayActConveyorBackward))
 
-    def gotoconfig(self, config: Optional[HighBayConfig] = HighBayConfig()) -> bool:
+    def goto_config(self,
+                    config: Optional[HighBayConfig] = HighBayConfig()) -> bool:
+        """
+        Transfer the machine into another configuration
+        :param config: The new configuration to transfer the machine to
+        :return: True if the machine has reached the configuration, otherwise false
+        """
         target_config_reached = True
 
         # check whether arm needs to move
         arm_needs_to_move = False
 
-        self.__axisHorizontal.update(self.highbaySensHorizontal, self.highbaySensHorizontalEncoderCounter)
-        if not self.__axisHorizontal.gotoAxisConfig(config.horizontal_axis_config):
+        self.__axisHorizontal.update(self.highbaySensHorizontal,
+                                     self.highbaySensHorizontalEncoderCounter)
+        if not self.__axisHorizontal.gotoAxisConfig(
+            config.horizontal_axis_config):
             arm_needs_to_move = True
 
-        self.__axisVertical.update(self.highbaySensVertical, self.highbaySensVerticalEncoderCounter)
+        self.__axisVertical.update(self.highbaySensVertical,
+                                   self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
             arm_needs_to_move = True
 
@@ -276,10 +295,13 @@ class HighBay(MovingMachine):
             target_config_reached = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
-        cantilever_needs_to_be_retracted = not config.cantilever_extended or arm_needs_to_move
         cantilever_is_retracted = self.highbaySensCantileverBack
+        cantilever_is_extended = self.highbaySensCantileverFront
+        cantilever_needs_to_be_retracted = (not config.cantilever_extended or arm_needs_to_move) and not cantilever_is_retracted
+        cantilever_needs_to_be_extended = not cantilever_needs_to_be_retracted and (config.cantilever_extended and not cantilever_is_extended)
+        cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
-        if cantilever_needs_to_be_retracted != cantilever_is_retracted:
+        if cantilever_needs_to_move:
             target_config_reached = False
 
             if cantilever_needs_to_be_retracted:
@@ -287,7 +309,7 @@ class HighBay(MovingMachine):
             else:
                 self.highbayActCantileverForward = True
 
-            #make sure we are not moving
+            # make sure we are not moving the arm
             self.highbayActHorizontalToRack = False
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
@@ -296,7 +318,7 @@ class HighBay(MovingMachine):
             self.highbayActCantileverBackward = False
             self.highbayActCantileverForward = False
 
-            #cantilever is in position; we may move the arm now
+            # cantilever is in position; we may move the arm now
             self.highbayActHorizontalToRack = self.__axisHorizontal.outputminus
             self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputplus
             self.highbayActUp = self.__axisVertical.outputminus

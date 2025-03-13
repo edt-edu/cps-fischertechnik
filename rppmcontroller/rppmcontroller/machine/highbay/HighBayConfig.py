@@ -9,26 +9,10 @@ class HighBayConfig(MachineConfiguration):
                  vertical_axis_config: AxisConfig = AxisConfig.to_end_position(),
                  cantilever_extended: bool = False,
                  conveyor_state: ConveyorState = ConveyorState.IDLE):
-        self.__horizontal_axis_config = horizontal_axis_config
-        self.__vertical_axis_config = vertical_axis_config
-        self.__cantilever_extended = cantilever_extended
-        self.__conveyor_state = conveyor_state
-
-    @property
-    def horizontal_axis_config(self) -> AxisConfig:
-        return self.__horizontal_axis_config
-
-    @property
-    def vertical_axis_config(self) -> AxisConfig:
-        return self.__vertical_axis_config
-
-    @property
-    def cantilever_extended(self) -> bool:
-        return self.__cantilever_extended
-
-    @property
-    def conveyor_state(self) -> ConveyorState:
-        return self.__conveyor_state
+        self.horizontal_axis_config = horizontal_axis_config
+        self.vertical_axis_config = vertical_axis_config
+        self.cantilever_extended = cantilever_extended
+        self.conveyor_state = conveyor_state
 
     def __eq__(self, other):
         return (isinstance(other, HighBayConfig) and
