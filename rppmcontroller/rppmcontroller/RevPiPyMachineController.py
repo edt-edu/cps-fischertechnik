@@ -1,35 +1,40 @@
 
-from abc import abstractmethod
+import inspect
 import logging
 import multiprocessing
-from multiprocessing import Process
-from multiprocessing import Queue
 import os
-from queue import Empty
+import select
 import signal
 import socket
-import select
 import sys
 import time
-import inspect
-import yaml
+from abc import abstractmethod
+from multiprocessing import Process
+from multiprocessing import Queue
+from queue import Empty
 from typing import Any, Dict, List
 
+import yaml
+
+from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.StatusKind import StatusKind
+from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
+from rppmcontroller.machine.highbay.HighBay import HighBay
+from rppmcontroller.machine.multiprocessing.MultiProcessing import \
+    MultiProcessing
+from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
+from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.protocol import socketConnexionHelper
+from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONReader import JSONReader
-from rppmcontroller.protocol.JSONOutput import JSONOutput
-from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
-from rppmcontroller.protocol.MachineCommandFeedback import MachineCommandFeedback
 from rppmcontroller.protocol.MQTTFunctions import MQTTFunctions
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
-from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
-from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
-from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.StatusKind import StatusKind
+from rppmcontroller.protocol.MachineCommandFeedback import \
+    MachineCommandFeedback
+from rppmcontroller.protocol.MachineStatusRequestAnswer import \
+    MachineStatusRequestAnswer
 
 
 # commandServer will be on PORT_BASE+1
@@ -204,8 +209,8 @@ class RevPiPyMachineController:
                                 func = getattr(VacuumGripper, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
                             #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
-                            # elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, Warehouse):
-                            #     func = getattr(Warehouse, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, HighBay):
+                                func = getattr(HighBay, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
                                 func = getattr(SortingLine, str.lower(inputBufferItem.message.name))
                             # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
@@ -249,17 +254,17 @@ class RevPiPyMachineController:
                                         logging.error("command not supported - params")
                                         # TODO activate:
                                         # raise JSONCommandNotSupportedOnThisMachineException()
-                            # elif inputBufferItem.message.type == "WAREHOUSE":
-                            #     box = inputBufferItem.message.parameters
-                            #     i = len(box)
-                            #     if i == 0:
-                            #         ret = func(m)
-                            #     if i == 1:
-                            #         ret = func(m, box[0])
-                            #     #TODO clarify in API wich box the object is put to and from which the object is retrieved
-                            #     #currently: first arg: in, second argument: out
-                            #     if i == 2:
-                            #         ret = func(m, box[0], box[1])
+                            elif inputBufferItem.message.type == "WAREHOUSE":
+                                box = inputBufferItem.message.parameters
+                                i = len(box)
+                                if i == 0:
+                                    ret = func(m)
+                                if i == 1:
+                                    ret = func(m, box[0])
+                                #TODO clarify in API wich box the object is put to and from which the object is retrieved
+                                #currently: first arg: in, second argument: out
+                                if i == 2:
+                                    ret = func(m, box[0], box[1])
                             elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
