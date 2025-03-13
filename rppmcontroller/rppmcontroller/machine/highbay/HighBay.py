@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from rppmcontroller.rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.rppmcontroller.machine.MovingMachine import MovingMachine
 from rppmcontroller.rppmcontroller.machine.RequestedParameter import \
