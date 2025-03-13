@@ -24,7 +24,7 @@ The voltage divider is composed of two resistors (100kohm) connected in series b
 #### Voltage divider formula
 
 [stem]
-image::Image/Divider.png[Voltage divider]
+image::Images/Divider.png[Voltage divider]
 
 Each resistors are 100kohm.
 
