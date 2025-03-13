@@ -24,7 +24,7 @@ The voltage divider is composed of two resistors (100kohm) connected in series b
 #### Voltage divider formula
 
 [stem]
-Vout = Vin * /frac{R2}{R1+R2}$ = 10 * $/frac{100k}{100k+100k}$ = 5V
+image::Image/Divider.png[Voltage divider]
 
 Each resistors are 100kohm.
 
@@ -37,26 +37,30 @@ Each digital pin (10, 11, 12, 13) are connected to resistors (to reduce the curr
 Red ;
 Typ voltage : 2V
 Typ current : 20mA = 0.02A
-Résistor : R = $/frac{5V-2V}{0.02A}$ = 150ohm
+Résistor :
+image::Image/RedResistor.png[Red led resistor calculation]
 
 White ;
 Typ voltage : 2V
 Typ current : 20mA = 0.02A
-Résistor : R = $/frac{5V-2V}{0.02A}$ = 150ohm
+Résistor :
+image::Image/WhiteResistor.png[White led resistor calculation]
 
 Blue ;
 Typ voltage : 3.5V
 Typ current : 20mA = 0.02A
-Résistor : R = $/frac{5V-3.5V}{0.02A}$ = 75ohm
+Résistor :
+image::Image/BlueResistor.png[Blue led resistor calculation]
 
 Green ;
 Typ voltage : 3.6V
 Typ current : 20mA = 0.02A
-Résistor : R = $/frac{5V-3.6V}{0.02A}$ = 70ohm
+Résistor :
+image::Image/GreenResistor.png[Green led resistor calculation]
 
 
 
-include::Image/SchemeArduino.png[]
+image::Image/SchemeArduino.png[Ardunio wiring]
 
 ## Code
 
