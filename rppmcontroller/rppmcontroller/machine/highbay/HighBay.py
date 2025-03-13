@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, Optional
 
 from rppmcontroller.machine.Axis import AxisType, Axis
+from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.MovingMachine import MovingMachine
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import \
@@ -87,7 +88,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensHorizontal
 
     @highbaySensHorizontal.setter
-    def highbaySensHorizontal(self, value):
+    def highbaySensHorizontal(self, value: bool) -> None:
         self.__highbaySensHorizontal = value
 
     @property
@@ -95,7 +96,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensInside
 
     @highbaySensInside.setter
-    def highbaySensInside(self, value):
+    def highbaySensInside(self, value: bool) -> None:
         self.__highbaySensInside = value
 
     @property
@@ -103,7 +104,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensOutside
 
     @highbaySensOutside.setter
-    def highbaySensOutside(self, value):
+    def highbaySensOutside(self, value: bool) -> None:
         self.__highbaySensOutside = value
 
     @property
@@ -111,7 +112,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensVertical
 
     @highbaySensVertical.setter
-    def highbaySensVertical(self, value):
+    def highbaySensVertical(self, value: bool) -> None:
         self.__highbaySensVertical = value
 
     @property
@@ -119,7 +120,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensCantileverFront
 
     @highbaySensCantileverFront.setter
-    def highbaySensCantileverFront(self, value):
+    def highbaySensCantileverFront(self, value: bool) -> None:
         self.__highbaySensCantileverFront = value
 
     @property
@@ -127,7 +128,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensCantileverBack
 
     @highbaySensCantileverBack.setter
-    def highbaySensCantileverBack(self, value):
+    def highbaySensCantileverBack(self, value: bool) -> None:
         self.__highbaySensCantileverBack = value
 
     # ------------------ Output Properties ------------------
@@ -137,7 +138,7 @@ class HighBay(MovingMachine):
         return self.__highbayActConveyorForward
 
     @highbayActConveyorForward.setter
-    def highbayActConveyorForward(self, value):
+    def highbayActConveyorForward(self, value: bool) -> None:
         self.__highbayActConveyorForward = value
 
     @property
@@ -145,7 +146,7 @@ class HighBay(MovingMachine):
         return self.__highbayActConveyorBackward
 
     @highbayActConveyorBackward.setter
-    def highbayActConveyorBackward(self, value):
+    def highbayActConveyorBackward(self, value: bool) -> None:
         self.__highbayActConveyorBackward = value
 
     @property
@@ -153,7 +154,7 @@ class HighBay(MovingMachine):
         return self.__highbayActHorizontalToRack
 
     @highbayActHorizontalToRack.setter
-    def highbayActHorizontalToRack(self, value):
+    def highbayActHorizontalToRack(self, value: bool) -> None:
         self.__highbayActHorizontalToRack = value
 
     @property
@@ -161,7 +162,7 @@ class HighBay(MovingMachine):
         return self.__highbayActHorizontalToConveyor
 
     @highbayActHorizontalToConveyor.setter
-    def highbayActHorizontalToConveyor(self, value):
+    def highbayActHorizontalToConveyor(self, value: bool) -> None:
         self.__highbayActHorizontalToConveyor = value
 
     @property
@@ -169,7 +170,7 @@ class HighBay(MovingMachine):
         return self.__highbayActDown
 
     @highbayActDown.setter
-    def highbayActDown(self, value):
+    def highbayActDown(self, value: bool) -> None:
         self.__highbayActDown = value
 
     @property
@@ -177,7 +178,7 @@ class HighBay(MovingMachine):
         return self.__highbayActUp
 
     @highbayActUp.setter
-    def highbayActUp(self, value):
+    def highbayActUp(self, value: bool) -> None:
         self.__highbayActUp = value
 
     @property
@@ -185,7 +186,7 @@ class HighBay(MovingMachine):
         return self.__highbayActCantileverForward
 
     @highbayActCantileverForward.setter
-    def highbayActCantileverForward(self, value):
+    def highbayActCantileverForward(self, value: bool) -> None:
         self.__highbayActCantileverForward = value
 
     @property
@@ -193,7 +194,7 @@ class HighBay(MovingMachine):
         return self.__highbayActCantileverBackward
 
     @highbayActCantileverBackward.setter
-    def highbayActCantileverBackward(self, value):
+    def highbayActCantileverBackward(self, value: bool) -> None:
         self.__highbayActCantileverBackward = value
 
     # ------------------ Encoder Properties ------------------
@@ -203,7 +204,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensHorizontalEncoderCounter
 
     @highbaySensHorizontalEncoderCounter.setter
-    def highbaySensHorizontalEncoderCounter(self, value):
+    def highbaySensHorizontalEncoderCounter(self, value: int) -> None:
         self.__highbaySensHorizontalEncoderCounter = value
 
     @property
@@ -211,7 +212,7 @@ class HighBay(MovingMachine):
         return self.__highbaySensVerticalEncoderCounter
 
     @highbaySensVerticalEncoderCounter.setter
-    def highbaySensVerticalEncoderCounter(self, value):
+    def highbaySensVerticalEncoderCounter(self, value: int) -> None:
         self.__highbaySensVerticalEncoderCounter = value
 
     def sensorStatusString(self) -> str:
@@ -251,50 +252,69 @@ class HighBay(MovingMachine):
         pass # TODO
 
     def setup(self) -> bool:
-        # retract cantilever, move up and towards conveyor
-
-        # make sure all other engines are stopped
-        self.highbayActHorizontalToRack = False
-        self.highbayActCantileverForward = False
-        self.highbayActDown = False
-        self.highbayActConveyorForward = False
-        self.highbayActConveyorBackward = False
-
-        # make sure cantilever is retracted before moving around
-        if self.highbaySensCantileverBack:
-            self.highbayActCantileverBackward = False
-        else:
-            self.highbayActCantileverBackward = True
-            return False
-
-        moving = False
-
-        # move up
-        if self.highbaySensVertical:
-            self.highbayActUp = False
-        else:
-            self.highbayActUp = True
-            moving = True
-
-        # move towards conveyor
-        if self.highbaySensHorizontal:
-            self.highbayActHorizontalToConveyor = False
-        else:
-            self.highbayActHorizontalToConveyor = True
-            moving = True
-
-        self.setupFinished = not moving
+        self.setupFinished = self.gotoconfig()
         self.setupFinishedHelper = self.setupFinished
 
-        # no idea why other implementations return a lambda here but documentations states that this method returns a bool
+        # no idea why other implementations return a lambda here but documentations states that this method returns True when setup is finished
         return self.setupFinished
 
     def gotoconfig(self, config: Optional[HighBayConfig] = HighBayConfig()) -> bool:
+        target_config_reached = True
+
+        # check whether arm needs to move
+        arm_needs_to_move = False
 
         self.__axisHorizontal.update(self.highbaySensHorizontal, self.highbaySensHorizontalEncoderCounter)
-        # TODO remaining moves; make sure cantilever is retracted before moving
+        if not self.__axisHorizontal.gotoAxisConfig(config.horizontal_axis_config):
+            arm_needs_to_move = True
 
-        pass
+        self.__axisVertical.update(self.highbaySensVertical, self.highbaySensVerticalEncoderCounter)
+        if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+            arm_needs_to_move = True
+
+        if arm_needs_to_move:
+            target_config_reached = False
+
+        # move cantilever; make sure it is retracted if the arm needs to move
+        cantilever_needs_to_be_retracted = not config.cantilever_extended or arm_needs_to_move
+        cantilever_is_retracted = self.highbaySensCantileverBack
+
+        if cantilever_needs_to_be_retracted != cantilever_is_retracted:
+            target_config_reached = False
+
+            if cantilever_needs_to_be_retracted:
+                self.highbayActCantileverBackward = True
+            else:
+                self.highbayActCantileverForward = True
+
+            #make sure we are not moving
+            self.highbayActHorizontalToRack = False
+            self.highbayActHorizontalToConveyor = False
+            self.highbayActUp = False
+            self.highbayActDown = False
+        else:
+            self.highbayActCantileverBackward = False
+            self.highbayActCantileverForward = False
+
+            #cantilever is in position; we may move the arm now
+            self.highbayActHorizontalToRack = self.__axisHorizontal.outputminus
+            self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputplus
+            self.highbayActUp = self.__axisVertical.outputminus
+            self.highbayActDown = self.__axisVertical.outputplus
+
+        # update conveyor belt state
+        match config.conveyor_state:
+            case ConveyorState.IDLE:
+                self.highbayActConveyorForward = False
+                self.highbayActConveyorBackward = False
+            case ConveyorState.FORWARD:
+                self.highbayActConveyorForward = True
+                self.highbayActConveyorBackward = False
+            case ConveyorState.BACKWARD:
+                self.highbayActConveyorForward = False
+                self.highbayActConveyorBackward = True
+
+        return target_config_reached
 
     def internalStatus(self) -> Dict[str, Any]:
         return {

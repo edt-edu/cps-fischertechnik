@@ -1,8 +1,10 @@
 import logging
 from enum import Enum
-from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
+
+from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.utils.Counter import Counter
+from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
+from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 
 class AxisType(Enum):
@@ -78,7 +80,15 @@ class Axis:
             return PlusMinusStop.STOP
 
 
-    def gotoConfig(self, endpos, counterGoal): 
+    def gotoAxisConfig(self, axis_config: AxisConfig) -> bool:
+        """
+        Set the outputs to move towards the specified axis_config
+        :param axis_config: An AxisConfig specifying where to move to
+        :return: True if the goal specified by the config has been reached. If the internal counter is a pulse counter, then the direction of that is also returned.
+        """
+        return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
+
+    def gotoConfig(self, endpos: bool, counterGoal: int) -> bool | (bool, PlusMinusStop):
         """method to set outputs to reach the wanted config goal for that axis"""
         t = False
         d = None
@@ -115,7 +125,7 @@ class Axis:
             else:
                 self.__counter.counter = self.__counterinput
             counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.__tolerance)
-            # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.__tolerance})={counterPos}')            
+            # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.__tolerance})={counterPos}')
             if counterPos == PlusMinusStop.PLUS:
                 self.__outputminus = False
                 self.__outputplus = True
