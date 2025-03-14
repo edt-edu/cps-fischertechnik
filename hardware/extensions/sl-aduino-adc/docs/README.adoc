@@ -68,53 +68,52 @@ This part only shows the mapping of the cables linked to the arduino, it does no
 
 DIO side :
 
+[options="header",cols="1,1,1,1,3,4"]
+|===
 | DIO pin number | DIO var name | arduino pin | arduino Name | arduino Description |
 //----------------------
 | Input 10 | I_10 | D3 | Green indicator | Send a logical 1 when an object/color is detected |
 | Input 11 | I_11 | D2 | Blue indicator | Send a logical 1 when the color blue is detected |
 | Input 12 | I_12 | D1 | Red indicator | Send a logical 1 when the color red is detected |
 | Input 13 | I_13 | D0 | White indicator | Send a logical 1 when the color white is detected |
-
+|===
 
 FT side :
 
+[options="header",cols="1,1,1,1,1,3,5,1"]
+|===
 | FT pin number | FT Name | FT Description | arduino pin | arduino Name | arduino Description | comment |
 //----------------------
-| 9 | A4 Analog 0-10VDC | color sensor | A0 | analog input 0 | Analog 0-5VDC | The analog signal sent by the FT color sensor arrives in the voltage divider, is reduced to a 0-5V signal and then is sent to the A0 pin of the arduino |
-
+| 9 | A4 Analog 0-10VDC | color sensor | A0 | analog input 0 | Analog 0-5VDC | The analog signal sent by the FT color sensor is reduced to a 0-5V signal and  sent to the A0 pin |
+|===
 
 ## Code
 
 ### algorithm
 
-[plantuml]
+[mermaid]
 ----
-@startuml
-start
-:Initialize variables;
-
-repeat
-:Read analog signal;
-:digital value = digital value of the analog signal;
-:Display values;
-repeat while (color/object ?) is (no) not (yes);
-:turn on the green led and off the others;
-switch (test the digital value)
-case (digital value in the red range for more than sensTime)
-:turn on the red led and off the others;
-:delay for onTime milliseconds for the led to stay on;
-case (digital value in the white range for more than sensTime)
-:turn on the white led and off the others;
-:delay for onTime milliseconds for the led to stay on;
-case (digital value in the blue range for more than sensTime)
-:turn on the blue led and off the others;
-:delay for onTime milliseconds for the led to stay on;
-case (unknown digital value)
-endswitch
-:turn off all the leds;
-:repeat;
-end
-@enduml
+graph TD
+    A(Start) --> B[Initialize variables]
+    B --> C[Read analog signal]
+    C --> D[digital value = digital value of the analog signal]
+    D --> E[Display values]
+    E --> F{color/object ?}
+    F -->|no| C[Read analog signal]
+    F -->|yes| G[Turn on the green led and off the others]
+    G --> H{Test the digital values}
+    H -->|digital value in the red range for more than sensTime milliseconds| I[Turn on the red led]
+    H -->|digital value in the white range for more than sensTime milliseconds| K[Turn on the white led]
+    H -->|digital value in the blue range for more than sensTime milliseconds| M[Turn on the blue led]
+    I --> J[Delay for onTime milliseconds for the led to stay on]
+    K --> L[Delay for onTime milliseconds for the led to stay on]
+    M --> N[Delay for onTime milliseconds for the led to stay on]
+    J --> O[Turn off all the leds]
+    L --> O
+    N --> O
+    H -->|unknown digital value| O
+    O --> P[Repeat]
+    P --> Q(End)
 ----
 
 ### Setup
