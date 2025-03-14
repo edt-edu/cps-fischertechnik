@@ -38,43 +38,62 @@ Red ;
 Typ voltage : 2V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Image/RedResistor.png[Red led resistor calculation]
+image::Images/RedResistor.png[Red led resistor calculation]
 
 White ;
 Typ voltage : 2V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Image/WhiteResistor.png[White led resistor calculation]
+image::Images/WhiteResistor.png[White led resistor calculation]
 
 Blue ;
 Typ voltage : 3.5V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Image/BlueResistor.png[Blue led resistor calculation]
+image::Images/BlueResistor.png[Blue led resistor calculation]
 
 Green ;
 Typ voltage : 3.6V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Image/GreenResistor.png[Green led resistor calculation]
+image::Images/GreenResistor.png[Green led resistor calculation]
 
 
 
-image::Image/SchemeArduino.png[Ardunio wiring]
+image::Images/SchemeArduino.png[Ardunio wiring]
 
 ## Code
 
+### algorithm
+
+@startuml
+start
+:Initialize variables;
+
+repeat
+:Read analog signal;
+:digital value = digital value of the analog signal;
+:Display values;
+repeat while (color/object ?) is (no) not (yes);
+:turn on the green led and off the others;
+switch (test the digital value)
+case (digital value in the red range for more than sensTime)
+:turn on the red led and off the others;
+:delay for onTime milliseconds for the led to stay on;
+case (digital value in the white range for more than sensTime)
+:turn on the white led and off the others;
+:delay for onTime milliseconds for the led to stay on;
+case (digital value in the blue range for more than sensTime)
+:turn on the blue led and off the others;
+:delay for onTime milliseconds for the led to stay on;
+case (unknown digital value)
+endswitch
+:turn off all the leds;
+:repeat;
+end
+@enduml
+
 ### Setup
-----
-void setup() {
-  Serial.begin(9600); // initialize serial communication at 9600 bits per second
-  pinMode(A0, INPUT); //pin of the data of the color sensor
-  pinMode(13, OUTPUT); //Green LED pin for for different colors
-  pinMode(12, OUTPUT); //Red LED pin
-  pinMode(11, OUTPUT); //Blue LED pin
-  pinMode(10, OUTPUT); //White LED pin
-}
-----
 
 In the setup, the pinMode is used to set pins as output or input.
 The pins 10, 11, 12 and 13 are used for the leds and so they are outputs while the A0 pin is used as an input to get the analog signal sent by the color sensor.
@@ -95,89 +114,46 @@ The pins 10, 11, 12 and 13 are used for the leds and so they are outputs while t
 This bloc of code initializes the variables used in the code.
 
 - analogValue : the analog value received by the arduino
-- onTime : the time the leds will be on
-- sensTime : the time the sensor will be on
-- digitalValue : the digital value of the analog signal
+- onTime : the time the leds will be on in milliseconds. For the time being 3 seconds should be neither too short nor too long.
+- sensTime : the time the sensor needs to see the color to validate it. After some tests, 175 milliseconds seems to be the right time to not have false positives while be able to detect the colors correctly. If you experience some issues with the color detection, you can try to change this value.
+- digitalValue : the digital value of the analog signal (from 0 to 1023)
 - sensorPin : the pin allowed to the sensor
-- initialVoltage : the initial voltage of the analog signal
+- initialVoltage : the initial voltage of the analog signal (from)
 - conditionStartTime : the time when the condition is met
 - conditionMet : boolean to know if the condition is met
 
 ### Values display
 
-----
-  digitalValue = analogRead(sensorPin);
-  Serial.print("Digital Value: ");
-  Serial.print(digitalValue);
-
-  analogValue = digitalValue * (5.0 / 1023.0);
-  Serial.print(", Analog Value: ");
-  Serial.print(analogValue);
-  Serial.println(" V");
-
-  initialVoltage = analogValue * 2.0;
-  Serial.print(", Initial Voltage: ");
-  Serial.print(initialVoltage);
-  Serial.println(" V");
-----
-
 This bloc of code reads the analog signal sent by the color sensor and displays the digital value, the analog value and the initial voltage of the signal for debugging purposes.
 
 ### Color detection
 
-----
-  while (digitalValue > 810 || digitalValue < 780) {
-      digitalValue = analogRead(sensorPin);
-      printf("green");  
-      digitalWrite(13, HIGH); // Green LED on
-      digitalWrite(12, LOW);
-      digitalWrite(11, LOW);
-      digitalWrite(10, LOW);
-      if (digitalValue >= 720 && digitalValue <= 757) { // Blue span
-        if (!conditionMet) {
-          conditionStartTime = millis();
-          conditionMet = true;
-        } else if (millis() - conditionStartTime >= sensTime) {
-        printf("temps Blue = ", millis() - conditionStartTime);
-        // Condition met for at least sensTime * milliseconds
-        digitalWrite(12, LOW);
-        digitalWrite(11, HIGH); // Blue LED on
-        digitalWrite(10, LOW);
-        delay(onTime);
-      }
-    } else if (digitalValue >= 650 && digitalValue <= 710) { // Red span
-      if (!conditionMet) {
-        conditionStartTime = millis();
-        conditionMet = true;
-      } else if (millis() - conditionStartTime >= sensTime) {
-        printf("temps Red = ", millis() - conditionStartTime);
-        // Condition met for at least sensTime * milliseconds
-        digitalWrite(12, HIGH); // Red LED on
-        digitalWrite(11, LOW);
-        digitalWrite(10, LOW);
-        delay(onTime);
-      }
-    } else if (digitalValue >= 295 && digitalValue <= 420) { // White span
-      if (!conditionMet) {
-        conditionStartTime = millis();
-        conditionMet = true;
-      } else if (millis() - conditionStartTime >= sensTime) {
-        printf("temps White = ", millis() - conditionStartTime);
-        // Condition met for at least sensTime * milliseconds
-        digitalWrite(12, LOW);
-        digitalWrite(11, LOW);
-        digitalWrite(10, HIGH); // White LED on
-        delay(onTime);
-      }
-    } else { // Other colors
-      conditionMet = false;
-    }
-  }
-  digitalWrite(13, LOW);
-  digitalWrite(12, LOW);
-  digitalWrite(11, LOW);
-  digitalWrite(10, LOW);
-----
-
 This bloc of code is used to detect the color of the analog signal sent by the color sensor and light the corresponding led.
 The color detection is done by checking the digital value of the analog signal and comparing it to the values of the different colors.
+
+
+## How to update the code
+The arduino code has been written on Visual Studio Code with the PlatformIO extension. You can find the code in the src folder.
+PlatformIO is an extension for Visual Studio Code that allows you to develop and upload code on arduino and other microcontrollers.
+
+To be able to update the code into the arduino, you will need to install the PlatformIO extension on Visual Studio Code and then connect the arduino to your computer by usb.
+
+You can modify the code in the src folder in the "code" folder regardless of if you opened the "code" folder with platformio or not but you will probably need to open the "code" folder with platformio to be able to upload the code on the arduino.
+
+When you are ready to upload the code on the arduino, you can click on the "upload" button in the bottom of the visual studio code window.
+
+You can do debug by using the the Serial.print() to display values or informations in the serial monitor of the arduino IDE.
+The serial monitor can be opened by clicking on the icon in the top right corner or in the bottom of the visual studio code window, it should be a plug/outlet icon.
+
+## Issues
+
+If you cannot upload the code on the arduino, you can try several things :
+- Check if the arduino is truly connected to the computer, it should emit light when it's connected
+- Check if the COM port is the right one, you can check it in the bottom part of the visual studio code window, if you have multiple COM ports, you can find the right one by unpluging and pluging the arduino and see which COM port appears and disappears
+- Check if you have the right board selected, you can check it in the bottom part of the visual studio code window, it should be "Arduino Uno"
+- Check if you have the arduino drivers installed on your computer, you can check it in the device manager of your computer and should be able to find them on the arduino website.
+-unplug and plug the arduino again
+- restart the computer
+- reinstall the arduino drivers
+
+If none of the above works, the internet and forums are your friends.
