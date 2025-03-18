@@ -14,7 +14,7 @@ class MQTTFunctions:
         self.server = server
         self.port = port
         self.keepalive = keepalive
-        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        self.client = mqtt.Client()
         self.connected = False
 
     def connect(self):
