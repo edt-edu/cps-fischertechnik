@@ -15,7 +15,7 @@ class AxisType(Enum):
 #TODO ensure no negative values are accepted for counter goal
 class Axis:
 
-    def __init__(self, typ: AxisType, tolerance):
+    def __init__(self, typ: AxisType, tolerance, endpos_is_at_low_counter_values = True):
         """constructor creates ImpulseCounter object if necessary"""
         self.__type = typ
         if typ == AxisType.Counter:
@@ -33,6 +33,7 @@ class Axis:
             self.play = 10
         else:
             self.play = 2
+        self.__endpos_is_at_low_counter_values = endpos_is_at_low_counter_values
 
     @property
     def counterValueCurrent(self):
@@ -95,13 +96,13 @@ class Axis:
         #if you want to use the limit switch always set up counterGoal
         if endpos:
             if not self.__endpos:
-                self.__outputminus = True
+                self.__outputminus = self.__endpos_is_at_low_counter_values
                 if isinstance(self.__counter, ImpulseCounter):
                     self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
                 d = PlusMinusStop.MINUS
             else:
-                self.__outputminus = False
+                self.__outputminus = not self.__endpos_is_at_low_counter_values
                 t = True
         else:
             #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
