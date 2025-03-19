@@ -275,7 +275,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        logging.debug(f"[HighBay] going to configuration {config}")
+        #logging.debug(f"[HighBay] going to configuration {config}")
 
         target_config_reached = True
 
@@ -337,7 +337,7 @@ class HighBay(Machine):
             self.highbayActConveyorForward = False
             self.highbayActConveyorBackward = True
 
-        logging.debug(f"Config has been reached: {target_config_reached}")
+        #logging.debug(f"Config has been reached: {target_config_reached}")
         return target_config_reached
 
     def internalStatus(self) -> Dict[str, Any]:
