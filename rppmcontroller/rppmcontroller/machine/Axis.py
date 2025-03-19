@@ -88,7 +88,7 @@ class Axis:
         """
         return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
 
-    def gotoConfig(self, endpos: bool, counterGoal: int) -> bool | (bool, PlusMinusStop):
+    def gotoConfig(self, endpos: bool, counterGoal: int):
         """method to set outputs to reach the wanted config goal for that axis"""
         t = False
         d = None
