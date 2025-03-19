@@ -359,3 +359,10 @@ class HighBay(Machine):
         self.highbayActConveyorBackward = False
         self.highbayActCantileverForward = False
         self.highbayActCantileverBackward = False
+
+    # methods intended for orchestrator
+
+    def conveyor_forward(self):
+        config = self.get_current_config()
+        config.conveyor_state = ConveyorState.FORWARD
+        self.goto_config(config)
