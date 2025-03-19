@@ -275,7 +275,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        #logging.debug(f"[HighBay] going to configuration {config}")
+        logging.debug(f"going to {config}")
 
         target_config_reached = True
 
