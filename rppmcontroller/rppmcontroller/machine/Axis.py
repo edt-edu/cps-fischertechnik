@@ -25,10 +25,10 @@ class Axis:
         self.__tolerance = tolerance
         self.__first = True
         #variables need to be manually updated/written
-        self.__endpos = 0
-        self.__counterinput = 0
-        self.__outputplus = 0
-        self.__outputminus = 0
+        self.__endpos = False
+        self.__counterinput = False
+        self.__outputplus = False
+        self.__outputminus = False
         if typ == AxisType.Encoder:
             self.play = 10
         else:
@@ -96,13 +96,17 @@ class Axis:
         #if you want to use the limit switch always set up counterGoal
         if endpos:
             if not self.__endpos:
-                self.__outputminus = self.__endpos_is_at_low_counter_values
+                if self.__endpos_is_at_low_counter_values:
+                    self.__outputminus = True
+                else:
+                    self.__outputplus = True
                 if isinstance(self.__counter, ImpulseCounter):
                     self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
                 d = PlusMinusStop.MINUS
             else:
-                self.__outputminus = not self.__endpos_is_at_low_counter_values
+                self.__outputminus = False
+                self.__outputplus = False
                 t = True
         else:
             #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
