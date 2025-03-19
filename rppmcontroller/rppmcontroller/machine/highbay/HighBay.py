@@ -325,16 +325,15 @@ class HighBay(Machine):
             self.highbayActDown = self.__axisVertical.outputplus
 
         # update conveyor belt state
-        match config.conveyor_state:
-            case ConveyorState.IDLE:
-                self.highbayActConveyorForward = False
-                self.highbayActConveyorBackward = False
-            case ConveyorState.FORWARD:
-                self.highbayActConveyorForward = True
-                self.highbayActConveyorBackward = False
-            case ConveyorState.BACKWARD:
-                self.highbayActConveyorForward = False
-                self.highbayActConveyorBackward = True
+        if config.conveyor_state == ConveyorState.IDLE:
+            self.highbayActConveyorForward = False
+            self.highbayActConveyorBackward = False
+        elif config.conveyor_state == ConveyorState.FORWARD:
+            self.highbayActConveyorForward = True
+            self.highbayActConveyorBackward = False
+        elif config.conveyor_state == ConveyorState.BACKWARD:
+            self.highbayActConveyorForward = False
+            self.highbayActConveyorBackward = True
 
         return target_config_reached
 
