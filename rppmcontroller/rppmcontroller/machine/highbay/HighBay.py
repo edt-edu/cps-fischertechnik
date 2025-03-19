@@ -275,7 +275,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        logging.debug(f"[HighBay] going to configuration {config}")
+        #logging.debug(f"[HighBay] going to configuration {config}")
 
         target_config_reached = True
 
@@ -294,7 +294,7 @@ class HighBay(Machine):
             arm_needs_to_move = True
 
         if arm_needs_to_move:
-            logging.debug("arm needs to move")
+            #logging.debug("arm needs to move")
             target_config_reached = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
@@ -305,7 +305,7 @@ class HighBay(Machine):
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
         if cantilever_needs_to_move:
-            logging.debug("cantilever needs to move")
+            #logging.debug("cantilever needs to move")
             target_config_reached = False
 
             if cantilever_needs_to_be_retracted:
@@ -323,7 +323,7 @@ class HighBay(Machine):
             self.highbayActCantileverForward = False
 
             # cantilever is in position; we may move the arm now
-            logging.debug("moving arm")
+            #logging.debug("moving arm")
             self.highbayActHorizontalToRack = self.__axisHorizontal.outputminus
             self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputplus
             self.highbayActUp = self.__axisVertical.outputminus
@@ -340,9 +340,9 @@ class HighBay(Machine):
             self.highbayActConveyorForward = False
             self.highbayActConveyorBackward = True
 
-        logging.debug(f"Config has been reached: {target_config_reached}")
-        logging.debug(f"input status: {self.inputStatus()}")
-        logging.debug(f"output status: {self.outputStatus()}")
+        #logging.debug(f"Config has been reached: {target_config_reached}")
+        #logging.debug(f"input status: {self.inputStatus()}")
+        #logging.debug(f"output status: {self.outputStatus()}")
         return target_config_reached
 
     def internalStatus(self) -> Dict[str, Any]:
