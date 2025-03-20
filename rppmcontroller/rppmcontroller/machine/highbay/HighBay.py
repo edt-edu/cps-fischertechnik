@@ -288,7 +288,6 @@ class HighBay(Machine):
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
-            logging.debug("horizontal axis needs to move")
             arm_needs_to_move = True
 
         if arm_needs_to_move:
