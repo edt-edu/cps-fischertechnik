@@ -335,8 +335,8 @@ class HighBay(Machine):
 
             # cantilever is in position; we may move the arm now
             # logging.debug("moving arm")
-            self.highbayActHorizontalToRack = self.__axisHorizontal.outputminus
-            self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputplus
+            self.highbayActHorizontalToRack = self.__axisHorizontal.outputplus
+            self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputminus
             self.highbayActUp = self.__axisVertical.outputminus
             self.highbayActDown = self.__axisVertical.outputplus
 
