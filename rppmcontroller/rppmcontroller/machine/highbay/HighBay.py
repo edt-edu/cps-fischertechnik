@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
@@ -436,7 +436,7 @@ class HighBay(Machine):
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
-    def goto_column(self, column: Column|int):
+    def goto_column(self, column: Union[Column, int]):
         if isinstance(column, int):
             column = Column(column)
 
@@ -454,7 +454,7 @@ class HighBay(Machine):
         self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
         return self.goto_next_config()
 
-    def goto_row(self, row: Row|int):
+    def goto_row(self, row: Union[Row,int]):
         if isinstance(row, int):
             row = Row(row)
 
