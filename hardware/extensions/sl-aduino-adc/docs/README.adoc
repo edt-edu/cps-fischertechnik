@@ -1,0 +1,183 @@
+:stem: asciimath
+
+This README file aims to describe the code and the wiring of the color sensor sibling system (arduino).
+In this file you will find the wiring, explaination of important code blocks and some issues you can encounter with it.
+
+The goal of this system is to interprete the analog signal sent by the color sensor and change it to a digital value understandable by the raspberry and power leds according to the color detected.
+
+## Hardware
+For the analog to digital part, only an arduino is required since it possesses a built analog to digital converter.
+
+You will also need two resistors (100kohm) to create a voltage divider and reduce the voltage of the analog signal sent by the color sensor.
+
+For the leds part, you only need the arduino, your leds and the resistors.
+
+### Wiring
+
+The voltage of the analog signal sent by the color sensor is reduced (from Vmax = 10V to Vmax = 5V) thanks to a voltage divider and is then received in the A0 analog pin of the arduino.
+
+The voltage divider is composed of two resistors (100kohm) connected in series between the sorting line ground and the analog signal. Then, you can find your divided voltage/signal in the middle of the two resistors.
+
+> [!WARNING]
+> Be aware that the sorting line ground and the arduino ground must be connected. Otherwise, the measurement made by the arduino will be senseless.
+
+#### Voltage divider formula
+
+[stem]
+image::Images/Divider.png[Voltage divider]
+
+Each resistors are 100kohm.
+
+
+Each digital pin (10, 11, 12, 13) are connected to resistors (to reduce the current and voltage in the leds) and then to the the leds.
+
+#### Led's resistors calculation
+
+[stem]
+Red ;
+Typ voltage : 2V
+Typ current : 20mA = 0.02A
+Résistor :
+image::Images/RedResistor.png[Red led resistor calculation]
+
+White ;
+Typ voltage : 2V
+Typ current : 20mA = 0.02A
+Résistor :
+image::Images/WhiteResistor.png[White led resistor calculation]
+
+Blue ;
+Typ voltage : 3.5V
+Typ current : 20mA = 0.02A
+Résistor :
+image::Images/BlueResistor.png[Blue led resistor calculation]
+
+Green ;
+Typ voltage : 3.6V
+Typ current : 20mA = 0.02A
+Résistor :
+image::Images/GreenResistor.png[Green led resistor calculation]
+
+
+
+image::Images/SchemeArduino.png[Ardunio wiring]
+
+### cable mapping for the ADC arduino system
+
+This part only shows the mapping of the cables linked to the arduino, it does not take into account the other cables linked to the FT and the DIO or the leds and resistors.
+
+DIO side :
+
+[options="header",cols="1,1,1,1,4"]
+|===
+| DIO pin number | DIO var name | arduino pin | arduino Name | arduino Description
+//----------------------
+| Input 10 | I_10 | D3 | Green indicator | Send a logical 1 when an object/color is detected
+| Input 11 | I_11 | D2 | Blue indicator | Send a logical 1 when the color blue is detected
+| Input 12 | I_12 | D1 | Red indicator | Send a logical 1 when the color red is detected
+| Input 13 | I_13 | D0 | White indicator | Send a logical 1 when the color white is detected
+|===
+
+FT side :
+
+[options="header",cols="1,1,1,1,1,3,5"]
+|===
+| FT pin number | FT Name | FT Description | arduino pin | arduino Name | arduino Description | comment
+//----------------------
+| 9 | A4 Analog 0-10VDC | color sensor | A0 | analog input 0 | Analog 0-5VDC | The analog signal sent by the FT color sensor is reduced to a 0-5V signal and  sent to the A0 pin
+|===
+
+## Code
+
+### algorithm
+
+[mermaid]
+----
+graph TD
+    A(Start) --> B[Initialize variables]
+    B --> C[Read analog signal]
+    C --> D[digital value = digital value of the analog signal]
+    D --> E[Display values]
+    E --> F{color/object ?}
+    F -->|no| C[Read analog signal]
+    F -->|yes| G[Turn on the green led and off the others]
+    G --> H{Test the digital values}
+    H -->|digital value in the red range for more than sensTime milliseconds| I[Turn on the red led]
+    H -->|digital value in the white range for more than sensTime milliseconds| K[Turn on the white led]
+    H -->|digital value in the blue range for more than sensTime milliseconds| M[Turn on the blue led]
+    I --> J[Delay for onTime milliseconds for the led to stay on]
+    K --> L[Delay for onTime milliseconds for the led to stay on]
+    M --> N[Delay for onTime milliseconds for the led to stay on]
+    J --> O[Turn off all the leds]
+    L --> O
+    N --> O
+    H -->|unknown digital value| O
+    O --> P[Repeat]
+    P --> Q(End)
+----
+
+### Setup
+
+In the setup, the pinMode is used to set pins as output or input.
+The pins 10, 11, 12 and 13 are used for the leds and so they are outputs while the A0 pin is used as an input to get the analog signal sent by the color sensor.
+
+### Variables initialization
+
+----
+  int analogValue = 0;
+  int onTime = 3000;
+  int sensTime = 175;
+  int digitalValue = 0;
+  int sensorPin = A0;
+  float initialVoltage = 0.0;
+  unsigned long conditionStartTime = 0;
+  bool conditionMet = false;
+----
+
+This bloc of code initializes the variables used in the code.
+
+- analogValue : the analog value received by the arduino
+- onTime : the time the leds will be on in milliseconds. For the time being 3 seconds should be neither too short nor too long.
+- sensTime : the time the sensor needs to see the color to validate it. After some tests, 175 milliseconds seems to be the right time to not have false positives while be able to detect the colors correctly. If you experience some issues with the color detection, you can try to change this value.
+- digitalValue : the digital value of the analog signal (from 0 to 1023)
+- sensorPin : the pin allowed to the sensor
+- initialVoltage : the initial voltage of the analog signal (from)
+- conditionStartTime : the time when the condition is met
+- conditionMet : boolean to know if the condition is met
+
+### Values display
+
+This bloc of code reads the analog signal sent by the color sensor and displays the digital value, the analog value and the initial voltage of the signal for debugging purposes.
+
+### Color detection
+
+This bloc of code is used to detect the color of the analog signal sent by the color sensor and light the corresponding led.
+The color detection is done by checking the digital value of the analog signal and comparing it to the values of the different colors.
+
+
+## How to update the code
+The arduino code has been written on Visual Studio Code with the PlatformIO extension. You can find the code in the src folder.
+PlatformIO is an extension for Visual Studio Code that allows you to develop and upload code on arduino and other microcontrollers.
+
+To be able to update the code into the arduino, you will need to install the PlatformIO extension on Visual Studio Code and then connect the arduino to your computer by usb.
+
+You can modify the code in the src folder in the "code" folder regardless of if you opened the "code" folder with platformio or not but you will probably need to open the "code" folder with platformio to be able to upload the code on the arduino.
+
+When you are ready to upload the code on the arduino, you can click on the "upload" button in the bottom of the visual studio code window.
+
+You can do debug by using the the Serial.print() to display values or informations in the serial monitor of the arduino IDE.
+The serial monitor can be opened by clicking on the icon in the top right corner or in the bottom of the visual studio code window, it should be a plug/outlet icon.
+
+## Issues
+
+If you cannot upload the code on the arduino, you can try several things :
+
+  - Check if the arduino is truly connected to the computer, it should emit light when it's connected.
+  - Check if the COM port is the right one, you can check it in the bottom part of the visual studio code window, if you have multiple COM ports, you can find the right one by unpluging and pluging the arduino and see which COM port appears and disappears.
+  - Check if you have the right board selected, you can check it in the bottom part of the visual studio code window, it should be "Arduino Uno".
+  - Check if you have the arduino drivers installed on your computer, you can check it in the device manager of your computer and should be able to find them on the arduino website.
+  -unplug and plug the arduino again.
+  - restart the computer.
+  - reinstall the arduino drivers.
+
+If none of the above works, the internet and forums are your friends.
