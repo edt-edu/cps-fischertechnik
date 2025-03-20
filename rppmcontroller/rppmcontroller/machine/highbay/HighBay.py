@@ -284,7 +284,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        # logging.debug(f"going to {config}")
+        logging.debug(f"going to {config}")
 
         target_config_reached = True
 
@@ -451,11 +451,11 @@ class HighBay(Machine):
         if column == Column.CONVEYOR:
             counter_goal = 0
         elif column == Column.RIGHT:
-            counter_goal = 1570
+            counter_goal = -1554
         elif column == Column.MIDDLE:
-            counter_goal = 3140
+            counter_goal = -3140
         elif column == Column.LEFT:
-            counter_goal = 4600
+            counter_goal = -4600
         else:
             raise ValueError(f"Invalid column: {column}")
 
