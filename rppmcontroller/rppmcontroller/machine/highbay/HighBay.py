@@ -297,6 +297,8 @@ class HighBay(Machine):
             config.horizontal_axis_config):
             arm_needs_to_move = True
 
+        # TODO in order for pickups to work, the arm may move a little bit up vertically;
+        #  find a way to model that nicely, maybe with the config?
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
@@ -449,13 +451,13 @@ class HighBay(Machine):
             column = Column(column)
 
         if column == Column.CONVEYOR:
-            counter_goal = 0
+            counter_goal = 80
         elif column == Column.RIGHT:
-            counter_goal = -1554
+            counter_goal = 1580
         elif column == Column.MIDDLE:
-            counter_goal = -3140
+            counter_goal = 2700
         elif column == Column.LEFT:
-            counter_goal = -4600
+            counter_goal = 3900
         else:
             raise ValueError(f"Invalid column: {column}")
 
