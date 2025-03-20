@@ -8,6 +8,7 @@ from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 from typing import Any, Dict
+from typing_extensions import override
 
 
 class SortingLine(Machine):
@@ -210,7 +211,8 @@ class SortingLine(Machine):
                 logging.debug('set count steps true')
                 self.__packageCountSteps = True
 
-    def stop_cycleStep(self):
+    @override
+    def stop_CycleStep(self) -> bool:
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
@@ -219,8 +221,9 @@ class SortingLine(Machine):
         # self.once = True
         self.__counter.counter = 0
         self.__isCommandSuccessed = True
+        return True
     
-    def eject_cycleStep(self, color: Color):
+    def eject_CycleStep(self, color: Color):
         whiteCounter = 2
         redCounter = 11
         blueCounter = 20
@@ -270,8 +273,8 @@ class SortingLine(Machine):
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
     def eject_Command(self, color: Color):
-        return lambda: self.eject_cycleStep(color)
+        return lambda: self.eject_CycleStep(color)
 
     def stop_Command(self):
-        return lambda: self.stop_cycleStep()
+        return lambda: self.stop_CycleStep()
         
