@@ -272,7 +272,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        logging.debug(f"going to {config}")
+        #logging.debug(f"going to {config}")
 
         target_config_reached = True
 
@@ -288,6 +288,7 @@ class HighBay(Machine):
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+            logging.debug("horizontal axis needs to move")
             arm_needs_to_move = True
 
         if arm_needs_to_move:
