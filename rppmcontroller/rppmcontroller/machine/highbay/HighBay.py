@@ -1,4 +1,5 @@
 import logging
+from enum import Enum
 from typing import Dict, Any, Optional
 
 from rppmcontroller.machine.Axis import AxisType, Axis
@@ -9,6 +10,19 @@ from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import \
     RequestedParameter
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
+
+
+class Column(Enum):
+    CONVEYOR = 0
+    RIGHT = 1
+    MIDDLE = 2
+    LEFT = 3
+
+
+class Row(Enum):
+    BOTTOM = 0
+    MIDDLE = 1
+    TOP = 2
 
 
 class HighBay(Machine):
@@ -56,7 +70,7 @@ class HighBay(Machine):
         }
         super().__init__(id1, dictMap)
 
-        #helper variables
+        # helper variables
         self.previous_isExecuting_log = None
         self.reset_rpi_encoder_counters = False
         self.next_config = None
@@ -249,8 +263,6 @@ class HighBay(Machine):
             "highbayActUp": self.__highbayActUp,
         }
 
-
-
     def get_current_config(self) -> HighBayConfig:
         """
         Get the config describing the state in which the machine currently resides
@@ -272,7 +284,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        #logging.debug(f"going to {config}")
+        # logging.debug(f"going to {config}")
 
         target_config_reached = True
 
@@ -291,18 +303,20 @@ class HighBay(Machine):
             arm_needs_to_move = True
 
         if arm_needs_to_move:
-            #logging.debug("arm needs to move")
+            # logging.debug("arm needs to move")
             target_config_reached = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
         cantilever_is_retracted = self.highbaySensCantileverBack
         cantilever_is_extended = self.highbaySensCantileverFront
-        cantilever_needs_to_be_retracted = (not config.cantilever_extended or arm_needs_to_move) and not cantilever_is_retracted
-        cantilever_needs_to_be_extended = not cantilever_needs_to_be_retracted and (config.cantilever_extended and not cantilever_is_extended)
+        cantilever_needs_to_be_retracted = (
+                                                   not config.cantilever_extended or arm_needs_to_move) and not cantilever_is_retracted
+        cantilever_needs_to_be_extended = not cantilever_needs_to_be_retracted and (
+                config.cantilever_extended and not cantilever_is_extended)
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
         if cantilever_needs_to_move:
-            #logging.debug("cantilever needs to move")
+            # logging.debug("cantilever needs to move")
             target_config_reached = False
 
             if cantilever_needs_to_be_retracted:
@@ -320,7 +334,7 @@ class HighBay(Machine):
             self.highbayActCantileverForward = False
 
             # cantilever is in position; we may move the arm now
-            #logging.debug("moving arm")
+            # logging.debug("moving arm")
             self.highbayActHorizontalToRack = self.__axisHorizontal.outputminus
             self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputplus
             self.highbayActUp = self.__axisVertical.outputminus
@@ -337,9 +351,9 @@ class HighBay(Machine):
             self.highbayActConveyorForward = False
             self.highbayActConveyorBackward = True
 
-        #logging.debug(f"Config has been reached: {target_config_reached}")
-        #logging.debug(f"input status: {self.inputStatus()}")
-        #logging.debug(f"output status: {self.outputStatus()}")
+        # logging.debug(f"Config has been reached: {target_config_reached}")
+        # logging.debug(f"input status: {self.inputStatus()}")
+        # logging.debug(f"output status: {self.outputStatus()}")
         return target_config_reached
 
     def internalStatus(self) -> Dict[str, Any]:
@@ -395,13 +409,63 @@ class HighBay(Machine):
         Set up the highbay and calibrate the counters.
         :return: A lambda rerunning this function
         """
-        #going to the default config is the setup
+        # going to the default config is the setup
         setup_finished = self.goto_config()
         if setup_finished:
-            #setup is finished
+            # setup is finished
             self.reset_rpi_encoder_counters = True
         return lambda: self.setup()
 
     def conveyor_forward(self):
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
+        return self.goto_next_config()
+
+    def conveyor_backward(self):
+        self.create_next_config().conveyor_state = ConveyorState.BACKWARD
+        return self.goto_next_config()
+
+    def conveyor_stop(self):
+        self.create_next_config().conveyor_state = ConveyorState.IDLE
+        return self.goto_next_config()
+
+    def cantilever_forward(self):
+        self.create_next_config().cantilever_extended = True
+        return self.goto_next_config()
+
+    def cantilever_backward(self):
+        self.create_next_config().cantilever_extended = False
+        return self.goto_next_config()
+
+    def goto_column(self, column: Column|int):
+        if isinstance(column, int):
+            column = Column(column)
+
+        if column == Column.CONVEYOR:
+            counter_goal = 0
+        elif column == Column.RIGHT:
+            counter_goal = 1570
+        elif column == Column.MIDDLE:
+            counter_goal = 3140
+        elif column == Column.LEFT:
+            counter_goal = 4600
+        else:
+            raise ValueError(f"Invalid column: {column}")
+
+        self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        return self.goto_next_config()
+
+    def goto_row(self, row: Row|int):
+        if isinstance(row, int):
+            row = Row(row)
+
+        if row == Row.BOTTOM:
+            counter_goal = 0
+        elif row == Row.MIDDLE:
+            counter_goal = 100
+        elif row == Row.TOP:
+            counter_goal = 200
+        else:
+            raise ValueError(f"Invalid row: {row}")
+
+        self.create_next_config().vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
         return self.goto_next_config()
