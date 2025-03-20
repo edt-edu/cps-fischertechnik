@@ -436,6 +436,14 @@ class HighBay(Machine):
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
+    def horizontal_to(self, counter_goal: int):
+        self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        return self.goto_next_config()
+
+    def vertical_to(self, counter_goal: int):
+        self.create_next_config().vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        return self.goto_next_config()
+
     def goto_column(self, column: Union[Column, int]):
         if isinstance(column, int):
             column = Column(column)
@@ -451,8 +459,7 @@ class HighBay(Machine):
         else:
             raise ValueError(f"Invalid column: {column}")
 
-        self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
-        return self.goto_next_config()
+        return self.horizontal_to(counter_goal)
 
     def goto_row(self, row: Union[Row,int]):
         if isinstance(row, int):
@@ -467,5 +474,4 @@ class HighBay(Machine):
         else:
             raise ValueError(f"Invalid row: {row}")
 
-        self.create_next_config().vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
-        return self.goto_next_config()
+        return self.vertical_to(counter_goal)
