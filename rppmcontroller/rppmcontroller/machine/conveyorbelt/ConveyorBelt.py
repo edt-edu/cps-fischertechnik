@@ -4,6 +4,7 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from typing import Any, Dict, Tuple
+from typing_extensions import override
 import logging
 
 
@@ -220,11 +221,13 @@ class ConveyorBelt(Machine):
             self.__isCommandSuccessed = True
 
 
-    def stop_cycleStep(self):
+    @override
+    def stop_CycleStep(self) -> bool:
         """Stop the conveyor"""
         self.__conveyorActForward = self.__conveyorActBackward = False
         self.__isCommandRunning = False
         self.__isCommandSuccessed = True
+        return True
 
         
     ### ____________ Functions callable from orchestrator ________________
@@ -232,7 +235,7 @@ class ConveyorBelt(Machine):
 
     def stop_Command(self):
         """Stop the conveyor"""
-        return lambda: self.stop_cycleStep()
+        return lambda: self.stop_CycleStep()
 
 
     def move_out_Command(self, dir: Direction):

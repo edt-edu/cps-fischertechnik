@@ -535,7 +535,7 @@ class MultiProcessing(Machine):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    def setup_cycleStep(self):
+    def setup_CycleStep(self):
         """Reset the station and move some parts to the initial postion."""
         actions = [
             self.resetStation,
@@ -574,7 +574,7 @@ class MultiProcessing(Machine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
     def setup_Command(self):
-        return lambda: self.setup_cycleStep()  
+        return lambda: self.setup_CycleStep()  
 
     def process1_Command(self):
         """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """

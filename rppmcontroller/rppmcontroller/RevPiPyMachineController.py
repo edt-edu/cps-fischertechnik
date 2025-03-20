@@ -168,7 +168,9 @@ class RevPiPyMachineController:
     def processJson(self, inputBuffer: Queue):
         #maybe output buffer als parameter übergeben wie inputbuffer???
         """
-        gets the JSONOutput-objects out of the input buffer and decides which function to execute
+        gets the JSONOutput-objects out of the input buffer and decides which command function to execute
+        The function to execute must use the name of the command lowercase with a "_Command" postfix, 
+        a command function must return a lambda pointing to a "_cycleStep" function 
         :param inputBuffer:
         :return:
         """
@@ -337,7 +339,8 @@ class RevPiPyMachineController:
 
     def exLoop(self) -> None:
         """
-        The execute loop, which activates all the necessary functions on each machine
+        The execute loop, which activates all the necessary "_cycleStep" functions on each machine
+        a "_cycleStep" function is is maintained in the the currentlyExecuting map until it returns
         """
         for key  in self.currentlyExecuting.keys():
             # call method
@@ -351,10 +354,13 @@ class RevPiPyMachineController:
                 # noinspection PyCallingNonCallable
                 ret = self.currentlyExecuting[key][0]()
                 logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
-
-            # remove currentlyExecuting function once it is finished
+                # removes currentlyExecuting function once it indicates it is finished
+                if ret:
+                    logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
+                    self.currentlyExecuting[key][0] = None
+            # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
             if key.feedback() == MachineStatus.IDLE and self.currentlyExecuting[key][0] != None:
-                logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
+                logging.warning(f'LEGACY: DEPRECATED, removing {self.currentlyExecuting[key][0]} from currentlyExecuting due to MachineStatus.IDLE')
                 self.currentlyExecuting[key][0] = None
             # DVK    
             # if key.fakeFeedback() == ExecutionStatus.FINISHED:

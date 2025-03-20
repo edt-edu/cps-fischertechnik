@@ -7,6 +7,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from math import isclose
 import logging
 from typing import Any, Dict, Tuple
+from typing_extensions import override
 import traceback
 
 
@@ -281,9 +282,9 @@ class VacuumGripper(MovingMachine):
         else:
             return False, False, True
 
-
-    def gotoconfig(self, config):
-        logging.info(f"gotoconfig {config}")
+    @override
+    def gotoconfig(self, config) -> bool:
+        logging.info(f"gotoconfig_CycleSubStep {config}")
         iconfig = config
         if config is None:
             iconfig = VacuumGripperConfig(0,0,0,False)
@@ -322,7 +323,13 @@ class VacuumGripper(MovingMachine):
     #von execute bereits berücksichtigt
     # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
     # already considered by execute
-    def setup(self) -> None:   
+    @override
+    def setup_CycleStep(self) -> bool: 
+        """
+        Used to move the engine to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """  
         logging.debug("VGR setup")    
         # activate engines toward the sensors if necessary
         self.vacuumActArmOut = self.vacuumActRotLeft = self.vacuumActVerticalDown = False
@@ -358,21 +365,30 @@ class VacuumGripper(MovingMachine):
         if self.setupFirst:
             logging.debug("setup first True")
             self.setupFirst = False
-
-    def stop_CycleStep(self):
+        return (t1 and t2 and t3)
+    
+    @override
+    def stop_CycleStep(self) -> bool:
         self.clearMoveList()
         self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
         self.isCommandSuccessed = True
+        return True
 
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
     # they must return a lambda to a CycleStep function
 
     def setup_Command(self):
-        return lambda: self.setup()
+        """
+        Command to triggering a setup. Used to move the engines to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
+
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the setup
+        """ 
+        return lambda: self.setup_CycleStep()
 
     def gotopos_Command(self, endPos : Position) :
         """Go move gripper to reach the given position without changing the valve or compressor status
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the gotopos
         """
 
         self.setupFirst = True
@@ -380,6 +396,10 @@ class VacuumGripper(MovingMachine):
         return lambda: self.execute_CycleStep(endPos, endPos, moveList)
 
     def move_Command(self, startPos, endPos):
+        """
+        Command triggering a move token action. Ie. it picks a token on the startPos and drop it on the endPos
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
+        """ 
         self.setupFirst = True
         self.setupCount = 0
         self.__isExecutingCount = 0
@@ -387,18 +407,23 @@ class VacuumGripper(MovingMachine):
         moveList = self.generateTransferMoveList(startPos, endPos)
         for move in moveList:
             logging.debug(f'    {move}')
-        # TODO make this execution function be called multiple times in the background until the execution is finished
-        # or do this in JSONProcessingIntegrationMain by keeping all currently executing functions in a list and call them from there (detecting change probably more easily)
-        #self.execute(startPos, endPos, moveList)
         return lambda: self.execute_CycleStep(startPos, endPos, moveList)
 
     def pick_Command(self, startPos):
+        """
+        Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that posiotn
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
+        """ 
         self.setupFirst = True
         moveList = self.generateTransferMoveList(startPos, startPos)
         moveList = moveList[:6]
         return lambda: self.execute_CycleStep(startPos, startPos, moveList)
 
     def place_Command(self, endPos):
+        """
+        Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that posiotn
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
+        """ 
         self.setupFirst = True
         moveList = self.generateTransferMoveList(endPos, endPos)
         moveList = moveList[6:]
