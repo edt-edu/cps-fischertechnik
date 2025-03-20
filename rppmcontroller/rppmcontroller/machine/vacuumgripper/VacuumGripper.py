@@ -1,3 +1,4 @@
+from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MovingMachine import MovingMachine
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import VacuumGripperConfig
@@ -61,12 +62,11 @@ class VacuumGripper(MovingMachine):
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.nbMinimumRequiredExecutionCycles != 0 or \
             self.hasRemainingMove()
-    @property
+    
+    @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
 
         res = self.__isExecuting()
-            
-            # self.__vacuumActCompressorOn or self.__vacuumActValve or  we have pick command that doesn't finish with an iddle machine
         
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'isExecuting({self.id})={res} | pc={self.pc}/nbMove={self.nbMove()} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
