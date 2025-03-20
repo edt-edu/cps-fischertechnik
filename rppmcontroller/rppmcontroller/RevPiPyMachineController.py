@@ -328,23 +328,24 @@ class RevPiPyMachineController:
         """
         The execute loop, which activates all the necessary functions on each machine
         """
-        for key  in self.currentlyExecuting.keys():
+        for key in self.currentlyExecuting.keys():
+            func = self.currentlyExecuting[key][0]
             # call method
-            if not self.currentlyExecuting[key][0] is None:
+            if func is not None:
                 #print(key)
 
-                logging.debug(f'currentlyExecuting {self.currentlyExecuting[key][0]} [{inspect.getsource(self.currentlyExecuting[key][0]).strip()}]')
+                logging.debug(f'currentlyExecuting {func} [{inspect.getsource(func).strip()}]')
                 #print(self.currentlyExecuting[key][0])
                 #if key == self.robot41:
                     #print(self.currentlyExecuting[key][0])
                 # noinspection PyCallingNonCallable
-                ret = self.currentlyExecuting[key][0]()
-                logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
+                ret = func()
+                logging.debug(f'result of self.currentlyExecuting[key][0]() = {ret}')
 
-            # remove currentlyExecuting function once it is finished
-            if key.feedback() == ExecutionStatus.FINISHED and self.currentlyExecuting[key][0] != None:
-                logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
-                self.currentlyExecuting[key][0] = None
+                # remove currentlyExecuting function once it is finished
+                if key.feedback() == ExecutionStatus.FINISHED:
+                    logging.debug(f'removing {func} from currentlyExecuting')
+                    self.currentlyExecuting[key][0] = None
             # DVK
             # if key.fakeFeedback() == ExecutionStatus.FINISHED:
 

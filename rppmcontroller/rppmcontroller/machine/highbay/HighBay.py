@@ -56,7 +56,10 @@ class HighBay(Machine):
         }
         super().__init__(id1, dictMap)
 
+        #helper variables
         self.previous_isExecuting_log = None
+        self.reset_rpi_encoder_counters = False
+        self.next_config = None
 
     def __isExecuting(self) -> bool:
         return (self.__highbayActUp or
@@ -66,8 +69,7 @@ class HighBay(Machine):
                 self.__highbayActHorizontalToConveyor or
                 self.__highbayActHorizontalToRack or
                 self.__highbayActCantileverForward or
-                self.__highbayActCantileverBackward or
-                self.nbMinimumRequiredExecutionCycles > 0)
+                self.__highbayActCantileverBackward)
 
     @property
     def isExecuting(self) -> bool:
@@ -247,12 +249,7 @@ class HighBay(Machine):
             "highbayActUp": self.__highbayActUp,
         }
 
-    def setup(self) -> bool:
-        """
-        Set up the highbay and calibrate the counters.
-        :return: True if the setup has been completed, False if it is still running
-        """
-        return self.goto_config()
+
 
     def get_current_config(self) -> HighBayConfig:
         """
@@ -360,9 +357,51 @@ class HighBay(Machine):
         self.highbayActCantileverForward = False
         self.highbayActCantileverBackward = False
 
+    def edit_and_goto_config(self, config_editor):
+        """
+        Edits the current config and goes to it.
+        :param config_editor: A consumer of the current config, which edits it
+        :return: A lambda with the goto_config call, intended for the controller
+        """
+        config = self.get_current_config()
+        config_editor(config)
+        runnable = lambda: self.goto_config(config)
+        runnable()
+        return runnable
+
+    def create_next_config(self) -> HighBayConfig:
+        """
+        Sets the next_config to the current config and returns the
+        config object for editing
+        :return: The new next_config
+        """
+        self.next_config = self.get_current_config()
+        return self.next_config
+
+    def goto_next_config(self):
+        """
+        Goes to the next_config and returns a lambda going to that config
+        :return:
+        """
+        runnable = lambda: self.goto_config(self.next_config)
+        runnable()
+        return runnable
+
     # methods intended for orchestrator
+    # those methods need to return a lambda pointing to themselves
+
+    def setup(self):
+        """
+        Set up the highbay and calibrate the counters.
+        :return: A lambda rerunning this function
+        """
+        #going to the default config is the setup
+        setup_finished = self.goto_config()
+        if setup_finished:
+            #setup is finished
+            self.reset_rpi_encoder_counters = True
+        return lambda: self.setup()
 
     def conveyor_forward(self):
-        config = self.get_current_config()
-        config.conveyor_state = ConveyorState.FORWARD
-        self.goto_config(config)
+        self.create_next_config().conveyor_state = ConveyorState.FORWARD
+        return self.goto_next_config()
