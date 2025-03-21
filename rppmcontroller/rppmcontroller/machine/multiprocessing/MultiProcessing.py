@@ -3,7 +3,8 @@ import logging
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional
+from typing_extensions import override
 
 class MultiProcessing(Machine):
 
@@ -535,8 +536,9 @@ class MultiProcessing(Machine):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    def setup_CycleStep(self):
-        """Reset the station and move some parts to the initial postion."""
+    def setup_CycleStep(self) -> bool:
+        """Reset the station and move some parts to the initial postion.
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
         actions = [
             self.resetStation,
             self.moveTurntableToVacuum,
@@ -547,36 +549,44 @@ class MultiProcessing(Machine):
         if len(actions) <= self.actionDone:
             self.processing = False
             self.actionDone = 0
+            return True
         else:
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
+            return False
 
-    def process_cycleStep(self, actions: List):
-        """call the actions in the actions list, each action must increment self.actionDone in order to proceed to next action of the list"""
+    def process_CycleStep(self, actions: List) -> bool:
+        """call the actions in the actions list, each action must increment self.actionDone in order to proceed to next action of the list
+        
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """
         self.processing = True
         if len(actions) <= self.actionDone:
             self.__isCommandSuccessed = True
             self.__isCommandRunning = False
             self.processing = False
             self.actionDone = 0
+            return True
         else:
             self.__isCommandSuccessed = False
             self.__isCommandRunning = True
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
+            return False
 
-    def stop_cycleStep(self):
-        """ Stop the machine """
+    @override
+    def stop_CycleStep(self) -> bool:
         self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
         self.__isCommandSuccessed = True
         self.__isCommandRunning = False
+        return True
 
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
-    def setup_Command(self):
+    def setup_Command(self) -> Optional[Callable[[], bool]]:
         return lambda: self.setup_CycleStep()  
 
-    def process1_Command(self):
+    def process1_Command(self) -> Optional[Callable[[], bool]]:
         """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
         actions = [
             self.moveFeederIn,
@@ -593,8 +603,8 @@ class MultiProcessing(Machine):
             self.ejectProductToConveyor,
             self.moveConveyorToEnd
         ]
-        return lambda:self.process_cycleStep(actions)    
+        return lambda:self.process_CycleStep(actions)    
     
     def stop_Command(self):
         """ Stop the machine """
-        return lambda:self.stop_cycleStep() 
+        return lambda:self.stop_CycleStep() 

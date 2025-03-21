@@ -3,7 +3,7 @@ from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from typing import Any, Dict, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 from typing_extensions import override
 import logging
 
@@ -139,8 +139,9 @@ class ConveyorBelt(Machine):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    def forwardFromAnywhere_CycleStep(self):
-        """Move the package from any place on the conveyor to the right sensor"""
+    def forwardFromAnywhere_CycleStep(self) -> bool:
+        """Move the package from any place on the conveyor to the right sensor
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
         self.__conveyorActForward = True
         if not self.__conveyorSensSwap:
             self.__conveyorActForward = False
@@ -150,8 +151,9 @@ class ConveyorBelt(Machine):
         return False
 
 
-    def backwardFromAnywhere_CycleStep(self):
-        """Move the package from any place on the conveyor to the left sensor"""
+    def backwardFromAnywhere_CycleStep(self) -> bool:
+        """Move the package from any place on the conveyor to the left sensor
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
         self.__conveyorActBackward = True
         if not self.__conveyorSensFeed:
             self.__conveyorActBackward = False
@@ -161,8 +163,10 @@ class ConveyorBelt(Machine):
         return False
 
 
-    def forwardLeaveConveyor_CycleStep(self):
-        """Move the package from anywhere on the line to the left, until it leaves the conveyor. Then stop the conveyor."""
+    def forwardLeaveConveyor_CycleStep(self) -> bool:
+        """Move the package from anywhere on the line to the left, until it leaves the conveyor. Then stop the conveyor.
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
+        ret = False
         if not self.arrived:
             self.__conveyorActForward = True
         else:
@@ -170,14 +174,18 @@ class ConveyorBelt(Machine):
                 self.__conveyorActForward = False
                 self.__isCommandRunning = False
                 self.__isCommandSuccessed = True
+                ret = True # command final goal reached, no need to call this cycleStep again
 
         if not self.__conveyorSensSwap:
             self.current = 0
             self.arrived = True
+        return ret
 
 
-    def backwardLeaveConveyor_CycleStep(self):
-        """Move the package from anywhere on the line to the right, until it leaves the conveyor. Then stop the conveyor."""
+    def backwardLeaveConveyor_CycleStep(self) -> bool:
+        """Move the package from anywhere on the line to the right, until it leaves the conveyor. Then stop the conveyor.
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
+        ret = False
         if not self.arrived:
             self.__conveyorActBackward = True
         else:
@@ -185,16 +193,19 @@ class ConveyorBelt(Machine):
                 self.__conveyorActBackward = False
                 self.__isCommandRunning = False
                 self.__isCommandSuccessed = True
+                ret = True # command final goal reached, no need to call this cycleStep again
 
         if not self.__conveyorSensFeed:
             self.current = 0
             self.arrived = True
+        return ret
 
 
-    def forwardGoto_CycleStep(self, steps: int):
+    def forwardGoto_CycleStep(self, steps: int) -> bool:
         """Move the package to the right, with a given number of steps
         Args:
             steps (int) : the number of steps you want to move the package
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
         self.__conveyorActForward = True
         self.current = self.countSteps()
@@ -204,12 +215,16 @@ class ConveyorBelt(Machine):
             self.current = 0
             self.__isCommandRunning = False
             self.__isCommandSuccessed = True
+            return True  # command final goal reached, no need to call this cycleStep again
+        else:
+            return False
 
 
-    def backwardGoto_CycleStep(self, steps: int):
+    def backwardGoto_CycleStep(self, steps: int) -> bool:
         """Move the package to the left, with a given number of steps
-            Args:
-                steps (int) : the number of steps you want to move the package
+        Args:
+            steps (int) : the number of steps you want to move the package
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
         self.__conveyorActBackward = True
         self.current = self.countSteps()
@@ -219,6 +234,9 @@ class ConveyorBelt(Machine):
             self.current = 0
             self.__isCommandRunning = False
             self.__isCommandSuccessed = True
+            return True  # command final goal reached, no need to call this cycleStep again
+        else:
+            return False
 
 
     @override
@@ -233,12 +251,12 @@ class ConveyorBelt(Machine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def stop_Command(self):
+    def stop_Command(self) -> Optional[Callable[[], bool]]:
         """Stop the conveyor"""
         return lambda: self.stop_CycleStep()
 
 
-    def move_out_Command(self, dir: Direction):
+    def move_out_Command(self, dir: Direction) -> Optional[Callable[[], bool]]:
         """Move the package to a given direction until it leaves the conveyor
             Args:
                 dir (Direction) : the direction where to move the package
@@ -253,7 +271,7 @@ class ConveyorBelt(Machine):
         if dir == Direction.BACKWARD:
             return lambda: self.backwardLeaveConveyor_CycleStep()
 
-    def move_nb_steps_Command(self, dir: Direction, steps: int):
+    def move_nb_steps_Command(self, dir: Direction, steps: int) -> Optional[Callable[[], bool]]:
         """Move the conveyor belt to a given direction with a given number of steps
             Args:
                 dir (Direction) : the direction where to move the package
@@ -272,7 +290,7 @@ class ConveyorBelt(Machine):
             logging.error(f"Invalid direction {dir}")
 
 
-    def move_to_sensor_Command(self, dir: Direction):
+    def move_to_sensor_Command(self, dir: Direction) -> Optional[Callable[[], bool]]:
         """Move the package to a given direction until it is detected by the destination sensor
             Args:
                 dir (Direction) : the direction where to move the package
