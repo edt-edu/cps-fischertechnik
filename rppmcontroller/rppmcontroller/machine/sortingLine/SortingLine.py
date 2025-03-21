@@ -7,7 +7,8 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Optional
+from typing_extensions import override
 
 
 class SortingLine(Machine):
@@ -210,7 +211,28 @@ class SortingLine(Machine):
                 logging.debug('set count steps true')
                 self.__packageCountSteps = True
 
-    def eject(self, color: Color):
+    @override
+    def stop_CycleStep(self) -> bool:
+        self.__sortingLineActMotorConveyor = False
+        self.__sortingLineActCompressorOn = False
+        self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
+        self.__packageOnLine = False
+        self.__packageCountSteps = False
+        # self.once = True
+        self.__counter.counter = 0
+        self.__isCommandSuccessed = True
+        return True
+    
+    def eject_CycleStep(self, color: Color) -> bool:
+        """
+        Used to eject a token, 
+        it first detects the presence of the token on the conveyor, then eject the token to the appropriate colored line, it ends with a token detected in the color line.
+
+        This function is a cycleStep, it is call on each controller cycle, until its goal is reached
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """ 
+        ret = False
         whiteCounter = 2
         redCounter = 11
         blueCounter = 20
@@ -232,6 +254,7 @@ class SortingLine(Machine):
                     self.__sortingLineActBlueEjector = False
                     self.__isCommandRunning = False
                     self.__isCommandSuccessed = True
+                    ret = True # command final goal reached, no need to call this cycleStep again
             if current > redCounter and color == Color.RED:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
@@ -244,6 +267,7 @@ class SortingLine(Machine):
                     self.__sortingLineActRedEjector = False
                     self.__isCommandRunning = False
                     self.__isCommandSuccessed = True
+                    ret = True # command final goal reached, no need to call this cycleStep again
             if current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = True
@@ -255,15 +279,15 @@ class SortingLine(Machine):
                     self.__sortingLineActWhiteEjector = False
                     self.__isCommandRunning = False
                     self.__isCommandSuccessed = True
-        return lambda: self.eject(color)
+                    ret = True # command final goal reached, no need to call this cycleStep again
+        return ret
+    
+    ### ____________ Functions callable from orchestrator ________________
+    #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def stop(self):
-        self.__sortingLineActMotorConveyor = False
-        self.__sortingLineActCompressorOn = False
-        self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
-        self.__packageOnLine = False
-        self.__packageCountSteps = False
-        # self.once = True
-        self.__counter.counter = 0
-        self.__isCommandSuccessed = True
+    def eject_Command(self, color: Color) -> Optional[Callable[[], bool]]:
+        return lambda: self.eject_CycleStep(color)
+
+    def stop_Command(self) -> Optional[Callable[[], bool]]:
+        return lambda: self.stop_CycleStep()
         

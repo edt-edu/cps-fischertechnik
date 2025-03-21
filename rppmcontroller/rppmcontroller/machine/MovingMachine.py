@@ -56,7 +56,7 @@ class MovingMachine(Machine):
         pass
 
     @abstractmethod
-    def setup(self) -> bool:
+    def setup_CycleStep(self) -> bool:
         """Performs the setup of the machine to ensure all counters are correctly set
 
         :return bool: True if the setup is finished
@@ -73,18 +73,17 @@ class MovingMachine(Machine):
         pass
 
     
-    def execute(self, start: Position, fin: Position, moveList: list) -> None:
+    def execute_CycleStep(self, start: Position, fin: Position, moveList: list) -> bool:
         """execute performs the action indicated by the input numbers to move the product between the two specified places
 
         :param Position start: see method generate transferMoveList
         :param Position fin: see method generate transferMoveList
         :param list moveList:
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
 
-        logging.debug("execute")
-        super().execute(start, fin, moveList) # ensure that the nbMinimumRequiredExecutionCycles is updated
-
-
+        logging.debug("execute_CycleStep")
+        
         self.__moveList = []
         self.__moveList.extend(moveList)
 
@@ -95,15 +94,16 @@ class MovingMachine(Machine):
             self.__pc = 0
         #TODO also reset pc when re-executing
         if not self._setupFinished:
-            logging.debug('setup from execute')
+            logging.debug('setup from execute_CycleStep')
             #self.isExecuting = True
             #self.__setupFinished = self.setup()
             self.isSetupRunning = True
-            self.setup()
+            self.setup_CycleStep()
             self.setupFinishedHelper = self._setupFinished
             self._configReached = True
             # self.isSetupDone = True
             # self.isSetupRunning = False
+            return False
         else:
             logging.debug('processing move list')    
             self.isCommandSuccessed = False
@@ -137,6 +137,9 @@ class MovingMachine(Machine):
                 self.__moveList = []
                 self.isCommandRunning = False
                 self.isCommandSuccessed = True
+                return True
+            else:
+                return False
 
     def clearMoveList(self) -> None:
         """execute performs the action indicated by the input numbers to move the product between the two specified places

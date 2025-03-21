@@ -136,9 +136,6 @@ class Machine:
         else:
             return time() - self.__lastExecutionTime
 
-    def execute(self, *args):
-        pass
-
     @abstractmethod
     def sensorStatusString(self) -> str:
         """return a human readable version of the sensors values
@@ -188,9 +185,11 @@ class Machine:
             self.__nbMinimumRequiredExecutionCycles -= 1
 
     @abstractmethod
-    def stop(self):
+    def stop_CycleStep(self) -> bool:
         """
         Used to stop the execution immediately by setting all outputs to false
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
         pass
 

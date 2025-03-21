@@ -55,7 +55,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         startPos = Position("START", 0,0,0)
         endPos = Position("START", 0,0,0)
 
-        self.robot1.execute(startPos, endPos, [])
+        self.robot1.execute_CycleStep(startPos, endPos, [])
         self.assertEqual(self.robot1.setupFinishedHelper, False)
 
 
@@ -72,7 +72,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensArmEndIn = True
         self.robot1.vacuumSensVerticalEndUp = True
 
-        self.robot1.execute(startPos, endPos, [])
+        self.robot1.execute_CycleStep(startPos, endPos, [])
         self.assertEqual(self.robot1.setupFinishedHelper, True)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
