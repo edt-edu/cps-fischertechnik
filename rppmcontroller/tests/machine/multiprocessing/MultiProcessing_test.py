@@ -31,7 +31,7 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingValveVacuum = True
         #stop
         logging.debug("stop")
-        self.multiProcessing1.stop_cycleStep()
+        self.multiProcessing1.stop_CycleStep()
         self.assertEqual(self.multiProcessing1.multiProcessingActGripperToOven, False)
         self.assertEqual(self.multiProcessing1.multiProcessingActGripperToTurntable, False)
         self.assertEqual(self.multiProcessing1.multiProcessingActRotCounterclockwise, False)

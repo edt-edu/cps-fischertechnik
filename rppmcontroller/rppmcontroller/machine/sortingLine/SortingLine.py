@@ -7,7 +7,7 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Optional
 from typing_extensions import override
 
 
@@ -285,9 +285,9 @@ class SortingLine(Machine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def eject_Command(self, color: Color):
+    def eject_Command(self, color: Color) -> Optional[Callable[[], bool]]:
         return lambda: self.eject_CycleStep(color)
 
-    def stop_Command(self):
+    def stop_Command(self) -> Optional[Callable[[], bool]]:
         return lambda: self.stop_CycleStep()
         
