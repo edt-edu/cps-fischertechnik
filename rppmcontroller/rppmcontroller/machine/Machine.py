@@ -1,7 +1,9 @@
 import math
 from abc import abstractmethod
 from time import time
-from typing import Any, Dict
+from typing import Any, Callable, Dict, List, Optional
+from rppmcontroller.behavior.ProcessSequenceCommand import ProcessSequenceCommand
+from rppmcontroller.behavior.ProcessSequenceContext import ProcessSequenceContext
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
 from rppmcontroller.machine.MachineStatus import MachineStatus
@@ -28,6 +30,7 @@ class Machine:
         self.__isSetupDone = False
         self.__lastExecutionTime = -math.inf
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
+        self.__processSequenceContext : Optional[ProcessSequenceContext] =  None
 
     @property
     def id(self) -> str:
@@ -192,6 +195,47 @@ class Machine:
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
         pass
+
+
+    
+
+    def process_sequence_CycleStep(self, subCycleStepList: List[ProcessSequenceCommand]) -> bool:
+        """
+        perform each subCycleStep one after another as soon as the previous one ha indicated it had finished.
+        Note: Only one subCycleStep can be performe in a cycle.
+        Note: despite compatible signature, nested process_sequence_CycleStep are NOT allowed (it would require stack management)
+
+        
+        :param List[Callable[[], bool] subCycleStepList: list of Callable that should be processed
+        :return: as a CycleStep, this function must return True when all subCycleStep have finished so this 'process_sequnece' can be removed from the currentlyExecuting map
+        """
+
+
+        if self.__processSequenceContext is not None:
+            # we are currently processing a sequence
+
+            # check if this is the same
+            if self.__processSequenceContext.subCycleStepList != subCycleStepList:
+                logging.error(f"calling process_sequence_CycleStep on a machine with 2 different subCycleStepList, \n{self.__processSequenceContext.subCycleStepList} != {subCycleStepList}")
+                raise Exception(f"Invalid subCycleList when calling process_sequence_CycleStep() on machine {self.id}")
+        else:
+            self.__processSequenceContext =  ProcessSequenceContext(subCycleStepList)
+        
+        # call current subCycleStep
+        psContext = self.__processSequenceContext
+        res = psContext.subCycleStepList[psContext.currentSubCycleStepIndex].cycleStep()
+        # analyse result
+        if res:
+            if psContext.currentSubCycleStepIndex >= len(psContext.subCycleStepList):
+                # finished processing this sequence
+                self.__processSequenceContext = None
+                return True
+            else:
+                # proceed to next subCycleStep
+                psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
+                logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+        return False
+
 
     def request(self, params: list) -> list:
         """
