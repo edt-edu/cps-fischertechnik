@@ -7,7 +7,7 @@ from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from math import isclose
 import logging
-from typing import Any, Dict, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple
 from typing_extensions import override
 import traceback
 
@@ -378,7 +378,7 @@ class VacuumGripper(MovingMachine):
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
     # they must return a lambda to a CycleStep function
 
-    def setup_Command(self):
+    def setup_Command(self) -> Optional[Callable[[], bool]]:
         """
         Command to triggering a setup. Used to move the engines to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
 
@@ -386,7 +386,7 @@ class VacuumGripper(MovingMachine):
         """ 
         return lambda: self.setup_CycleStep()
 
-    def gotopos_Command(self, endPos : Position) :
+    def gotopos_Command(self, endPos : Position) -> Optional[Callable[[], bool]]:
         """Go move gripper to reach the given position without changing the valve or compressor status
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the gotopos
         """
@@ -395,7 +395,7 @@ class VacuumGripper(MovingMachine):
         moveList = [VacuumGripperConfig(counterVertical=endPos.vertical, counterRot = endPos.rot, counterArm=endPos.horizontal, gripperActive=self.vacuumActValve )]
         return lambda: self.execute_CycleStep(endPos, endPos, moveList)
 
-    def move_Command(self, startPos, endPos):
+    def move_Command(self, startPos, endPos) -> Optional[Callable[[], bool]]:
         """
         Command triggering a move token action. Ie. it picks a token on the startPos and drop it on the endPos
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
@@ -409,7 +409,7 @@ class VacuumGripper(MovingMachine):
             logging.debug(f'    {move}')
         return lambda: self.execute_CycleStep(startPos, endPos, moveList)
 
-    def pick_Command(self, startPos):
+    def pick_Command(self, startPos) -> Optional[Callable[[], bool]]:
         """
         Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that posiotn
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
@@ -419,7 +419,7 @@ class VacuumGripper(MovingMachine):
         moveList = moveList[:6]
         return lambda: self.execute_CycleStep(startPos, startPos, moveList)
 
-    def place_Command(self, endPos):
+    def place_Command(self, endPos) -> Optional[Callable[[], bool]]:
         """
         Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that posiotn
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
@@ -429,5 +429,5 @@ class VacuumGripper(MovingMachine):
         moveList = moveList[6:]
         return lambda: self.execute_CycleStep(endPos, endPos, moveList)
 
-    def stop_Command(self):
+    def stop_Command(self) -> Optional[Callable[[], bool]]:
         return lambda: self.stop_CycleStep()
