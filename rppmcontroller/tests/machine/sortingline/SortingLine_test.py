@@ -22,7 +22,7 @@ class SortingLineTestCase(unittest.TestCase):
         self.sortingLine1.sortingLineActWhiteEjector = self.sortingLine1.sortingLineActRedEjector = self.sortingLine1.sortingLineActBlueEjector = True     
         # stop
         logging.debug("stop")
-        self.sortingLine1.stop_cycleStep()
+        self.sortingLine1.stop_CycleStep()
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, False)
         self.assertEqual(self.sortingLine1.sortingLineActCompressorOn, False)
         self.assertEqual(self.sortingLine1.sortingLineActWhiteEjector, False)
@@ -38,17 +38,17 @@ class SortingLineTestCase(unittest.TestCase):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # white
-        self.sortingLine1.eject_cycleStep(Color.WHITE)
+        self.sortingLine1.eject_CycleStep(Color.WHITE)
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
-        self.sortingLine1.stop_cycleStep()
+        self.sortingLine1.stop_CycleStep()
         # blue
-        self.sortingLine1.eject_cycleStep(Color.BLUE)
+        self.sortingLine1.eject_CycleStep(Color.BLUE)
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
-        self.sortingLine1.stop_cycleStep()
+        self.sortingLine1.stop_CycleStep()
         # red
-        self.sortingLine1.eject_cycleStep(Color.RED)
+        self.sortingLine1.eject_CycleStep(Color.RED)
         self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
-        self.sortingLine1.stop_cycleStep()
+        self.sortingLine1.stop_CycleStep()
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
