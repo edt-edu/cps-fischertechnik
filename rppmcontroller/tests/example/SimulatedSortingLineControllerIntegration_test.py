@@ -17,10 +17,10 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         script_path = os.path.abspath(__file__)
-        logging.warning(f'script path : {script_path}')
+        logging.info(f'script path : {script_path}')
         dir_path = os.path.dirname(__file__)
         config_path = os.path.join(dir_path, "config.yml")
-        logging.warning(f'config file path : {config_path}')
+        logging.info(f'config file path : {config_path}')
 
         logging.debug("setup called")
         self.controller = SimulatedSortingLineController(config_path)
@@ -35,11 +35,11 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a eject command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.WHITE])
@@ -49,13 +49,13 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             
         
             '''Simulate sensor changes for testing all the functionnalities of the command'''
@@ -89,11 +89,11 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a move command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.BLUE])
@@ -103,13 +103,13 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
@@ -141,7 +141,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -155,13 +155,13 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)

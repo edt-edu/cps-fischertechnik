@@ -220,22 +220,34 @@ class Machine:
                 raise Exception(f"Invalid subCycleList when calling process_sequence_CycleStep() on machine {self.id}")
         else:
             self.__processSequenceContext =  ProcessSequenceContext(subCycleStepList)
+            psContext = self.__processSequenceContext
+            logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                
         
         # call current subCycleStep
         psContext = self.__processSequenceContext
         res = psContext.subCycleStepList[psContext.currentSubCycleStepIndex].cycleStep()
         # analyse result
         if res:
-            if psContext.currentSubCycleStepIndex >= len(psContext.subCycleStepList):
+            logging.info(f"res = true {psContext.currentSubCycleStepIndex}/{len(psContext.subCycleStepList)}")
+            if psContext.currentSubCycleStepIndex+1 >= len(psContext.subCycleStepList):
                 # finished processing this sequence
                 self.__processSequenceContext = None
+                logging.info(f"process_sequence_CycleStep last command reached {self.id}")
                 return True
             else:
                 # proceed to next subCycleStep
                 psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
-                logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}")
+                logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                
         return False
 
+    def isProcessingSequence(self) -> bool:
+        """
+        Indicates if process_sequence_CycleStep is currently processing a sequence
+        """
+        return self.__processSequenceContext is not None
 
     def request(self, params: list) -> list:
         """

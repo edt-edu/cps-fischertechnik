@@ -17,10 +17,10 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         script_path = os.path.abspath(__file__)
-        logging.warning(f'script path : {script_path}')
+        logging.info(f'script path : {script_path}')
         dir_path = os.path.dirname(__file__)
         config_path = os.path.join(dir_path, "config.yml")
-        logging.warning(f'config file path : {config_path}')
+        logging.info(f'config file path : {config_path}')
 
         logging.debug("setup called")
         self.controller = SimulatedConveyorBeltController(config_path)
@@ -35,7 +35,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -51,13 +51,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
@@ -82,7 +82,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -98,13 +98,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
@@ -130,7 +130,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
@@ -146,13 +146,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
@@ -177,11 +177,11 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a move light based command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_TO_SENSOR", [
@@ -193,13 +193,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
@@ -225,11 +225,11 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a go to config command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_NB_STEPS", [
@@ -242,13 +242,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
@@ -273,11 +273,11 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a go to config command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_NB_STEPS", [
@@ -290,13 +290,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)

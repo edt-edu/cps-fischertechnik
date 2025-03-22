@@ -16,6 +16,7 @@ import inspect
 import yaml
 from typing import Any, Dict, List
 
+from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 from rppmcontroller.protocol import socketConnexionHelper
 from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONReader import JSONReader
@@ -356,6 +357,13 @@ class RevPiPyMachineController:
                 logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
                 # removes currentlyExecuting function once it indicates it is finished
                 if ret:
+                    jsonid = self.currentlyExecuting[key][1]
+                    # append feedback to outputBuffer
+                    f = CommandFeedback("COMMAND_FEEDBACK", jsonid, CommandExecutionStatus.SUCCESS.name,  "")
+                    j = JSONOutput(key.id, time.time(), f)
+                    
+                    self.outputBuffer.put(j, block=False)
+                    self.MQTT.publishEvent(self.plcId, key.machineTypeName(), key.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
                     logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
                     self.currentlyExecuting[key][0] = None
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished

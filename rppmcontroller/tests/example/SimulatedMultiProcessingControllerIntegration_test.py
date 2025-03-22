@@ -17,10 +17,10 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         script_path = os.path.abspath(__file__)
-        logging.warning(f'script path : {script_path}')
+        logging.info(f'script path : {script_path}')
         dir_path = os.path.dirname(__file__)
         config_path = os.path.join(dir_path, "config.yml")
-        logging.warning(f'config file path : {config_path}')
+        logging.info(f'config file path : {config_path}')
 
         logging.debug("setup called")
         self.controller = SimulatedMultiProcessingController(config_path)
@@ -56,7 +56,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 0:
                 #initial state
@@ -93,12 +93,12 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
             if notification == "" :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 75, "COMMAND not reached in less than 75 iterations" )
+            self.assertLess(iterationDone, 75, "COMMAND not reached in less than 80 iterations" )
     
  
 if __name__ == '__main__':
