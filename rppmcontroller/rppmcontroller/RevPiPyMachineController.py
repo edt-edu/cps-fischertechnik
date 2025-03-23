@@ -366,6 +366,7 @@ class RevPiPyMachineController:
                     self.MQTT.publishEvent(self.plcId, key.machineTypeName(), key.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
                     logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
                     self.currentlyExecuting[key][0] = None
+                    logging.debug(f'isExecuting = {key.isExecuting} ')
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
             if key.feedback() == MachineStatus.IDLE and self.currentlyExecuting[key][0] != None:
                 logging.warning(f'LEGACY: DEPRECATED, removing {self.currentlyExecuting[key][0]} from currentlyExecuting due to MachineStatus.IDLE')

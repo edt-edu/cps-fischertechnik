@@ -65,9 +65,9 @@ class MovingMachine(Machine):
 
     @abstractmethod
     def gotoconfig(self, config) -> bool:
-        """Takes all necessary actions to ensure the machine reaches the specified config
+        """Takes all necessary actions to ensure the machine reaches the specified configuration
 
-        :param config: a config object fitting the machine type
+        :param config: a configuration object fitting the machine type
         :returns bool: True if the config is reached
         """
         pass
