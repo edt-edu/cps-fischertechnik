@@ -48,7 +48,7 @@ class VacuumGripperController(RevPiPyMachineController):
         self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {
-            self.vacuumGripperMachine: [None, None]
+            self.vacuumGripperMachine: None
         }
 
         self.machineFeedback = {

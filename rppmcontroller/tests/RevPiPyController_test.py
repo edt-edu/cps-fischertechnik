@@ -35,7 +35,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
         self.gripperMachine = VacuumGripper("VacuumGripper01")
         self.controller.machines = [self.gripperMachine]
         self.controller.currentlyExecuting = {
-                self.gripperMachine: [None, None]
+                self.gripperMachine: None
             }
         logging.debug(self.controller.currentlyExecuting.get(self.gripperMachine))
         
@@ -84,9 +84,9 @@ class RevPiPyControllerTestCase(unittest.TestCase):
         self.controller.processJson(self.controller.inputBuffer)
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0]) 
         assert currentlyExecutting is not None
-        logging.debug("currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
-        self.assertEqual(currentlyExecutting[1],77)
+        logging.debug(f"currently executing={currentlyExecutting.displayName}")
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
+        self.assertEqual(currentlyExecutting.commandId,77)
         
     def test_processJson_with_JSONOutputMsg(self):
         
@@ -107,7 +107,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
 
       currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0]) 
       assert currentlyExecutting is not None
-      self.assertIsNotNone(currentlyExecutting[0])
+      self.assertIsNotNone(currentlyExecutting.cycleStep)
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)

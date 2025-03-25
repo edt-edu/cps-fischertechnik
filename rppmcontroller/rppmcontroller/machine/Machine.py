@@ -2,7 +2,9 @@ import math
 from abc import abstractmethod
 from time import time
 from typing import Any, Callable, Dict, List, Optional
-from rppmcontroller.behavior.ProcessSequenceCommand import ProcessSequenceCommand
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.ProcessSequenceContext import ProcessSequenceContext
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
@@ -188,7 +190,7 @@ class Machine:
             self.__nbMinimumRequiredExecutionCycles -= 1
 
     @abstractmethod
-    def stop_CycleStep(self) -> bool:
+    def stop_CycleStep(self) -> CycleStepResult:
         """
         Used to stop the execution immediately by setting all outputs to false
 
@@ -199,7 +201,7 @@ class Machine:
 
     
 
-    def process_sequence_CycleStep(self, subCycleStepList: List[ProcessSequenceCommand]) -> bool:
+    def process_sequence_CycleStep(self, subCycleStepList: List[CycleStepCommand]) -> CycleStepResult:
         """
         perform each subCycleStep one after another as soon as the previous one ha indicated it had finished.
         Note: Only one subCycleStep can be performe in a cycle.
@@ -226,22 +228,41 @@ class Machine:
         
         # call current subCycleStep
         psContext = self.__processSequenceContext
-        res = psContext.subCycleStepList[psContext.currentSubCycleStepIndex].cycleStep()
+        subCommand = psContext.subCycleStepList[psContext.currentSubCycleStepIndex]
+        res = subCommand.cycleStep()
         # analyse result
-        if res:
-            logging.info(f"res = true {psContext.currentSubCycleStepIndex}/{len(psContext.subCycleStepList)}")
-            if psContext.currentSubCycleStepIndex+1 >= len(psContext.subCycleStepList):
-                # finished processing this sequence
-                self.__processSequenceContext = None
-                logging.info(f"process_sequence_CycleStep last command reached {self.id}")
-                return True
+        if not res.must_continue():
+            if not res.is_terminated():
+
+                logging.debug(f"normal end of subCycleStepCommand reached {psContext.currentSubCycleStepIndex}/{len(psContext.subCycleStepList)}")
+                if psContext.currentSubCycleStepIndex+1 >= len(psContext.subCycleStepList):
+                    # finished processing this sequence
+                    self.__processSequenceContext = None
+                    logging.debug(f"process_sequence_CycleStep {self.id} last sub command done ")
+                    return CycleStepResult(CycleStepResultEnum.DONE, 
+                                            f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
+                                            (subCommand.displayName, res))
+                else:
+                    # proceed to next subCycleStep
+                    psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
+                    logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                    return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                            f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                            (subCommand.displayName, res))
             else:
-                # proceed to next subCycleStep
-                psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
-                logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}")
-                logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
-                
-        return False
+                # transfert termination result to upper CycleStep
+                return CycleStepResult(res.result, 
+                                        f"process_sequence_CycleStep terminated due to result of {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                        f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                        (subCommand.displayName, res))
+        else:  
+            # use same text etc as in "proceed to next subCycleStep" in order to avoid multiple notifications due to comparison mismatch     
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                    f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                    (subCommand.displayName, res))
 
     def isProcessingSequence(self) -> bool:
         """

@@ -1,6 +1,8 @@
 import logging
 
-from rppmcontroller.behavior.ProcessSequenceCommand import ProcessSequenceCommand
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -326,7 +328,7 @@ class MultiProcessing(Machine):
         return status
 
     ###____________ Turntable and Saw_______________
-    def moveTurntableToSaw(self) -> bool:
+    def moveTurntableToSaw(self) -> CycleStepResult:
         """Rotate the turntable to the saw"""
         if not self.__multiProcessingSensTurntablePosSaw:
             if self.turnTableDirection is Direction.NONE:
@@ -343,53 +345,53 @@ class MultiProcessing(Machine):
             if self.turnTableDirection is Direction.COUNTERCLOKWISE:
                 self.__multiProcessingActRotClockwise = False
                 self.__multiProcessingActRotCounterclockwise = True
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.turnTableDirection = Direction.NONE
             self.__multiProcessingActRotClockwise = False
             self.__multiProcessingActRotCounterclockwise = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def moveTurntableToConveyor(self) -> bool:
+    def moveTurntableToConveyor(self) -> CycleStepResult:
         """Rotate the turntable to conveyor"""
         if not self.__multiProcessingSensTurntablePosBelt:
             self.__multiProcessingActRotClockwise = True
             self.__multiProcessingActRotCounterclockwise = False
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActRotClockwise = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def moveTurntableToVacuum(self) -> bool:
+    def moveTurntableToVacuum(self) -> CycleStepResult:
         """Rotate the turntable to the vacuum"""
         if not self.__multiProcessingSensTurntablePosVacuum:
             self.__multiProcessingActRotCounterclockwise = True
             self.__multiProcessingActRotClockwise = False
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActRotCounterclockwise = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def useSaw(self) -> bool:
+    def useSaw(self) -> CycleStepResult:
         """Use the saw on the package for a specific number of iteration who can be determined here with maxCount"""
         maxCount = 5
         if self.__multiProcessingSensTurntablePosSaw and self.sawCount < maxCount:
             self.__multiProcessingActSaw  = True
             self.sawCount += 1
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActSaw  = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def ejectProductToConveyor(self) -> bool:
+    def ejectProductToConveyor(self) -> CycleStepResult:
         """Eject the package from the turtable to the conveyor"""
         if not self.__multiProcessingSensTurntablePosBelt:
             self.moveTurntableToConveyor
@@ -398,28 +400,28 @@ class MultiProcessing(Machine):
             self.__multiProcessingValveFeeder = False               
             self.ejectorCount = 0
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
         else :
             self.__multiProcessingCompressor = True
             self.__multiProcessingValveFeeder = True
             self.ejectorCount += 1
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
 
     ###____________ Conveyor belt ______________
-    def moveConveyorToEnd(self) -> bool:
+    def moveConveyorToEnd(self) -> CycleStepResult:
         """Moves the package with the conveyor unitl it reached the light barrier"""
         if self.__multiProcessingSensEndConveyor:
             self.__multiProcessingActConveyorForward = True
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else :
             self.__multiProcessingActConveyorForward = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
     ###____________ Oven _______________
-    def heatProduct(self) -> bool:
+    def heatProduct(self) -> CycleStepResult:
         """Simulate heating by blicking a led."""
         maxCount = 30
         if not self.heated:
@@ -438,63 +440,63 @@ class MultiProcessing(Machine):
                 self.heated = True
                 self.moveFeederOut
                 self.actionDone += 1
-                return True
-        return False
+                return CycleStepResult(CycleStepResultEnum.DONE)
+        return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
 
-    def moveFeederIn(self) -> bool:
+    def moveFeederIn(self) -> CycleStepResult:
         """Move the feeder inside the oven."""
         if not self.__multiProcessingSensOvenFeederIn:
             self.__multiProcessingCompressor = True
             self.__multiProcessingValveOvenDoor = True
             self.__multiProcessingActOvenInward = True
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActOvenInward = False
             self.__multiProcessingCompressor = False
             self.__multiProcessingValveOvenDoor = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def moveFeederOut(self) -> bool:
+    def moveFeederOut(self) -> CycleStepResult:
         """Movs the feeder outside of the oven."""
         if not self.__multiProcessingSensOvenFeederOut:
             self.__multiProcessingCompressor = True
             self.__multiProcessingValveOvenDoor = True
             self.__multiProcessingActOvenOutward = True
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActOvenOutward = False
             self.__multiProcessingCompressor = False
             self.__multiProcessingValveOvenDoor = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
     ###____________ Vacuum gripper _______________
-    def moveVacuumToOven(self) -> bool:
+    def moveVacuumToOven(self) -> CycleStepResult:
         """Move the vacuum gripper to the oven."""
         if not self.__multiProcessingSensVacuumGripperAtOven:
             self.__multiProcessingActGripperToOven = True
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActGripperToOven = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def moveVacuumToTurntable(self) -> bool:
+    def moveVacuumToTurntable(self) -> CycleStepResult:
         """Move the vacuum gripper to the turntable."""
         if not self.__multiProcessingSensVacuumGripperAtTurntable:
             self.__multiProcessingActGripperToTurntable = True
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActGripperToTurntable = False
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
 
-    def gripProduct(self) -> bool:
+    def gripProduct(self) -> CycleStepResult:
         """Takes the product with the vacuum gripper"""
         if self.__multiProcessingSensVacuumGripperAtTurntable:
             if not self.__multiProcessingSensTurntablePosVacuum:
@@ -504,26 +506,26 @@ class MultiProcessing(Machine):
                 self.moveFeederOut
         else:
             logging.error("Vacuum gripper is not at a valid position")
-            return True # shold return an error status
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "Vacuum gripper is not at a valid position")
         
         if self.vacuumCount > 6:
             self.__multiProcessingActLowerValve = False
             self.__multiProcessingCompressor = False
             self.vacuumCount = 0
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
         elif self.vacuumCount > 4:
             self.__multiProcessingValveVacuum = True
             self.vacuumCount += 1
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingCompressor = True
             self.__multiProcessingActLowerValve = True
             self.vacuumCount += 1
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
 
-    def releaseProduct(self) -> bool:
+    def releaseProduct(self) -> CycleStepResult:
         """Release the product with the vacuum gripper"""
         if self.__multiProcessingSensVacuumGripperAtTurntable:
             if not self.__multiProcessingSensTurntablePosVacuum:
@@ -533,7 +535,7 @@ class MultiProcessing(Machine):
                 self.moveFeederOut
         else:
             logging.error("Vacuum gripper is not at a valid position")
-            return True # Should retunr an error status
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "Vacuum gripper is not at a valid position")
 
         if self.vacuumCount > 5:
             self.__multiProcessingValveVacuum = False
@@ -541,12 +543,12 @@ class MultiProcessing(Machine):
             self.__multiProcessingCompressor = False
             self.vacuumCount = 0
             self.actionDone += 1
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             self.__multiProcessingCompressor = True
             self.__multiProcessingActLowerValve = True
             self.vacuumCount += 1
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
 
     ### __________ Other functions ______________
@@ -564,7 +566,7 @@ class MultiProcessing(Machine):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    def setup_CycleStep(self) -> bool:
+    def setup_CycleStep(self) -> CycleStepResult:
         """Reset the station and move some parts to the initial postion.
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
         actions = [
@@ -577,13 +579,13 @@ class MultiProcessing(Machine):
         if len(actions) <= self.actionDone:
             self.processing = False
             self.actionDone = 0
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
-    def process_CycleStep(self, actions: List) -> bool:
+    def process_CycleStep(self, actions: List) -> CycleStepResult:
         """call the actions in the actions list, each action must increment self.actionDone in order to proceed to next action of the list
         
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
@@ -594,61 +596,42 @@ class MultiProcessing(Machine):
             self.__isCommandRunning = False
             self.processing = False
             self.actionDone = 0
-            return True
+            return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             self.__isCommandSuccessed = False
             self.__isCommandRunning = True
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
-            return False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
     @override
-    def stop_CycleStep(self) -> bool:
+    def stop_CycleStep(self) -> CycleStepResult:
         self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
         self.__isCommandSuccessed = True
         self.__isCommandRunning = False
-        return True
+        return CycleStepResult(CycleStepResultEnum.DONE)
 
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
-    def setup_Command(self) -> Optional[Callable[[], bool]]:
+    def setup_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.setup_CycleStep()  
 
-    def process1old_Command(self) -> Optional[Callable[[], bool]]:
+    def process1_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
         actions = [
-            self.moveFeederIn,
-            self.heatProduct,
-            self.moveFeederOut,
-            self.moveVacuumToOven,
-            self.gripProduct,
-            self.moveVacuumToTurntable,
-            self.moveTurntableToVacuum,
-            self.releaseProduct,
-            self.moveTurntableToSaw,
-            self.useSaw,
-            self.moveTurntableToConveyor,
-            self.ejectProductToConveyor,
-            self.moveConveyorToEnd
-        ]
-        return lambda:self.process_CycleStep(actions)   
-
-    def process1_Command(self) -> Optional[Callable[[], bool]]:
-        """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
-        actions = [
-            ProcessSequenceCommand(lambda: self.moveFeederIn(), "moveFeederIn()"),
-            ProcessSequenceCommand(lambda: self.heatProduct(), "heatProduct()"),
-            ProcessSequenceCommand(lambda: self.moveFeederOut(), "moveFeederOut()"),
-            ProcessSequenceCommand(lambda: self.moveVacuumToOven(), "moveVacuumToOven()"),
-            ProcessSequenceCommand(lambda: self.gripProduct(), "gripProduct()"),
-            ProcessSequenceCommand(lambda: self.moveVacuumToTurntable(), "moveVacuumToTurntable()"),
-            ProcessSequenceCommand(lambda: self.moveTurntableToVacuum(), "moveTurntableToVacuum()"),
-            ProcessSequenceCommand(lambda: self.releaseProduct(), "releaseProduct()"),
-            ProcessSequenceCommand(lambda: self.moveTurntableToSaw(), "moveTurntableToSaw()"),
-            ProcessSequenceCommand(lambda: self.useSaw(), "seSaw()"),
-            ProcessSequenceCommand(lambda: self.moveTurntableToConveyor(), "moveTurntableToConveyor()"),
-            ProcessSequenceCommand(lambda: self.ejectProductToConveyor(), "ejectProductToConveyor()"),
-            ProcessSequenceCommand(lambda: self.moveConveyorToEnd(), "moveConveyorToEnd()")
+            CycleStepCommand(lambda: self.moveFeederIn(), "moveFeederIn()"),
+            CycleStepCommand(lambda: self.heatProduct(), "heatProduct()"),
+            CycleStepCommand(lambda: self.moveFeederOut(), "moveFeederOut()"),
+            CycleStepCommand(lambda: self.moveVacuumToOven(), "moveVacuumToOven()"),
+            CycleStepCommand(lambda: self.gripProduct(), "gripProduct()"),
+            CycleStepCommand(lambda: self.moveVacuumToTurntable(), "moveVacuumToTurntable()"),
+            CycleStepCommand(lambda: self.moveTurntableToVacuum(), "moveTurntableToVacuum()"),
+            CycleStepCommand(lambda: self.releaseProduct(), "releaseProduct()"),
+            CycleStepCommand(lambda: self.moveTurntableToSaw(), "moveTurntableToSaw()"),
+            CycleStepCommand(lambda: self.useSaw(), "seSaw()"),
+            CycleStepCommand(lambda: self.moveTurntableToConveyor(), "moveTurntableToConveyor()"),
+            CycleStepCommand(lambda: self.ejectProductToConveyor(), "ejectProductToConveyor()"),
+            CycleStepCommand(lambda: self.moveConveyorToEnd(), "moveConveyorToEnd()")
         ]
 
         return lambda: self.process_sequence_CycleStep(actions)

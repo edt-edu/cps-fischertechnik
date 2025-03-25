@@ -25,7 +25,7 @@ class SimulatedConveyorBeltController(ConveyorBeltController):
         self.conveyorBeltMachine = ConveyorBelt("ConveyorBelt01")
         self.machines = [self.conveyorBeltMachine]
         self.currentlyExecuting = {
-            self.conveyorBeltMachine: [None, None]
+            self.conveyorBeltMachine: None
         }
 
         self.machineFeedback = {

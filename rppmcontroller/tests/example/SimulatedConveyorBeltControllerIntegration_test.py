@@ -57,7 +57,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
@@ -67,9 +67,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -104,7 +104,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
@@ -114,9 +114,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -152,7 +152,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
@@ -162,9 +162,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -199,7 +199,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
@@ -209,9 +209,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -248,7 +248,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
@@ -258,9 +258,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -296,7 +296,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
@@ -310,9 +310,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             if notification == "":
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
                 logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )

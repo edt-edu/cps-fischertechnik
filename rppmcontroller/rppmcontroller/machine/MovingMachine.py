@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
 
@@ -56,19 +57,19 @@ class MovingMachine(Machine):
         pass
 
     @abstractmethod
-    def setup_CycleStep(self) -> bool:
+    def setup_CycleStep(self) -> CycleStepResult:
         """Performs the setup of the machine to ensure all counters are correctly set
 
-        :return bool: True if the setup is finished
+        :return CycleStepResult: CycleStepResult that indicates if the setup is reached, must continue or terminated
         """
         pass
 
     @abstractmethod
-    def gotoconfig(self, config) -> bool:
+    def gotoconfig(self, config) -> CycleStepResult:
         """Takes all necessary actions to ensure the machine reaches the specified configuration
 
         :param config: a configuration object fitting the machine type
-        :returns bool: True if the config is reached
+        :returns CycleStepResult: CycleStepResult that indicates if the config is reached, must continue or terminated
         """
         pass
 

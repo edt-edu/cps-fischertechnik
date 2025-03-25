@@ -1,4 +1,6 @@
-from rppmcontroller.behavior.ProcessSequenceCommand import ProcessSequenceCommand
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MovingMachine import MovingMachine
 from rppmcontroller.machine.Axis import AxisType, Axis
@@ -58,7 +60,7 @@ class VacuumGripper(MovingMachine):
                 robotPlaceConf4,
                 robotPlaceConf5]
     
-    def generateTransferMoveList(self, numPickup: Position, numPlace: Position) -> List[ProcessSequenceCommand]:
+    def generateTransferMoveList(self, numPickup: Position, numPlace: Position) -> List[CycleStepCommand]:
         offset = 250
         # Enter/retract arm
         robotPickConf0 = VacuumGripperConfig(self.vacuumSensVerticalEncoderCounter, self.vacuumSensRotEncoderCounter, 0, False)
@@ -88,18 +90,18 @@ class VacuumGripper(MovingMachine):
         # up
         robotPlaceConf5 = VacuumGripperConfig(numPlace.vertical-offset, numPlace.rot, numPlace.horizontal, False)
 
-        return [ProcessSequenceCommand(lambda : self.gotoconfig( robotPickConf0), f"retract arm / {robotPickConf0}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPickConf1), f"move / {robotPickConf1}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPickConf2), f"extend arm / {robotPickConf2}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPickConf3), f"from above / {robotPickConf3}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPickConf4), f"grab / {robotPickConf4}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPickConf5), f"up / {robotPickConf5}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPlaceConf0), f"retract arm / {robotPlaceConf0}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPlaceConf1), f"move / {robotPlaceConf1}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPlaceConf2), f"extend arm / {robotPlaceConf2}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPlaceConf3), f"from above / {robotPlaceConf3}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPlaceConf4), f"release / {robotPlaceConf4}"),
-                ProcessSequenceCommand(lambda : self.gotoconfig(robotPlaceConf5), f"up / {robotPlaceConf5}")
+        return [CycleStepCommand(lambda : self.gotoconfig( robotPickConf0), f"retract arm / {robotPickConf0}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf1), f"move / {robotPickConf1}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf2), f"extend arm / {robotPickConf2}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf3), f"from above / {robotPickConf3}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf4), f"grab / {robotPickConf4}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf5), f"up / {robotPickConf5}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf0), f"retract arm / {robotPlaceConf0}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf1), f"move / {robotPlaceConf1}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf2), f"extend arm / {robotPlaceConf2}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf3), f"from above / {robotPlaceConf3}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf4), f"release / {robotPlaceConf4}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf5), f"up / {robotPlaceConf5}")
                 ]
 
 
@@ -327,7 +329,7 @@ class VacuumGripper(MovingMachine):
             return False, False, True
 
     @override
-    def gotoconfig(self, config) -> bool:
+    def gotoconfig(self, config) -> CycleStepResult:
         logging.info(f"gotoconfig_CycleSubStep {config}")
         iconfig = config
         if config is None:
@@ -358,7 +360,14 @@ class VacuumGripper(MovingMachine):
             self.__vacuumActCompressorOn = False
             self.__vacuumActValve = False
             t4 = True
-        return (t1 and t2 and t3 and t4)
+        if (t1 and t2 and t3 and t4):
+            return CycleStepResult(CycleStepResultEnum.DONE, 
+                                    f"gotoconfig {config}", 
+                                    None)
+        else:
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"gotoconfig {config}", 
+                                    None)
 
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
@@ -368,7 +377,7 @@ class VacuumGripper(MovingMachine):
     # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
     # already considered by execute
     @override
-    def setup_CycleStep(self) -> bool: 
+    def setup_CycleStep(self) -> CycleStepResult: 
         """
         Used to move the engine to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
 
@@ -409,53 +418,31 @@ class VacuumGripper(MovingMachine):
         if self.setupFirst:
             logging.debug("setup first True")
             self.setupFirst = False
-        return (t1 and t2 and t3 and self.nbMinimumRequiredExecutionCycles == 0)
+        if (t1 and t2 and t3 and self.nbMinimumRequiredExecutionCycles == 0):
+            return CycleStepResult(CycleStepResultEnum.DONE)
+        else:
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
     
     @override
-    def stop_CycleStep(self) -> bool:
+    def stop_CycleStep(self) -> CycleStepResult:
         self.clearMoveList()
         self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
         self.isCommandSuccessed = True
-        return True
+        return CycleStepResult(CycleStepResultEnum.DONE)
 
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
     # they must return a lambda to a CycleStep function
 
-    def setup_Command(self) -> Optional[Callable[[], bool]]:
+    def setup_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command to triggering a setup. Used to move the engines to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
 
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the setup
         """ 
         return lambda: self.setup_CycleStep()
-
-    def gotopos_Command_old(self, endPos : Position) -> Optional[Callable[[], bool]]:
-        """Go move gripper to reach the given position without changing the valve or compressor status
-        :return: as a _Command, this function returns a lamba to a CycleStep method applying the gotopos
-        """
-        moveList : List[ProcessSequenceCommand] =  []
-        if not self.setupFinished:
-            moveList.append(ProcessSequenceCommand(lambda: self.setup_CycleStep(), "setup"))
-        config = VacuumGripperConfig(counterVertical=endPos.vertical, counterRot = endPos.rot, counterArm=endPos.horizontal, gripperActive=self.vacuumActValve )
-        moveList.append(ProcessSequenceCommand(lambda : self.gotoconfig( config), f"{config}"))
-        return lambda: self.process_sequence_CycleStep(moveList)
-
-    def move_Command_old(self, startPos, endPos) -> Optional[Callable[[], bool]]:
-        """
-        Command triggering a move token action. Ie. it picks a token on the startPos and drop it on the endPos
-        :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
-        """ 
-        self.setupFirst = True
-        self.setupCount = 0
-        self.__isExecutingCount = 0
-        print("move")
-        moveList = self.generateTransferMoveListold(startPos, endPos)
-        for move in moveList:
-            logging.debug(f'    {move}')
-        return lambda: self.execute_CycleStep(startPos, endPos, moveList)
-    
-    def move_Command(self, startPos, endPos) -> Optional[Callable[[], bool]]:
+  
+    def move_Command(self, startPos, endPos) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command triggering a move token action. Ie. it picks a token on the startPos and drop it on the endPos
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
@@ -463,56 +450,37 @@ class VacuumGripper(MovingMachine):
         
         print("move")
 
-        moveList : List[ProcessSequenceCommand] =  []
+        moveList : List[CycleStepCommand] =  []
         if not self.setupFinished:
-            moveList.append(ProcessSequenceCommand(lambda: self.setup_CycleStep(), "setup"))
+            moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
 
         moveList.extend(self.generateTransferMoveList(startPos, endPos))
         return lambda: self.process_sequence_CycleStep(moveList)
 
-    def pick_Command_old(self, startPos) -> Optional[Callable[[], bool]]:
-        """
-        Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that posiotn
-        :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
-        """ 
-        self.setupFirst = True
-        moveList = self.generateTransferMoveList(startPos, startPos)
-        moveList = moveList[:6]
-        return lambda: self.execute_CycleStep(startPos, startPos, moveList)
 
-    def pick_Command(self, startPos) -> Optional[Callable[[], bool]]:
+    def pick_Command(self, startPos) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that posiotn
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
         """ 
-        moveList : List[ProcessSequenceCommand] =  []
+        moveList : List[CycleStepCommand] =  []
         if not self.setupFinished:
-            moveList.append(ProcessSequenceCommand(lambda: self.setup_CycleStep(), "setup"))
+            moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
 
         moveList.extend(self.generateTransferMoveList(startPos, startPos)[:6]) #extract the first 6 commands from the generateTransferMoveList
         return lambda: self.process_sequence_CycleStep(moveList)
-    
-    def place_Command_old(self, endPos) -> Optional[Callable[[], bool]]:
+
+    def place_Command(self, endPos) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that posiotn
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
         """ 
-        self.setupFirst = True
-        moveList = self.generateTransferMoveList(endPos, endPos)
-        moveList = moveList[6:]
-        return lambda: self.execute_CycleStep(endPos, endPos, moveList)
-    
-    def place_Command(self, endPos) -> Optional[Callable[[], bool]]:
-        """
-        Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that posiotn
-        :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
-        """ 
-        moveList : List[ProcessSequenceCommand] =  []
+        moveList : List[CycleStepCommand] =  []
         if not self.setupFinished:
-            moveList.append(ProcessSequenceCommand(lambda: self.setup_CycleStep(), "setup"))
+            moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
 
         moveList.extend(self.generateTransferMoveList(endPos, endPos)[6:]) #extract the last 6 commands from the generateTransferMoveList
         return lambda: self.process_sequence_CycleStep(moveList)
 
-    def stop_Command(self) -> Optional[Callable[[], bool]]:
+    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()

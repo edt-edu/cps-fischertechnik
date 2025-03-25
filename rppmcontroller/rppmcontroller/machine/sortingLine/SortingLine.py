@@ -1,6 +1,8 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
 
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
@@ -212,7 +214,7 @@ class SortingLine(Machine):
                 self.__packageCountSteps = True
 
     @override
-    def stop_CycleStep(self) -> bool:
+    def stop_CycleStep(self) -> CycleStepResult:
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
@@ -221,9 +223,11 @@ class SortingLine(Machine):
         # self.once = True
         self.__counter.counter = 0
         self.__isCommandSuccessed = True
-        return True
+        return CycleStepResult(CycleStepResultEnum.DONE, 
+                                    f"stop_CycleStep", 
+                                    None)
     
-    def eject_CycleStep(self, color: Color) -> bool:
+    def eject_CycleStep(self, color: Color) -> CycleStepResult:
         """
         Used to eject a token, 
         it first detects the presence of the token on the conveyor, then eject the token to the appropriate colored line, it ends with a token detected in the color line.
@@ -280,14 +284,21 @@ class SortingLine(Machine):
                     self.__isCommandRunning = False
                     self.__isCommandSuccessed = True
                     ret = True # command final goal reached, no need to call this cycleStep again
-        return ret
+        if ret:
+            return CycleStepResult(CycleStepResultEnum.DONE, 
+                                    f"eject_CycleStep", 
+                                    None)
+        else:
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"eject_CycleStep", 
+                                    None)
     
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def eject_Command(self, color: Color) -> Optional[Callable[[], bool]]:
+    def eject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.eject_CycleStep(color)
 
-    def stop_Command(self) -> Optional[Callable[[], bool]]:
+    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()
         

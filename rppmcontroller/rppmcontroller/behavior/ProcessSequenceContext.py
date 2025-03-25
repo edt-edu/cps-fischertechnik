@@ -1,7 +1,7 @@
 
-from typing import Callable, List
+from typing import List
 
-from rppmcontroller.behavior.ProcessSequenceCommand import ProcessSequenceCommand
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 
 
 class ProcessSequenceContext:
@@ -11,16 +11,16 @@ class ProcessSequenceContext:
         __currentSubCycleStepIndex (int) : index in the __subCycleStepList of the ProcessSequenceCommand that is currently processed 
 
     """
-    def __init__(self, subCycleStepList: List[ProcessSequenceCommand]):
-        self.__subCycleStepList: List[ProcessSequenceCommand] = subCycleStepList
+    def __init__(self, subCycleStepList: List[CycleStepCommand]):
+        self.__subCycleStepList: List[CycleStepCommand] = subCycleStepList
         self.__currentSubCycleStepIndex: int = 0
 
     @property
-    def subCycleStepList(self) -> List[ProcessSequenceCommand]:
+    def subCycleStepList(self) -> List[CycleStepCommand]:
         return self.__subCycleStepList
     
     @subCycleStepList.setter
-    def subCycleStepList(self, subCycleStepList : List[ProcessSequenceCommand]): 
+    def subCycleStepList(self, subCycleStepList : List[CycleStepCommand]): 
         self.__subCycleStepList = subCycleStepList
 
     @property

@@ -13,8 +13,10 @@ import select
 import sys
 import time
 import inspect
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 import yaml
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 from rppmcontroller.protocol import socketConnexionHelper
@@ -59,8 +61,8 @@ class RevPiPyMachineController:
 
         #the list of all machines that are connected to this controller
         self.machines : List[Machine] = []
-        #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
-        self.currentlyExecuting = {}
+        #dict, which keys are the machines, and value is a CycleStepCommand holding the function currently executed ([0]) and the id it was sent with ([1])
+        self.currentlyExecuting : Dict[Machine, Optional[CycleStepCommand ]  ]= {}
         #dict, which keys are the machines, machine_feedback as the values
         self.machineFeedback = {}
         #dict, which keys are the machines, command_feedback as the values
@@ -298,8 +300,14 @@ class RevPiPyMachineController:
                                     else:
                                         ret = func(m, mix[1], mix[0])
 
-                            # holds the function that is currently executed on each machine
-                            self.currentlyExecuting[m] = [ret, inputBufferItem.message.commandId]
+                            # holds the cycleStep function that is currently executed on each machine
+                            cycleStepFunction = self.cast_to_callable(ret) 
+                            if cycleStepFunction is not None:
+                                self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
+                                                                              f"{inputBufferItem.message.name} [{inspect.getsource(cycleStepFunction).strip()}]", 
+                                                                              inputBufferItem.message.commandId)
+                            else:
+                                self.currentlyExecuting[m] = None
                             break
                         except AttributeError as e:
                             #TODO activate:
@@ -345,32 +353,42 @@ class RevPiPyMachineController:
         """
         for key  in self.currentlyExecuting.keys():
             # call method
-            if not self.currentlyExecuting[key][0] is None:
+            cycleStepCommand = self.currentlyExecuting[key]
+            if not cycleStepCommand is None:
                 #print(key)
                 
-                logging.debug(f'currentlyExecuting {self.currentlyExecuting[key][0]} [{inspect.getsource(self.currentlyExecuting[key][0]).strip()}]')
+                logging.debug(f'currentlyExecuting {cycleStepCommand.displayName}')
                 #print(self.currentlyExecuting[key][0])
                 #if key == self.robot41:
                     #print(self.currentlyExecuting[key][0])
                 # noinspection PyCallingNonCallable
-                ret = self.currentlyExecuting[key][0]()
+                ret = cycleStepCommand.cycleStep()
                 logging.debug(f'result of  self.currentlyExecuting[key][0]() = {ret}')
                 # removes currentlyExecuting function once it indicates it is finished
-                if ret:
-                    jsonid = self.currentlyExecuting[key][1]
+                if not ret.must_continue():
+                    jsonid = cycleStepCommand.commandId
+                    if not ret.is_terminated():
+                        # normal end of the command
+                        f = CommandFeedback("COMMAND_FEEDBACK", jsonid, CommandExecutionStatus.SUCCESS.name,  ret.info)
+                        j = JSONOutput(key.id, time.time(), f)
+                    else:
+                        # terminated
+                        f = CommandFeedback("COMMAND_FEEDBACK", jsonid, ret.result.name,  ret.info)
+                        j = JSONOutput(key.id, time.time(), f)
                     # append feedback to outputBuffer
-                    f = CommandFeedback("COMMAND_FEEDBACK", jsonid, CommandExecutionStatus.SUCCESS.name,  "")
-                    j = JSONOutput(key.id, time.time(), f)
-                    
                     self.outputBuffer.put(j, block=False)
                     self.MQTT.publishEvent(self.plcId, key.machineTypeName(), key.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
-                    logging.debug(f'removing {self.currentlyExecuting[key][0]} from currentlyExecuting')
-                    self.currentlyExecuting[key][0] = None
+                    logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
+                    self.currentlyExecuting[key] = None
                     logging.debug(f'isExecuting = {key.isExecuting} ')
+                else:
+                    # continue
+                    # maybe the res is different from previous, so it should be published
+                    pass
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
-            if key.feedback() == MachineStatus.IDLE and self.currentlyExecuting[key][0] != None:
-                logging.warning(f'LEGACY: DEPRECATED, removing {self.currentlyExecuting[key][0]} from currentlyExecuting due to MachineStatus.IDLE')
-                self.currentlyExecuting[key][0] = None
+            if key.feedback() == MachineStatus.IDLE and cycleStepCommand != None:
+                logging.warning(f'LEGACY: DEPRECATED, removing {cycleStepCommand.displayName} from currentlyExecuting due to MachineStatus.IDLE')
+                self.currentlyExecuting[key] = None
             # DVK    
             # if key.fakeFeedback() == ExecutionStatus.FINISHED:
             
@@ -378,6 +396,14 @@ class RevPiPyMachineController:
             #     #logging.debug(str(key) + 'finished execution')
             #     self.currentlyExecuting[key][0] = None
 
+    def cast_to_callable(self, var: Any) -> Optional[Callable[[], CycleStepResult]]:
+        """Casts a variable to Callable[[], CycleStepResult] if it's compatible, otherwise returns None."""
+        if not callable(var):
+            logging.info(f'{var} is not callable')
+            return None
+
+        return cast(Callable[[], CycleStepResult], var)
+        
     def createMachineFeedbackOnChange(self) -> None:
         """Whenever the state of the machine changes, feedback is created
         a machine can be in several states as defined in the ExecutionStatus enum
@@ -402,8 +428,8 @@ class RevPiPyMachineController:
             if self.commandFeedback[m] != m.commandFeedback():
                 self.commandFeedback[m] = m.commandFeedback()
                 # Send command feedback only if a command was executed first
-                if self.currentlyExecuting[m][1] is not None:
-                    jsonid = self.currentlyExecuting[m][1]
+                if self.currentlyExecuting[m] is not None:
+                    jsonid = self.currentlyExecuting[m]
                     # append feedback to outputBuffer
                     f = CommandFeedback("COMMAND_FEEDBACK", jsonid, m.commandFeedback().name,  "")
                     j = JSONOutput(m.id, time.time(), f)

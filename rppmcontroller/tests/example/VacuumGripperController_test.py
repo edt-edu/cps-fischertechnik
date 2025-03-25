@@ -76,9 +76,9 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         self.controller.processJson(self.controller.inputBuffer)
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine) 
         assert currentlyExecutting is not None
-        logging.debug("currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
-        self.assertEqual(currentlyExecutting[1],77)
+        logging.debug("currently executing="+currentlyExecutting.displayName)
+        self.assertIsNotNone(currentlyExecutting)
+        self.assertEqual(currentlyExecutting._commandId, 77)
         
     def test_processJson_with_JSONOutputMsg(self):
         
@@ -100,7 +100,7 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
 
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine) 
         assert currentlyExecutting is not None
-        self.assertIsNotNone(currentlyExecutting[0])
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
 
   
     
@@ -130,7 +130,7 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         self.controller.processJson(self.controller.inputBuffer)
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("before loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
+        logging.debug("before loop: currently executing="+currentlyExecutting.displayName)
 
         self.controller.read()
         self.controller.exLoop()
@@ -140,15 +140,15 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
 
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("after loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
+        logging.debug("after loop: currently executing="+currentlyExecutting.displayName)
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
 
         # Second loop
         self.controller.processJson(self.controller.inputBuffer)
 
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("before loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
+        logging.debug("before loop: currently executing="+currentlyExecutting.displayName)
 
         self.controller.read()
         self.controller.exLoop()
@@ -158,8 +158,8 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
 
         currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("after loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
+        logging.debug("after loop: currently executing="+currentlyExecutting.displayName)
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
     
 
 class VacuumGripperControllerMock(VacuumGripperController):
