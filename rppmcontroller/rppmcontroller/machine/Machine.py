@@ -296,24 +296,7 @@ class Machine:
             return MachineStatus.INACTION
         else:
             return MachineStatus.IDLE
-        
-    def commandFeedback(self):
-        if self.isCommandSuccessed:
-            self.isCommandRunning = False #reset variable
-            return CommandExecutionStatus.SUCCESS
-        elif self.isCommandTimedOut:
-            self.isCommandRunning = False #reset variable
-            return CommandExecutionStatus.ABORTED_TIMEOUT
-        elif self.isSetupDone:
-            self.isSetupRunning = False 
-            self.isSetupDone = False #ensure only one message is sent
-            return CommandExecutionStatus.SETUP_DONE
-        elif self.isSetupRunning:
-            return CommandExecutionStatus.SETUP_RUNNING
-        elif self.isCommandRunning:
-            return CommandExecutionStatus.RUNNING
-        else:
-            return CommandExecutionStatus.FEEDBACK_ERROR
+
 
 
 
