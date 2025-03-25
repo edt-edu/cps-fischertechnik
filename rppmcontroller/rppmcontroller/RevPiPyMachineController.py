@@ -405,7 +405,7 @@ class RevPiPyMachineController:
                 jsonid = cycleStepCommand.commandId
                 subResult = lastResult.subCycleStepResult
                 if subResult is not None:
-                    info = f'{lastResult.info}\n{subResult[0]} {subResult[1].info}{subResult[1].result}'
+                    info = f'{lastResult.info}\nLast subCycleStepResult: {subResult[1].info} {subResult[1].result}'
                 else:
                     info = f'{lastResult.info}'
                 f = CommandFeedback("COMMAND_FEEDBACK", jsonid, lastResult.result.name,  info)

@@ -90,18 +90,18 @@ class VacuumGripper(MovingMachine):
         # up
         robotPlaceConf5 = VacuumGripperConfig(numPlace.vertical-offset, numPlace.rot, numPlace.horizontal, False)
 
-        return [CycleStepCommand(lambda : self.gotoconfig( robotPickConf0), f"retract arm / {robotPickConf0}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPickConf1), f"move / {robotPickConf1}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPickConf2), f"extend arm / {robotPickConf2}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPickConf3), f"from above / {robotPickConf3}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPickConf4), f"grab / {robotPickConf4}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPickConf5), f"up / {robotPickConf5}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf0), f"retract arm / {robotPlaceConf0}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf1), f"move / {robotPlaceConf1}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf2), f"extend arm / {robotPlaceConf2}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf3), f"from above / {robotPlaceConf3}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf4), f"release / {robotPlaceConf4}"),
-                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf5), f"up / {robotPlaceConf5}")
+        return [CycleStepCommand(lambda : self.gotoconfig( robotPickConf0), f"retract arm \n {robotPickConf0}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf1), f"move \n {robotPickConf1}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf2), f"extend arm \n {robotPickConf2}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf3), f"from above \n {robotPickConf3}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf4), f"grab \n {robotPickConf4}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPickConf5), f"up \n {robotPickConf5}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf0), f"retract arm \n {robotPlaceConf0}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf1), f"move \n {robotPlaceConf1}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf2), f"extend arm \n {robotPlaceConf2}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf3), f"from above \n {robotPlaceConf3}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf4), f"release \n {robotPlaceConf4}"),
+                CycleStepCommand(lambda : self.gotoconfig(robotPlaceConf5), f"up \n {robotPlaceConf5}")
                 ]
 
 

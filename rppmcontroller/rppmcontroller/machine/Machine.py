@@ -241,7 +241,7 @@ class Machine:
                     logging.debug(f"process_sequence_CycleStep {self.id} last sub command done ")
                     return CycleStepResult(CycleStepResultEnum.DONE, 
                                             f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
-                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
+                                            f" : {psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
                                             (subCommand.displayName, res))
                 else:
                     # proceed to next subCycleStep
