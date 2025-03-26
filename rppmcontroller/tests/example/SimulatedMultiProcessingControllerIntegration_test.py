@@ -93,10 +93,10 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
             if notification == "" :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 75, "COMMAND not reached in less than 80 iterations" )
     

@@ -73,10 +73,10 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERWHITE,True)
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -125,10 +125,10 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBLUE,True)
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -177,10 +177,10 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             if (notification == "") :
                 iterationDone += 1
             else:
-                self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
+                self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERRED,True)
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
