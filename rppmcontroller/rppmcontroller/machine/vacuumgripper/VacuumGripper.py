@@ -112,10 +112,15 @@ class VacuumGripper(MovingMachine):
             self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.nbMinimumRequiredExecutionCycles != 0 or \
-            self.hasRemainingMove()
+            self.isProcessingSequence()
         
         # log isexecuting and debug info only if message has changed
-        isExecuting_log = f'isExecuting({self.id})={res} | pc={self.pc}/nbMove={self.nbMove()} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()} | nbMinimumRequiredExecutionCycles={self.nbMinimumRequiredExecutionCycles} '
+        psContext = self.processSequenceContext
+        if psContext is not None:
+            processSequencContextStatus = f'| {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} '
+        else:
+            processSequencContextStatus = ''
+        isExecuting_log = f'isExecuting({self.id})={res} {processSequencContextStatus}| Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()} | nbMinimumRequiredExecutionCycles={self.nbMinimumRequiredExecutionCycles} '
         if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
@@ -330,6 +335,11 @@ class VacuumGripper(MovingMachine):
 
     @override
     def gotoconfig(self, config) -> CycleStepResult:
+        """Activate the different engines and actuator in order to reach the given VGR configuration
+        All axis are moved simultaneously
+        It supposes that the encoder has been initialized
+        As a security, if the encoder indicates that it can stil be moved toward its reference switch, but the switch is active, then it stops with an error
+        """
         logging.info(f"gotoconfig_CycleSubStep {config}")
         iconfig = config
         if config is None:
@@ -425,8 +435,10 @@ class VacuumGripper(MovingMachine):
     
     @override
     def stop_CycleStep(self) -> CycleStepResult:
-        self.clearMoveList()
-        self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
+        self.__vacuumActArmOut = self.__vacuumActArmIn = False
+        self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = False
+        self.__vacuumActRotRight = self.__vacuumActRotLeft = False
+        self.__vacuumActCompressorOn = self.__vacuumActValve = False
         return CycleStepResult(CycleStepResultEnum.DONE)
 
     ### ____________ Functions callable from orchestrator ________________
@@ -440,7 +452,21 @@ class VacuumGripper(MovingMachine):
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the setup
         """ 
         return lambda: self.setup_CycleStep()
-  
+
+    def gotopos_Command(self, tartgetPos : Position) -> Optional[Callable[[], CycleStepResult]]:
+        """
+        Command triggering a gotopos action. Ie. it moves the gripper to the position without changing the valve or compressor status.
+        It may trigger a setup first if the machine is not initialized
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
+        """ 
+        moveList : List[CycleStepCommand] =  []
+        if not self.setupFinished:
+            moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
+        config = VacuumGripperConfig(tartgetPos.vertical, tartgetPos.rot, tartgetPos.horizontal, False)
+        moveList.append(CycleStepCommand(lambda: self.gotoconfig(config), 
+                                         "gotopos \n {config}"))
+        return lambda: self.process_sequence_CycleStep(moveList)
+      
     def move_Command(self, startPos, endPos) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command triggering a move token action. Ie. it picks a token on the startPos and drop it on the endPos
