@@ -2,7 +2,6 @@ from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.MovingMachine import MovingMachine
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import VacuumGripperConfig
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
@@ -15,7 +14,7 @@ from typing_extensions import override
 import traceback
 
 
-class VacuumGripper(MovingMachine):
+class VacuumGripper(Machine):
 
     def generateTransferMoveListold(self, numPickup: Position, numPlace: Position):
         offset = 250
@@ -333,7 +332,6 @@ class VacuumGripper(MovingMachine):
         else:
             return False, False, True
 
-    @override
     def gotoconfig(self, config) -> CycleStepResult:
         """Activate the different engines and actuator in order to reach the given VGR configuration
         All axis are moved simultaneously
@@ -390,7 +388,6 @@ class VacuumGripper(MovingMachine):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    @override
     def setup_CycleStep(self) -> CycleStepResult: 
         """
         Used to move the engine to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
