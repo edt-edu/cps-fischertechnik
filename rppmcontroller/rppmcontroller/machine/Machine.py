@@ -102,6 +102,10 @@ class Machine:
         """
         return self.__processSequenceContext
 
+    @processSequenceContext.setter
+    def processSequenceContext(self, value: Optional[ProcessSequenceContext] ):
+        self.__processSequenceContext = value
+
     def timeSinceExecution(self):
         if self.__isExecuting:
             return 0

@@ -15,6 +15,7 @@ import time
 import inspect
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 import yaml
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
@@ -300,19 +301,25 @@ class RevPiPyMachineController:
                                     else:
                                         ret = func(m, mix[1], mix[0])
 
-                            # holds the cycleStep function that is currently executed on each machine
+                            # store the cycleStep function that is currently executed on each machine
                             cycleStepFunction = self.cast_to_callable(ret) 
                             if cycleStepFunction is not None:
+                                logging.debug(f'cycleStepFunction is not None')
+                                if self.currentlyExecuting[m] is not None:
+                                    logging.debug(f'self.currentlyExecuting[m] is not None')
+                                    # send interruption feedback for the previously running command on the machine
+                                    self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                    m.processSequenceContext = None
                                 self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
                                                                               f"{inputBufferItem.message.name} [{inspect.getsource(cycleStepFunction).strip()}]", 
                                                                               inputBufferItem.message.commandId)
                             else:
-                                self.currentlyExecuting[m] = None
+                                self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                # an invalid command doesn't interrupt currentlyRunning command
                             break
                         except AttributeError as e:
-                            #TODO activate:
-                            #TODO send a COMMAND_FEEDBACK  IGNORED message
                             logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
+                            self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                             break
                     else:
                         self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
