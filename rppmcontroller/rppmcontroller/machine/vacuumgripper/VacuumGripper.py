@@ -370,6 +370,14 @@ class VacuumGripper(MovingMachine):
             self.__vacuumActCompressorOn = False
             self.__vacuumActValve = False
             t4 = True
+        if (self.vacuumActArmIn and self.vacuumSensArmEndIn) or \
+           (self.vacuumActRotRight and self.vacuumSensRotEnd) or \
+           (self.vacuumActVerticalUp and self.vacuumSensVerticalEndUp):
+            self.vacuumActArmIn = self.vacuumActRotRight = self.vacuumActVerticalUp =False
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, 
+                                    f"cannot move beyond reference sensor, machine is probably not initialized", 
+                                    None)
+        
         if (t1 and t2 and t3 and t4):
             return CycleStepResult(CycleStepResultEnum.DONE, 
                                     f"gotoconfig {config}", 
@@ -382,10 +390,6 @@ class VacuumGripper(MovingMachine):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    #referenzfahrt des vacuumers um alle counter korrekt zu setzen - setzen der counter an anderer Stelle, hier aber in Referenzposition
-    #von execute bereits berücksichtigt
-    # reference journey of the vacuum to set all counters correctly - put the counter elsewhere, but here in reference position
-    # already considered by execute
     @override
     def setup_CycleStep(self) -> CycleStepResult: 
         """
