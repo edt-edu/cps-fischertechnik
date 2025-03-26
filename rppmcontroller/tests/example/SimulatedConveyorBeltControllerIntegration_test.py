@@ -1,6 +1,7 @@
 import inspect
 import logging
 import os
+import re
 import unittest
 from unittest.mock import patch, Mock
 
@@ -66,6 +67,8 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -113,6 +116,8 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             
             if (notification == "") :
                 iterationDone += 1
+            elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -161,6 +166,8 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -208,6 +215,8 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -257,6 +266,8 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             
             if (notification == "") :
                 iterationDone += 1
+            elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -309,6 +320,8 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)

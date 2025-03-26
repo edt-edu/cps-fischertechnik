@@ -1,6 +1,7 @@
 import inspect
 import logging
 import os
+import re
 import unittest
 from unittest.mock import patch, Mock
 
@@ -50,7 +51,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
@@ -92,6 +93,8 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
             
             if notification == "" :
                 iterationDone += 1
+            elif re.match(r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)

@@ -1,6 +1,7 @@
 import inspect
 import logging
 import os
+import re
 import unittest
 from unittest.mock import patch, Mock
 
@@ -72,6 +73,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             logging.debug(f"{iterationDone} iterations")
             if (notification == "") :
                 iterationDone += 1
+            elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -124,6 +127,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             
             if (notification == "") :
                 iterationDone += 1
+            elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -176,6 +181,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             
             if (notification == "") :
                 iterationDone += 1
+            elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
