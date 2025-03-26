@@ -28,9 +28,6 @@ class MovingMachine(Machine):
         self.start = Position("START", 0, 0, 0)
         self.fin = Position("END", 0, 0, 0)
         self.setupFirst = True
-        self.isCommandSuccessed = False
-        self.isCommandRunning = False
-        self.isCommandTimedOut = False
         self.isSetupRunning = False
         self.isSetupDone = False
         
@@ -96,21 +93,15 @@ class MovingMachine(Machine):
         #TODO also reset pc when re-executing
         if not self._setupFinished:
             logging.debug('setup from execute_CycleStep')
-            #self.isExecuting = True
-            #self.__setupFinished = self.setup()
             self.isSetupRunning = True
             self.setup_CycleStep()
             self.setupFinishedHelper = self._setupFinished
             self._configReached = True
-            # self.isSetupDone = True
-            # self.isSetupRunning = False
             return False
         else:
-            logging.debug('processing move list')    
-            self.isCommandSuccessed = False
+            logging.debug('processing move list') 
             self.isSetupDone = False
             self.isSetupRunning = False
-            self.isCommandRunning = True
             if self._configReached:
                 if self.__configGoal is None:
                     logging.debug(f"config reached setup()")
@@ -136,8 +127,6 @@ class MovingMachine(Machine):
                 # self.__configGoal =  None
                 self.__pc = 0
                 self.__moveList = []
-                self.isCommandRunning = False
-                self.isCommandSuccessed = True
                 return True
             else:
                 return False

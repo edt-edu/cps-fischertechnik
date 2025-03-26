@@ -427,7 +427,6 @@ class VacuumGripper(MovingMachine):
     def stop_CycleStep(self) -> CycleStepResult:
         self.clearMoveList()
         self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
-        self.isCommandSuccessed = True
         return CycleStepResult(CycleStepResultEnum.DONE)
 
     ### ____________ Functions callable from orchestrator ________________

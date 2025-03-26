@@ -24,26 +24,12 @@ class ConveyorBelt(Machine):
             self.previous_isExecuting_log = isExecuting_log
         return self.__conveyorActForward or self.__conveyorActBackward
 
-    @Machine.isCommandSuccessed.getter
-    def isCommandSuccessed(self) -> bool:
-        return self.__isCommandSuccessed
-
-    @Machine.isCommandRunning.getter
-    def isCommandRunning(self) -> bool:
-        return self.__isCommandRunning
-    
-    @Machine.isCommandTimedOut.getter
-    def isCommandTimedOut(self) -> bool:
-        return self.__isCommandTimedOut
 
     def __init__(self, id1):
         self.__conveyorSensImpulseCounterRaw = 0
         self.__conveyorSensFeed = self.__conveyorSensSwap = True #True is the value when there is no object in front of the sensor
         self.__conveyorActForward = self.__conveyorActBackward = False
         self.__counter = ImpulseCounter()
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = False
-        self.__isCommandTimedOut = False
         self.current = 0
         self.sensed = False
         dictMap = {RequestedParameter.LIGHTBARRIERFEEDSTATION: self.__conveyorSensSwap,
@@ -147,8 +133,6 @@ class ConveyorBelt(Machine):
         self.__conveyorActForward = True
         if not self.__conveyorSensSwap:
             self.__conveyorActForward = False
-            self.__isCommandRunning = False
-            self.__isCommandSuccessed = True
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -160,8 +144,6 @@ class ConveyorBelt(Machine):
         self.__conveyorActBackward = True
         if not self.__conveyorSensFeed:
             self.__conveyorActBackward = False
-            self.__isCommandRunning = False
-            self.__isCommandSuccessed = True
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -176,8 +158,6 @@ class ConveyorBelt(Machine):
         else:
             if self.countSteps() >= 6:
                 self.__conveyorActForward = False
-                self.__isCommandRunning = False
-                self.__isCommandSuccessed = True
                 ret = True # command final goal reached, no need to call this cycleStep again
 
         if not self.__conveyorSensSwap:
@@ -198,8 +178,6 @@ class ConveyorBelt(Machine):
         else:
             if self.countSteps() >= 6:
                 self.__conveyorActBackward = False
-                self.__isCommandRunning = False
-                self.__isCommandSuccessed = True
                 ret = True # command final goal reached, no need to call this cycleStep again
 
         if not self.__conveyorSensFeed:
@@ -223,8 +201,6 @@ class ConveyorBelt(Machine):
         if self.current >= steps :
             self.__conveyorActForward = False
             self.current = 0
-            self.__isCommandRunning = False
-            self.__isCommandSuccessed = True
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -242,8 +218,6 @@ class ConveyorBelt(Machine):
         if self.current >= steps :
             self.__conveyorActBackward = False
             self.current = 0
-            self.__isCommandRunning = False
-            self.__isCommandSuccessed = True
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
@@ -255,8 +229,6 @@ class ConveyorBelt(Machine):
     def stop_CycleStep(self) -> CycleStepResult:
         """Stop the conveyor"""
         self.__conveyorActForward = self.__conveyorActBackward = False
-        self.__isCommandRunning = False
-        self.__isCommandSuccessed = True
         return CycleStepResult(CycleStepResultEnum.DONE)
 
         
@@ -276,8 +248,6 @@ class ConveyorBelt(Machine):
             The conveyor will stop after few steps when the package leaves the coveyor.
         """
         self.arrived = False
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = True
         if dir == Direction.FORWARD:
             return lambda: self.forwardLeaveConveyor_CycleStep()
         if dir == Direction.BACKWARD:
@@ -291,8 +261,6 @@ class ConveyorBelt(Machine):
 
             There is no control of the position of the package. The conveyor wont stop until it reach the number of steps
         """
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = True
         self.sensed = False
         if dir == Direction.FORWARD:
             return lambda: self.forwardGoto_CycleStep(steps)
@@ -307,8 +275,6 @@ class ConveyorBelt(Machine):
             Args:
                 dir (Direction) : the direction where to move the package
         """
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = True
         if dir == Direction.FORWARD:
             return lambda: self.forwardFromAnywhere_CycleStep()
         if dir == Direction.BACKWARD:

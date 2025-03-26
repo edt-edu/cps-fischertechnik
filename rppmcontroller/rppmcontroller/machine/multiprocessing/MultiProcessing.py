@@ -22,18 +22,6 @@ class MultiProcessing(Machine):
 
         return res
 
-    @Machine.isCommandSuccessed.getter
-    def isCommandSuccessed(self) -> bool:
-        return self.__isCommandSuccessed
-
-    @Machine.isCommandRunning.getter
-    def isCommandRunning(self) -> bool:
-        return self.__isCommandRunning
-    
-    @Machine.isCommandTimedOut.getter
-    def isCommandTimedOut(self) -> bool:
-        return self.__isCommandTimedOut
-
     def __init__(self, id1):
         self.__multiProcessingSensTurntablePosVacuum = self.__multiProcessingSensTurntablePosBelt = False
         self.__multiProcessingSensEndConveyor = self.__multiProcessingSensOven = True #Light barrier sensors are True by default
@@ -51,8 +39,6 @@ class MultiProcessing(Machine):
         self.__multiProcessingActLowerValve = False
         self.__multiProcessingValveOvenDoor = False
         self.__multiProcessingValveFeeder = False
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = False
         self.__isCommandTimedOut = False
         dictMap = {RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM: self.__multiProcessingSensTurntablePosVacuum,
                    RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT: self.__multiProcessingSensTurntablePosBelt,
@@ -592,14 +578,10 @@ class MultiProcessing(Machine):
         """
         self.processing = True
         if len(actions) <= self.actionDone:
-            self.__isCommandSuccessed = True
-            self.__isCommandRunning = False
             self.processing = False
             self.actionDone = 0
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
-            self.__isCommandSuccessed = False
-            self.__isCommandRunning = True
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -607,8 +589,6 @@ class MultiProcessing(Machine):
     @override
     def stop_CycleStep(self) -> CycleStepResult:
         self.processing = self.__multiProcessingActRotClockwise = self.__multiProcessingActRotCounterclockwise = self.__multiProcessingActConveyorForward = self.__multiProcessingActSaw = self.__multiProcessingActOvenInward = self.__multiProcessingActOvenOutward = self.__multiProcessingActGripperToOven = self.__multiProcessingActGripperToTurntable = self.__multiProcessingOvenLight = self.__multiProcessingCompressor = self.__multiProcessingValveVacuum = self._multiProcessingActLowerValve = self.__multiProcessingValveOvenDoor = self.__multiProcessingValveFeeder = False
-        self.__isCommandSuccessed = True
-        self.__isCommandRunning = False
         return CycleStepResult(CycleStepResultEnum.DONE)
 
     ### ____________ Functions callable from orchestrator ________________

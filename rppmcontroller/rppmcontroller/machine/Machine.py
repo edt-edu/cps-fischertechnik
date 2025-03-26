@@ -25,9 +25,6 @@ class Machine:
         self.__id = id1
         self.__dictMap = dictMap
         self.__isExecuting = False
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = False
-        self.__isCommandTimedOut = False
         self.__isSetupRunning = False
         self.__isSetupDone = False
         self.__lastExecutionTime = -math.inf
@@ -56,45 +53,6 @@ class Machine:
 
     def machineTypeName(self) -> str:
         return self.__class__.__name__
-    
-    @property
-    @abstractmethod
-    def isCommandSuccessed(self) -> bool:
-        """Returns whether the command successed
-
-        :return bool: the command status
-        """
-        return self.__isCommandSuccessed
-
-    @isCommandSuccessed.setter
-    def isCommandSuccessed(self, value: bool):
-        self.__isCommandSuccessed = value
-
-    @property
-    @abstractmethod
-    def isCommandRunning(self) -> bool:
-        """Returns whether the command Running
-
-        :return bool: the command status
-        """
-        return self.__isCommandRunning
-
-    @isCommandRunning.setter
-    def isCommandRunning(self, value: bool):
-        self.__isCommandRunning = value
-
-    @property
-    @abstractmethod
-    def isCommandTimedOut(self) -> bool:
-        """Returns whether the command TimedOut
-
-        :return bool: the command status
-        """
-        return self.__isCommandTimedOut
-
-    @isCommandTimedOut.setter
-    def isCommandTimedOut(self, value: bool):
-        self.__isCommandTimedOut = value
 
     @property
     @abstractmethod
