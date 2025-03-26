@@ -20,11 +20,8 @@ class MovingMachine(Machine):
         :param list placeList: the list of places
         """
         super().__init__(id1, dictMap)
-        self.__configGoal = None
         self._configReached = False
         self._setupFinished = self.setupFinishedHelper = False
-        self.__pc = 0
-        self.__moveList = []
         self.start = Position("START", 0, 0, 0)
         self.fin = Position("END", 0, 0, 0)
         self.setupFirst = True
@@ -41,17 +38,7 @@ class MovingMachine(Machine):
     def setupFinished(self, value):
         self._setupFinished = value
 
-    @abstractmethod
-    def generateTransferMoveList(self, numPickup: Position, numPlace: Position) -> list:
-        """Uses the specified Postions as the Pickup location or Place location to create a move list
-
-        :param Position numPickup: place object is picked up at
-        :param Position numPlace: place object is dropped up at
-
-        :returns: configs specific to the machine to travel between the places
-        :rtype: list
-        """
-        pass
+    
 
     @abstractmethod
     def setup_CycleStep(self) -> CycleStepResult:
@@ -71,101 +58,4 @@ class MovingMachine(Machine):
         pass
 
     
-    def execute_CycleStep(self, start: Position, fin: Position, moveList: list) -> bool:
-        """execute performs the action indicated by the input numbers to move the product between the two specified places
-
-        :param Position start: see method generate transferMoveList
-        :param Position fin: see method generate transferMoveList
-        :param list moveList:
-        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
-        """
-
-        logging.debug("execute_CycleStep")
-        
-        self.__moveList = []
-        self.__moveList.extend(moveList)
-
-        #Reset pc for new move list if input from start or target position changes
-        if self.start != start or self.fin != fin:
-            self.start = start
-            self.fin = fin
-            self.__pc = 0
-        #TODO also reset pc when re-executing
-        if not self._setupFinished:
-            logging.debug('setup from execute_CycleStep')
-            self.isSetupRunning = True
-            self.setup_CycleStep()
-            self.setupFinishedHelper = self._setupFinished
-            self._configReached = True
-            return False
-        else:
-            logging.debug('processing move list') 
-            self.isSetupDone = False
-            self.isSetupRunning = False
-            if self._configReached:
-                if self.__configGoal is None:
-                    logging.debug(f"config reached setup()")
-                else:
-                    logging.debug(f"config reached {self.__configGoal}")
-                # logging.info(f'moveList size {len(self.__moveList)}')
-                self._configReached = False
-                # more moves available
-                if self.__pc < len(self.__moveList):
-                    logging.debug(f"next move {self.__moveList[self.__pc]}")
-                    self.__configGoal = self.__moveList[self.__pc]
-                    self.__pc += 1
-                    logging.debug('new pc is ' + str(self.__pc))
-                else:
-                    #TODO reactivate if necessary self.__pc = 0
-                    pass
-            self._configReached = self.gotoconfig(self.__configGoal)
-            logging.debug(f'nbRemainingMove {self.nbRemainingMove()}/{len(self.__moveList)}')
-
-            if self._configReached and self.nbRemainingMove() == 0:
-                logging.debug(f'self.__configReached and self.nbRemainingMove() == 0 {self._configReached and self.nbRemainingMove() == 0}')
-                # if this config goal is the last of the movelist and the config is reached, we can now reset the pc 
-                # self.__configGoal =  None
-                self.__pc = 0
-                self.__moveList = []
-                return True
-            else:
-                return False
-
-    def clearMoveList(self) -> None:
-        """execute performs the action indicated by the input numbers to move the product between the two specified places
-
-        :param Position start: see method generate transferMoveList
-        :param Position fin: see method generate transferMoveList
-        :param list moveList:
-        """
-        self.__moveList = []
-        self.__pc = 0
-
-    @property
-    def pc(self) -> int:
-        """Returns the pc indicating the current executing position in the move list
-
-        :returns: the pc value
-        :rtype: int
-        """
-        return self.__pc
-
-
-    @pc.setter
-    def pc(self, value):
-        self.__pc = value
-
-    def nbMove(self) -> int:
-        """Total number of moves that the Machine has to perform"""
-        return len(self.__moveList)
-    
-    def nbRemainingMove(self) -> int:
-        """Number of remaining moves that the Machine has to perform"""
-        if self.__moveList is not None:
-            return len(self.__moveList) - self.pc 
-        else:
-            return 0
-    
-    def hasRemainingMove(self) -> bool:
-        """The Machine has some remaining move to perform"""
-        return self.nbRemainingMove() > 0
+ 

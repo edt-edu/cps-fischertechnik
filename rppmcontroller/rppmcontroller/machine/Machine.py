@@ -93,6 +93,15 @@ class Machine:
     def nbMinimumRequiredExecutionCycles(self,value: int) -> None:
         self.__nbMinimumRequiredExecutionCycles = value
 
+    @property
+    def processSequenceContext(self) -> Optional[ProcessSequenceContext]:
+        """Returns whether the machine context of the currently performing actions
+
+        :return Optional[ProcessSequenceContext]: the processSequenceContext
+
+        """
+        return self.__processSequenceContext
+
     def timeSinceExecution(self):
         if self.__isExecuting:
             return 0
