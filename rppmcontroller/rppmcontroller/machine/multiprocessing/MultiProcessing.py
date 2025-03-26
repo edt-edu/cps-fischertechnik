@@ -10,7 +10,41 @@ from typing import Any, Callable, Dict, List, Optional
 from typing_extensions import override
 
 class MultiProcessing(Machine):
+    """
+    Class implementing the MultiProcessingStation Machine
 
+    Attributes:
+        __multiProcessingSensTurntablePosVacuum (bool) : Turn Table button sensor when the turn table is in front of the VacuumGripper, 
+            True when in front of Vacuum Gripper
+        __multiProcessingSensTurntablePosSaw (bool) : Turn Table button sensor when the turn table is in front of the Saw, 
+            True when in front of Saw
+        __multiProcessingSensTurntablePosBelt (bool) :  Turn Table button sensor when the turn table is in front of the conveyor belt, 
+            True when in front of Conveyor
+        __multiProcessingSensEndConveyor (bool) : Light sensor on the conveyor.
+            False when a token is detected
+        __multiProcessingSensOven (bool) : Light sensor in front of the Oven.
+            False when a token is detected
+        __multiProcessingSensOvenFeederIn (bool) : Button sensor inside the oven, True when the feeder is fully retracted
+        __multiProcessingSensOvenFeederOut (bool) : Button sensor outside the oven, True when the feeder is fully extended
+        __multiProcessingSensVacuumGripperAtTurntable (bool) : Button sensor on the Vacuum gripper , True when the gripper is in front of the TurnTable
+        __multiProcessingSensVacuumGripperAtOven (bool) : Button sensor on the Vacuum gripper , True when the gripper is in front of the Oven
+        __multiProcessingActRotClockwise (bool) : Rotate TurnTable clockwise (ie. toward the converyor belt).
+            must not be true at the same time as __multiProcessingActRotCounterclockwise
+        __multiProcessingActRotCounterclockwise (bool) :  Rotate TurnTable counterclockwise (ie. toward the VacuumGRipper).
+            must not be true at the same time as __multiProcessingActRotClockwise
+        __multiProcessingActConveyorForward (bool) :
+        __multiProcessingActSaw (bool) :
+        __multiProcessingActOvenInward (bool) :
+        __multiProcessingActOvenOutward (bool) :
+        __multiProcessingActGripperToOven (bool) :
+        __multiProcessingActGripperToTurntable (bool) :
+        __multiProcessingOvenLight (bool) :
+        __multiProcessingCompressor (bool) :
+        __multiProcessingValveVacuum (bool) :
+        __multiProcessingActLowerValve (bool) :
+        __multiProcessingValveOvenDoor (bool) :
+        __multiProcessingValveFeeder (bool) :
+    """
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         res = self.isProcessingSequence() or self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder
@@ -39,7 +73,6 @@ class MultiProcessing(Machine):
         self.__multiProcessingActLowerValve = False
         self.__multiProcessingValveOvenDoor = False
         self.__multiProcessingValveFeeder = False
-        self.__isCommandTimedOut = False
         dictMap = {RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM: self.__multiProcessingSensTurntablePosVacuum,
                    RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT: self.__multiProcessingSensTurntablePosBelt,
                    RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT: self.__multiProcessingSensEndConveyor,
@@ -68,7 +101,6 @@ class MultiProcessing(Machine):
         self.ovenCount = 0
         self.vacuumCount = 0
         self.ejectorCount = 0
-        self.actionDone = 0
         self.heated = False
         self.delivered = False
         self.processing = False
@@ -336,7 +368,6 @@ class MultiProcessing(Machine):
             self.turnTableDirection = Direction.NONE
             self.__multiProcessingActRotClockwise = False
             self.__multiProcessingActRotCounterclockwise = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -348,7 +379,6 @@ class MultiProcessing(Machine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActRotClockwise = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -360,7 +390,6 @@ class MultiProcessing(Machine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActRotCounterclockwise = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -373,7 +402,6 @@ class MultiProcessing(Machine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActSaw  = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -385,7 +413,6 @@ class MultiProcessing(Machine):
             self.__multiProcessingCompressor = False
             self.__multiProcessingValveFeeder = False               
             self.ejectorCount = 0
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
         else :
             self.__multiProcessingCompressor = True
@@ -402,7 +429,6 @@ class MultiProcessing(Machine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else :
             self.__multiProcessingActConveyorForward = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -425,7 +451,6 @@ class MultiProcessing(Machine):
                 self.ovenCount = 0
                 self.heated = True
                 self.moveFeederOut
-                self.actionDone += 1
                 return CycleStepResult(CycleStepResultEnum.DONE)
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
@@ -441,7 +466,6 @@ class MultiProcessing(Machine):
             self.__multiProcessingActOvenInward = False
             self.__multiProcessingCompressor = False
             self.__multiProcessingValveOvenDoor = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -456,7 +480,6 @@ class MultiProcessing(Machine):
             self.__multiProcessingActOvenOutward = False
             self.__multiProcessingCompressor = False
             self.__multiProcessingValveOvenDoor = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
     ###____________ Vacuum gripper _______________
@@ -467,7 +490,6 @@ class MultiProcessing(Machine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActGripperToOven = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -478,7 +500,6 @@ class MultiProcessing(Machine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         else:
             self.__multiProcessingActGripperToTurntable = False
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
 
 
@@ -498,7 +519,6 @@ class MultiProcessing(Machine):
             self.__multiProcessingActLowerValve = False
             self.__multiProcessingCompressor = False
             self.vacuumCount = 0
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
         elif self.vacuumCount > 4:
             self.__multiProcessingValveVacuum = True
@@ -528,7 +548,6 @@ class MultiProcessing(Machine):
             self.__multiProcessingActLowerValve = False
             self.__multiProcessingCompressor = False
             self.vacuumCount = 0
-            self.actionDone += 1
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             self.__multiProcessingCompressor = True
@@ -538,7 +557,7 @@ class MultiProcessing(Machine):
 
 
     ### __________ Other functions ______________
-    def resetStation(self):
+    def resetStation(self) -> CycleStepResult:
         """Set all valuables and the ovenReady flag to the starting values."""
         self.sawCount = 0
         self.ovenCount = 0
@@ -547,44 +566,10 @@ class MultiProcessing(Machine):
         self.toVac = False
         self.heated = False
         self.delivered = False
-        self.actionDone +=1
+        return CycleStepResult(CycleStepResultEnum.DONE)
 
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
-
-    def setup_CycleStep(self) -> CycleStepResult:
-        """Reset the station and move some parts to the initial postion.
-        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
-        actions = [
-            self.resetStation,
-            self.moveTurntableToVacuum,
-            self.moveVacuumToOven,
-            self.moveFeederOut,
-        ]
-        self.processing = True
-        if len(actions) <= self.actionDone:
-            self.processing = False
-            self.actionDone = 0
-            return CycleStepResult(CycleStepResultEnum.DONE)
-        else:
-            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
-            actions[self.actionDone]()
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
-
-    def process_CycleStep(self, actions: List) -> CycleStepResult:
-        """call the actions in the actions list, each action must increment self.actionDone in order to proceed to next action of the list
-        
-        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
-        """
-        self.processing = True
-        if len(actions) <= self.actionDone:
-            self.processing = False
-            self.actionDone = 0
-            return CycleStepResult(CycleStepResultEnum.DONE)
-        else:
-            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
-            actions[self.actionDone]()
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
     @override
     def stop_CycleStep(self) -> CycleStepResult:
@@ -594,7 +579,15 @@ class MultiProcessing(Machine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
     def setup_Command(self) -> Optional[Callable[[], CycleStepResult]]:
-        return lambda: self.setup_CycleStep()  
+        """Reset the station and move some parts to the initial postion.
+        """
+        actions = [
+            CycleStepCommand(lambda: self.resetStation(), "resetStation()"),
+            CycleStepCommand(lambda: self.moveTurntableToVacuum(), "moveTurntableToVacuum"),
+            CycleStepCommand(lambda: self.moveVacuumToOven(), "moveVacuumToOven"),
+            CycleStepCommand(lambda: self.moveFeederOut(), "moveFeederOut"),
+        ]
+        return lambda: self.process_sequence_CycleStep(actions)
 
     def process1_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
