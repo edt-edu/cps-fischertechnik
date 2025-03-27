@@ -1,6 +1,7 @@
 import inspect
 import logging
 import os
+import re
 import unittest
 from unittest.mock import patch, Mock
 
@@ -17,10 +18,10 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         script_path = os.path.abspath(__file__)
-        logging.warning(f'script path : {script_path}')
+        logging.info(f'script path : {script_path}')
         dir_path = os.path.dirname(__file__)
         config_path = os.path.join(dir_path, "config.yml")
-        logging.warning(f'config file path : {config_path}')
+        logging.info(f'config file path : {config_path}')
 
         logging.debug("setup called")
         self.controller = SimulatedMultiProcessingController(config_path)
@@ -50,13 +51,13 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
-        self.assertRegex(ctHelper.readNotification(self.controller), r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 0:
                 #initial state
@@ -92,13 +93,15 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
             
             if notification == "" :
                 iterationDone += 1
+            elif re.match(r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
+                self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"COMMAND SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 75, "COMMAND not reached in less than 75 iterations" )
+            self.assertLess(iterationDone, 75, "COMMAND not reached in less than 80 iterations" )
     
  
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
 
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
@@ -30,27 +32,12 @@ class SortingLine(Machine):
             self.previous_isExecuting_log = isExecuting_log
 
         return res
-    
-    @Machine.isCommandSuccessed.getter
-    def isCommandSuccessed(self) -> bool:
-        return self.__isCommandSuccessed
-
-    @Machine.isCommandRunning.getter
-    def isCommandRunning(self) -> bool:
-        return self.__isCommandRunning
-    
-    @Machine.isCommandTimedOut.getter
-    def isCommandTimedOut(self) -> bool:
-        return self.__isCommandTimedOut
 
     def __init__(self, id1: str):
         self.__sortingLineSensImpulseCounterRaw = 0
         self.__sortingLineSensInputLightBarrier = self.__sortingLineSensMiddleLightBarrier = self.__sortingLineSensWhiteLightBarrier = self.__sortingLineSensBlueLightBarrier = self.__sortingLineSensRedLightBarrier = True
         self.__sortingLineActMotorConveyor = self.__sortingLineActCompressorOn = self.__sortingLineActWhiteEjector = self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = False
         self.__counter = ImpulseCounter()
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = False
-        self.__isCommandTimedOut = False
         dictMap = {RequestedParameter.PULSECOUNTER: self.__counter.counter,
                    RequestedParameter.LIGHTBARRIERINLET: self.__sortingLineSensInputLightBarrier,
                    RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR: self.__sortingLineSensMiddleLightBarrier,
@@ -198,8 +185,6 @@ class SortingLine(Machine):
 
 
     def startOfProcess(self, packageIncoming):
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = True
         if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
             self.__packageOnLine = True
             print("packageOnLine True")
@@ -212,7 +197,7 @@ class SortingLine(Machine):
                 self.__packageCountSteps = True
 
     @override
-    def stop_CycleStep(self) -> bool:
+    def stop_CycleStep(self) -> CycleStepResult:
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
         self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
@@ -220,10 +205,11 @@ class SortingLine(Machine):
         self.__packageCountSteps = False
         # self.once = True
         self.__counter.counter = 0
-        self.__isCommandSuccessed = True
-        return True
+        return CycleStepResult(CycleStepResultEnum.DONE, 
+                                    f"stop_CycleStep", 
+                                    None)
     
-    def eject_CycleStep(self, color: Color) -> bool:
+    def eject_CycleStep(self, color: Color) -> CycleStepResult:
         """
         Used to eject a token, 
         it first detects the presence of the token on the conveyor, then eject the token to the appropriate colored line, it ends with a token detected in the color line.
@@ -252,8 +238,6 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActBlueEjector = False
-                    self.__isCommandRunning = False
-                    self.__isCommandSuccessed = True
                     ret = True # command final goal reached, no need to call this cycleStep again
             if current > redCounter and color == Color.RED:
                 self.__sortingLineActMotorConveyor = False
@@ -265,8 +249,6 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActRedEjector = False
-                    self.__isCommandRunning = False
-                    self.__isCommandSuccessed = True
                     ret = True # command final goal reached, no need to call this cycleStep again
             if current > whiteCounter and color == Color.WHITE:
                 self.__sortingLineActMotorConveyor = False
@@ -277,17 +259,22 @@ class SortingLine(Machine):
                     print("packageOnLine False")
                     self.__sortingLineActCompressorOn = False
                     self.__sortingLineActWhiteEjector = False
-                    self.__isCommandRunning = False
-                    self.__isCommandSuccessed = True
                     ret = True # command final goal reached, no need to call this cycleStep again
-        return ret
+        if ret:
+            return CycleStepResult(CycleStepResultEnum.DONE, 
+                                    f"eject_CycleStep", 
+                                    None)
+        else:
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"eject_CycleStep", 
+                                    None)
     
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def eject_Command(self, color: Color) -> Optional[Callable[[], bool]]:
+    def eject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.eject_CycleStep(color)
 
-    def stop_Command(self) -> Optional[Callable[[], bool]]:
+    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()
         

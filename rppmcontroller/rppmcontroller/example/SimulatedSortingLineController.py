@@ -25,7 +25,7 @@ class SimulatedSortingLineController(RevPiPyMachineController):
         self.sortingLineMachine = SortingLine("SortingLine01")
         self.machines = [self.sortingLineMachine]
         self.currentlyExecuting = {
-            self.sortingLineMachine: [None, None]
+            self.sortingLineMachine: None
         }
 
         self.machineFeedback = {

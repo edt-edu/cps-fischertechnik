@@ -39,10 +39,10 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         
         #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])        
         self.currentlyExecuting = {
-            self.conveyorBeltMachine: [None, None],
-            self.vacuumGripperMachine: [None, None],
-            self.multiProcessingMachine: [None, None],
-            self.sortingLineMachine: [None, None]
+            self.conveyorBeltMachine: None,
+            self.vacuumGripperMachine: None,
+            self.multiProcessingMachine: None,
+            self.sortingLineMachine: None
         }
 
         self.machineFeedback = {

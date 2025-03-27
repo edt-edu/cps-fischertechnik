@@ -1,7 +1,11 @@
 import math
 from abc import abstractmethod
 from time import time
-from typing import Any, Dict
+from typing import Any, Callable, Dict, List, Optional
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
+from rppmcontroller.behavior.ProcessSequenceContext import ProcessSequenceContext
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
 from rppmcontroller.machine.MachineStatus import MachineStatus
@@ -21,13 +25,11 @@ class Machine:
         self.__id = id1
         self.__dictMap = dictMap
         self.__isExecuting = False
-        self.__isCommandSuccessed = False
-        self.__isCommandRunning = False
-        self.__isCommandTimedOut = False
         self.__isSetupRunning = False
         self.__isSetupDone = False
         self.__lastExecutionTime = -math.inf
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
+        self.__processSequenceContext : Optional[ProcessSequenceContext] =  None
 
     @property
     def id(self) -> str:
@@ -51,45 +53,6 @@ class Machine:
 
     def machineTypeName(self) -> str:
         return self.__class__.__name__
-    
-    @property
-    @abstractmethod
-    def isCommandSuccessed(self) -> bool:
-        """Returns whether the command successed
-
-        :return bool: the command status
-        """
-        return self.__isCommandSuccessed
-
-    @isCommandSuccessed.setter
-    def isCommandSuccessed(self, value: bool):
-        self.__isCommandSuccessed = value
-
-    @property
-    @abstractmethod
-    def isCommandRunning(self) -> bool:
-        """Returns whether the command Running
-
-        :return bool: the command status
-        """
-        return self.__isCommandRunning
-
-    @isCommandRunning.setter
-    def isCommandRunning(self, value: bool):
-        self.__isCommandRunning = value
-
-    @property
-    @abstractmethod
-    def isCommandTimedOut(self) -> bool:
-        """Returns whether the command TimedOut
-
-        :return bool: the command status
-        """
-        return self.__isCommandTimedOut
-
-    @isCommandTimedOut.setter
-    def isCommandTimedOut(self, value: bool):
-        self.__isCommandTimedOut = value
 
     @property
     @abstractmethod
@@ -129,6 +92,19 @@ class Machine:
     @nbMinimumRequiredExecutionCycles.setter
     def nbMinimumRequiredExecutionCycles(self,value: int) -> None:
         self.__nbMinimumRequiredExecutionCycles = value
+
+    @property
+    def processSequenceContext(self) -> Optional[ProcessSequenceContext]:
+        """Returns whether the machine context of the currently performing actions
+
+        :return Optional[ProcessSequenceContext]: the processSequenceContext
+
+        """
+        return self.__processSequenceContext
+
+    @processSequenceContext.setter
+    def processSequenceContext(self, value: Optional[ProcessSequenceContext] ):
+        self.__processSequenceContext = value
 
     def timeSinceExecution(self):
         if self.__isExecuting:
@@ -185,13 +161,85 @@ class Machine:
             self.__nbMinimumRequiredExecutionCycles -= 1
 
     @abstractmethod
-    def stop_CycleStep(self) -> bool:
+    def stop_CycleStep(self) -> CycleStepResult:
         """
         Used to stop the execution immediately by setting all outputs to false
 
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
         pass
+
+
+    
+
+    def process_sequence_CycleStep(self, subCycleStepList: List[CycleStepCommand]) -> CycleStepResult:
+        """
+        perform each subCycleStep one after another as soon as the previous one ha indicated it had finished.
+        Note: Only one subCycleStep can be performe in a cycle.
+        Note: despite compatible signature, nested process_sequence_CycleStep are NOT allowed (it would require stack management)
+
+        
+        :param List[Callable[[], bool] subCycleStepList: list of Callable that should be processed
+        :return: as a CycleStep, this function must return True when all subCycleStep have finished so this 'process_sequnece' can be removed from the currentlyExecuting map
+        """
+
+
+        if self.__processSequenceContext is not None:
+            # we are currently processing a sequence
+
+            # check if this is the same
+            if self.__processSequenceContext.subCycleStepList != subCycleStepList:
+                logging.error(f"calling process_sequence_CycleStep on a machine with 2 different subCycleStepList, \n{self.__processSequenceContext.subCycleStepList} != {subCycleStepList}")
+                raise Exception(f"Invalid subCycleList when calling process_sequence_CycleStep() on machine {self.id}")
+        else:
+            self.__processSequenceContext =  ProcessSequenceContext(subCycleStepList)
+            psContext = self.__processSequenceContext
+            logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                
+        
+        # call current subCycleStep
+        psContext = self.__processSequenceContext
+        subCommand = psContext.subCycleStepList[psContext.currentSubCycleStepIndex]
+        res = subCommand.cycleStep()
+        # analyse result
+        if not res.must_continue():
+            if not res.is_terminated():
+
+                logging.debug(f"normal end of subCycleStepCommand reached {psContext.currentSubCycleStepIndex}/{len(psContext.subCycleStepList)}")
+                if psContext.currentSubCycleStepIndex+1 >= len(psContext.subCycleStepList):
+                    # finished processing this sequence
+                    self.__processSequenceContext = None
+                    logging.debug(f"process_sequence_CycleStep {self.id} last sub command done ")
+                    return CycleStepResult(CycleStepResultEnum.DONE, 
+                                            f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                            f" : {psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
+                                            (subCommand.displayName, res))
+                else:
+                    # proceed to next subCycleStep
+                    psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
+                    logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                    return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                            f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                            (subCommand.displayName, res))
+            else:
+                # transfert termination result to upper CycleStep
+                return CycleStepResult(res.result, 
+                                        f"process_sequence_CycleStep terminated due to result of {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                        f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                        (subCommand.displayName, res))
+        else:  
+            # use same text etc as in "proceed to next subCycleStep" in order to avoid multiple notifications due to comparison mismatch     
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                    f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                    (subCommand.displayName, res))
+
+    def isProcessingSequence(self) -> bool:
+        """
+        Indicates if process_sequence_CycleStep is currently processing a sequence
+        """
+        return self.__processSequenceContext is not None
 
     def request(self, params: list) -> list:
         """
@@ -219,24 +267,7 @@ class Machine:
             return MachineStatus.INACTION
         else:
             return MachineStatus.IDLE
-        
-    def commandFeedback(self):
-        if self.isCommandSuccessed:
-            self.isCommandRunning = False #reset variable
-            return CommandExecutionStatus.SUCCESS
-        elif self.isCommandTimedOut:
-            self.isCommandRunning = False #reset variable
-            return CommandExecutionStatus.ABORTED_TIMEOUT
-        elif self.isSetupDone:
-            self.isSetupRunning = False 
-            self.isSetupDone = False #ensure only one message is sent
-            return CommandExecutionStatus.SETUP_DONE
-        elif self.isSetupRunning:
-            return CommandExecutionStatus.SETUP_RUNNING
-        elif self.isCommandRunning:
-            return CommandExecutionStatus.RUNNING
-        else:
-            return CommandExecutionStatus.FEEDBACK_ERROR
+
 
 
 

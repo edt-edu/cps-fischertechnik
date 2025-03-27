@@ -3,18 +3,18 @@ from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 class VacuumGripperConfig(MachineConfiguration):
 
     def __init__(self, counterVertical:int, counterRot:int, counterArm:int, gripperActive:bool, endVertical=False, endRot=False, endArm=False):
-        self.__counterVertical = counterVertical
-        self.__counterRot = counterRot
-        self.__counterArm = counterArm
-        self.__gripperActive = gripperActive
-        self.__endVertical = endVertical
-        self.__endRot = endRot
-        self.__endArm = endArm
+        self._counterVertical = counterVertical
+        self._counterRot = counterRot
+        self._counterArm = counterArm
+        self._gripperActive = gripperActive
+        self._endVertical = endVertical
+        self._endRot = endRot
+        self._endArm = endArm
 
     def __eq__(self, other):
-        return (self.__endArm == other.endArm and
-                self.__endRot == other.endRot and
-                self.__endVertical == other.endVertical and
+        return (self._endArm == other.endArm and
+                self._endRot == other.endRot and
+                self._endVertical == other.endVertical and
                 self.counterArm == other.counterArm and
                 self.gripperActive == other.gripperActive and
                 self.counterRot == other.counterRot and
@@ -22,28 +22,28 @@ class VacuumGripperConfig(MachineConfiguration):
 
     @property
     def counterVertical(self):
-        return self.__counterVertical
+        return self._counterVertical
 
     @property
     def counterRot(self):
-        return self.__counterRot
+        return self._counterRot
 
     @property
     def counterArm(self):
-        return self.__counterArm
+        return self._counterArm
 
     @property
     def gripperActive(self):
-        return self.__gripperActive
+        return self._gripperActive
 
     @property
     def endVertical(self):
-        return self.__endVertical
+        return self._endVertical
 
     @property
     def endRot(self):
-        return self.__endRot
+        return self._endRot
 
     @property
     def endArm(self):
-        return self.__endArm
+        return self._endArm

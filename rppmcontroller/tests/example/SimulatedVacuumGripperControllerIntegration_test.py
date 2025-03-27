@@ -2,6 +2,7 @@
 import inspect
 import logging
 import os
+import re
 import unittest
 from unittest.mock import patch, Mock
 
@@ -17,10 +18,10 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
     def setUp(self):
         script_path = os.path.abspath(__file__)
-        logging.warning(f'script path : {script_path}')
+        logging.info(f'script path : {script_path}')
         dir_path = os.path.dirname(__file__)
         config_path = os.path.join(dir_path, "config.yml")
-        logging.warning(f'config file path : {config_path}')
+        logging.info(f'config file path : {config_path}')
 
 
         logging.debug("setup called")
@@ -34,36 +35,38 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a setup command
         message = MachineCommand("COMMAND", "VACUUM", 1, "SETUP", [])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                logging.debug(f"Setup SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 20, "Setup SUCCESS not reached in less than 20 iterations" )
+            self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
         # controller is idle
         for _ in range(5):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
         
         # check current position via feedback and/or by reading machine IO
         self.checkVGRPosition(0,0,0)
@@ -76,34 +79,35 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a setup command
         message = MachineCommand("COMMAND", "VACUUM", 1, "SETUP", [])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                # currently the setup command does not report COMMAND_FEEDBACK SUCCESS
-                # notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                # self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"Setup SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 20, "Setup SUCCESS not reached in less than 20 iterations" )
+            self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
         # check current position via feedback and/or by reading machine IO
         self.checkVGRPosition(0,0,0)
@@ -111,7 +115,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(5):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
         
 
         # send a second setup command
@@ -119,24 +123,24 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        # already on the sensor, so we get an immediate SUCCESS
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readCommandFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 DONE")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-
-                # currently the setup command does not report COMMAND_FEEDBACK SUCCESS
-                # notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                # self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 SUCCESS")
-                logging.debug(f"Setup SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 2, "Setup SUCCESS not reached in less than 2 iterations" )
+            self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
 
         # TODO check current position via feedback and/or by reading machine IO
@@ -144,7 +148,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(5):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
         # check current position via feedback and/or by reading machine IO
         self.checkVGRPosition(0,0,0)
 
@@ -156,11 +160,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a setup command
         message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE", [
@@ -170,22 +174,24 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"MOVE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "MOVE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "MOVE DONE not reached in less than 200 iterations" )
 
 
         
@@ -195,7 +201,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(2):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
         
 
     def test_setup_then_moveCommands(self):
@@ -204,39 +210,40 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a setup command
         message = MachineCommand("COMMAND", "VACUUM", 1, "SETUP", [])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                # currently the setup command does not report COMMAND_FEEDBACK SUCCESS
-                # notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                # self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"Setup SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 20, "Setup SUCCESS not reached in less than 20 iterations" )
+            self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
         # controller is idle
         for _ in range(2):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a setup command
         message = MachineCommand("COMMAND", "VACUUM", 2, "MOVE", [
@@ -246,23 +253,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 MUST_CONTINUE .*", notification):
+                pass
             else:
-                self.assertGreater(iterationDone, 50, "MOVE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertGreater(iterationDone, 50, "MOVE COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 SUCCESS")
-                logging.debug(f"MOVE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 400, "MOVE SUCCESS not reached in less than 400 iterations" )
+            self.assertLess(iterationDone, 400, "MOVE DONE not reached in less than 400 iterations" )
 
 
         
@@ -272,7 +281,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(2):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
 
     def test_two_identical_moveCommands(self):
@@ -281,11 +290,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a setup command
         message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE", [
@@ -295,23 +304,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertGreater(iterationDone, 50, "MOVE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"MOVE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "MOVE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "MOVE DONE not reached in less than 200 iterations" )
 
 
         
@@ -321,7 +332,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(2):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
     
 
         # send a setup command
@@ -332,23 +343,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 MUST_CONTINUE .*", notification):
+                pass
             else:
                 self.assertGreater(iterationDone, 50, "MOVE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 SUCCESS")
-                logging.debug(f"MOVE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "MOVE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "MOVE DONE not reached in less than 200 iterations" )
 
 
         
@@ -362,13 +375,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a setup command
+        # send a move command
         message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE", [
             Position("START", 500, 200, 400),
             Position("END", 500, 1000, 1200)
@@ -376,23 +389,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
-                self.assertGreater(iterationDone, 50, "MOVE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertGreater(iterationDone, 50, "COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"MOVE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "MOVE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "MOVE DONE not reached in less than 200 iterations" )
 
 
         
@@ -402,10 +417,10 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(2):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
     
 
-        # send a setup command
+        # send a move command
         message = MachineCommand("COMMAND", "VACUUM", 2, "MOVE", [
             Position("START", 550, 250, 450),
             Position("END", 550, 1050, 1250)
@@ -413,23 +428,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 MUST_CONTINUE .*", notification):
+                pass
             else:
-                self.assertGreater(iterationDone, 50, "MOVE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 DONE")
+                self.assertGreater(iterationDone, 50, "MOVE DONE reached in less than 50 iterations, it was probably not done" )
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 SUCCESS")
-                logging.debug(f"MOVE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "MOVE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "MOVE DONE not reached in less than 200 iterations" )
 
 
         
@@ -444,11 +461,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a place command
         message = MachineCommand("COMMAND", "VACUUM", 1, "PLACE", [
@@ -457,23 +474,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
-                self.assertGreater(iterationDone, 50, "PLACE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertGreater(iterationDone, 50, "COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"PLACE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"PLACE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "PLACE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "PLACE DONE not reached in less than 200 iterations" )
 
 
     def test_placeCommand2(self):
@@ -484,11 +503,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a place command
         message = MachineCommand("COMMAND", "VACUUM", 1, "PLACE", [
@@ -497,23 +516,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
-                self.assertGreater(iterationDone, 50, "PLACE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertGreater(iterationDone, 50, "COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"PLACE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"PLACE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "PLACE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "PLACE DONE not reached in less than 200 iterations" )
 
 
     def test_placeCommandFromOtherPos(self):
@@ -524,11 +545,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # initial feedback
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
 
         # controller is idle
         self.controller.mainLoopIteration()
-        self.assertEqual(ctHelper.readNotification(self.controller), "")
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a place command
         message = MachineCommand("COMMAND", "VACUUM", 1, "PLACE", [
@@ -537,23 +558,25 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
         
         self.controller.mainLoopIteration()
-        self.assertRegex(ctHelper.readNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INACTION")
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
             self.controller.mainLoopIteration()
-            notification = ctHelper.readNotification(self.controller)
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
             else:
-                self.assertGreater(iterationDone, 50, "PLACE IDLE reached in less than 50 iterations, it was probably not done" )
+                self.assertGreater(iterationDone, 50, "COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done" )
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK IDLE")
-                notification = ctHelper.readCommandFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 SUCCESS")
-                logging.debug(f"PLACE SUCCESS reached in {iterationDone} iterations")
+                logging.debug(f"PLACE DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "PLACE SUCCESS not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "PLACE DONE not reached in less than 200 iterations" )
 
 
 
@@ -564,7 +587,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # controller is idle
         for _ in range(2):
             self.controller.mainLoopIteration()
-            self.assertEqual(ctHelper.readNotification(self.controller), "")
+            self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
     
 
         
@@ -585,7 +608,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                             vacuumSensArmEndIn : bool = True, vacuumSensRotEnd : bool = True , vacuumSensVerticalEndUp : bool = True) -> None: 
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
-        vgr.setupIDLE = True       
         vgr.vacuumSensVerticalEncoderCounter = vacuumSensVerticalEncoderCounter
         vgr.vacuumSensRotEncoderCounter = vacuumSensRotEncoderCounter
         vgr.vacuumSensArmEncoderCounter =  vacuumSensArmEncoderCounter
