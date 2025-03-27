@@ -495,9 +495,13 @@ class HighBay(Machine):
         logging.debug("store function called")
 
         if isinstance(row, int):
+            logging.debug(f"Converting {row} to Row")
             row = Row(row)
+            logging.debug(f"row: {row}")
         if isinstance(column, int):
+            logging.debug(f"converting {column} to Column")
             column = Column(int)
+            logging.debug(f"column: {column}")
 
         runnable = lambda: self.store_to(row, column)
 
