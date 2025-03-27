@@ -41,5 +41,10 @@ class AxisConfig:
     def counter_goal(self) -> Optional[int]:
         return self.__counter_goal if not self.end_position else None
 
+    @counter_goal.setter
+    def counter_goal(self, value: int) -> None:
+        self.__counter_goal = value
+        self.__end_position = False
+
     def __str__(self):
         return f"AxisConfig(end_position: {self.end_position}, counter_goal: {self.counter_goal})"

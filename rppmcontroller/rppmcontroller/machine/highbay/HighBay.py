@@ -11,6 +11,9 @@ from rppmcontroller.machine.RequestedParameter import \
     RequestedParameter
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 
+PICKUP_DISTANCE = 100
+"""how far up we need to move the arm, when picking up an item"""
+
 
 class Column(Enum):
     CONVEYOR = 0
@@ -18,11 +21,36 @@ class Column(Enum):
     MIDDLE = 2
     LEFT = 3
 
+    def to_counter_goal(self) -> int:
+        if self == Column.CONVEYOR:
+            return 80
+        elif self == Column.RIGHT:
+            return 1560
+        elif self == Column.MIDDLE:
+            return 2700
+        elif self == Column.LEFT:
+            return 3900
+        else:
+            raise ValueError(f"no counter goal defined for {self}")
+
 
 class Row(Enum):
-    BOTTOM = 0
-    MIDDLE = 1
-    TOP = 2
+    CONVEYOR = 0
+    BOTTOM = 1
+    MIDDLE = 2
+    TOP = 3
+
+    def to_counter_goal(self) -> int:
+        if self == Row.CONVEYOR:
+            return 1450
+        elif self == Row.BOTTOM:
+            return 1700
+        elif self == Row.MIDDLE:
+            return 900
+        elif self == Row.TOP:
+            return 200
+        else:
+            raise ValueError(f"no counter goal defined for {self}")
 
 
 class HighBay(Machine):
@@ -289,33 +317,35 @@ class HighBay(Machine):
         target_config_reached = True
 
         # check whether arm needs to move
-        arm_needs_to_move_horizontally = False
+        move_arm_first = False
 
+        # check for horizontal movement
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(
             config.horizontal_axis_config):
-            arm_needs_to_move_horizontally = True
-            target_config_reached = False
+            move_arm_first = True
 
-
-        # move arm vertically (needed for pickup and such)
+        # check for vertical movement
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
-            self.highbayActUp = self.__axisVertical.outputminus
-            self.highbayActDown = self.__axisVertical.outputplus
-        else:
-            self.highbayActUp = False
-            self.highbayActDown = False
+            # only allow small vertical movements for pickup
+            distance_to_move = self.__axisVertical.counterValueCurrent - (
+                    config.vertical_axis_config.counter_goal or 0)
+            if abs(distance_to_move) > PICKUP_DISTANCE:
+                move_arm_first = True
+
+        if move_arm_first:
+            target_config_reached = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
         cantilever_is_retracted = self.highbaySensCantileverBack
         cantilever_is_extended = self.highbaySensCantileverFront
         cantilever_needs_to_be_retracted = (
-                                                   not config.cantilever_extended or arm_needs_to_move_horizontally) and not cantilever_is_retracted
+                                               not config.cantilever_extended or move_arm_first) and not cantilever_is_retracted
         cantilever_needs_to_be_extended = not cantilever_needs_to_be_retracted and (
-                config.cantilever_extended and not cantilever_is_extended)
+            config.cantilever_extended and not cantilever_is_extended)
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
         if cantilever_needs_to_move:
@@ -330,7 +360,8 @@ class HighBay(Machine):
             # make sure we are not moving the arm
             self.highbayActHorizontalToRack = False
             self.highbayActHorizontalToConveyor = False
-
+            self.highbayActUp = False
+            self.highbayActDown = False
         else:
             self.highbayActCantileverBackward = False
             self.highbayActCantileverForward = False
@@ -339,7 +370,8 @@ class HighBay(Machine):
             # logging.debug("moving arm")
             self.highbayActHorizontalToRack = self.__axisHorizontal.outputplus
             self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputminus
-
+            self.highbayActUp = self.__axisVertical.outputminus
+            self.highbayActDown = self.__axisVertical.outputplus
 
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
@@ -438,41 +470,59 @@ class HighBay(Machine):
         return self.goto_next_config()
 
     def horizontal_to(self, counter_goal: int):
-        self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(
+            counter_goal)
         return self.goto_next_config()
 
     def vertical_to(self, counter_goal: int):
-        self.create_next_config().vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        self.create_next_config().vertical_axis_config = AxisConfig.to_counter_goal(
+            counter_goal)
         return self.goto_next_config()
 
     def goto_column(self, column: Union[Column, int]):
         if isinstance(column, int):
             column = Column(column)
 
-        if column == Column.CONVEYOR:
-            counter_goal = 80
-        elif column == Column.RIGHT:
-            counter_goal = 1580
-        elif column == Column.MIDDLE:
-            counter_goal = 2700
-        elif column == Column.LEFT:
-            counter_goal = 3900
-        else:
-            raise ValueError(f"Invalid column: {column}")
+        return self.horizontal_to(column.to_counter_goal())
 
-        return self.horizontal_to(counter_goal)
-
-    def goto_row(self, row: Union[Row,int]):
+    def goto_row(self, row: Union[Row, int]):
         if isinstance(row, int):
             row = Row(row)
 
-        if row == Row.BOTTOM:
-            counter_goal = 0
-        elif row == Row.MIDDLE:
-            counter_goal = 100
-        elif row == Row.TOP:
-            counter_goal = 200
-        else:
-            raise ValueError(f"Invalid row: {row}")
+        return self.vertical_to(row.to_counter_goal())
 
-        return self.vertical_to(counter_goal)
+    def store(self, row: Union[Row, int], column: Union[Column, int]):
+        if isinstance(row, int):
+            row = Row(row)
+        if isinstance(column, int):
+            column = Column(int)
+
+        runnable = lambda: self.store(row, column)
+
+        horizontal_axis_config = AxisConfig.to_counter_goal(Column.CONVEYOR.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(Row.CONVEYOR.to_counter_goal())
+        if self.highbaySensInside:
+            conveyor_state = ConveyorState.IDLE
+        else:
+            conveyor_state = ConveyorState.BACKWARD
+        config = HighBayConfig(horizontal_axis_config, vertical_axis_config, True, conveyor_state)
+        if not self.goto_config(config):
+            return runnable
+
+        # pickup item
+        config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+        if not self.goto_config(config):
+            return runnable
+
+        # move to desired slot (and a bit higher)
+        horizontal_axis_config = AxisConfig.to_counter_goal(column.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(row.to_counter_goal() - PICKUP_DISTANCE)
+        config = HighBayConfig(horizontal_axis_config, vertical_axis_config, True)
+        if not self.goto_config(config):
+            return runnable
+
+        # drop off
+        config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
+        self.goto_config(config)
+
+        return runnable
