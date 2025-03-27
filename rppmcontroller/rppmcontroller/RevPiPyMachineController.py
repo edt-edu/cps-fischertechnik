@@ -263,9 +263,7 @@ class RevPiPyMachineController:
                                 elif i == 1:
                                     ret = func(m, box[0])
                                 elif i == 2:
-                                    logging.debug(f"calling func with 2 parameters: {box[0]}, {box[1]}")
                                     ret = func(m, box[0], box[1])
-                                    logging.debug(f"func returned {ret}")
                                 else:
                                     logging.warning(f"unsupported number of parameters: {i}")
                             elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
