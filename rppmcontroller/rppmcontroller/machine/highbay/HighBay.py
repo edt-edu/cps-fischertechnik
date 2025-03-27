@@ -357,8 +357,10 @@ class HighBay(Machine):
 
             if cantilever_needs_to_be_retracted:
                 self.highbayActCantileverBackward = True
+                self.highbayActCantileverForward = False
             else:
                 self.highbayActCantileverForward = True
+                self.highbayActCantileverBackward = False
 
             # make sure we are not moving the arm
             self.highbayActHorizontalToRack = False
