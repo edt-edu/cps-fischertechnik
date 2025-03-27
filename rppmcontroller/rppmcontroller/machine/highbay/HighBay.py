@@ -289,30 +289,31 @@ class HighBay(Machine):
         target_config_reached = True
 
         # check whether arm needs to move
-        arm_needs_to_move = False
+        arm_needs_to_move_horizontally = False
 
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(
             config.horizontal_axis_config):
-            arm_needs_to_move = True
+            arm_needs_to_move_horizontally = True
+            target_config_reached = False
 
-        # TODO in order for pickups to work, the arm may move a little bit up vertically;
-        #  find a way to model that nicely, maybe with the config?
+
+        # move arm vertically (needed for pickup and such)
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
-            arm_needs_to_move = True
-
-        if arm_needs_to_move:
-            # logging.debug("arm needs to move")
-            target_config_reached = False
+            self.highbayActUp = self.__axisVertical.outputminus
+            self.highbayActDown = self.__axisVertical.outputplus
+        else:
+            self.highbayActUp = False
+            self.highbayActDown = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
         cantilever_is_retracted = self.highbaySensCantileverBack
         cantilever_is_extended = self.highbaySensCantileverFront
         cantilever_needs_to_be_retracted = (
-                                                   not config.cantilever_extended or arm_needs_to_move) and not cantilever_is_retracted
+                                                   not config.cantilever_extended or arm_needs_to_move_horizontally) and not cantilever_is_retracted
         cantilever_needs_to_be_extended = not cantilever_needs_to_be_retracted and (
                 config.cantilever_extended and not cantilever_is_extended)
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
@@ -329,8 +330,7 @@ class HighBay(Machine):
             # make sure we are not moving the arm
             self.highbayActHorizontalToRack = False
             self.highbayActHorizontalToConveyor = False
-            self.highbayActUp = False
-            self.highbayActDown = False
+
         else:
             self.highbayActCantileverBackward = False
             self.highbayActCantileverForward = False
@@ -339,8 +339,7 @@ class HighBay(Machine):
             # logging.debug("moving arm")
             self.highbayActHorizontalToRack = self.__axisHorizontal.outputplus
             self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputminus
-            self.highbayActUp = self.__axisVertical.outputminus
-            self.highbayActDown = self.__axisVertical.outputplus
+
 
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
