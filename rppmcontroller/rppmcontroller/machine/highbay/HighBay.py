@@ -491,7 +491,7 @@ class HighBay(Machine):
 
         return self.vertical_to(row.to_counter_goal())
 
-    def store(self, row: Union[Row, int], column: Union[Column, int]):
+    def store_away(self, row: Union[Row, int], column: Union[Column, int]):
         logging.debug("store function called")
 
         if isinstance(row, int):
@@ -499,7 +499,7 @@ class HighBay(Machine):
         if isinstance(column, int):
             column = Column(int)
 
-        runnable = lambda: self.store(row, column)
+        runnable = lambda: self.store_away(row, column)
 
         logging.debug(f"Storing item at {row}, {column}")
 
