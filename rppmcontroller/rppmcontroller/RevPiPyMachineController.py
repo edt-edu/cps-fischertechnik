@@ -259,12 +259,12 @@ class RevPiPyMachineController:
                                 i = len(box)
                                 if i == 0:
                                     ret = func(m)
-                                if i == 1:
+                                elif i == 1:
                                     ret = func(m, box[0])
-                                #TODO clarify in API wich box the object is put to and from which the object is retrieved
-                                #currently: first arg: in, second argument: out
-                                if i == 2:
+                                elif i == 2:
                                     ret = func(m, box[0], box[1])
+                                else:
+                                    logging.warning(f"unsupported number of parameters: {i}")
                             elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
