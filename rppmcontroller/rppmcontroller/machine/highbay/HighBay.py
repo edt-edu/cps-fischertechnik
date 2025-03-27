@@ -499,6 +499,9 @@ class HighBay(Machine):
 
         runnable = lambda: self.store(row, column)
 
+        logging.debug(f"Storing item at {row}, {column}")
+
+        logging.debug("Moving to pickup location...")
         horizontal_axis_config = AxisConfig.to_counter_goal(Column.CONVEYOR.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(Row.CONVEYOR.to_counter_goal())
         if self.highbaySensInside:
@@ -510,11 +513,13 @@ class HighBay(Machine):
             return runnable
 
         # pickup item
+        logging.debug("Picking up item...")
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
         if not self.goto_config(config):
             return runnable
 
         # move to desired slot (and a bit higher)
+        logging.debug("Moving to storage slot...")
         horizontal_axis_config = AxisConfig.to_counter_goal(column.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(row.to_counter_goal() - PICKUP_DISTANCE)
         config = HighBayConfig(horizontal_axis_config, vertical_axis_config, True)
@@ -522,7 +527,10 @@ class HighBay(Machine):
             return runnable
 
         # drop off
+        logging.debug("Placing down item...")
         config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
         self.goto_config(config)
+
+        logging.debug("Done!")
 
         return runnable
