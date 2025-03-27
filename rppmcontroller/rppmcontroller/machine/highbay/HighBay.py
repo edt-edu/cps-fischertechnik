@@ -492,6 +492,8 @@ class HighBay(Machine):
         return self.vertical_to(row.to_counter_goal())
 
     def store(self, row: Union[Row, int], column: Union[Column, int]):
+        logging.debug("store function called")
+
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
