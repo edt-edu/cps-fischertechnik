@@ -257,6 +257,7 @@ class RevPiPyMachineController:
                             elif inputBufferItem.message.type == "WAREHOUSE":
                                 box = inputBufferItem.message.parameters
                                 i = len(box)
+                                logging.debug(f"func: {func}, number of parameters: {i}")
                                 if i == 0:
                                     ret = func(m)
                                 elif i == 1:
