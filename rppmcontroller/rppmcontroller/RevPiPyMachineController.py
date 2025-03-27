@@ -263,7 +263,7 @@ class RevPiPyMachineController:
                                 elif i == 1:
                                     ret = func(m, box[0])
                                 elif i == 2:
-                                    logging.debug("calling func with 2 parameters")
+                                    logging.debug(f"calling func with 2 parameters: {box[0]}, {box[1]}")
                                     ret = func(m, box[0], box[1])
                                     logging.debug(f"func returned {ret}")
                                 else:
