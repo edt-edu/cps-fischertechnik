@@ -347,7 +347,7 @@ class HighBay(Machine):
         logging.debug(f"cantilever_needs_to_be_retracted: {cantilever_needs_to_be_retracted}")
         cantilever_needs_to_be_extended_after_arm_movement = config.cantilever_extended and not cantilever_is_extended
         logging.debug(f"cantilever_needs_to_be_extended_after_arm_movement: {cantilever_needs_to_be_extended_after_arm_movement}")
-        cantilever_needs_to_be_extended = not cantilever_needs_to_be_retracted and cantilever_needs_to_be_extended_after_arm_movement
+        cantilever_needs_to_be_extended = not move_arm_first and cantilever_needs_to_be_extended_after_arm_movement
         logging.debug(f"cantilever_needs_to_be_extended: {cantilever_needs_to_be_extended}")
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
