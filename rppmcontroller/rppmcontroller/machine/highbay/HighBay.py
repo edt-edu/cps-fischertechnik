@@ -331,7 +331,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        logging.debug(f"going to {config}")
+        #logging.debug(f"going to {config}")
 
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
@@ -374,7 +374,7 @@ class HighBay(Machine):
             config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
 
-        logging.debug(f"arm_movement: {arm_movement}")
+        #logging.debug(f"arm_movement: {arm_movement}")
         if arm_movement is ArmMovement.MAYOR and not self.highbaySensCantileverBack:
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = True
@@ -609,7 +609,8 @@ class HighBay(Machine):
             if not self.__isExecuting():
                 self.state = State.DROP_OFF
 
-        horizontal_axis_config = AxisConfig.to_counter_goal(Column.CONVEYOR.to_counter_goal())
+        horizontal_axis_config = AxisConfig.to_counter_goal(
+            Column.CONVEYOR.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
             Row.CONVEYOR.to_counter_goal())
         config = HighBayConfig(horizontal_axis_config,
