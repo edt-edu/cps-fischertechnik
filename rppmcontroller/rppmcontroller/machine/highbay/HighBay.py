@@ -571,7 +571,7 @@ class HighBay(Machine):
                 self.state = State.CLEAN_UP
 
         if self.state is State.CLEAN_UP:
-            if self.setup():
+            if not self.__isExecuting():
                 self.state = None
 
         return lambda: self.store_to(row, column)
@@ -628,7 +628,7 @@ class HighBay(Machine):
                 self.state = State.CLEAN_UP
 
         if self.state is State.CLEAN_UP:
-            if self.setup():
+            if not self.__isExecuting():
                 self.state = None
 
         return lambda: self.pickup_from(row, column)
