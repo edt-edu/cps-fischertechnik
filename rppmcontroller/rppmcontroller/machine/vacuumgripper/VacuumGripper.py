@@ -110,8 +110,8 @@ class VacuumGripper(Machine):
         res = self.isProcessingSequence() or \
             self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
-            self.nbMinimumRequiredExecutionCycles != 0 or \
-            self.isProcessingSequence()
+            self.__vacuumActCompressorOn or self.__vacuumActValve or \
+            self.nbMinimumRequiredExecutionCycles != 0
         
         # log isexecuting and debug info only if message has changed
         psContext = self.processSequenceContext
