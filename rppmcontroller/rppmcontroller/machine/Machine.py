@@ -25,8 +25,7 @@ class Machine:
         self.__id = id1
         self.__dictMap = dictMap
         self.__isExecuting = False
-        self.__isSetupRunning = False
-        self.__isSetupDone = False
+        self.__isInitialized = False
         self.__lastExecutionTime = -math.inf
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
         self.__processSequenceContext : Optional[ProcessSequenceContext] =  None
@@ -56,29 +55,16 @@ class Machine:
 
     @property
     @abstractmethod
-    def isSetupRunning(self) -> bool:
-        """Returns whether the setup is running
+    def isInitialized(self) -> bool:
+        """Returns whether the machine is initialized . ie if the setup is Done
 
         :return bool: the setup status
         """
-        return self.__isSetupRunning
+        return self.__isInitialized
 
-    @isSetupRunning.setter
-    def isSetupRunning(self, value: bool):
-        self.__isSetupRunning = value
-
-    @property
-    @abstractmethod
-    def isSetupDone(self) -> bool:
-        """Returns whether the setup is Done
-
-        :return bool: the setup status
-        """
-        return self.__isSetupDone
-
-    @isSetupDone.setter
-    def isSetupDone(self, value: bool):
-        self.__isSetupDone = value
+    @isInitialized.setter
+    def isInitialized(self, value: bool):
+        self.__isInitialized = value
     
     
     @property
@@ -262,12 +248,17 @@ class Machine:
                     print("unknown attribute")
         return result
 
-    def feedback(self):
-        if self.isExecuting:
-            return MachineStatus.INACTION
+    def machineFeedback(self):
+        if not self.isInitialized:
+            if self.isExecuting:
+                return MachineStatus.UNINITIALIZED_ACTIVE
+            else:
+                return MachineStatus.UNINITIALIZED_IDLE
         else:
-            return MachineStatus.IDLE
-
+            if self.isExecuting:
+                return MachineStatus.INITIALIZED_ACTIVE
+            else:
+                return MachineStatus.INITIALIZED_IDLE
 
 
 

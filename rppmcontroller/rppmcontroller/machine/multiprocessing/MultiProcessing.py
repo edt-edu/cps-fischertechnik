@@ -96,7 +96,7 @@ class MultiProcessing(Machine):
                    RequestedParameter.VALVEOVENDOOR: self.__multiProcessingValveOvenDoor,
                    RequestedParameter.VALVEFEEDER: self.__multiProcessingValveFeeder}
         super().__init__(id1, dictMap)
-        self.setupFinished = False
+        self.isInitialized = True       # MultiProcessingStation doesn't require initialization
         self.sawCount = 0
         self.ovenCount = 0
         self.vacuumCount = 0
