@@ -11,7 +11,7 @@ from rppmcontroller.machine.RequestedParameter import \
     RequestedParameter
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 
-PICKUP_DISTANCE = 100
+PICKUP_DISTANCE = 150
 """how far up we need to move the arm, when picking up an item"""
 
 
@@ -51,6 +51,14 @@ class Row(Enum):
             return 200
         else:
             raise ValueError(f"no counter goal defined for {self}")
+
+
+class State(Enum):
+    MOVE_TO_CONVEYOR = 0
+    WAIT_AT_CONVEYOR = 1
+    PICKUP = 2
+    MOVE_TO_RACK = 3
+    DROP_OFF = 4
 
 
 class HighBay(Machine):
@@ -102,6 +110,7 @@ class HighBay(Machine):
         self.previous_isExecuting_log = None
         self.reset_rpi_encoder_counters = False
         self.next_config = None
+        self.__state = None
 
     def __isExecuting(self) -> bool:
         return (self.__highbayActUp or
@@ -259,6 +268,15 @@ class HighBay(Machine):
     def highbaySensVerticalEncoderCounter(self, value: int) -> None:
         self.__highbaySensVerticalEncoderCounter = value
 
+    @property
+    def state(self) -> State:
+        return self.__state
+
+    @state.setter
+    def state(self, state: Optional[State]) -> None:
+        self.__state = state
+        logging.debug(f"state: {state}")
+
     def sensorStatusString(self) -> str:
         return f"[{self.highbaySensHorizontalEncoderCounter}, {self.highbaySensVerticalEncoderCounter}], [{self.highbaySensCantileverBack}, {self.highbaySensCantileverFront}, {self.highbaySensHorizontal}, {self.highbaySensInside}, {self.highbaySensOutside}, {self.highbaySensVertical}]"
 
@@ -343,12 +361,15 @@ class HighBay(Machine):
         cantilever_is_extended = self.highbaySensCantileverFront
 
         cantilever_needs_to_be_retracted = (
-                                                   not config.cantilever_extended or move_arm_first) and not cantilever_is_retracted
-        logging.debug(f"cantilever_needs_to_be_retracted: {cantilever_needs_to_be_retracted}")
+                                               not config.cantilever_extended or move_arm_first) and not cantilever_is_retracted
+        logging.debug(
+            f"cantilever_needs_to_be_retracted: {cantilever_needs_to_be_retracted}")
         cantilever_needs_to_be_extended_after_arm_movement = config.cantilever_extended and not cantilever_is_extended
-        logging.debug(f"cantilever_needs_to_be_extended_after_arm_movement: {cantilever_needs_to_be_extended_after_arm_movement}")
+        logging.debug(
+            f"cantilever_needs_to_be_extended_after_arm_movement: {cantilever_needs_to_be_extended_after_arm_movement}")
         cantilever_needs_to_be_extended = not move_arm_first and cantilever_needs_to_be_extended_after_arm_movement
-        logging.debug(f"cantilever_needs_to_be_extended: {cantilever_needs_to_be_extended}")
+        logging.debug(
+            f"cantilever_needs_to_be_extended: {cantilever_needs_to_be_extended}")
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
         if cantilever_needs_to_move:
@@ -503,46 +524,49 @@ class HighBay(Machine):
         if isinstance(column, int):
             column = Column(column)
 
-        runnable = lambda: self.store_to(row, column)
+        logging.debug(f"Storing item at {row}, {column}...")
 
-        logging.debug(f"Storing item at {row}, {column}")
+        if self.state is None:
+            self.state = State.MOVE_TO_CONVEYOR
 
-        logging.debug("Moving to pickup location...")
+        # define the reference config for the next few steps
         horizontal_axis_config = AxisConfig.to_counter_goal(
             Column.CONVEYOR.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
             Row.CONVEYOR.to_counter_goal())
-        if self.highbaySensInside:
-            conveyor_state = ConveyorState.BACKWARD
-        else:
-            conveyor_state = ConveyorState.IDLE
-        config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
-                               True, conveyor_state)
-        if not self.goto_config(config):
-            return runnable
-
-        # pickup item
-        logging.debug("Picking up item...")
-        config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
-        if not self.goto_config(config):
-            return runnable
-
-        # move to desired slot (and a bit higher)
-        logging.debug("Moving to storage slot...")
-        horizontal_axis_config = AxisConfig.to_counter_goal(
-            column.to_counter_goal())
-        vertical_axis_config = AxisConfig.to_counter_goal(
-            row.to_counter_goal() - PICKUP_DISTANCE)
         config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
                                True)
-        if not self.goto_config(config):
-            return runnable
 
-        # drop off
-        logging.debug("Placing down item...")
+        if self.state is State.MOVE_TO_CONVEYOR:
+            if self.goto_config(config):
+                self.state = State.WAIT_AT_CONVEYOR
+
+        config.conveyor_state = ConveyorState.BACKWARD
+
+        if self.state is State.WAIT_AT_CONVEYOR:
+            self.goto_config(config)
+            if not self.highbaySensInside:
+                self.state = State.PICKUP
+
+        config.conveyor_state = ConveyorState.IDLE
+        config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+
+        if self.state is State.PICKUP:
+            if self.goto_config(config):
+                self.state = State.MOVE_TO_RACK
+
+        horizontal_axis_config = AxisConfig.to_counter_goal(column.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(row.to_counter_goal() - PICKUP_DISTANCE)
+        config = HighBayConfig(horizontal_axis_config, vertical_axis_config, True)
+
+        if self.state is State.MOVE_TO_RACK:
+            if self.goto_config(config):
+                self.state = State.DROP_OFF
+
         config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
-        self.goto_config(config)
 
-        logging.debug("Done!")
+        if self.state is State.DROP_OFF:
+            if self.goto_config(config):
+                self.state = None
 
-        return runnable
+        return lambda: self.store_to(row, column)
