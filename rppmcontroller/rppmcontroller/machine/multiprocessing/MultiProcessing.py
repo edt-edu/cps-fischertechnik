@@ -1,9 +1,29 @@
 import logging
-
-from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from enum import Enum
 from typing import Any, Dict
+
+from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
+
+
+class TurnTablePosition(Enum):
+    """Where the turn table should currently be"""
+    VACUUM = 0
+    """At the vacuum arm drop off point"""
+    SAW = 1
+    """At the saw with an active saw"""
+    CONVEYOR = 2
+    """At the conveyor belt with an active feeder"""
+
+class VacuumArmState(Enum):
+    """Where the vacuum gripper arm should be"""
+    AT_TURN_TABLE = 0
+    """Idle at the turn table"""
+    AT_OVEN = 1
+    """Idle at the oven"""
+    PICKUP = 2
+    """Lowered with active vacuum at the oven"""
 
 class MultiProcessing(Machine):
 
@@ -263,7 +283,7 @@ class MultiProcessing(Machine):
         return f"TT[{self.multiProcessingSensTurntablePosVacuum}, {self.multiProcessingSensTurntablePosBelt}, {self.multiProcessingSensTurntablePosSaw}], " + \
             f"LB[{self.multiProcessingSensEndConveyor}, {self.multiProcessingSensOven}], " + \
             f"VG[{self.multiProcessingSensVacuumGripperAtTurntable}, {self.multiProcessingSensVacuumGripperAtOven}], " + \
-            f"OF[{self.multiProcessingSensOvenFeederIn}, {self.multiProcessingSensOvenFeederOut}]" 
+            f"OF[{self.multiProcessingSensOvenFeederIn}, {self.multiProcessingSensOvenFeederOut}]"
 
     def actuatorStatusString(self) -> str:
         return f"TT[{self.multiProcessingActRotClockwise}, {self.multiProcessingActRotCounterclockwise}], " + \
@@ -271,7 +291,7 @@ class MultiProcessing(Machine):
             f"O[{self.multiProcessingActOvenInward}, {self.multiProcessingActOvenOutward}], " + \
             f"VG[{self.__multiProcessingActGripperToOven}, {self.__multiProcessingActGripperToTurntable}], " + \
             f"{self.__multiProcessingOvenLight}, {self.__multiProcessingCompressor}, {self.__multiProcessingValveVacuum}, {self.__multiProcessingActLowerValve},{self.__multiProcessingValveOvenDoor}, {self.__multiProcessingValveFeeder}"
- 
+
     def inputStatus(self) -> Dict[str, Any]:
         status = {
             "multiProcessingSensTurntablePosVacuum": self.multiProcessingSensTurntablePosVacuum,
@@ -287,7 +307,7 @@ class MultiProcessing(Machine):
         return status
 
     def outputStatus(self) -> Dict[str, Any]:
-        
+
         status = {
             "multiProcessingActRotClockwise": self.multiProcessingActRotClockwise,
             "multiProcessingActRotCounterclockwise": self.multiProcessingActRotCounterclockwise,
@@ -305,7 +325,7 @@ class MultiProcessing(Machine):
             "multiProcessingValveFeeder": self.__multiProcessingValveFeeder,
         }
         return status
-    
+
     def internalStatus(self) -> Dict[str, Any]:
         status = {
             "isExecuting": self.__isExecuting(),
@@ -374,7 +394,7 @@ class MultiProcessing(Machine):
             self.moveTurntableToConveyor
         if self.ejectorCount > 1:
             self.__multiProcessingCompressor = False
-            self.__multiProcessingValveFeeder = False               
+            self.__multiProcessingValveFeeder = False
             self.ejectorCount = 0
             self.actionDone += 1
         else :
@@ -406,7 +426,7 @@ class MultiProcessing(Machine):
                 self.__multiProcessingOvenLight = True
             else:
                 self.__multiProcessingOvenLight = False
-            
+
             if self.ovenCount > maxCount:
                 self.__multiProcessingOvenLight = False
                 self.ovenCount = 0
@@ -470,7 +490,7 @@ class MultiProcessing(Machine):
         else:
             logging.error("Vacuum gripper is not at a valid position")
             return
-        
+
         if self.vacuumCount > 6:
             self.__multiProcessingActLowerValve = False
             self.__multiProcessingCompressor = False
@@ -538,8 +558,8 @@ class MultiProcessing(Machine):
         else:
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
-    
-        return lambda: self.setup()  
+
+        return lambda: self.setup()
 
 
     def process1(self):
@@ -568,8 +588,8 @@ class MultiProcessing(Machine):
             logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
             actions[self.actionDone]()
 
-        return lambda:self.process1()    
-    
+        return lambda:self.process1()
+
 
     def stop(self):
         """ Stop the machine """
