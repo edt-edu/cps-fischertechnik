@@ -349,7 +349,7 @@ class HighBay(Machine):
             # only allow small vertical movements for pickup
             distance_to_move = self.__axisVertical.counterValueCurrent - (
                 config.vertical_axis_config.counter_goal or 0)
-            if abs(distance_to_move) > PICKUP_DISTANCE:
+            if abs(distance_to_move) > PICKUP_DISTANCE + self.__axisVertical.tolerance:
                 move_arm_first = True
 
         if move_arm_first:

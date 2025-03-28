@@ -59,6 +59,10 @@ class Axis:
     def outputminus(self):
         return self.__outputminus
 
+    @property
+    def tolerance(self) -> int:
+        return self.__tolerance + self.play
+
     def update(self, endpos, counterinput):
         self.__endpos = endpos
         self.__counterinput = counterinput
