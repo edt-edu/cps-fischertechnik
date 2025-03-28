@@ -20,6 +20,3 @@ class HighBayConfig(MachineConfiguration):
                 self.vertical_axis_config == other.vertical_axis_config and
                 self.cantilever_extended == other.cantilever_extended and
                 self.conveyor_state == other.conveyor_state)
-
-    def __str__(self):
-        return f"HighBayConfig(horizontal_axis_config: {self.horizontal_axis_config}, vertical_axis_config: {self.vertical_axis_config}, cantilever_extended: {self.cantilever_extended}, conveyor_state: {self.conveyor_state})"
