@@ -59,6 +59,7 @@ class State(Enum):
     PICKUP = 2
     MOVE_TO_RACK = 3
     DROP_OFF = 4
+    CLEAN_UP = 5
 
 
 class HighBay(Machine):
@@ -567,8 +568,11 @@ class HighBay(Machine):
 
         if self.state is State.DROP_OFF:
             if self.goto_config(config):
+                self.state = State.CLEAN_UP
+
+        if self.state is State.CLEAN_UP:
+            if self.setup():
                 self.state = None
-                self.setup()
 
         return lambda: self.store_to(row, column)
 
@@ -621,7 +625,10 @@ class HighBay(Machine):
         if self.state is State.WAIT_AT_CONVEYOR:
             self.goto_config(config)
             if not self.highbaySensOutside:
+                self.state = State.CLEAN_UP
+
+        if self.state is State.CLEAN_UP:
+            if self.setup():
                 self.state = None
-                self.setup()
 
         return lambda: self.pickup_from(row, column)
