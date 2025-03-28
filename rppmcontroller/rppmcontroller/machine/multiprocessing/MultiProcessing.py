@@ -365,7 +365,7 @@ class MultiProcessing(Machine):
         }
         return status
 
-    def goto_config(self, config: MultiProcessingConfig) -> bool:
+    def goto_config(self, config: MultiProcessingConfig = MultiProcessingConfig()) -> bool:
         """
         Transfer the machine into another configuration
         :param config: The new configuration to transfer the machine to
@@ -713,20 +713,7 @@ class MultiProcessing(Machine):
     ### ____________ Functions callable from orchestrator ________________
     def setup(self):
         """Reset the station and move some parts to the initial postion."""
-        actions = [
-            self.resetStation,
-            self.moveTurntableToVacuum,
-            self.moveVacuumToOven,
-            self.moveFeederOut,
-        ]
-        self.processing = True
-        if len(actions) <= self.actionDone:
-            self.processing = False
-            self.actionDone = 0
-        else:
-            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
-            actions[self.actionDone]()
-
+        self.goto_config()
         return lambda: self.setup()
 
 
