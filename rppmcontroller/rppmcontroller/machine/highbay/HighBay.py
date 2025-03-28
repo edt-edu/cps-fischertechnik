@@ -353,13 +353,6 @@ class HighBay(Machine):
 
         arm_movement = ArmMovement.IDLE
 
-        # horizontal axis
-        self.__axisHorizontal.update(self.highbaySensHorizontal,
-                                     self.highbaySensHorizontalEncoderCounter)
-        if not self.__axisHorizontal.gotoAxisConfig(
-            config.horizontal_axis_config):
-            arm_movement = ArmMovement.MAYOR
-
         # vertical axis
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
@@ -372,6 +365,13 @@ class HighBay(Machine):
                 arm_movement = ArmMovement.MAYOR
             else:
                 arm_movement = ArmMovement.MINOR
+
+        # horizontal axis
+        self.__axisHorizontal.update(self.highbaySensHorizontal,
+                                     self.highbaySensHorizontalEncoderCounter)
+        if not self.__axisHorizontal.gotoAxisConfig(
+            config.horizontal_axis_config):
+            arm_movement = ArmMovement.MAYOR
 
         logging.debug(f"arm_movement: {arm_movement}")
         if arm_movement is ArmMovement.MAYOR and not self.highbaySensCantileverBack:
