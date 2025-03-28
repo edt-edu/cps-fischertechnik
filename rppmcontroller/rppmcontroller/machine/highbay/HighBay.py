@@ -25,7 +25,7 @@ class Column(Enum):
         if self == Column.CONVEYOR:
             return 80
         elif self == Column.RIGHT:
-            return 1560
+            return 1550
         elif self == Column.MIDDLE:
             return 2700
         elif self == Column.LEFT:
