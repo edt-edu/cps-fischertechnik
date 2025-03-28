@@ -340,21 +340,19 @@ class HighBay(Machine):
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(
             config.horizontal_axis_config):
+            target_config_reached = False
             move_arm_first = True
 
         # check for vertical movement
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+            target_config_reached = False
             # only allow small vertical movements for pickup
             distance_to_move = self.__axisVertical.counterValueCurrent - (
                 config.vertical_axis_config.counter_goal or 0)
             if abs(distance_to_move) > PICKUP_DISTANCE + self.__axisVertical.tolerance:
                 move_arm_first = True
-
-        if move_arm_first:
-            #logging.debug("arm needs to move first")
-            target_config_reached = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
         cantilever_is_retracted = self.highbaySensCantileverBack
