@@ -86,6 +86,7 @@ class HighBay(Machine):
         self.__highbaySensVerticalEncoderCounter = 0
         self.__axisHorizontal = Axis(AxisType.Encoder, 20)
         self.__axisVertical = Axis(AxisType.Encoder, 20)
+
         dictMap = {
             RequestedParameter.REFERENCESWITCHHORIZONTALAXIS:
                 self.__highbaySensHorizontal,
