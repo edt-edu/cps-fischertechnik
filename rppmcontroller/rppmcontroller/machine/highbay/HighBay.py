@@ -330,7 +330,7 @@ class HighBay(Machine):
         :param config: The new configuration to transfer the machine to
         :return: True if the machine has reached the configuration, otherwise false
         """
-        logging.debug(f"going to {config}")
+        #logging.debug(f"going to {config}")
 
         target_config_reached = True
         move_arm_first = False
@@ -353,7 +353,7 @@ class HighBay(Machine):
                 move_arm_first = True
 
         if move_arm_first:
-            logging.debug("arm needs to move first")
+            #logging.debug("arm needs to move first")
             target_config_reached = False
 
         # move cantilever; make sure it is retracted if the arm needs to move
@@ -362,18 +362,18 @@ class HighBay(Machine):
 
         cantilever_needs_to_be_retracted = (
                                                not config.cantilever_extended or move_arm_first) and not cantilever_is_retracted
-        logging.debug(
-            f"cantilever_needs_to_be_retracted: {cantilever_needs_to_be_retracted}")
+        # logging.debug(
+        #     f"cantilever_needs_to_be_retracted: {cantilever_needs_to_be_retracted}")
         cantilever_needs_to_be_extended_after_arm_movement = config.cantilever_extended and not cantilever_is_extended
-        logging.debug(
-            f"cantilever_needs_to_be_extended_after_arm_movement: {cantilever_needs_to_be_extended_after_arm_movement}")
+        # logging.debug(
+        #     f"cantilever_needs_to_be_extended_after_arm_movement: {cantilever_needs_to_be_extended_after_arm_movement}")
         cantilever_needs_to_be_extended = not move_arm_first and cantilever_needs_to_be_extended_after_arm_movement
-        logging.debug(
-            f"cantilever_needs_to_be_extended: {cantilever_needs_to_be_extended}")
+        # logging.debug(
+        #     f"cantilever_needs_to_be_extended: {cantilever_needs_to_be_extended}")
         cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
 
         if cantilever_needs_to_move:
-            logging.debug("moving cantilever...")
+            # logging.debug("moving cantilever...")
             target_config_reached = False
 
             if cantilever_needs_to_be_retracted:
@@ -413,7 +413,7 @@ class HighBay(Machine):
             self.highbayActConveyorForward = False
             self.highbayActConveyorBackward = True
 
-        logging.debug(f"Config has been reached: {target_config_reached}")
+        # logging.debug(f"Config has been reached: {target_config_reached}")
         return target_config_reached
 
     def internalStatus(self) -> Dict[str, Any]:
@@ -524,7 +524,7 @@ class HighBay(Machine):
         if isinstance(column, int):
             column = Column(column)
 
-        logging.debug(f"Storing item at {row}, {column}...")
+        # logging.debug(f"Storing item at {row}, {column}...")
 
         if self.state is None:
             self.state = State.MOVE_TO_CONVEYOR
