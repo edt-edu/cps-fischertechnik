@@ -1,5 +1,4 @@
-
-import inspect
+import logging
 import logging
 import multiprocessing
 import os
@@ -335,13 +334,13 @@ class RevPiPyMachineController:
             if func is not None:
                 #print(key)
 
-                logging.debug(f'currentlyExecuting {func} [{inspect.getsource(func).strip()}]')
+                #logging.debug(f'currentlyExecuting {func} [{inspect.getsource(func).strip()}]')
                 #print(self.currentlyExecuting[key][0])
                 #if key == self.robot41:
                     #print(self.currentlyExecuting[key][0])
                 # noinspection PyCallingNonCallable
                 ret = func()
-                logging.debug(f'result of self.currentlyExecuting[key][0]() = {ret}')
+                #logging.debug(f'result of self.currentlyExecuting[key][0]() = {ret}')
 
                 # remove currentlyExecuting function once it is finished
                 if key.feedback() == ExecutionStatus.FINISHED:
