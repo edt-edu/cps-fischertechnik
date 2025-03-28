@@ -373,6 +373,7 @@ class HighBay(Machine):
             else:
                 arm_movement = ArmMovement.MINOR
 
+        logging.debug(f"arm_movement: {arm_movement}")
         if arm_movement is ArmMovement.MAYOR and not self.highbaySensCantileverBack:
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = True
