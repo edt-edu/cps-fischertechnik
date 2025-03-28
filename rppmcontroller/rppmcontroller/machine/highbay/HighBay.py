@@ -7,8 +7,7 @@ from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState, \
     conveyor_state_from_movements
 from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.RequestedParameter import \
-    RequestedParameter
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 
 PICKUP_DISTANCE = 150
@@ -88,23 +87,36 @@ class HighBay(Machine):
         self.__axisHorizontal = Axis(AxisType.Encoder, 20)
         self.__axisVertical = Axis(AxisType.Encoder, 20)
         dictMap = {
-            RequestedParameter.REFERENCESWITCHHORIZONTALAXIS: self.__highbaySensHorizontal,
+            RequestedParameter.REFERENCESWITCHHORIZONTALAXIS:
+                self.__highbaySensHorizontal,
             RequestedParameter.LIGHTBARRIERINSIDE: self.__highbaySensInside,
             RequestedParameter.LIGHTBARRIEROUTSIDE: self.__highbaySensOutside,
-            RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__highbaySensVertical,
-            RequestedParameter.HORIZONTALAXISSTEP: self.__axisHorizontal.counterValueCurrent,
-            RequestedParameter.VERTICALAXISSTEP: self.__axisVertical.counterValueCurrent,
-            RequestedParameter.REFERENCESWITCHCANTILEVERFRONT: self.__highbaySensCantileverFront,
-            RequestedParameter.REFERENCESWITCHCANTILEVERBACK: self.__highbaySensCantileverBack,
-            RequestedParameter.MOTORCONVEYORBELTFORWARD: self.__highbayActConveyorForward,
-            RequestedParameter.MOTORCONVEYORBELTBACKWARD: self.__highbayActConveyorBackward,
-            RequestedParameter.MOTORHORIZONTALAXISFORWARD: self.__highbayActHorizontalToRack,
-            RequestedParameter.MOTORHORIZONTALAXISBACKWARD: self.__highbayActHorizontalToConveyor,
+            RequestedParameter.REFERENCESWITCHVERTICALAXIS:
+                self.__highbaySensVertical,
+            RequestedParameter.HORIZONTALAXISSTEP:
+                self.__axisHorizontal.counterValueCurrent,
+            RequestedParameter.VERTICALAXISSTEP:
+                self.__axisVertical.counterValueCurrent,
+            RequestedParameter.REFERENCESWITCHCANTILEVERFRONT:
+                self.__highbaySensCantileverFront,
+            RequestedParameter.REFERENCESWITCHCANTILEVERBACK:
+                self.__highbaySensCantileverBack,
+            RequestedParameter.MOTORCONVEYORBELTFORWARD:
+                self.__highbayActConveyorForward,
+            RequestedParameter.MOTORCONVEYORBELTBACKWARD:
+                self.__highbayActConveyorBackward,
+            RequestedParameter.MOTORHORIZONTALAXISFORWARD:
+                self.__highbayActHorizontalToRack,
+            RequestedParameter.MOTORHORIZONTALAXISBACKWARD:
+                self.__highbayActHorizontalToConveyor,
             RequestedParameter.MOTORVERTICALAXISUPWARD: self.__highbayActUp,
-            RequestedParameter.MOTORVERTICALAXISDOWNWARD: self.__highbayActDown,
-            RequestedParameter.MOTORCANTILEVERFORWARD: self.__highbayActCantileverForward,
-            RequestedParameter.MOTORCANTILEVERBACKWARD: self.__highbayActCantileverBackward,
-        }
+            RequestedParameter.MOTORVERTICALAXISDOWNWARD:
+                self.__highbayActDown,
+            RequestedParameter.MOTORCANTILEVERFORWARD:
+                self.__highbayActCantileverForward,
+            RequestedParameter.MOTORCANTILEVERBACKWARD:
+                self.__highbayActCantileverBackward,
+            }
         super().__init__(id1, dictMap)
 
         # helper variables
@@ -114,21 +126,23 @@ class HighBay(Machine):
         self.__state = None
 
     def __isExecuting(self) -> bool:
-        return (self.__highbayActUp or
-                self.__highbayActDown or
-                self.__highbayActConveyorForward or
-                self.__highbayActConveyorBackward or
-                self.__highbayActHorizontalToConveyor or
-                self.__highbayActHorizontalToRack or
-                self.__highbayActCantileverForward or
-                self.__highbayActCantileverBackward)
+        return (
+            self.__highbayActUp or self.__highbayActDown or
+            self.__highbayActConveyorForward or
+            self.__highbayActConveyorBackward or
+            self.__highbayActHorizontalToConveyor or
+            self.__highbayActHorizontalToRack or
+            self.__highbayActCantileverForward or
+            self.__highbayActCantileverBackward)
 
     @property
     def isExecuting(self) -> bool:
         res = self.__isExecuting()
 
         # log isExecuting and debug info only if message has changed
-        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        isExecuting_log = (f'isExecuting({self.id})={res} | Sensors='
+                           f'{self.sensorStatusString()} | Actuators= '
+                           f'{self.actuatorStatusString()}')
         if isExecuting_log != self.previous_isExecuting_log:
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
@@ -279,40 +293,54 @@ class HighBay(Machine):
         logging.debug(f"state: {state}")
 
     def sensorStatusString(self) -> str:
-        return f"[{self.highbaySensHorizontalEncoderCounter}, {self.highbaySensVerticalEncoderCounter}], [{self.highbaySensCantileverBack}, {self.highbaySensCantileverFront}, {self.highbaySensHorizontal}, {self.highbaySensInside}, {self.highbaySensOutside}, {self.highbaySensVertical}]"
+        return (f"[{self.highbaySensHorizontalEncoderCounter}, "
+                f"{self.highbaySensVerticalEncoderCounter}], "
+                f"[{self.highbaySensCantileverBack}, "
+                f"{self.highbaySensCantileverFront}, "
+                f"{self.highbaySensHorizontal}, {self.highbaySensInside}, "
+                f"{self.highbaySensOutside}, {self.highbaySensVertical}]")
 
     def actuatorStatusString(self) -> str:
-        return f"[{self.highbayActUp}, {self.highbayActDown}, {self.highbayActHorizontalToRack}, {self.highbayActHorizontalToConveyor}], [{self.highbayActCantileverBackward}, {self.highbayActCantileverForward}, {self.highbayActConveyorBackward}, {self.highbayActConveyorForward}]"
+        return (f"[{self.highbayActUp}, {self.highbayActDown}, "
+                f"{self.highbayActHorizontalToRack}, "
+                f"{self.highbayActHorizontalToConveyor}], "
+                f"[{self.highbayActCantileverBackward}, "
+                f"{self.highbayActCantileverForward}, "
+                f"{self.highbayActConveyorBackward}, "
+                f"{self.highbayActConveyorForward}]")
 
     def inputStatus(self) -> Dict[str, Any]:
-        return {
-            # TODO better adjust the names, I just made them up
+        return {  # TODO better adjust the names, I just made them up
             "highbaySensCantileverBack": self.__highbaySensCantileverBack,
             "highbaySensCantileverFront": self.__highbaySensCantileverFront,
             "highbaySensHorizontal": self.__highbaySensHorizontal,
-            "highbaySensHorizontalEncoderCounter": self.__highbaySensHorizontalEncoderCounter,
+            "highbaySensHorizontalEncoderCounter":
+                self.__highbaySensHorizontalEncoderCounter,
             "highbaySensInside": self.__highbaySensInside,
             "highbaySensOutside": self.__highbaySensOutside,
             "highbaySensVertical": self.__highbaySensVertical,
-            "highbaySensVerticalEncoderCounter": self.__highbaySensVerticalEncoderCounter,
-        }
+            "highbaySensVerticalEncoderCounter":
+                self.__highbaySensVerticalEncoderCounter,
+            }
 
     def outputStatus(self) -> Dict[str, Any]:
-        return {
-            # TODO better adjust the names, I just made them up
-            "highbayActCantileverBackward": self.__highbayActCantileverBackward,
+        return {  # TODO better adjust the names, I just made them up
+            "highbayActCantileverBackward":
+                self.__highbayActCantileverBackward,
             "highbayActCantileverForward": self.__highbayActCantileverForward,
             "highbayActConveyorBackward": self.__highbayActConveyorBackward,
             "highbayActConveyorForward": self.__highbayActConveyorForward,
             "highbayActHorizontalToRack": self.__highbayActHorizontalToRack,
-            "highbayActHorizontalToConveyor": self.__highbayActHorizontalToConveyor,
+            "highbayActHorizontalToConveyor":
+                self.__highbayActHorizontalToConveyor,
             "highbayActDown": self.__highbayActDown,
             "highbayActUp": self.__highbayActUp,
-        }
+            }
 
     def get_current_config(self) -> HighBayConfig:
         """
-        Get the config describing the state in which the machine currently resides
+        Get the config describing the state in which the machine currently
+        resides
         :return: The current config
         """
         return HighBayConfig(AxisConfig(self.highbaySensHorizontal,
@@ -329,9 +357,10 @@ class HighBay(Machine):
         """
         Transfer the machine into another configuration
         :param config: The new configuration to transfer the machine to
-        :return: True if the machine has reached the configuration, otherwise false
+        :return: True if the machine has reached the configuration,
+        otherwise false
         """
-        #logging.debug(f"going to {config}")
+        # logging.debug(f"going to {config}")
 
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
@@ -348,9 +377,11 @@ class HighBay(Machine):
             IDLE = 0
             """The arm doesn't need to move"""
             MINOR = 1
-            """The arm needs to move a little bit, for picking up or dropping of an item"""
+            """The arm needs to move a little bit, for picking up or
+            dropping of an item"""
             MAYOR = 2
-            """The arm needs to move alot and the cantilever should be retracted for that"""
+            """The arm needs to move alot and the cantilever should be
+            retracted for that"""
 
         arm_movement = ArmMovement.IDLE
 
@@ -361,8 +392,9 @@ class HighBay(Machine):
             # only allow small vertical movements for pickup
             distance_to_move = self.__axisVertical.counterValueCurrent - (
                 config.vertical_axis_config.counter_goal or 0)
-            if abs(
-                distance_to_move) > PICKUP_DISTANCE + self.__axisVertical.tolerance:
+            if (
+                abs(distance_to_move) > PICKUP_DISTANCE +
+                    self.__axisVertical.tolerance):
                 arm_movement = ArmMovement.MAYOR
             else:
                 arm_movement = ArmMovement.MINOR
@@ -371,11 +403,13 @@ class HighBay(Machine):
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(
-            config.horizontal_axis_config):
+                config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
 
-        #logging.debug(f"arm_movement: {arm_movement}")
-        if arm_movement is ArmMovement.MAYOR and not self.highbaySensCantileverBack:
+        # logging.debug(f"arm_movement: {arm_movement}")
+        if (
+            arm_movement is ArmMovement.MAYOR and not
+        self.highbaySensCantileverBack):
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = True
             self.highbayActHorizontalToRack = False
@@ -386,17 +420,22 @@ class HighBay(Machine):
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = False
             self.highbayActHorizontalToRack = self.__axisHorizontal.outputplus
-            self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputminus
+            self.highbayActHorizontalToConveyor = (
+                self.__axisHorizontal.outputminus)
             self.highbayActUp = self.__axisVertical.outputminus
             self.highbayActDown = self.__axisVertical.outputplus
-        elif config.cantilever_extended and not self.highbaySensCantileverFront:
+        elif (
+            config.cantilever_extended and not
+        self.highbaySensCantileverFront):
             self.highbayActCantileverForward = True
             self.highbayActCantileverBackward = False
             self.highbayActHorizontalToRack = False
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
-        elif not config.cantilever_extended and not self.highbaySensCantileverBack:
+        elif (
+            not config.cantilever_extended and not
+        self.highbaySensCantileverBack):
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = True
             self.highbayActHorizontalToRack = False
@@ -415,9 +454,7 @@ class HighBay(Machine):
         return False
 
     def internalStatus(self) -> Dict[str, Any]:
-        return {
-            "isExecuting": self.__isExecuting()
-        }
+        return {"isExecuting": self.__isExecuting()}
 
     def stop(self):
         self.highbayActUp = False
@@ -433,7 +470,8 @@ class HighBay(Machine):
         """
         Edits the current config and goes to it.
         :param config_editor: A consumer of the current config, which edits it
-        :return: A lambda with the goto_config call, intended for the controller
+        :return: A lambda with the goto_config call, intended for the
+        controller
         """
         config = self.get_current_config()
         config_editor(config)
@@ -495,13 +533,13 @@ class HighBay(Machine):
         return self.goto_next_config()
 
     def horizontal_to(self, counter_goal: int):
-        self.create_next_config().horizontal_axis_config = AxisConfig.to_counter_goal(
-            counter_goal)
+        self.create_next_config().horizontal_axis_config = (
+            AxisConfig.to_counter_goal(counter_goal))
         return self.goto_next_config()
 
     def vertical_to(self, counter_goal: int):
-        self.create_next_config().vertical_axis_config = AxisConfig.to_counter_goal(
-            counter_goal)
+        self.create_next_config().vertical_axis_config = (
+            AxisConfig.to_counter_goal(counter_goal))
         return self.goto_next_config()
 
     def goto_column(self, column: Union[Column, int]):
@@ -532,7 +570,8 @@ class HighBay(Machine):
             Column.CONVEYOR.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
             Row.CONVEYOR.to_counter_goal())
-        config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
+        config = HighBayConfig(horizontal_axis_config,
+                               vertical_axis_config,
                                True)
 
         if self.state is State.MOVE_TO_CONVEYOR:
@@ -557,7 +596,8 @@ class HighBay(Machine):
             column.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
             row.to_counter_goal() - PICKUP_DISTANCE)
-        config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
+        config = HighBayConfig(horizontal_axis_config,
+                               vertical_axis_config,
                                True)
 
         if self.state is State.MOVE_TO_RACK:
@@ -591,7 +631,8 @@ class HighBay(Machine):
             column.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
             row.to_counter_goal())
-        config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
+        config = HighBayConfig(horizontal_axis_config,
+                               vertical_axis_config,
                                True)
 
         if self.state is State.MOVE_TO_RACK:
@@ -615,7 +656,8 @@ class HighBay(Machine):
             Row.CONVEYOR.to_counter_goal())
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
-                               True, ConveyorState.FORWARD)
+                               True,
+                               ConveyorState.FORWARD)
 
         if self.state is State.DROP_OFF:
             if self.goto_config(config):
