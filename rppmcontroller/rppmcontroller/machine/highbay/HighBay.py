@@ -539,8 +539,6 @@ class HighBay(Machine):
         if self.state is State.MOVE_TO_CONVEYOR:
             if self.goto_config(config):
                 self.state = State.WAIT_AT_CONVEYOR
-                self.stop()  # TODO debug
-                return me
 
         config.conveyor_state = ConveyorState.BACKWARD
 
