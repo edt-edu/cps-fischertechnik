@@ -23,7 +23,7 @@ class Column(Enum):
 
     def to_counter_goal(self) -> int:
         if self == Column.CONVEYOR:
-            return 80
+            return 70
         elif self == Column.RIGHT:
             return 1550
         elif self == Column.MIDDLE:
