@@ -526,6 +526,8 @@ class HighBay(Machine):
 
         # logging.debug(f"Storing item at {row}, {column}...")
 
+        me = lambda: self.store_to(row, column)
+
         if self.state is None:
             self.state = State.MOVE_TO_CONVEYOR
 
@@ -548,6 +550,7 @@ class HighBay(Machine):
             if not self.highbaySensInside:
                 self.state = State.PICKUP
 
+        return me
         config.conveyor_state = ConveyorState.IDLE
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
 
