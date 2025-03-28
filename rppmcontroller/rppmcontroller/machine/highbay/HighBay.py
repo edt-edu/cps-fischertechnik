@@ -395,6 +395,13 @@ class HighBay(Machine):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
+        elif not config.cantilever_extended and not self.highbaySensCantileverBack:
+            self.highbayActCantileverForward = False
+            self.highbayActCantileverBackward = True
+            self.highbayActHorizontalToRack = False
+            self.highbayActHorizontalToConveyor = False
+            self.highbayActUp = False
+            self.highbayActDown = False
         else:
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = False
