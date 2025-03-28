@@ -571,6 +571,7 @@ class HighBay(Machine):
                 self.state = State.CLEAN_UP
 
         if self.state is State.CLEAN_UP:
+            self.setup()
             if not self.__isExecuting():
                 self.state = None
 
@@ -628,6 +629,7 @@ class HighBay(Machine):
                 self.state = State.CLEAN_UP
 
         if self.state is State.CLEAN_UP:
+            self.setup()
             if not self.__isExecuting():
                 self.state = None
 
