@@ -523,8 +523,6 @@ class HighBay(Machine):
 
         # logging.debug(f"Storing item at {row}, {column}...")
 
-        me = lambda: self.store_to(row, column)
-
         if self.state is None:
             self.state = State.MOVE_TO_CONVEYOR
 
@@ -572,4 +570,58 @@ class HighBay(Machine):
                 self.state = None
                 self.stop()
 
-        return me
+        return lambda: self.store_to(row, column)
+
+    def pickup_from(self, row: Union[Row, int], column: Union[Column, int]):
+        if isinstance(row, int):
+            row = Row(row)
+        if isinstance(column, int):
+            column = Column(column)
+
+        if self.state is None:
+            self.state = State.MOVE_TO_RACK
+
+        # define the reference config for the next few steps
+        horizontal_axis_config = AxisConfig.to_counter_goal(
+            column.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(
+            row.to_counter_goal())
+        config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
+                               True)
+
+        if self.state is State.MOVE_TO_RACK:
+            if self.goto_config(config):
+                self.state = State.PICKUP
+
+        config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+
+        if self.state is State.PICKUP:
+            if self.goto_config(config):
+                self.state = State.MOVE_TO_CONVEYOR
+
+        horizontal_axis_config = AxisConfig.to_counter_goal(
+            Column.CONVEYOR.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(
+            Row.CONVEYOR.to_counter_goal() - PICKUP_DISTANCE)
+        config = HighBayConfig(horizontal_axis_config,
+                               vertical_axis_config,
+                               True)
+
+        if self.state is State.MOVE_TO_CONVEYOR:
+            if self.goto_config(config):
+                self.state = State.DROP_OFF
+
+        config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
+        config.conveyor_state = ConveyorState.FORWARD
+
+        if self.state is State.DROP_OFF:
+            if self.goto_config(config):
+                self.state = State.WAIT_AT_CONVEYOR
+
+        if self.state is State.WAIT_AT_CONVEYOR:
+            self.goto_config(config)
+            if not self.highbaySensOutside:
+                self.state = None
+                self.stop()
+
+        return lambda: self.pickup_from(row, column)
