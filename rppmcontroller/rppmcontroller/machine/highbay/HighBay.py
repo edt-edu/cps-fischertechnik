@@ -604,8 +604,7 @@ class HighBay(Machine):
             if self.goto_config(config):
                 self.state = State.MOVE_TO_CONVEYOR
 
-        horizontal_axis_config = AxisConfig.to_counter_goal(
-            Column.CONVEYOR.to_counter_goal())
+        horizontal_axis_config = AxisConfig.to_end_position()
         vertical_axis_config = AxisConfig.to_counter_goal(
             Row.CONVEYOR.to_counter_goal() - PICKUP_DISTANCE)
         config = HighBayConfig(horizontal_axis_config,
@@ -616,6 +615,7 @@ class HighBay(Machine):
             if self.goto_config(config):
                 self.state = State.DROP_OFF
 
+        config.horizontal_axis_config = AxisConfig.to_counter_goal(Column.CONVEYOR.to_counter_goal())
         config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
         config.conveyor_state = ConveyorState.FORWARD
 
