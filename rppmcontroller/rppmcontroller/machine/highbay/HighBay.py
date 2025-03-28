@@ -332,74 +332,6 @@ class HighBay(Machine):
         """
         logging.debug(f"going to {config}")
 
-        target_config_reached = True
-        move_arm_first = False
-
-        # check for horizontal movement
-        self.__axisHorizontal.update(self.highbaySensHorizontal,
-                                     self.highbaySensHorizontalEncoderCounter)
-        if not self.__axisHorizontal.gotoAxisConfig(
-            config.horizontal_axis_config):
-            target_config_reached = False
-            move_arm_first = True
-
-        # check for vertical movement
-        self.__axisVertical.update(self.highbaySensVertical,
-                                   self.highbaySensVerticalEncoderCounter)
-        if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
-            target_config_reached = False
-            # only allow small vertical movements for pickup
-            distance_to_move = self.__axisVertical.counterValueCurrent - (
-                config.vertical_axis_config.counter_goal or 0)
-            if abs(distance_to_move) > PICKUP_DISTANCE + self.__axisVertical.tolerance:
-                move_arm_first = True
-
-        # move cantilever; make sure it is retracted if the arm needs to move
-        cantilever_is_retracted = self.highbaySensCantileverBack
-        cantilever_is_extended = self.highbaySensCantileverFront
-
-        cantilever_needs_to_be_retracted = (
-                                               not config.cantilever_extended or move_arm_first) and not cantilever_is_retracted
-        # logging.debug(
-        #     f"cantilever_needs_to_be_retracted: {cantilever_needs_to_be_retracted}")
-        cantilever_needs_to_be_extended_after_arm_movement = config.cantilever_extended and not cantilever_is_extended
-        # logging.debug(
-        #     f"cantilever_needs_to_be_extended_after_arm_movement: {cantilever_needs_to_be_extended_after_arm_movement}")
-        cantilever_needs_to_be_extended = not move_arm_first and cantilever_needs_to_be_extended_after_arm_movement
-        # logging.debug(
-        #     f"cantilever_needs_to_be_extended: {cantilever_needs_to_be_extended}")
-        cantilever_needs_to_move = cantilever_needs_to_be_retracted or cantilever_needs_to_be_extended
-
-        if cantilever_needs_to_move:
-            # logging.debug("moving cantilever...")
-            target_config_reached = False
-
-            if cantilever_needs_to_be_retracted:
-                self.highbayActCantileverBackward = True
-                self.highbayActCantileverForward = False
-            else:
-                self.highbayActCantileverForward = True
-                self.highbayActCantileverBackward = False
-
-            # make sure we are not moving the arm
-            self.highbayActHorizontalToRack = False
-            self.highbayActHorizontalToConveyor = False
-            self.highbayActUp = False
-            self.highbayActDown = False
-        else:
-            self.highbayActCantileverBackward = False
-            self.highbayActCantileverForward = False
-
-            # cantilever is in position; we may move the arm now
-            self.highbayActHorizontalToRack = self.__axisHorizontal.outputplus
-            self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputminus
-            self.highbayActUp = self.__axisVertical.outputminus
-            self.highbayActDown = self.__axisVertical.outputplus
-
-            # make sure the cantilever is extended as soon as the arm is idle, to avoid the finished status
-            if not self.__isExecuting() and cantilever_needs_to_be_extended_after_arm_movement:
-                self.highbayActCantileverForward = True
-
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
             self.highbayActConveyorForward = False
@@ -411,8 +343,67 @@ class HighBay(Machine):
             self.highbayActConveyorForward = False
             self.highbayActConveyorBackward = True
 
-        logging.debug(f"Config has been reached: {target_config_reached}")
-        return target_config_reached
+        class ArmMovement(Enum):
+            IDLE = 0
+            """The arm doesn't need to move"""
+            MINOR = 1
+            """The arm needs to move a little bit, for picking up or dropping of an item"""
+            MAYOR = 2
+            """The arm needs to move alot and the cantilever should be retracted for that"""
+
+        arm_movement = ArmMovement.IDLE
+
+        # horizontal axis
+        self.__axisHorizontal.update(self.highbaySensHorizontal,
+                                     self.highbaySensHorizontalEncoderCounter)
+        if not self.__axisHorizontal.gotoAxisConfig(
+            config.horizontal_axis_config):
+            arm_movement = ArmMovement.MAYOR
+
+        # vertical axis
+        self.__axisVertical.update(self.highbaySensVertical,
+                                   self.highbaySensVerticalEncoderCounter)
+        if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+            # only allow small vertical movements for pickup
+            distance_to_move = self.__axisVertical.counterValueCurrent - (
+                config.vertical_axis_config.counter_goal or 0)
+            if abs(
+                distance_to_move) > PICKUP_DISTANCE + self.__axisVertical.tolerance:
+                arm_movement = ArmMovement.MAYOR
+            else:
+                arm_movement = ArmMovement.MINOR
+
+        if arm_movement is ArmMovement.MAYOR and not self.highbaySensCantileverBack:
+            self.highbayActCantileverForward = False
+            self.highbayActCantileverBackward = True
+            self.highbayActHorizontalToRack = False
+            self.highbayActHorizontalToConveyor = False
+            self.highbayActUp = False
+            self.highbayActDown = False
+        elif arm_movement is not ArmMovement.IDLE:
+            self.highbayActCantileverForward = False
+            self.highbayActCantileverBackward = False
+            self.highbayActHorizontalToRack = self.__axisHorizontal.outputplus
+            self.highbayActHorizontalToConveyor = self.__axisHorizontal.outputminus
+            self.highbayActUp = self.__axisVertical.outputminus
+            self.highbayActDown = self.__axisVertical.outputplus
+        elif config.cantilever_extended and not self.highbaySensCantileverFront:
+            self.highbayActCantileverForward = True
+            self.highbayActCantileverBackward = False
+            self.highbayActHorizontalToRack = False
+            self.highbayActHorizontalToConveyor = False
+            self.highbayActUp = False
+            self.highbayActDown = False
+        else:
+            self.highbayActCantileverForward = False
+            self.highbayActCantileverBackward = False
+            self.highbayActHorizontalToRack = False
+            self.highbayActHorizontalToConveyor = False
+            self.highbayActUp = False
+            self.highbayActDown = False
+            return True
+
+        return False
 
     def internalStatus(self) -> Dict[str, Any]:
         return {
@@ -540,7 +531,7 @@ class HighBay(Machine):
         if self.state is State.MOVE_TO_CONVEYOR:
             if self.goto_config(config):
                 self.state = State.WAIT_AT_CONVEYOR
-                self.stop() #TODO debug
+                self.stop()  # TODO debug
                 return me
 
         config.conveyor_state = ConveyorState.BACKWARD
@@ -557,9 +548,12 @@ class HighBay(Machine):
             if self.goto_config(config):
                 self.state = State.MOVE_TO_RACK
 
-        horizontal_axis_config = AxisConfig.to_counter_goal(column.to_counter_goal())
-        vertical_axis_config = AxisConfig.to_counter_goal(row.to_counter_goal() - PICKUP_DISTANCE)
-        config = HighBayConfig(horizontal_axis_config, vertical_axis_config, True)
+        horizontal_axis_config = AxisConfig.to_counter_goal(
+            column.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(
+            row.to_counter_goal() - PICKUP_DISTANCE)
+        config = HighBayConfig(horizontal_axis_config, vertical_axis_config,
+                               True)
 
         if self.state is State.MOVE_TO_RACK:
             if self.goto_config(config):
