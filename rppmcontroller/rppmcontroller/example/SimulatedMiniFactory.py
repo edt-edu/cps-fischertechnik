@@ -84,7 +84,7 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
    
     def reset(self) -> None:
         vg = self.vacuumGripperMachine.resetHelper()
-        if vg[0]:
+        if vg:
             self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":
