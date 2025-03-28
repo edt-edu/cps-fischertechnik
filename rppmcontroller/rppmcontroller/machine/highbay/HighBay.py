@@ -568,7 +568,7 @@ class HighBay(Machine):
         if self.state is State.DROP_OFF:
             if self.goto_config(config):
                 self.state = None
-                self.stop()
+                self.setup()
 
         return lambda: self.store_to(row, column)
 
@@ -622,6 +622,6 @@ class HighBay(Machine):
             self.goto_config(config)
             if not self.highbaySensOutside:
                 self.state = None
-                self.stop()
+                self.setup()
 
         return lambda: self.pickup_from(row, column)
