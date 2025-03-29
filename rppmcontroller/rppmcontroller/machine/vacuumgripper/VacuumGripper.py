@@ -442,9 +442,9 @@ class VacuumGripper(Machine):
         """ 
         return lambda: self.setup_CycleStep()
 
-    def gotopos_Command(self, tartgetPos : Position) -> Optional[Callable[[], CycleStepResult]]:
+    def go_to_position_Command(self, tartgetPos : Position) -> Optional[Callable[[], CycleStepResult]]:
         """
-        Command triggering a gotopos action. Ie. it moves the gripper to the position without changing the valve or compressor status.
+        Command triggering a go_to_position action. Ie. it moves the gripper to the position without changing the valve or compressor status.
         It may trigger a setup first if the machine is not initialized
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
         """ 
