@@ -8,6 +8,7 @@ from rppmcontroller.machine.ConveyorState import ConveyorState, \
     conveyor_state_from_movements
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.Runner import TransitioningMachine
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 
 PICKUP_DISTANCE = 150
@@ -61,7 +62,7 @@ class State(Enum):
     CLEAN_UP = 5
 
 
-class HighBay(Machine):
+class HighBay(Machine, TransitioningMachine):
     def __init__(self, id1):
         #  inputs
         self.__highbaySensHorizontal = False

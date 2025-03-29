@@ -1,6 +1,7 @@
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
-from rppmcontroller.machine.multiprocessing.MultiProcessing import \
-    TurnTablePosition, \
+from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
+    TurnTablePosition
+from rppmcontroller.machine.multiprocessing.VacuumArmState import \
     VacuumArmState
 
 

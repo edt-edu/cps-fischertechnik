@@ -1,5 +1,4 @@
 import logging
-from enum import Enum
 from typing import Any, Dict
 
 from rppmcontroller.machine.Direction import Direction
@@ -8,25 +7,11 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
 from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
     MultiProcessingConfig
+from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
+    TurnTablePosition
+from rppmcontroller.machine.multiprocessing.VacuumArmState import \
+    VacuumArmState
 
-
-class TurnTablePosition(Enum):
-    """Where the turn table should currently be"""
-    VACUUM = 0
-    """At the vacuum arm drop off point"""
-    SAW = 1
-    """At the saw with an active saw"""
-    CONVEYOR = 2
-    """At the conveyor belt with an active feeder"""
-
-class VacuumArmState(Enum):
-    """Where the vacuum gripper arm should be"""
-    AT_TURN_TABLE = 0
-    """Idle at the turn table"""
-    AT_OVEN = 1
-    """Idle at the oven"""
-    PICKUP = 2
-    """Lowered with active vacuum at the oven"""
 
 class MultiProcessing(Machine):
 
