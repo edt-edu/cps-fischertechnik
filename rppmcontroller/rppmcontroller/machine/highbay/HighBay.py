@@ -512,7 +512,7 @@ class HighBay(Machine, TransitioningMachine):
         if setup_finished:
             # setup is finished
             self.reset_rpi_encoder_counters = True
-        return lambda: self.setup()
+        return self.setup
 
     def conveyor_forward(self):
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
@@ -562,38 +562,24 @@ class HighBay(Machine, TransitioningMachine):
         if isinstance(column, int):
             column = Column(column)
 
-        # logging.debug(f"Storing item at {row}, {column}...")
-
-        if self.state is None:
-            self.state = State.MOVE_TO_CONVEYOR
-
-        # define the reference config for the next few steps
-        horizontal_axis_config = AxisConfig.to_counter_goal(
-            Column.CONVEYOR.to_counter_goal())
-        vertical_axis_config = AxisConfig.to_counter_goal(
-            Row.CONVEYOR.to_counter_goal())
+        # goto conveyor
+        horizontal_axis_config = AxisConfig.to_counter_goal(Column.CONVEYOR.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(Row.CONVEYOR.to_counter_goal())
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
+        runner = self.create_runner().then_goto(config)
 
-        if self.state is State.MOVE_TO_CONVEYOR:
-            if self.goto_config(config):
-                self.state = State.WAIT_AT_CONVEYOR
-
+        # move item on lever
         config.conveyor_state = ConveyorState.BACKWARD
+        runner.then_goto(config, until=lambda: not self.highbaySensInside)
 
-        if self.state is State.WAIT_AT_CONVEYOR:
-            self.goto_config(config)
-            if not self.highbaySensInside:
-                self.state = State.PICKUP
-
+        # pickup item and stop conveyor
         config.conveyor_state = ConveyorState.IDLE
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+        runner.then_goto(config)
 
-        if self.state is State.PICKUP:
-            if self.goto_config(config):
-                self.state = State.MOVE_TO_RACK
-
+        # move to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
             column.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
@@ -601,23 +587,16 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
+        runner.then_goto(config)
 
-        if self.state is State.MOVE_TO_RACK:
-            if self.goto_config(config):
-                self.state = State.DROP_OFF
-
+        # drop off item
         config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
+        runner.then_goto(config)
 
-        if self.state is State.DROP_OFF:
-            if self.goto_config(config):
-                self.state = State.CLEAN_UP
+        # perform a setup to recalibrate the encoders
+        runner.then_run(self.setup, until=lambda: not self.__isExecuting())
 
-        if self.state is State.CLEAN_UP:
-            self.setup()
-            if not self.__isExecuting():
-                self.state = None
-
-        return lambda: self.store_to(row, column)
+        return runner.run()
 
     def pickup_from(self, row: Union[Row, int], column: Union[Column, int]):
         if isinstance(row, int):
@@ -625,10 +604,7 @@ class HighBay(Machine, TransitioningMachine):
         if isinstance(column, int):
             column = Column(column)
 
-        if self.state is None:
-            self.state = State.MOVE_TO_RACK
-
-        # define the reference config for the next few steps
+        # go to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
             column.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
@@ -636,22 +612,16 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
+        runner = self.create_runner().then_goto(config)
 
-        if self.state is State.MOVE_TO_RACK:
-            if self.goto_config(config):
-                self.state = State.PICKUP
-
+        # pickup item
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+        runner.then_goto(config)
 
-        if self.state is State.PICKUP:
-            if self.goto_config(config):
-                self.state = State.MOVE_TO_CONVEYOR
+        # perform a setup because we need precise encoders now
+        runner.then_run(self.setup, until=lambda: not self.__isExecuting())
 
-        if self.state is State.MOVE_TO_CONVEYOR:
-            self.setup()
-            if not self.__isExecuting():
-                self.state = State.DROP_OFF
-
+        # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
             Column.CONVEYOR.to_counter_goal())
         vertical_axis_config = AxisConfig.to_counter_goal(
@@ -660,19 +630,9 @@ class HighBay(Machine, TransitioningMachine):
                                vertical_axis_config,
                                True,
                                ConveyorState.FORWARD)
+        runner.then_goto(config, until=lambda: not self.highbaySensOutside)
 
-        if self.state is State.DROP_OFF:
-            if self.goto_config(config):
-                self.state = State.WAIT_AT_CONVEYOR
+        # perform another setup
+        runner.then_run(self.setup, until=lambda: not self.__isExecuting())
 
-        if self.state is State.WAIT_AT_CONVEYOR:
-            self.goto_config(config)
-            if not self.highbaySensOutside:
-                self.state = State.CLEAN_UP
-
-        if self.state is State.CLEAN_UP:
-            self.setup()
-            if not self.__isExecuting():
-                self.state = None
-
-        return lambda: self.pickup_from(row, column)
+        return runner.run()
