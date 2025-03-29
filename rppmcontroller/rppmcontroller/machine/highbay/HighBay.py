@@ -53,15 +53,6 @@ class Row(Enum):
             raise ValueError(f"no counter goal defined for {self}")
 
 
-class State(Enum):
-    MOVE_TO_CONVEYOR = 0
-    WAIT_AT_CONVEYOR = 1
-    PICKUP = 2
-    MOVE_TO_RACK = 3
-    DROP_OFF = 4
-    CLEAN_UP = 5
-
-
 class HighBay(Machine, TransitioningMachine):
     def __init__(self, id1):
         #  inputs
@@ -284,15 +275,6 @@ class HighBay(Machine, TransitioningMachine):
     @highbaySensVerticalEncoderCounter.setter
     def highbaySensVerticalEncoderCounter(self, value: int) -> None:
         self.__highbaySensVerticalEncoderCounter = value
-
-    @property
-    def state(self) -> State:
-        return self.__state
-
-    @state.setter
-    def state(self, state: Optional[State]) -> None:
-        self.__state = state
-        logging.debug(f"state: {state}")
 
     def sensorStatusString(self) -> str:
         return (f"[{self.highbaySensHorizontalEncoderCounter}, "
