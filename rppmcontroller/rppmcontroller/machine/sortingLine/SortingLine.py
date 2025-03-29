@@ -51,6 +51,8 @@ class SortingLine(Machine):
                    RequestedParameter.VALVETHIRDEJECTORBLUE: self.__sortingLineActBlueEjector}
         super().__init__(id1, dictMap)
 
+
+        self.isInitialized = True   # SortingLine doesn't require initialization !? is this true ? does the self.__counter need to be put back to 0 from time to time to avoid overflow ?
         self.__packageOnLine = self.__packageCountSteps = False
         self.once = True
 

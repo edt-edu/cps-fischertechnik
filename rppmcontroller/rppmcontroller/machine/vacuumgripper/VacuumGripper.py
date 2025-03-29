@@ -110,8 +110,8 @@ class VacuumGripper(Machine):
         res = self.isProcessingSequence() or \
             self.__vacuumActVerticalUp or self.__vacuumActVerticalDown or self.__vacuumActRotRight or self.__vacuumActRotLeft or \
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
-            self.nbMinimumRequiredExecutionCycles != 0 or \
-            self.isProcessingSequence()
+            self.__vacuumActCompressorOn or self.__vacuumActValve or \
+            self.nbMinimumRequiredExecutionCycles != 0
         
         # log isexecuting and debug info only if message has changed
         psContext = self.processSequenceContext
@@ -128,7 +128,6 @@ class VacuumGripper(Machine):
 
 
     def __init__(self, id1):
-        self.__isExecutingCount = 0
         self.__vacuumSensArmEndIn = self.__vacuumSensVerticalEndUp = self.__vacuumSensRotEnd = False
         self.__vacuumActArmOut = self.__vacuumActArmIn = self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = self.__vacuumActRotRight = self.__vacuumActRotLeft = self.__vacuumActCompressorOn = self.__vacuumActValve = False
         self.__vacuumSensRotEncoderCounter = self.__vacuumSensVerticalEncoderCounter = self.__vacuumSensArmEncoderCounter = 0
@@ -153,9 +152,8 @@ class VacuumGripper(Machine):
         super().__init__(id1, dictMap)
 
         self.configReached = False
-        self.setupFinished = self.setupFinishedHelper = False
-        self.__moveList = None
-        self.__pc = 0
+        self.isInitialized = False
+        self.mustReset = False
         self.configGoal = None
         self.previous_isExecuting_log = None
 
@@ -319,18 +317,16 @@ class VacuumGripper(Machine):
         }
         return status
 
-    def executeHelper(self) -> Tuple[bool, bool, bool]:
+    def resetHelper(self) -> bool:
+        """ Returns whether the counters must be reset
+        will return true only one time per mustReset request
+        :return bool: True if self.mustReset
         """
-        Returns whether each counter can be reset after the setup process
-
-        :returns three boolean values
-        :rtype tuple
-        """
-        if self.setupFinishedHelper:
-            self.setupFinishedHelper = False    
-            return True, True, True
+        if self.mustReset:
+            self.mustReset = False    
+            return True
         else:
-            return False, False, True
+            return False
 
     def gotoconfig(self, config) -> CycleStepResult:
         """Activate the different engines and actuator in order to reach the given VGR configuration
@@ -419,17 +415,9 @@ class VacuumGripper(Machine):
         self.vacuumActCompressorOn = False
         self.vacuumActValve = False
 
-        self.setupFinished = (t1 and t2 and t3)
-        
-        if not self.setupFinished:
-            self.setupFirst = True 
-        else:
-            self.setupFinishedHelper = True # ask for a counter reset in the main loop
-
-        if self.setupFirst:
-            logging.debug("setup first True")
-            self.setupFirst = False
         if (t1 and t2 and t3 and self.nbMinimumRequiredExecutionCycles == 0):
+            self.mustReset = True       # ask for a counter reset in the main loop
+            self.isInitialized = True   # machine is now initialized
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -461,7 +449,7 @@ class VacuumGripper(Machine):
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
         """ 
         moveList : List[CycleStepCommand] =  []
-        if not self.setupFinished:
+        if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
         config = VacuumGripperConfig(tartgetPos.vertical, tartgetPos.rot, tartgetPos.horizontal, False)
         moveList.append(CycleStepCommand(lambda: self.gotoconfig(config), 
@@ -477,7 +465,7 @@ class VacuumGripper(Machine):
         print("move")
 
         moveList : List[CycleStepCommand] =  []
-        if not self.setupFinished:
+        if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
 
         moveList.extend(self.generateTransferMoveList(startPos, endPos))
@@ -490,7 +478,7 @@ class VacuumGripper(Machine):
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
         """ 
         moveList : List[CycleStepCommand] =  []
-        if not self.setupFinished:
+        if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
 
         moveList.extend(self.generateTransferMoveList(startPos, startPos)[:6]) #extract the first 6 commands from the generateTransferMoveList
@@ -502,7 +490,7 @@ class VacuumGripper(Machine):
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
         """ 
         moveList : List[CycleStepCommand] =  []
-        if not self.setupFinished:
+        if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
 
         moveList.extend(self.generateTransferMoveList(endPos, endPos)[6:]) #extract the last 6 commands from the generateTransferMoveList

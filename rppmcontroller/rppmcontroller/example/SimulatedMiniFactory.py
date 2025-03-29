@@ -83,8 +83,8 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         self.sortingLineSimulator.simulatedWrite()
    
     def reset(self) -> None:
-        vg = self.vacuumGripperMachine.executeHelper()
-        if vg[0]:
+        vg = self.vacuumGripperMachine.resetHelper()
+        if vg:
             self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":

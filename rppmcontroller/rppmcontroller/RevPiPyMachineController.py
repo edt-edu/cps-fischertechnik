@@ -65,7 +65,7 @@ class RevPiPyMachineController:
         #dict, which keys are the machines, and value is a CycleStepCommand holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting : Dict[Machine, Optional[CycleStepCommand ]  ]= {}
         #dict, which keys are the machines, machine_feedback as the values
-        self.machineFeedback = {}
+        self.machineFeedback : Dict [Machine, Optional[MachineStatus]] = {}
         #dict, which keys are the machines, command_feedback as the values
         self.commandFeedback : Dict[Machine, Optional[CycleStepResult]]= {}
 
@@ -376,7 +376,8 @@ class RevPiPyMachineController:
                     # maybe the res is different from previous, so it should be published
                     self.sendCommandFeedbackOnChange(key, ret)
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
-            if key.feedback() == MachineStatus.IDLE and cycleStepCommand != None:
+            if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and \
+                    cycleStepCommand != None:
                 logging.warning(f'LEGACY: DEPRECATED, removing {cycleStepCommand.displayName} from currentlyExecuting due to MachineStatus.IDLE')
                 self.currentlyExecuting[key] = None
 
@@ -395,10 +396,10 @@ class RevPiPyMachineController:
         Also update the self.feedback[m] dictionnary
         """
         for m in self.machines:
-            if self.machineFeedback[m] != m.feedback():
-                self.machineFeedback[m] = m.feedback()
+            if self.machineFeedback[m] != m.machineFeedback():
+                self.machineFeedback[m] = m.machineFeedback()
                 # append feedback to outputBuffer
-                f = MachineFeedback("MACHINE_FEEDBACK",  m.feedback().name,  "")
+                f = MachineFeedback("MACHINE_FEEDBACK",  m.machineFeedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)

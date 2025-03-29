@@ -42,7 +42,7 @@ class ConveyorBelt(Machine):
 
         self.arrived = False
         self.once = True
-        self.__isExecutingCount = 0
+        self.isInitialized = True       # Conveyor doesn't require initialization process
         self.previous_isExecuting_log = None
 
     @property
