@@ -423,7 +423,7 @@ class RevPiPyMachineController:
                 self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
             
         else:
-            logging.debug(f'identical CycleStepResult for machine {machine.id}')
+            logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
         self.commandFeedback[machine] = lastResult
 
     def publishMQTTMeasurementStatus(self) -> None:

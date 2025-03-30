@@ -421,6 +421,14 @@ class VacuumGripper(Machine):
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
+
+    def grip_CycleStep(self) -> CycleStepResult:
+        self.__vacuumActCompressorOn = self.__vacuumActValve = True
+        return CycleStepResult(CycleStepResultEnum.DONE, "grip")
+    
+    def release_CycleStep(self) -> CycleStepResult:
+        self.__vacuumActCompressorOn = self.__vacuumActValve = False
+        return CycleStepResult(CycleStepResultEnum.DONE, "release")
     
     @override
     def stop_CycleStep(self) -> CycleStepResult:
@@ -428,7 +436,7 @@ class VacuumGripper(Machine):
         self.__vacuumActVerticalDown = self.__vacuumActVerticalUp = False
         self.__vacuumActRotRight = self.__vacuumActRotLeft = False
         self.__vacuumActCompressorOn = self.__vacuumActValve = False
-        return CycleStepResult(CycleStepResultEnum.DONE)
+        return CycleStepResult(CycleStepResultEnum.DONE, "stop")
 
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
@@ -474,7 +482,7 @@ class VacuumGripper(Machine):
 
     def pick_Command(self, startPos) -> Optional[Callable[[], CycleStepResult]]:
         """
-        Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that posiotn
+        Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that position
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
         """ 
         moveList : List[CycleStepCommand] =  []
@@ -486,7 +494,7 @@ class VacuumGripper(Machine):
 
     def place_Command(self, endPos) -> Optional[Callable[[], CycleStepResult]]:
         """
-        Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that posiotn
+        Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that position
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
         """ 
         moveList : List[CycleStepCommand] =  []
@@ -496,5 +504,19 @@ class VacuumGripper(Machine):
         moveList.extend(self.generateTransferMoveList(endPos, endPos)[6:]) #extract the last 6 commands from the generateTransferMoveList
         return lambda: self.process_sequence_CycleStep(moveList)
 
+    def grip_Command(self) -> Optional[Callable[[], CycleStepResult]]:
+        """
+        Command activating the gripper without moving the arm.
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
+        """ 
+        return lambda: self.grip_CycleStep()
+
+    def release_Command(self) -> Optional[Callable[[], CycleStepResult]]:
+        """
+        Command desactivating the gripper without moving the arm.
+        :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
+        """ 
+        return lambda: self.release_CycleStep()
+    
     def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()

@@ -597,7 +597,68 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             self.controller.mainLoopIteration()
             self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
     
+    def test_grip_releaseCommand(self):
+        """Ensure that the grip and release commands are performed and and send feedback"""
+        logging.debug(f'{inspect.stack()[0][3]} start')
 
+        self.fakeSetupDoneAndSetPos()
+        
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a grip command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "GRIP", [])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+       
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE") # grip implies that the machine is active after execution
+                logging.debug(f"GRIP DONE reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 10, "GRIP DONE not reached in less than 10 iterations" )
+
+
+        # send a release command
+        message = MachineCommand("COMMAND", "VACUUM", 2, "RELEASE", [])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 2 DONE")
+
+
+                self.controller.mainLoopIteration()
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE") 
+                logging.debug(f"RELEASE DONE reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 20, "RELEASE DONE not reached in less than 20 iterations" )
         
 
 
