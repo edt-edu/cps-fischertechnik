@@ -716,9 +716,15 @@ class MultiProcessing(Machine, TransitioningMachine):
         Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end
         """
 
+        runner = self.create_runner()
+
+        # wait until payload is present
+        config = MultiProcessingConfig()
+        runner.then_goto(config, until=lambda: not self.multiProcessingSensOven)
+
         # activate oven for 3 seconds, let arm wait at oven
-        config = MultiProcessingConfig(oven_active=True)
-        runner = self.create_runner().then_goto(config, and_stay_for=3.0)
+        config.oven_active = True
+        runner.then_goto(config, and_stay_for=3.0)
 
         # deactivate oven
         config.oven_active = False
