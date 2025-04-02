@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import typing
 from abc import abstractmethod
 from copy import deepcopy
 from typing import Any
-from typing import Callable, Self, Union
+from typing import Callable, Union
 from typing import Optional
 
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
@@ -48,7 +49,7 @@ class Runner:
                   config: MachineConfiguration,
                   until: Optional[Callable[[], bool]] = None,
                   and_stay_for: float = 0.0,
-                  clone_config: bool = True) -> Self:
+                  clone_config: bool = True) -> typing.Self:
         """
         Append a transition to the specified config to this routine.
         :param config: The config to transition to.
@@ -69,7 +70,7 @@ class Runner:
     def then_run(self,
                  runnable: Union[Callable[[], Any], Callable[[], bool]],
                  until: Optional[Callable[[], bool]] = None,
-                 and_stay_for: float = 0.0) -> Self:
+                 and_stay_for: float = 0.0) -> typing.Self:
         """
         Appends the specified runnable to this routine. It'll be called
         until it
