@@ -4,6 +4,7 @@ from typing import Any, Dict
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.Runner import TransitioningMachine
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
 from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
     MultiProcessingConfig
@@ -13,7 +14,7 @@ from rppmcontroller.machine.multiprocessing.VacuumArmState import \
     VacuumArmState
 
 
-class MultiProcessing(Machine):
+class MultiProcessing(Machine, TransitioningMachine):
 
 
     def __isExecuting(self) -> bool:
@@ -385,7 +386,7 @@ class MultiProcessing(Machine):
             else:
                 self.multiProcessingActOvenInward = False
                 self.multiProcessingActOvenOutward = False
-                self.multiProcessingValveOvenDoor = True
+                self.multiProcessingValveOvenDoor = False
                 self.multiProcessingOvenLight = False
 
         # vacuum arm
@@ -703,32 +704,36 @@ class MultiProcessing(Machine):
 
 
     def process1(self):
-        """Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end """
-        actions = [
-            self.moveFeederIn,
-            self.heatProduct,
-            self.moveFeederOut,
-            self.moveVacuumToOven,
-            self.gripProduct,
-            self.moveVacuumToTurntable,
-            self.moveTurntableToVacuum,
-            self.releaseProduct,
-            self.moveTurntableToSaw,
-            self.useSaw,
-            self.moveTurntableToConveyor,
-            self.ejectProductToConveyor,
-            self.moveConveyorToEnd
-        ]
+        """
+        Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end
+        """
 
-        self.processing = True
-        if len(actions) <= self.actionDone:
-            self.processing = False
-            self.actionDone = 0
-        else:
-            logging.debug(f"ACTION n° {self.actionDone} : {actions[self.actionDone]}")
-            actions[self.actionDone]()
+        # activate oven for 3 seconds, let arm wait at oven
+        config = MultiProcessingConfig(oven_active=True, vacuum_arm_state=VacuumArmState.AT_OVEN)
+        runner = self.create_runner().then_goto(config, and_stay_for=3.0)
 
-        return lambda:self.process1()
+        # deactivate oven
+        config.oven_active = False
+        runner.then_goto(config)
+
+        # pickup payload
+        config.vacuum_arm_state = VacuumArmState.PICKUP
+        runner.then_goto(config, and_stay_for=1.0) # give enough time to actually grip payload
+
+        # move payload to turn table
+        config.vacuum_arm_state = VacuumArmState.AT_TURN_TABLE
+        runner.then_goto(config)
+
+        # saw for 3 seconds
+        config.turn_table_position = TurnTablePosition.SAW
+        runner.then_goto(config, and_stay_for=3.0)
+
+        # drop off
+        config.turn_table_position = TurnTablePosition.CONVEYOR
+        config.conveyor_active = True
+        runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor)
+
+        return runner.run()
 
 
     def stop(self):
