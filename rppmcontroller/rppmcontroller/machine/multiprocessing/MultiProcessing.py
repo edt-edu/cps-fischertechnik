@@ -18,7 +18,7 @@ class MultiProcessing(Machine, TransitioningMachine):
 
 
     def __isExecuting(self) -> bool:
-        return self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder
+        return self.processing or self.__multiProcessingActRotClockwise or self.__multiProcessingActRotCounterclockwise or self.__multiProcessingActConveyorForward or self.__multiProcessingActSaw or self.__multiProcessingActOvenInward or self.__multiProcessingActOvenOutward or self.__multiProcessingActGripperToOven or self.__multiProcessingActGripperToTurntable or self.__multiProcessingOvenLight or self.__multiProcessingCompressor or self.__multiProcessingActLowerValve or self.__multiProcessingValveFeeder or self.is_executing_runner
 
     @property
     def isExecuting(self) -> bool:
@@ -80,7 +80,8 @@ class MultiProcessing(Machine, TransitioningMachine):
                    RequestedParameter.VALVELOWERING: self.__multiProcessingActLowerValve,
                    RequestedParameter.VALVEOVENDOOR: self.__multiProcessingValveOvenDoor,
                    RequestedParameter.VALVEFEEDER: self.__multiProcessingValveFeeder}
-        super().__init__(id1, dictMap)
+        Machine.__init__(self, id1, dictMap)
+        TransitioningMachine.__init__(self)
 
         # helper variables
         self.setupFinished = False

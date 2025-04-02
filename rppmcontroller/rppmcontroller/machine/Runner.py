@@ -13,6 +13,10 @@ from rppmcontroller.machine.Timer import Timer
 
 
 class TransitioningMachine:
+    def __init__(self):
+        self.__last_runner: Optional[Runner] = None
+
+
     @abstractmethod
     def goto_config(self, config) -> bool:
         """
@@ -24,10 +28,19 @@ class TransitioningMachine:
 
     def create_runner(self) -> Runner:
         """
-        Creates a new Runner for this machine
+        Creates a new Runner for this machine and set it as last_runner
         :return: A Runner
         """
-        return Runner(self)
+        self.__last_runner = Runner(self)
+        return self.__last_runner
+
+    @property
+    def last_runner(self) -> Optional[Runner]:
+        return self.__last_runner
+
+    @property
+    def is_executing_runner(self) -> bool:
+        return self.last_runner is not None and self.last_runner.running
 
 
 class Runner:
@@ -44,6 +57,7 @@ class Runner:
         self.__machine: TransitioningMachine = machine
         self.__routine: [Callable[[], bool]] = []
         self.__routine_index: int = 0
+        self.__running: bool = False
 
     def then_goto(self,
                   config: MachineConfiguration,
@@ -104,7 +118,7 @@ class Runner:
         Advance the current routine
         :return: A pointer to this method
         """
-        logging.debug(f"running subroutine {self.__routine_index + 1}/{len(self.__routine)}")
+        self.__running = True
         sub_routine = self.__routine[self.__routine_index]
         # call the sub routine
         res = sub_routine()
@@ -118,7 +132,13 @@ class Runner:
             if self.__routine_index >= len(self.__routine):
                 self.__routine_index = 0 # we are done
                 logging.debug("routine finished")
+                self.__running = False
             else:
                 self.run() # directly start the next routine to avoid idling
 
         return self.run
+
+    @property
+    def running(self) -> bool:
+        return self.__running
+

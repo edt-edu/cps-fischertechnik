@@ -110,7 +110,8 @@ class HighBay(Machine, TransitioningMachine):
             RequestedParameter.MOTORCANTILEVERBACKWARD:
                 self.__highbayActCantileverBackward,
             }
-        super().__init__(id1, dictMap)
+        Machine.__init__(self, id1, dictMap)
+        TransitioningMachine.__init__(self)
 
         # helper variables
         self.previous_isExecuting_log = None
@@ -126,7 +127,8 @@ class HighBay(Machine, TransitioningMachine):
             self.__highbayActHorizontalToConveyor or
             self.__highbayActHorizontalToRack or
             self.__highbayActCantileverForward or
-            self.__highbayActCantileverBackward)
+            self.__highbayActCantileverBackward or
+            self.is_executing_runner)
 
     @property
     def isExecuting(self) -> bool:
