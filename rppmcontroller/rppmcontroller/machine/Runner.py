@@ -116,5 +116,6 @@ class Runner:
             self.__routine_index = (
                                        self.__routine_index + 1) % len(
                 self.__routine)
+            self.run() # directly start the next routine to avoid idling
 
         return self.run
