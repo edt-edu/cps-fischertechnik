@@ -105,6 +105,7 @@ class Runner:
         Advance the current routine
         :return: A pointer to this method
         """
+        logging.debug(f"running subroutine {self.__routine_index + 1}/{len(self.__routine)}")
         sub_routine = self.__routine[self.__routine_index]
         # call the sub routine
         res = sub_routine()
