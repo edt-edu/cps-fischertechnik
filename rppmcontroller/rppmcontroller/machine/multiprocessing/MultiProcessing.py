@@ -738,7 +738,7 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         # move payload to turn table
         config.vacuum_arm_state = VacuumArmState.AT_TURN_TABLE
-        runner.then_goto(config)
+        runner.then_goto(config, and_stay_for=1.0)
 
         # saw for 3 seconds
         config.turn_table_position = TurnTablePosition.SAW
