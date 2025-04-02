@@ -8,9 +8,6 @@ class Timer:
     The timer starts running after the `poll` method is called for the first
     time
     """
-    __seconds: float
-    __start_time: Optional[float] = None
-    __single_use: bool
 
     def __init__(self, seconds: float, single_use: bool = False):
         """
@@ -18,8 +15,9 @@ class Timer:
         :param seconds: The delay in seconds
         :param single_use: Whether the timer can only be used once
         """
-        self.__seconds = seconds
-        self.__single_use = single_use
+        self.__seconds: float = seconds
+        self.__single_use: bool = single_use
+        self.__start_time: Optional[float] = None
 
     def elapsed(self) -> bool:
         """

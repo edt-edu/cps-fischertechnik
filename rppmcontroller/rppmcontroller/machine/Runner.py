@@ -34,9 +34,6 @@ class Runner:
     """
     Transitions a machine into different configurations.
     """
-    __machine: TransitioningMachine
-    __routine: [Callable[[], bool]] = []
-    __routine_index: int = 0
 
     def __init__(self, machine: TransitioningMachine):
         """
@@ -44,7 +41,9 @@ class Runner:
 
         :param machine: The machine to control
         """
-        self.__machine = machine
+        self.__machine: TransitioningMachine = machine
+        self.__routine: [Callable[[], bool]] = []
+        self.__routine_index: int = 0
 
     def then_goto(self,
                   config: MachineConfiguration,
