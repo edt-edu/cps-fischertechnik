@@ -115,7 +115,7 @@ class Runner:
         sub_routine_finished = res
         if sub_routine_finished:
             self.__routine_index += 1
-            if self.__routine_index > len(self.__routine):
+            if self.__routine_index >= len(self.__routine):
                 self.__routine_index = 0 # we are done
                 logging.debug("routine finished")
             else:
