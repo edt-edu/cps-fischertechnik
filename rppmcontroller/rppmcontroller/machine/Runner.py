@@ -113,9 +113,10 @@ class Runner:
 
         sub_routine_finished = res
         if sub_routine_finished:
-            self.__routine_index = (
-                                       self.__routine_index + 1) % len(
-                self.__routine)
-            self.run() # directly start the next routine to avoid idling
+            self.__routine_index += 1
+            if self.__routine_index > len(self.__routine):
+                self.__routine_index = 0 # we are done
+            else:
+                self.run() # directly start the next routine to avoid idling
 
         return self.run
