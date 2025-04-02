@@ -439,8 +439,8 @@ class MultiProcessing(Machine, TransitioningMachine):
         else:
             raise ValueError(f"unsupported VacuumArmState: {vacuum_arm_state}")
 
+        # turn table
         if not ignore_turn_table_configuration:
-            # turn table
             turn_table_position = config.turn_table_position
             if turn_table_position is TurnTablePosition.VACUUM:
                 if not self.multiProcessingSensTurntablePosVacuum:
@@ -448,6 +448,10 @@ class MultiProcessing(Machine, TransitioningMachine):
                     self.multiProcessingActSaw = False
                     self.multiProcessingValveFeeder = False
                     target_config_reached = False
+                else:
+                    self.turn_table_direction = TurnTableDirection.NONE
+                    self.multiProcessingActSaw = False
+                    self.multiProcessingValveFeeder = False
             elif turn_table_position is TurnTablePosition.SAW:
                 if not self.multiProcessingSensTurntablePosSaw:
                     if self.multiProcessingSensTurntablePosVacuum:
@@ -463,7 +467,9 @@ class MultiProcessing(Machine, TransitioningMachine):
                     self.multiProcessingValveFeeder = False
                     target_config_reached = False
                 else:
+                    self.turn_table_direction = TurnTableDirection.NONE
                     self.multiProcessingActSaw = True
+                    self.multiProcessingValveFeeder = False
             elif turn_table_position is TurnTablePosition.CONVEYOR:
                 if not self.multiProcessingSensTurntablePosBelt:
                     self.turn_table_direction = TurnTableDirection.CLOCKWISE
@@ -471,6 +477,8 @@ class MultiProcessing(Machine, TransitioningMachine):
                     self.multiProcessingValveFeeder = False
                     target_config_reached = False
                 else:
+                    self.turn_table_direction = TurnTableDirection.NONE
+                    self.multiProcessingActSaw = False
                     self.multiProcessingValveFeeder = True
             else:
                 raise ValueError(f"unsupported TurnTablePosition: {turn_table_position}")
