@@ -717,11 +717,12 @@ class MultiProcessing(Machine, TransitioningMachine):
         """
 
         # activate oven for 3 seconds, let arm wait at oven
-        config = MultiProcessingConfig(oven_active=True, vacuum_arm_state=VacuumArmState.AT_OVEN)
+        config = MultiProcessingConfig(oven_active=True)
         runner = self.create_runner().then_goto(config, and_stay_for=3.0)
 
         # deactivate oven
         config.oven_active = False
+        config.vacuum_arm_state = VacuumArmState.AT_OVEN
         runner.then_goto(config)
 
         # pickup payload
@@ -740,6 +741,9 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.turn_table_position = TurnTablePosition.CONVEYOR
         config.conveyor_active = True
         runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor)
+
+        # stop everything
+        runner.then_goto(MultiProcessingConfig())
 
         return runner.run()
 
