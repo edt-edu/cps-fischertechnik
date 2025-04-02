@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import typing
 from abc import abstractmethod
 from copy import deepcopy
@@ -116,6 +117,7 @@ class Runner:
             self.__routine_index += 1
             if self.__routine_index > len(self.__routine):
                 self.__routine_index = 0 # we are done
+                logging.debug("routine finished")
             else:
                 self.run() # directly start the next routine to avoid idling
 
