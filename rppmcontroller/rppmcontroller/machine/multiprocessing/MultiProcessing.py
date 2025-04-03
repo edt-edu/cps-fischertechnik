@@ -659,13 +659,13 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         # open oven door
         config.oven_door_open = True
-        runner.then_goto(config, and_stay_for=0.5)
+        runner.then_goto(config, and_stay_for=0.2)
 
         # move payload into oven
         config.oven_feeder_expanded = False
         runner.then_goto(config)
 
-        # activate oven for 3 seconds
+        # activate oven for a few seconds
         config.oven_door_open = False
         config.oven_lamp_on = True
         runner.then_goto(config, and_stay_for=2.0)
@@ -687,8 +687,11 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         # move payload to turn table and lower arm
         config.vacuum_arm_at_oven = False
-        config.vacuum_arm_lowered = True
         runner.then_goto(config)
+
+        # lower arm at tt
+        config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5)
 
         # drop of payload carefully
         config.vacuum_valve_active = False
@@ -702,7 +705,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.turn_table_position = TurnTablePosition.SAW
         runner.then_goto(config)
 
-        # saw for 2 seconds
+        # saw for a few seconds
         config.saw_active = True
         runner.then_goto(config, and_stay_for=2.0)
 
