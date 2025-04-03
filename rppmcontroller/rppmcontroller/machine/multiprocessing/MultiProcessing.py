@@ -657,11 +657,16 @@ class MultiProcessing(Machine, TransitioningMachine):
         config = MultiProcessingConfig()
         runner.then_goto(config, until=lambda: not self.multiProcessingSensOven)
 
+        # open oven door
+        config.oven_door_open = True
+        runner.then_goto(config, and_stay_for=0.5)
+
         # move payload into oven
         config.oven_feeder_expanded = False
         runner.then_goto(config)
 
         # activate oven for 3 seconds
+        config.oven_door_open = False
         config.oven_lamp_on = True
         runner.then_goto(config, and_stay_for=2.0)
 
@@ -676,8 +681,13 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.vacuum_valve_active = True
         runner.then_goto(config, and_stay_for=1.0) # give enough time to actually grip payload
 
+        # raise arm
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5)
+
         # move payload to turn table and lower arm
         config.vacuum_arm_at_oven = False
+        config.vacuum_arm_lowered = True
         runner.then_goto(config)
 
         # drop of payload carefully
@@ -697,6 +707,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         runner.then_goto(config, and_stay_for=2.0)
 
         # drop at conveyor
+        config.saw_active = False
         config.turn_table_position = TurnTablePosition.CONVEYOR
         config.conveyor_active = True
         config.conveyor_feeder_active = True
