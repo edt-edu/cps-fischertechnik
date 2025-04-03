@@ -10,8 +10,6 @@ from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
     MultiProcessingConfig
 from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
     TurnTablePosition
-from rppmcontroller.machine.multiprocessing.VacuumArmState import \
-    VacuumArmState
 
 
 class MultiProcessing(Machine, TransitioningMachine):
@@ -363,130 +361,66 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         # conveyor
         self.multiProcessingActConveyorForward = config.conveyor_active
+        # saw
+        self.multiProcessingActSaw = config.saw_active
+        # valve
+        self.multiProcessingValveVacuum = config.vacuum_valve_active
+        # oven light
+        self.multiProcessingOvenLight = config.oven_lamp_on
 
-        # oven
-        if config.oven_active:
-            if not self.multiProcessingSensOvenFeederIn:
-                self.multiProcessingActOvenInward = True
-                self.multiProcessingActOvenOutward = False
-                self.multiProcessingValveOvenDoor = True
-                self.multiProcessingOvenLight = False
-                target_config_reached = False
-            else:
-                self.multiProcessingActOvenInward = False
-                self.multiProcessingActOvenOutward = False
-                self.multiProcessingValveOvenDoor = False
-                self.multiProcessingOvenLight = True
-        else:
-            if not self.multiProcessingSensOvenFeederOut:
-                self.multiProcessingActOvenInward = False
-                self.multiProcessingActOvenOutward = True
-                self.multiProcessingValveOvenDoor = True
-                self.multiProcessingOvenLight = False
-                target_config_reached = False
-            else:
-                self.multiProcessingActOvenInward = False
-                self.multiProcessingActOvenOutward = False
-                self.multiProcessingValveOvenDoor = False
-                self.multiProcessingOvenLight = False
+        # oven door; keep open if feeder is moving
+        oven_feeder_moving = not (self.multiProcessingSensOvenFeederIn or self.multiProcessingSensOvenFeederOut)
+        self.multiProcessingValveOvenDoor = config.oven_door_open or oven_feeder_moving
+
+        # conveyor feeder; only activate if tt is at belt
+        self.multiProcessingValveFeeder = config.conveyor_feeder_active and self.multiProcessingSensTurntablePosBelt
+
+        # vacuum arm lowered
+        arm_idle = self.multiProcessingSensVacuumGripperAtOven or self.__multiProcessingSensVacuumGripperAtTurntable
+        self.multiProcessingActLowerValve = config.vacuum_arm_lowered and arm_idle
 
         # vacuum arm
-        ignore_turn_table_configuration = False
-        vacuum_arm_state = config.vacuum_arm_state
-        if vacuum_arm_state is VacuumArmState.AT_TURN_TABLE:
-            if not self.multiProcessingSensVacuumGripperAtTurntable:
-                self.multiProcessingActGripperToTurntable = True
-                self.multiProcessingActGripperToOven = False
-                self.multiProcessingActLowerValve = False
-                target_config_reached = False
-                # we intentionally ignore the vacuum state here
-            else:
-                self.multiProcessingActGripperToTurntable = False
-                self.multiProcessingActGripperToOven = False
-                self.multiProcessingActLowerValve = False
-                if self.multiProcessingValveVacuum:
-                    # we probably have payload and want to drop that off
-                    if self.multiProcessingSensTurntablePosVacuum:
-                        self.multiProcessingValveVacuum = False #drop payload if we had any
-                        self.turn_table_direction = TurnTableDirection.NONE #stop the turn table, just in case it doesn't happen else-where (it does, so don't worry)
-                    else:
-                        # order the turn table here
-                        ignore_turn_table_configuration = True
-                        self.turn_table_direction = TurnTableDirection.COUNTER_CLOCKWISE
-                        target_config_reached = False
-        elif vacuum_arm_state is VacuumArmState.AT_OVEN:
-            if not self.multiProcessingSensVacuumGripperAtOven:
-                self.multiProcessingActGripperToTurntable = False
-                self.multiProcessingActGripperToOven = True
-                self.multiProcessingActLowerValve = False
-                target_config_reached = False
-                # we intentionally again ignore the vacuum state
-            else:
-                self.multiProcessingActGripperToTurntable = False
-                self.multiProcessingActGripperToOven = False
-                self.multiProcessingActLowerValve = False
-                # also ignore the vacuum state here to avoid dropping any payload
-        elif vacuum_arm_state is VacuumArmState.PICKUP:
-            if not self.multiProcessingSensVacuumGripperAtOven:
-                self.multiProcessingActGripperToTurntable = False
-                self.multiProcessingActGripperToOven = True
-                self.multiProcessingActLowerValve = False
-                target_config_reached = False  # we intentionally again ignore the vacuum state
-            else:
-                self.multiProcessingActGripperToTurntable = False
-                self.multiProcessingActGripperToOven = False
-                self.multiProcessingActLowerValve = True
-                self.multiProcessingValveVacuum = True
-        else:
-            raise ValueError(f"unsupported VacuumArmState: {vacuum_arm_state}")
-
-        # turn table
-        if not ignore_turn_table_configuration:
-            turn_table_position = config.turn_table_position
-            if turn_table_position is TurnTablePosition.VACUUM:
-                if not self.multiProcessingSensTurntablePosVacuum:
-                    self.turn_table_direction = TurnTableDirection.COUNTER_CLOCKWISE
-                    self.multiProcessingActSaw = False
-                    self.multiProcessingValveFeeder = False
-                    target_config_reached = False
-                else:
-                    self.turn_table_direction = TurnTableDirection.NONE
-                    self.multiProcessingActSaw = False
-                    self.multiProcessingValveFeeder = False
-            elif turn_table_position is TurnTablePosition.SAW:
-                if not self.multiProcessingSensTurntablePosSaw:
-                    if self.multiProcessingSensTurntablePosVacuum:
-                        self.turn_table_direction = TurnTableDirection.CLOCKWISE
-                    elif self.__multiProcessingSensTurntablePosBelt:
-                        self.turn_table_direction = TurnTableDirection.COUNTER_CLOCKWISE
-                    elif self.turn_table_direction is TurnTableDirection.NONE:
-                        self.turn_table_direction = TurnTableDirection.CLOCKWISE
-                    else:
-                        self.turn_table_direction = self.turn_table_direction
-
-                    self.multiProcessingActSaw = False
-                    self.multiProcessingValveFeeder = False
-                    target_config_reached = False
-                else:
-                    self.turn_table_direction = TurnTableDirection.NONE
-                    self.multiProcessingActSaw = True
-                    self.multiProcessingValveFeeder = False
-            elif turn_table_position is TurnTablePosition.CONVEYOR:
-                if not self.multiProcessingSensTurntablePosBelt:
-                    self.turn_table_direction = TurnTableDirection.CLOCKWISE
-                    self.multiProcessingActSaw = False
-                    self.multiProcessingValveFeeder = False
-                    target_config_reached = False
-                else:
-                    self.turn_table_direction = TurnTableDirection.NONE
-                    self.multiProcessingActSaw = False
-                    self.multiProcessingValveFeeder = True
-            else:
-                raise ValueError(f"unsupported TurnTablePosition: {turn_table_position}")
-        else:
+        self.multiProcessingActGripperToOven = False
+        self.multiProcessingActGripperToTurntable = False
+        if config.vacuum_arm_at_oven and not self.multiProcessingSensVacuumGripperAtOven:
+            self.multiProcessingActGripperToOven = True
+            target_config_reached = False
+        elif not config.vacuum_arm_at_oven and not self.multiProcessingSensVacuumGripperAtTurntable:
+            self.multiProcessingActGripperToTurntable = True
             target_config_reached = False
 
-        # compressor
+        # oven feeder
+        self.multiProcessingActOvenInward = False
+        self.multiProcessingActOvenOutward = False
+        if config.oven_feeder_expanded and not self.multiProcessingSensOvenFeederOut:
+            self.multiProcessingActOvenOutward = True
+            target_config_reached = False
+        elif not config.oven_feeder_expanded and not self.multiProcessingSensOvenFeederIn:
+            self.multiProcessingActOvenInward = True
+            target_config_reached = False
+
+        # turn table
+        next_tt_dir = TurnTableDirection.NONE
+        tt_pos = config.turn_table_position
+        if tt_pos is TurnTablePosition.VACUUM and not self.multiProcessingSensTurntablePosVacuum:
+            next_tt_dir = TurnTableDirection.COUNTER_CLOCKWISE
+        elif tt_pos is TurnTablePosition.SAW and not self.multiProcessingSensTurntablePosSaw:
+            if self.multiProcessingSensTurntablePosVacuum:
+                next_tt_dir = TurnTableDirection.CLOCKWISE
+            elif self.multiProcessingSensTurntablePosBelt:
+                next_tt_dir = TurnTableDirection.COUNTER_CLOCKWISE
+            elif self.turn_table_direction is not TurnTableDirection.NONE:
+                next_tt_dir = self.turn_table_direction
+            else:
+                next_tt_dir = TurnTableDirection.COUNTER_CLOCKWISE
+        elif tt_pos is TurnTablePosition.CONVEYOR and not self.multiProcessingSensTurntablePosBelt:
+            next_tt_dir = TurnTableDirection.CLOCKWISE
+
+        if next_tt_dir is not TurnTableDirection.NONE:
+            target_config_reached = False
+        self.turn_table_direction = next_tt_dir
+
+        # compressor; active if any valve is active
         self.multiProcessingCompressor = (
                 self.multiProcessingValveVacuum or
                 self.multiProcessingValveOvenDoor or
@@ -723,34 +657,55 @@ class MultiProcessing(Machine, TransitioningMachine):
         config = MultiProcessingConfig()
         runner.then_goto(config, until=lambda: not self.multiProcessingSensOven)
 
-        # activate oven for 3 seconds, let arm wait at oven
-        config.oven_active = True
-        runner.then_goto(config, and_stay_for=3.0)
+        # move payload into oven
+        config.oven_feeder_expanded = False
+        runner.then_goto(config)
+
+        # activate oven for 3 seconds
+        config.oven_lamp_on = True
+        runner.then_goto(config, and_stay_for=2.0)
 
         # deactivate oven
-        config.oven_active = False
-        config.vacuum_arm_state = VacuumArmState.AT_OVEN
+        config.oven_lamp_on = False
+        config.oven_feeder_expanded = True
+        config.vacuum_arm_at_oven = True
         runner.then_goto(config)
 
         # pickup payload
-        config.vacuum_arm_state = VacuumArmState.PICKUP
+        config.vacuum_arm_lowered = True
+        config.vacuum_valve_active = True
         runner.then_goto(config, and_stay_for=1.0) # give enough time to actually grip payload
 
-        # move payload to turn table
-        config.vacuum_arm_state = VacuumArmState.AT_TURN_TABLE
-        runner.then_goto(config, and_stay_for=1.0)
+        # move payload to turn table and lower arm
+        config.vacuum_arm_at_oven = False
+        runner.then_goto(config)
 
-        # saw for 3 seconds
+        # drop of payload carefully
+        config.vacuum_valve_active = False
+        runner.then_goto(config, and_stay_for=0.5)
+
+        # raise arm of payload
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5)
+
+        # move to turn table
         config.turn_table_position = TurnTablePosition.SAW
-        runner.then_goto(config, and_stay_for=3.0)
+        runner.then_goto(config)
 
-        # drop off
+        # saw for 2 seconds
+        config.saw_active = True
+        runner.then_goto(config, and_stay_for=2.0)
+
+        # drop at conveyor
         config.turn_table_position = TurnTablePosition.CONVEYOR
         config.conveyor_active = True
+        config.conveyor_feeder_active = True
         runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor)
 
-        # stop everything
-        runner.then_goto(MultiProcessingConfig())
+        # stop conveyor and feeder
+        config.conveyor_active = False
+        config.conveyor_feeder_active = False
+        runner.then_goto(config)
 
         return runner.run()
 
