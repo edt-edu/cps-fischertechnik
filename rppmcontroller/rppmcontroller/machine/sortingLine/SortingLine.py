@@ -280,6 +280,7 @@ class SortingLine(Machine, TransitioningMachine):
         return True
 
     # methods intended for orchestrator
+
     def setup(self):
         self.stop()
         return self.setup

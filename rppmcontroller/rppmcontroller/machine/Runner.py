@@ -103,9 +103,14 @@ class Runner:
             res = runnable()
             if until is not None:
                 res = until()
+                if not res:
+                    logging.debug("waiting until condition is reached")
 
             if res:
-                return timer.elapsed()
+                timer_elapsed = timer.elapsed()
+                if not timer_elapsed:
+                    logging.debug("waiting for timer...")
+                return timer_elapsed
             else:
                 timer.reset()
                 return False
@@ -118,6 +123,7 @@ class Runner:
         Advance the current routine
         :return: A pointer to this method
         """
+        logging.debug(f"running subroutine {self.__routine_index + 1}/{len(self.__routine)}")
         self.__running = True
         sub_routine = self.__routine[self.__routine_index]
         # call the sub routine
