@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from enum import Enum
-from warnings import deprecated
+
+from typing_extensions import deprecated
 
 from rppmcontroller.machine.Direction import Direction
 
