@@ -700,7 +700,7 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         # drop of payload carefully
         config.vacuum_valve_active = False
-        config.vacuum_arm_lowered = True
+        #config.vacuum_arm_lowered = True
         runner.then_goto(config, and_stay_for=0.5)
 
         # raise arm of payload
