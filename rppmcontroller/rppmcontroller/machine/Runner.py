@@ -115,10 +115,27 @@ class Runner:
         self.__routine.append(sub_routine)
         return self
 
-    def run(self):
+    def then_run_runner_from(self,
+                             runner_supplier: Callable[[], Runner],
+                             until: Optional[Callable[[], bool]] = None) -> typing.Self:
+        """
+        Run the runner provided by the specified runner_supplier until it is done.
+        :param runner_supplier: A callable returning a Runner
+        :param until: When provided, the runner is called until it returns true
+        :return: self
+        """
+        runner_pointer = ()
+        runner_pointer.runner = None
+        def run_runner():
+            if runner_pointer.runner is None:
+                runner_pointer.runner = runner_supplier()
+            runner_pointer.runner.run()
+        return self.then_run(run_runner, until)
+
+    def run(self) -> typing.Self:
         """
         Advance the current routine
-        :return: A pointer to this method
+        :return: self
         """
         logging.debug(f"running subroutine {self.__routine_index + 1}/{len(self.__routine)}")
         self.__running = True
@@ -139,9 +156,25 @@ class Runner:
             else:
                 self.run() # directly start the next routine to avoid idling
 
-        return self.run
+        return self
 
     @property
     def running(self) -> bool:
         return self.__running
+
+    def __bool__(self):
+        """
+        Checks whether this routine is finished
+        :return: True if this is not running
+        """
+        return not self.running
+
+    def __call__(self, *args, **kwargs):
+        """
+        Call the run function
+        :param args: ignored
+        :param kwargs: ignored
+        :return: self
+        """
+        return self.run()
 

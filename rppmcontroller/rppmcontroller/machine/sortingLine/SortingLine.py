@@ -1,6 +1,6 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
@@ -214,10 +214,7 @@ class SortingLine(Machine, TransitioningMachine):
 
     def eject(self, color: Color):
         runner = self.create_runner()
-
-        # wait for payload
         config = SortingLineConfig()
-        runner.then_goto(config, until=lambda: not self.sortingLineSensInputLightBarrier)
 
         # start conveyor
         config.conveyor_active = True
@@ -246,5 +243,35 @@ class SortingLine(Machine, TransitioningMachine):
 
         # stop everything
         runner.then_goto(SortingLineConfig())
+
+        return runner.run()
+
+    def sort(self, as_color: Optional[Color] = None):
+        """
+        Wait for a payload and sort it into the specified color, or let the
+        color sensor do the work
+        :param as_color: The color to sort the payload into, or None to let the color sensor work
+        :return: A Runner
+        """
+        runner = self.create_runner()
+
+        # wait for payload
+        config = SortingLineConfig()
+        runner.then_goto(config,
+                         until=lambda: not self.sortingLineSensInputLightBarrier)
+
+        # move payload through color sensor
+        config.conveyor_active = True
+        runner.then_goto(config, until=lambda: not self.sortingLineSensMiddleLightBarrier)
+
+        def get_color() -> Color:
+            if as_color is None:
+                # TODO get last color from color sensor here
+                logging.error(
+                    "color sensor is not implemented yet - ejecting as red")
+                return Color.RED
+            return as_color
+
+        runner.then_run_runner_from(lambda: self.eject(get_color()))
 
         return runner.run()
