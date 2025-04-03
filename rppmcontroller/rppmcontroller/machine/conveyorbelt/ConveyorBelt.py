@@ -1,13 +1,18 @@
+import logging
+from typing import Any, Dict
+
+from rppmcontroller.machine.ConveyorState import ConveyorState
+from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.Runner import TransitioningMachine
+from rppmcontroller.machine.conveyorbelt.ConveyorBeltConfig import \
+    ConveyorBeltConfig
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from typing import Any, Dict, Tuple
-import logging
 
 
-class ConveyorBelt(Machine):
+class ConveyorBelt(Machine, TransitioningMachine):
 
 
     def __isExecuting(self) -> bool:
@@ -28,20 +33,26 @@ class ConveyorBelt(Machine):
 
 
     def __init__(self, id1):
+        # inputs
         self.__conveyorSensImpulseCounterRaw = 0
-        self.__conveyorSensFeed = self.__conveyorSensSwap = True #True is the value when there is no object in front of the sensor
-        self.__conveyorActForward = self.__conveyorActBackward = False
-        self.__counter = ImpulseCounter()
-        self.current = 0
-        self.sensed = False
+        self.__conveyorSensFeed = True
+        self.__conveyorSensSwap = True
+
+        #outputs
+        self.__conveyorActForward = False
+        self.__conveyorActBackward = False
+
+
+
         dictMap = {RequestedParameter.LIGHTBARRIERFEEDSTATION: self.__conveyorSensSwap,
                    RequestedParameter.LIGHTBARRIERSWAPSTATION: self.__conveyorSensFeed,
-                   # TODO update self.current to actually count the steps according to the conveyor direction
-                   RequestedParameter.PULSECOUNTER: self.current,
                    RequestedParameter.MOTORCONVEYORBELTFORWARD: self.__conveyorActForward,
                    RequestedParameter.MOTORCONVEYORBELTBACKWARD: self.__conveyorActBackward}
         super().__init__(id1, dictMap)
+        TransitioningMachine.__init__(self)
 
+        #helper variables
+        self.__counter = ImpulseCounter()
         self.arrived = False
         self.once = True
         self.__isExecutingCount = 0
@@ -106,13 +117,13 @@ class ConveyorBelt(Machine):
         return status
 
     def outputStatus(self) -> Dict[str, Any]:
-        
+
         status = {
             "conveyorActForward": self.conveyorActForward,
             "conveyorActBackward": self.conveyorActBackward,
         }
         return status
-    
+
     def internalStatus(self) -> Dict[str, Any]:
         status = {
             "isExecuting": self.__isExecuting(),
@@ -186,32 +197,40 @@ class ConveyorBelt(Machine):
         """Count the number of steps when the conveyor is moving """
         self.current  = self.current + self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
         # logging.debug(f"Step counter : {self.current }")
-        return self.current 
+        return self.current
 
 
 
     ### ____________ Functions callable from orchestrator ________________
+
+    def goto_config(self, config: ConveyorBeltConfig) -> bool:
+        self.conveyorActForward = config.state is ConveyorState.FORWARD
+        self.conveyorActBackward = config.state is ConveyorState.BACKWARD
+        return True
+
     #   function name must be lowercase (cf. RevPiPyMachineController)
     def stop(self):
         """Stop the conveyor"""
-        self.__conveyorActForward = self.__conveyorActBackward = False
-        return None
+        self.__conveyorActForward = False
+        self.__conveyorActBackward = False
 
-    def execute(self):
-        pass
 
-    def move_out(self, dir: Direction):
+    def move_out(self, direction: Direction):
         """Move the package to a given direction until it leaves the conveyor
             Args:
-                dir (Direction) : the direction where to move the package
+                direction (Direction) : the direction where to move the package
 
             The conveyor will stop after few steps when the package leaves the coveyor.
         """
-        self.arrived = False
-        if dir == Direction.FORWARD:
-            return lambda: self.forwardLeaveConveyor()
-        if dir == Direction.BACKWARD:
-            return lambda: self.backwardLeaveConveyor()
+        runner = self.create_runner()
+
+        # move to sensor
+        runner.then_run_runner_from(lambda: self.move_to_sensor(direction))
+        # keep moving for a second or so
+        runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_actuators(self.conveyorActForward, self.conveyorActBackward)), and_stay_for=1.0)
+        # stop the belt
+        runner.then_goto(ConveyorBeltConfig())
+        return runner.run()
 
     def move_nb_steps(self, dir: Direction, steps: int):
         """Move the conveyor belt to a given direction with a given number of steps
@@ -231,13 +250,28 @@ class ConveyorBelt(Machine):
             logging.error(f"Invalid direction {dir}")
             raise ValueError("Invalid direction")
 
-    def move_to_sensor(self, dir: Direction):
+    def move_to_sensor(self, direction: Direction):
         """Move the package to a given direction until it is detected by the destination sensor
             Args:
-                dir (Direction) : the direction where to move the package
+                direction (Direction) : the direction where to move the package
         """
-        if dir == Direction.FORWARD:
-            return lambda: self.forwardFromAnywhere()
-        if dir == Direction.BACKWARD:
-            return lambda: self.backwardFromAnywhere()
+        runner = self.create_runner()
+        config = ConveyorBeltConfig()
+
+        # move the belt until a sensor is reached
+        if direction is Direction.FORWARD:
+            config.state = ConveyorState.FORWARD
+        elif direction is Direction.BACKWARD:
+            config.state = ConveyorState.BACKWARD
+        else:
+            logging.error(f"invalid direction: {direction}")
+            config.state = ConveyorState.FORWARD
+
+        runner.then_goto(config, until=lambda: not self.conveyorSensFeed or not self.conveyorSensSwap)
+
+        #stop the belt
+        config.state = ConveyorState.IDLE
+        runner.then_goto(config)
+
+        return runner.run()
 
