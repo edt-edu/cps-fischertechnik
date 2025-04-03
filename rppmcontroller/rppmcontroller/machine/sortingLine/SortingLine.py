@@ -1,22 +1,29 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
-
-from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
-from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.machine.Color import Color
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 from typing import Any, Dict
 
+from rppmcontroller.machine.Color import Color
+from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.Runner import TransitioningMachine
+from rppmcontroller.machine.sortingLine.SortingLineConfig import \
+    SortingLineConfig
+from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
+from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
-class SortingLine(Machine):
+
+class SortingLine(Machine, TransitioningMachine):
 
     #TODO self.once: implement reset possibility from execute
 
 
     def __isExecuting(self) -> bool:
-        return self.__packageOnLine
+        return (self.sortingLineActCompressorOn or
+                self.sortingLineActMotorConveyor or
+                self.sortingLineActWhiteEjector or
+                self.sortingLineActRedEjector or
+                self.sortingLineActBlueEjector or
+                self.is_executing_runner)
 
     @property
     def isExecuting(self) -> bool:
@@ -31,9 +38,20 @@ class SortingLine(Machine):
         return self.__packageOnLine
 
     def __init__(self, id1: str):
+        # inputs
         self.__sortingLineSensImpulseCounterRaw = 0
-        self.__sortingLineSensInputLightBarrier = self.__sortingLineSensMiddleLightBarrier = self.__sortingLineSensWhiteLightBarrier = self.__sortingLineSensBlueLightBarrier = self.__sortingLineSensRedLightBarrier = True
-        self.__sortingLineActMotorConveyor = self.__sortingLineActCompressorOn = self.__sortingLineActWhiteEjector = self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = False
+        self.__sortingLineSensInputLightBarrier = True
+        self.__sortingLineSensMiddleLightBarrier = True
+        self.__sortingLineSensWhiteLightBarrier = True
+        self.__sortingLineSensBlueLightBarrier = True
+        self.__sortingLineSensRedLightBarrier = True
+
+        #outputs
+        self.__sortingLineActMotorConveyor = False
+        self.__sortingLineActCompressorOn = False
+        self.__sortingLineActWhiteEjector = False
+        self.__sortingLineActRedEjector = False
+        self.__sortingLineActBlueEjector = False
         self.__counter = ImpulseCounter()
         dictMap = {RequestedParameter.PULSECOUNTER: self.__counter.counter,
                    RequestedParameter.LIGHTBARRIERINLET: self.__sortingLineSensInputLightBarrier,
@@ -47,11 +65,13 @@ class SortingLine(Machine):
                    RequestedParameter.VALVESECONDEJECTORRED: self.__sortingLineActRedEjector,
                    RequestedParameter.VALVETHIRDEJECTORBLUE: self.__sortingLineActBlueEjector}
         super().__init__(id1, dictMap)
+        TransitioningMachine.__init__(self)
 
+        # helper variables
         self.__packageOnLine = self.__packageCountSteps = False
         self.once = True
 
-        self.previous_isExecuting_log = None # 
+        self.previous_isExecuting_log = None #
 
     @property
     def sortingLineSensImpulseCounterRaw(self):
@@ -150,7 +170,7 @@ class SortingLine(Machine):
 
     def actuatorStatusString(self) -> str:
         return f"{self.sortingLineActMotorConveyor}, {self.sortingLineActCompressorOn}, [{self.sortingLineActWhiteEjector}, {self.sortingLineActRedEjector}, {self.sortingLineActBlueEjector}]"
- 
+
 
     def inputStatus(self) -> Dict[str, Any]:
         status = {
@@ -164,7 +184,7 @@ class SortingLine(Machine):
         return status
 
     def outputStatus(self) -> Dict[str, Any]:
-        
+
         status = {
             "sortingLineActMotorConveyor": self.sortingLineActMotorConveyor,
             "sortingLineActCompressorOn": self.sortingLineActCompressorOn,
@@ -173,7 +193,7 @@ class SortingLine(Machine):
             "sortingLineActBlueEjector": self.sortingLineActBlueEjector,
         }
         return status
-    
+
     def internalStatus(self) -> Dict[str, Any]:
         status = {
             "isExecuting": self.__isExecuting(),
@@ -244,8 +264,55 @@ class SortingLine(Machine):
     def stop(self):
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
-        self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
+        self.__sortingLineActRedEjector = False
+        self.__sortingLineActBlueEjector = False
+        self.__sortingLineActWhiteEjector = False
         self.__packageOnLine = False
         self.__packageCountSteps = False
         # self.once = True
         self.__counter.counter = 0
+
+    def goto_config(self, config: SortingLineConfig) -> bool:
+        self.sortingLineActMotorConveyor = config.conveyor_active
+        self.sortingLineActWhiteEjector = config.white_ejector_active
+        self.sortingLineActRedEjector = config.red_ejector_active
+        self.sortingLineActBlueEjector = config.blue_ejector_active
+        return True
+
+    # methods intended for orchestrator
+    def setup(self):
+        self.stop()
+        return self.setup
+
+    def sort_as(self, color: Color):
+        runner = self.create_runner()
+
+        # wait for payload
+        config = SortingLineConfig()
+        runner.then_goto(config, until=lambda: not self.sortingLineSensInputLightBarrier)
+
+        # define eject config
+        eject_config = SortingLineConfig()
+        delay = 0.0
+        if color is Color.WHITE:
+            eject_config.white_ejector_active = True
+        elif color is Color.RED:
+            eject_config.red_ejector_active = True
+            delay = 1.0
+        elif color is Color.BLUE:
+            eject_config.blue_ejector_active = True
+            delay = 2.0
+        else:
+            raise ValueError(f"invalid color: {color}")
+
+        # start conveyor
+        config.conveyor_active = True
+        runner.then_goto(config, until=lambda: not self.sortingLineSensMiddleLightBarrier, and_stay_for=delay)
+
+        # activate eject
+        runner.then_goto(eject_config, and_stay_for=0.5)
+
+        # stop everything
+        runner.then_goto(SortingLineConfig())
+
+        return runner.run()

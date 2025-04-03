@@ -484,7 +484,6 @@ class HighBay(Machine, TransitioningMachine):
         return runnable
 
     # methods intended for orchestrator
-    # those methods need to return a lambda pointing to themselves
 
     def setup(self):
         """
