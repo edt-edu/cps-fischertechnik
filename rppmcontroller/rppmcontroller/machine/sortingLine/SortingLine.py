@@ -277,6 +277,9 @@ class SortingLine(Machine, TransitioningMachine):
         self.sortingLineActWhiteEjector = config.white_ejector_active
         self.sortingLineActRedEjector = config.red_ejector_active
         self.sortingLineActBlueEjector = config.blue_ejector_active
+        self.sortingLineActCompressorOn = (self.sortingLineActWhiteEjector or
+                                           self.sortingLineActRedEjector or
+                                           self.__sortingLineActBlueEjector)
         return True
 
     # methods intended for orchestrator
