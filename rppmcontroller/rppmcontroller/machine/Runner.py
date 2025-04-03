@@ -4,6 +4,7 @@ import logging
 import typing
 from abc import abstractmethod
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
 from typing import Callable, Union
 from typing import Optional
@@ -124,8 +125,10 @@ class Runner:
         :param until: When provided, the runner is called until it returns true
         :return: self
         """
-        runner_pointer = ()
-        runner_pointer.runner = None
+        @dataclass
+        class RunnerPointer:
+            runner: Runner = None
+        runner_pointer = RunnerPointer()
         def run_runner():
             if runner_pointer.runner is None:
                 runner_pointer.runner = runner_supplier()
