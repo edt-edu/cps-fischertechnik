@@ -698,12 +698,9 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.vacuum_arm_at_oven = False
         runner.then_goto(config)
 
-        # lower arm at tt
-        #config.vacuum_arm_lowered = True
-        #runner.then_goto(config, and_stay_for=0.5)
-
         # drop of payload carefully
         config.vacuum_valve_active = False
+        config.vacuum_arm_lowered = True
         runner.then_goto(config, and_stay_for=0.5)
 
         # raise arm of payload
