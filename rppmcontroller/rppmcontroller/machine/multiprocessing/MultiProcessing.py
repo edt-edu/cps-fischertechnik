@@ -660,7 +660,7 @@ class MultiProcessing(Machine, TransitioningMachine):
             self.multiProcessingSensTurntablePosSaw,
             self.multiProcessingSensTurntablePosBelt))
         runner.then_goto(config,
-                         until=lambda: not self.multiProcessingSensOven)
+                         until=lambda: not self.multiProcessingSensOven, and_stay_for=0.5)
 
         # open oven door
         config.oven_door_open = True
@@ -682,10 +682,13 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.turn_table_position = TurnTablePosition.VACUUM
         runner.then_goto(config)
 
-        # pickup payload
+        # lower arm
         config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5)
+
+        # pickup
         config.vacuum_valve_active = True
-        runner.then_goto(config, and_stay_for=1.0) # give enough time to actually grip payload
+        runner.then_goto(config, and_stay_for=0.5)
 
         # raise arm
         config.vacuum_arm_lowered = False
