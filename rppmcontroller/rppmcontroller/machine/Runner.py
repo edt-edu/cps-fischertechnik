@@ -14,7 +14,7 @@ from rppmcontroller.machine.Timer import Timer
 
 class TransitioningMachine:
     def __init__(self):
-        self.__last_runner: Optional[Runner] = None
+        self.__runners: [Runner] = []
 
 
     @abstractmethod
@@ -31,16 +31,13 @@ class TransitioningMachine:
         Creates a new Runner for this machine and set it as last_runner
         :return: A Runner
         """
-        self.__last_runner = Runner(self)
-        return self.__last_runner
-
-    @property
-    def last_runner(self) -> Optional[Runner]:
-        return self.__last_runner
+        runner = Runner(self)
+        self.__runners.append(runner)
+        return runner
 
     @property
     def is_executing_runner(self) -> bool:
-        return self.last_runner is not None and self.last_runner.running
+        return any(runner.running for runner in self.__runners)
 
 
 class Runner:
