@@ -35,7 +35,7 @@ class SortingLine(Machine, TransitioningMachine):
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
 
-        return self.__packageOnLine
+        return res
 
     def __init__(self, id1: str):
         # inputs
