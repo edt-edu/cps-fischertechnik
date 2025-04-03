@@ -127,13 +127,25 @@ class Runner:
         """
         @dataclass
         class RunnerPointer:
-            runner: Runner = None
+            __runner: Runner = None
+
+            @property
+            def runner(self) -> Runner:
+                if self.__runner is None:
+                    self.__runner = runner_supplier()
+                return self.__runner
+
+            def run(self):
+                logging.debug("running sub-routine runner")
+                self.runner.run()
+
+            def finished(self) -> bool:
+                finished = not self.runner.running
+                logging.debug(f"sub-routine logger finished: {finished}")
+                return finished
+
         runner_pointer = RunnerPointer()
-        def run_runner():
-            if runner_pointer.runner is None:
-                runner_pointer.runner = runner_supplier()
-            runner_pointer.runner.run()
-        return self.then_run(run_runner, until)
+        return self.then_run(runner_pointer.run, until if until is not None else runner_pointer.finished)
 
     def run(self) -> typing.Self:
         """
