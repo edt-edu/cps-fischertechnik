@@ -654,8 +654,13 @@ class MultiProcessing(Machine, TransitioningMachine):
         runner = self.create_runner()
 
         # wait until payload is present
-        config = MultiProcessingConfig()
-        runner.then_goto(config, until=lambda: not self.multiProcessingSensOven)
+        config = MultiProcessingConfig(
+            turn_table_position=TurnTablePosition.from_actuators(
+            self.multiProcessingSensTurntablePosVacuum,
+            self.multiProcessingSensTurntablePosSaw,
+            self.multiProcessingSensTurntablePosBelt))
+        runner.then_goto(config,
+                         until=lambda: not self.multiProcessingSensOven)
 
         # open oven door
         config.oven_door_open = True
@@ -674,6 +679,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.oven_lamp_on = False
         config.oven_feeder_expanded = True
         config.vacuum_arm_at_oven = True
+        config.turn_table_position = TurnTablePosition.VACUUM
         runner.then_goto(config)
 
         # pickup payload
