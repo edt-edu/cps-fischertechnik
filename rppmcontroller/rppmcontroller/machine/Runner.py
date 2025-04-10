@@ -147,7 +147,8 @@ class Runner:
 
         @dataclass
         class RunnerPointer:
-            __runner: Runner = None
+            def __init__(self):
+                self.__runner: Optional[Runner] = None
 
             @property
             def runner(self) -> Runner:
