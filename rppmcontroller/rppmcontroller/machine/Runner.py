@@ -141,7 +141,7 @@ class Runner:
 
             def finished(self) -> bool:
                 finished = not self.runner.running
-                logging.debug(f"sub-routine logger finished: {finished}")
+                logging.debug(f"sub-routine runner finished: {finished}")
                 return finished
 
         runner_pointer = RunnerPointer()
