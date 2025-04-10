@@ -227,7 +227,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         # move to sensor
         runner.then_run_runner_from(lambda: self.move_to_sensor(direction))
         # keep moving for a second or so
-        runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_actuators(self.conveyorActForward, self.conveyorActBackward)), and_stay_for=1.0)
+        runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_direction(direction)), and_stay_for=1.0)
         # stop the belt
         runner.then_goto(ConveyorBeltConfig())
         return runner.run()
@@ -258,17 +258,14 @@ class ConveyorBelt(Machine, TransitioningMachine):
         runner = self.create_runner()
         config = ConveyorBeltConfig()
 
-        # move the belt until a sensor is reached
-        if direction is Direction.BACKWARD:
-            config.state = ConveyorState.BACKWARD
+        state = ConveyorState.from_direction(direction)
+        if state is ConveyorState.FORWARD:
+            sensor_reached = lambda: not self.conveyorSensSwap
+        elif state is ConveyorState.BACKWARD:
             sensor_reached = lambda: not self.conveyorSensFeed
         else:
-            # we assume forward as default direction
-            if direction is not Direction.FORWARD:
-                logging.error(f"invalid direction: {direction}")
-            config.state = ConveyorState.FORWARD
-            sensor_reached = lambda: not self.conveyorSensSwap
-
+            raise ValueError(f"cannot move into that direction: {direction}")
+        config.state = state
         runner.then_goto(config, until=sensor_reached)
 
         #stop the belt
