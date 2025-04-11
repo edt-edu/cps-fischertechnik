@@ -150,6 +150,38 @@ class SortingLine(Machine):
     def sortingLineCounterValue(self):
         return self.__counter.counter
 
+    @property
+    def sortingLineSensWhiteADC(self):
+        return self.__sortingLineSensWhiteADC
+    
+    @sortingLineSensWhiteADC.setter
+    def sortingLineSensWhiteADC(self, value):
+        self.__sortingLineSensWhiteADC = value
+
+    @property
+    def sortingLineSensBlueADC(self):
+        return self.__sortingLineSensBlueADC
+    
+    @sortingLineSensBlueADC.setter
+    def sortingLineSensBlueADC(self, value):
+        self.__sortingLineSensBlueADC = value
+
+    @property
+    def sortingLineSensRedADC(self):
+        return self.__sortingLineSensRedADC
+    
+    @sortingLineSensRedADC.setter
+    def sortingLineSensRedADC(self, value):
+        self.__sortingLineSensRedADC = value
+
+    @property
+    def sortingLineSensPresenceADC(self):
+        return self.__sortingLineSensPresenceADC
+    
+    @sortingLineSensPresenceADC.setter
+    def sortingLineSensPresenceADC(self, value):
+        self.__sortingLineSensPresenceADC = value
+
     def sensorStatusString(self) -> str:
         return f"[{self.sortingLineSensInputLightBarrier}, {self.sortingLineSensMiddleLightBarrier}], [{self.sortingLineSensWhiteLightBarrier}, {self.sortingLineSensBlueLightBarrier}, {self.sortingLineSensRedLightBarrier}], {self.sortingLineSensImpulseCounterRaw}"
 
@@ -165,6 +197,10 @@ class SortingLine(Machine):
             "sortingLineSensBlueLightBarrier": self.sortingLineSensBlueLightBarrier,
             "sortingLineSensRedLightBarrier": self.sortingLineSensRedLightBarrier,
             "sortingLineSensImpulseCounterRaw": self.sortingLineSensImpulseCounterRaw,
+            "sortingLineSensWhiteADC": self.sortingLineSensWhiteADC,
+            "sortingLineSensBlueADC": self.sortingLineSensBlueADC,
+            "sortingLineSensRedADC": self.sortingLineSensRedADC,
+            "sortingLineSensPresenceADC": self.sortingLineSensPresenceADC,
         }
         return status
 
@@ -271,6 +307,73 @@ class SortingLine(Machine):
                                     f"eject_CycleStep", 
                                     None)
     
+
+    def detectEject_CycleStep(self, color) -> CycleStepResult:
+        """
+        Used to detect a token, its color and eject it to the appropriate colored storage unit
+        """
+        ret = False
+        whiteCounter = 2
+        redCounter = 11
+        blueCounter = 20
+        current = self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        if not self.__packageCountSteps : # and self.once:
+            if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
+                self.__packageOnLine = True
+                print("packageOnLine True")
+                self.__sortingLineActMotorConveyor = True
+                self.__sortingLineActCompressorOn = True
+        if self.__packageOnLine:
+            self.__sortingLineActMotorConveyor = True
+            if not self.__packageCountSteps:
+                self.__counter.counter = 0
+                
+        else:
+            if self.__sortingLineSensPresenceADC == 1:
+                if self.__sortingLineSensWhiteADC == 1:
+                    color = Color.WHITE
+                elif self.__sortingLineSensRedADC == 1:
+                    color = Color.RED
+                elif self.__sortingLineSensBlueADC == 1:
+                    color = Color.BLUE
+            if current > blueCounter and color == Color.BLUE:
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActBlueEjector = True
+                if not self.__sortingLineSensBlueLightBarrier:
+                    self.__packageOnLine = self.__packageCountSteps = False
+                    print("packageOnLine False")
+                    self.__sortingLineActCompressorOn = False
+                    self.__sortingLineActBlueEjector = False
+                    ret = True # command final goal reached, no need to call this cycleStep again
+            if current > redCounter and color == Color.RED:
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActRedEjector = True
+                if not self.__sortingLineSensRedLightBarrier:
+                    self.__packageOnLine = False
+                    self.__packageCountSteps = False
+                    print("packageOnLine False")
+                    self.__sortingLineActCompressorOn = False
+                    self.__sortingLineActRedEjector = False
+                    ret = True # command final goal reached, no need to call this cycleStep again
+            if current > whiteCounter and color == Color.WHITE:
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActWhiteEjector = True
+                if not self.__sortingLineSensWhiteLightBarrier:
+                    self.__packageOnLine = self.__packageCountSteps = False
+                    print("packageOnLine False")
+                    self.__sortingLineActCompressorOn = False
+                    self.__sortingLineActWhiteEjector = False
+                    ret = True # command final goal reached, no need to call this cycleStep again
+        if ret:
+            return CycleStepResult(CycleStepResultEnum.DONE, 
+                                    f"detectEject_CycleStep", 
+                                    None)
+        else:
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"detectEject_CycleStep", 
+                                    None)
+
+
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
