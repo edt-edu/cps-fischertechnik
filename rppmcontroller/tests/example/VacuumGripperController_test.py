@@ -18,10 +18,10 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
 
     def setUp(self):
         script_path = os.path.abspath(__file__)
-        logging.warning(f'script path : {script_path}')
+        logging.info(f'script path : {script_path}')
         dir_path = os.path.dirname(__file__)
         config_path = os.path.join(dir_path, "config.yml")
-        logging.warning(f'config file path : {config_path}')
+        logging.info(f'config file path : {config_path}')
 
         logging.debug("setup called")
         # pickupRobot1 = [2600,3550,25]
@@ -68,17 +68,17 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         #logging.debug(self.controller.inputBuffer.qsize())
 
         logging.debug(""+self.controller.machines[0].id)
-        logging.debug(self.controller.currentlyExecuting.get(self.controller.machines[0]))
+        logging.debug(self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine))
 
         logging.debug(self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine))
 
         #logging.debug(self.controller.inputBuffer.qsize())
         self.controller.processJson(self.controller.inputBuffer)
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0]) 
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine) 
         assert currentlyExecutting is not None
-        logging.debug("currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
-        self.assertEqual(currentlyExecutting[1],77)
+        logging.debug("currently executing="+currentlyExecutting.displayName)
+        self.assertIsNotNone(currentlyExecutting)
+        self.assertEqual(currentlyExecutting._commandId, 77)
         
     def test_processJson_with_JSONOutputMsg(self):
         
@@ -98,9 +98,9 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
   
         self.controller.processJson(self.controller.inputBuffer)
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0]) 
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine) 
         assert currentlyExecutting is not None
-        self.assertIsNotNone(currentlyExecutting[0])
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
 
   
     
@@ -128,37 +128,36 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         time.sleep(0.1)
   
         self.controller.processJson(self.controller.inputBuffer)
-
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("before loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
+        logging.debug("before loop: currently executing="+currentlyExecutting.displayName)
 
         self.controller.read()
         self.controller.exLoop()
         self.controller.write()
-        self.controller.createFeedbackOnChange()
+        self.controller.createMachineFeedbackOnChange()
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("after loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
+        logging.debug("after loop: currently executing="+currentlyExecutting.displayName)
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
 
         # Second loop
         self.controller.processJson(self.controller.inputBuffer)
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("before loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
+        logging.debug("before loop: currently executing="+currentlyExecutting.displayName)
 
         self.controller.read()
         self.controller.exLoop()
         self.controller.write()
-        self.controller.createFeedbackOnChange()
+        self.controller.createMachineFeedbackOnChange()
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
         assert currentlyExecutting is not None
-        logging.debug("after loop: currently executing="+'|'.join(str(e) for e in currentlyExecutting))
-        self.assertIsNotNone(currentlyExecutting[0])
+        logging.debug("after loop: currently executing="+currentlyExecutting.displayName)
+        self.assertIsNotNone(currentlyExecutting.cycleStep)
     
 
 class VacuumGripperControllerMock(VacuumGripperController):

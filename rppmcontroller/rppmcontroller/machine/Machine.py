@@ -1,10 +1,15 @@
 import math
 from abc import abstractmethod
 from time import time
+from typing import Any, Callable, Dict, List, Optional
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
+from rppmcontroller.behavior.ProcessSequenceContext import ProcessSequenceContext
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
-from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
-from typing import Dict, Any
+from rppmcontroller.machine.MachineStatus import MachineStatus
+from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
 import logging
 
 
@@ -20,9 +25,10 @@ class Machine:
         self.__id = id1
         self.__dictMap = dictMap
         self.__isExecuting = False
+        self.__isInitialized = False
         self.__lastExecutionTime = -math.inf
-        self.__isExecutingCount = 0
         self.__nbMinimumRequiredExecutionCycles = 0 # number of cycles (ie. IO read/write, before considering the execution done)
+        self.__processSequenceContext : Optional[ProcessSequenceContext] =  None
 
     @property
     def id(self) -> str:
@@ -46,6 +52,20 @@ class Machine:
 
     def machineTypeName(self) -> str:
         return self.__class__.__name__
+
+    @property
+    @abstractmethod
+    def isInitialized(self) -> bool:
+        """Returns whether the machine is initialized . ie if the setup is Done
+
+        :return bool: the setup status
+        """
+        return self.__isInitialized
+
+    @isInitialized.setter
+    def isInitialized(self, value: bool):
+        self.__isInitialized = value
+    
     
     @property
     def nbMinimumRequiredExecutionCycles(self) -> int:
@@ -59,14 +79,24 @@ class Machine:
     def nbMinimumRequiredExecutionCycles(self,value: int) -> None:
         self.__nbMinimumRequiredExecutionCycles = value
 
+    @property
+    def processSequenceContext(self) -> Optional[ProcessSequenceContext]:
+        """Returns whether the machine context of the currently performing actions
+
+        :return Optional[ProcessSequenceContext]: the processSequenceContext
+
+        """
+        return self.__processSequenceContext
+
+    @processSequenceContext.setter
+    def processSequenceContext(self, value: Optional[ProcessSequenceContext] ):
+        self.__processSequenceContext = value
+
     def timeSinceExecution(self):
         if self.__isExecuting:
             return 0
         else:
             return time() - self.__lastExecutionTime
-
-    def execute(self, *args):
-        pass
 
     @abstractmethod
     def sensorStatusString(self) -> str:
@@ -117,11 +147,85 @@ class Machine:
             self.__nbMinimumRequiredExecutionCycles -= 1
 
     @abstractmethod
-    def stop(self):
+    def stop_CycleStep(self) -> CycleStepResult:
         """
         Used to stop the execution immediately by setting all outputs to false
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
         pass
+
+
+    
+
+    def process_sequence_CycleStep(self, subCycleStepList: List[CycleStepCommand]) -> CycleStepResult:
+        """
+        perform each subCycleStep one after another as soon as the previous one ha indicated it had finished.
+        Note: Only one subCycleStep can be performe in a cycle.
+        Note: despite compatible signature, nested process_sequence_CycleStep are NOT allowed (it would require stack management)
+
+        
+        :param List[Callable[[], bool] subCycleStepList: list of Callable that should be processed
+        :return: as a CycleStep, this function must return True when all subCycleStep have finished so this 'process_sequnece' can be removed from the currentlyExecuting map
+        """
+
+
+        if self.__processSequenceContext is not None:
+            # we are currently processing a sequence
+
+            # check if this is the same
+            if self.__processSequenceContext.subCycleStepList != subCycleStepList:
+                logging.error(f"calling process_sequence_CycleStep on a machine with 2 different subCycleStepList, \n{self.__processSequenceContext.subCycleStepList} != {subCycleStepList}")
+                raise Exception(f"Invalid subCycleList when calling process_sequence_CycleStep() on machine {self.id}")
+        else:
+            self.__processSequenceContext =  ProcessSequenceContext(subCycleStepList)
+            psContext = self.__processSequenceContext
+            logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                
+        
+        # call current subCycleStep
+        psContext = self.__processSequenceContext
+        subCommand = psContext.subCycleStepList[psContext.currentSubCycleStepIndex]
+        res = subCommand.cycleStep()
+        # analyse result
+        if not res.must_continue():
+            if not res.is_terminated():
+
+                logging.debug(f"normal end of subCycleStepCommand reached {psContext.currentSubCycleStepIndex}/{len(psContext.subCycleStepList)}")
+                if psContext.currentSubCycleStepIndex+1 >= len(psContext.subCycleStepList):
+                    # finished processing this sequence
+                    self.__processSequenceContext = None
+                    logging.debug(f"process_sequence_CycleStep {self.id} last sub command done ")
+                    return CycleStepResult(CycleStepResultEnum.DONE, 
+                                            f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                            f" : {psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
+                                            (subCommand.displayName, res))
+                else:
+                    # proceed to next subCycleStep
+                    psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
+                    logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
+                    return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                            f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                            (subCommand.displayName, res))
+            else:
+                # transfert termination result to upper CycleStep
+                return CycleStepResult(res.result, 
+                                        f"process_sequence_CycleStep terminated due to result of {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                        f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                        (subCommand.displayName, res))
+        else:  
+            # use same text etc as in "proceed to next subCycleStep" in order to avoid multiple notifications due to comparison mismatch     
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                                    f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
+                                    f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                    (subCommand.displayName, res))
+
+    def isProcessingSequence(self) -> bool:
+        """
+        Indicates if process_sequence_CycleStep is currently processing a sequence
+        """
+        return self.__processSequenceContext is not None
 
     def request(self, params: list) -> list:
         """
@@ -144,10 +248,17 @@ class Machine:
                     print("unknown attribute")
         return result
 
-    #TODO implement me
-    def feedback(self):
-        if self.isExecuting:
-            return ExecutionStatus.INACTION
+    def machineFeedback(self):
+        if not self.isInitialized:
+            if self.isExecuting:
+                return MachineStatus.UNINITIALIZED_ACTIVE
+            else:
+                return MachineStatus.UNINITIALIZED_IDLE
         else:
-            return ExecutionStatus.FINISHED
+            if self.isExecuting:
+                return MachineStatus.INITIALIZED_ACTIVE
+            else:
+                return MachineStatus.INITIALIZED_IDLE
+
+
 

@@ -2,12 +2,20 @@
 import logging
 from typing import Any, Dict, Optional
 
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
+from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine
 from rppmcontroller.machine.sortingLine.SortingLineConfig import \
     SortingLineConfig
+from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
+from typing import Any, Callable, Dict, Optional
+from typing_extensions import override
 
 
 class SortingLine(Machine, TransitioningMachine):
@@ -23,7 +31,7 @@ class SortingLine(Machine, TransitioningMachine):
                 self.sortingLineActBlueEjector or
                 self.is_executing_runner)
 
-    @property
+    @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         res = self.__isExecuting()
 
@@ -64,6 +72,9 @@ class SortingLine(Machine, TransitioningMachine):
         TransitioningMachine.__init__(self)
 
         # helper variables
+        self.isInitialized = True   # SortingLine doesn't require initialization !? is this true ? does the self.__counter need to be put back to 0 from time to time to avoid overflow ?
+        self.__packageOnLine = self.__packageCountSteps = False
+        self.once = True
         self.previous_isExecuting_log = None
 
     @property
@@ -189,13 +200,6 @@ class SortingLine(Machine, TransitioningMachine):
         }
         return status
 
-    def stop(self):
-        self.__sortingLineActMotorConveyor = False
-        self.__sortingLineActCompressorOn = False
-        self.__sortingLineActRedEjector = False
-        self.__sortingLineActBlueEjector = False
-        self.__sortingLineActWhiteEjector = False
-
     def goto_config(self, config: SortingLineConfig) -> bool:
         self.sortingLineActMotorConveyor = config.conveyor_active
         self.sortingLineActWhiteEjector = config.white_ejector_active
@@ -206,7 +210,100 @@ class SortingLine(Machine, TransitioningMachine):
                                            self.__sortingLineActBlueEjector)
         return True
 
-    # methods intended for orchestrator
+
+    def startOfProcess(self, packageIncoming):
+        if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
+            self.__packageOnLine = True
+            print("packageOnLine True")
+        if self.__packageOnLine or packageIncoming:
+            self.__packageOnLine = True
+            print("packageOnLine True")
+            self.__sortingLineActMotorConveyor = True
+            if not self.__sortingLineSensMiddleLightBarrier:
+                logging.debug('set count steps true')
+                self.__packageCountSteps = True
+
+    @override
+    def stop_CycleStep(self) -> CycleStepResult:
+        self.__sortingLineActMotorConveyor = False
+        self.__sortingLineActCompressorOn = False
+        self.__sortingLineActRedEjector = self.__sortingLineActBlueEjector = self.__sortingLineActWhiteEjector = False
+        self.__packageOnLine = False
+        self.__packageCountSteps = False
+        # self.once = True
+        self.__counter.counter = 0
+        return CycleStepResult(CycleStepResultEnum.DONE,
+                                    f"stop_CycleStep",
+                                    None)
+
+    def eject_CycleStep(self, color: Color) -> CycleStepResult:
+        """
+        Used to eject a token,
+        it first detects the presence of the token on the conveyor, then eject the token to the appropriate colored line, it ends with a token detected in the color line.
+
+        This function is a cycleStep, it is call on each controller cycle, until its goal is reached
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """
+        ret = False
+        whiteCounter = 2
+        redCounter = 11
+        blueCounter = 20
+        current = self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        logging.debug(f'eject color={str(color)}, current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, once={self.once}')
+        if not self.__packageCountSteps : # and self.once:
+            self.startOfProcess(True)
+            if not self.__packageCountSteps:
+                self.__counter.counter = 0
+        else:
+            if current > blueCounter and color == color.BLUE:
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActCompressorOn = True
+                self.__sortingLineActBlueEjector = True
+                if not self.__sortingLineSensBlueLightBarrier:
+                    self.__packageOnLine = self.__packageCountSteps = False
+                    print("packageOnLine False")
+                    self.__sortingLineActCompressorOn = False
+                    self.__sortingLineActBlueEjector = False
+                    ret = True # command final goal reached, no need to call this cycleStep again
+            if current > redCounter and color == Color.RED:
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActCompressorOn = True
+                self.__sortingLineActRedEjector = True
+                if not self.__sortingLineSensRedLightBarrier:
+                    self.__packageOnLine = False
+                    self.__packageCountSteps = False
+                    print("packageOnLine False")
+                    self.__sortingLineActCompressorOn = False
+                    self.__sortingLineActRedEjector = False
+                    ret = True # command final goal reached, no need to call this cycleStep again
+            if current > whiteCounter and color == Color.WHITE:
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActCompressorOn = True
+                self.__sortingLineActWhiteEjector = True
+                if not self.__sortingLineSensWhiteLightBarrier:
+                    self.__packageOnLine = self.__packageCountSteps = False
+                    print("packageOnLine False")
+                    self.__sortingLineActCompressorOn = False
+                    self.__sortingLineActWhiteEjector = False
+                    ret = True # command final goal reached, no need to call this cycleStep again
+        if ret:
+            return CycleStepResult(CycleStepResultEnum.DONE,
+                                    f"eject_CycleStep",
+                                    None)
+        else:
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+                                    f"eject_CycleStep",
+                                    None)
+
+    ### ____________ Functions callable from orchestrator ________________
+    #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
+
+    def eject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
+        return lambda: self.eject_CycleStep(color)
+
+    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
+        return lambda: self.stop_CycleStep()
 
     def setup(self):
         self.stop()

@@ -48,10 +48,13 @@ class VacuumGripperController(RevPiPyMachineController):
         self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {
-            self.vacuumGripperMachine: [None, None]
+            self.vacuumGripperMachine: None
         }
 
-        self.feedback = {
+        self.machineFeedback = {
+            self.vacuumGripperMachine: None
+        }
+        self.commandFeedback = {
             self.vacuumGripperMachine: None
         }
 
@@ -93,7 +96,7 @@ class VacuumGripperController(RevPiPyMachineController):
     def reset(self) -> None:
         # TODO find a way to read from a configuration file
         assert self.rpi.io is not None
-        vg = self.vacuumGripperMachine.executeHelper()
+        vg = self.vacuumGripperMachine.resetHelper()
         if vg[0]:
             self.rpi.io.dio1_Counter_5.reset()
             self.rpi.io.dio1_Counter_7.reset()

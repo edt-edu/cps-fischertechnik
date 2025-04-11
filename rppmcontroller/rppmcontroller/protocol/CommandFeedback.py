@@ -1,5 +1,8 @@
-class MachineCommandFeedback:
-
+class CommandFeedback:
+    """
+    Class that holds the body in JSON-format of the Feedback message for commands.
+    status possible values are defined in CommandExecutionStatus
+    """
     def __init__(self, jsonType, commandId, status, info):
         self.__jsonType = jsonType
         self.__commandId = commandId

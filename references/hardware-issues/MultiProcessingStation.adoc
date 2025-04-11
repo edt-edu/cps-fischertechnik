@@ -13,3 +13,29 @@ image::./img/MultiProcessingStation/MPS_turntable_gear_issue.jpg[float="left",al
 
 
 **Fix:** No clear solution so far. Any suggestion ?
+
+### Problem: light barrier at oven is positioned too high to detect payload
+
+The lighbarrier at the oven is positioned a little too high to actually detect small payload objects
+
+**Fix**: Move the support blocks below the lightbarrier (red) a little bit forward and then the light barrier als low as possible. 
+.Moving the light barrier 
+[#img-mps-light-barrier-adjustments]
+image::./img/MultiProcessingStation/MPS_light_barrier_adjustments.jpg[float="left",align="center", 240]
+
+Then remove the two front angled blocks on the sides of the feeder and move the two other angled blocks a bit back 
+
+.The new oven feeder platform
+[#img-oven-feeder]
+image::./img/MultiProcessingStation/MPS_oven_feeder_adjustments.jpg[float="left",align="center", 240]
+
+### Problem: When dropping the payload at the turn table, it may not land correctly on the turn table 
+
+The vacuum arm and the turn table may not be perfectly positioned over another and the payload may fall off the table.
+
+**Fix**: Take the two removed angled blocks from the light barrier problem above and put them on the sides of the turn table. 
+Now it is necessary to remove the two red blocks on the sides of the conveyopr feeder for it to function correctly.
+
+.The new belt feeder layout
+[#img-mps-belt-feeder]
+image::./img/MultiProcessingStation/MPS_belt_feeder_adjustments.jpg[float="left",align="center", 240]

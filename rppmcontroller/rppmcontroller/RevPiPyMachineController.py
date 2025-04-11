@@ -1,4 +1,6 @@
 import logging
+import inspect
+import json as json
 import logging
 import multiprocessing
 import os
@@ -11,9 +13,18 @@ from abc import abstractmethod
 from multiprocessing import Process
 from multiprocessing import Queue
 from queue import Empty
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Callable, cast
 
 import yaml
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.machine.CommandExecutionStatus import \
+    CommandExecutionStatus
+from rppmcontroller.machine.EventKind import EventKind
+from rppmcontroller.machine.MachineStatus import MachineStatus
+from rppmcontroller.protocol.CommandFeedback import CommandFeedback
+from rppmcontroller.protocol.MachineFeedback import MachineFeedback
 
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
@@ -30,8 +41,6 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.MQTTFunctions import MQTTFunctions
-from rppmcontroller.protocol.MachineCommandFeedback import \
-    MachineCommandFeedback
 from rppmcontroller.protocol.MachineStatusRequestAnswer import \
     MachineStatusRequestAnswer
 
@@ -57,12 +66,14 @@ class RevPiPyMachineController:
         self.outputBuffer = multiprocessing.Queue()
         self.__parent_pid = os.getppid()
 
-        #the list of all machines that are connected to this core
+        #the list of all machines that are connected to this controller
         self.machines : List[Machine] = []
-        #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
-        self.currentlyExecuting = {}
-        #dict, which keys are the machines, feedback as the values
-        self.feedback = {}
+        #dict, which keys are the machines, and value is a CycleStepCommand holding the function currently executed ([0]) and the id it was sent with ([1])
+        self.currentlyExecuting : Dict[Machine, Optional[CycleStepCommand ]  ]= {}
+        #dict, which keys are the machines, machine_feedback as the values
+        self.machineFeedback : Dict [Machine, Optional[MachineStatus]] = {}
+        #dict, which keys are the machines, command_feedback as the values
+        self.commandFeedback : Dict[Machine, Optional[CycleStepResult]]= {}
 
 
         self.previousInputStatus : Dict[str, Any]= {}
@@ -121,6 +132,7 @@ class RevPiPyMachineController:
                         logging.info(f"IGNORED Received {data!r}")
                     elif not data.isspace():
                         logging.debug(f"Received {data!r}")
+                        self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{data!r}")
                         objdata = JSONReader.read(data)
                         self.inputBuffer.put(objdata)
         # reset boolean (required if notificationSocket is opened first)
@@ -166,7 +178,9 @@ class RevPiPyMachineController:
     def processJson(self, inputBuffer: Queue):
         #maybe output buffer als parameter übergeben wie inputbuffer???
         """
-        gets the JSONOutput-objects out of the input buffer and decides which function to execute
+        gets the JSONOutput-objects out of the input buffer and decides which command function to execute
+        The function to execute must use the name of the command lowercase with a "_Command" postfix,
+        a command function must return a lambda pointing to a "_cycleStep" function
         :param inputBuffer:
         :return:
         """
@@ -185,9 +199,13 @@ class RevPiPyMachineController:
                 logging.debug(f"machines: {self.machines}")
                 if m.id == inputBufferItem.topicName:
                     foundMatchingMachine = True
+
                     # find diff btw command and request
                     if inputBufferItem.message.jsonType == "STATUSREQUEST":
                         logging.debug("Status")
+
+                        #self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", JSONParser.parse(inputBufferItem.message))
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", json.dumps(inputBufferItem.message, default=str))
                         # Status abfragen und Ergebnis an outputBuffer anfügen
                         try:
                             statusanswer = m.request(inputBufferItem.message.parameters)
@@ -200,32 +218,35 @@ class RevPiPyMachineController:
                             print("status not supported")
                             break
                     elif inputBufferItem.message.jsonType == "COMMAND":
-                        logging.debug("command")
+                        logging.debug(f'Command {inputBufferItem.message.type} {inputBufferItem.message.name}')
+                        # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
                         try:
-                            logging.debug(f"Nom de message : {inputBufferItem.message.name}")
-                            # map between functions and the name of functions sent with the JSON
+                            # find a function in the machine class with name = "{message.name}_Command"
                             if inputBufferItem.message.type == "VACUUM" and isinstance(m, VacuumGripper):
-                                func = getattr(VacuumGripper, str.lower(inputBufferItem.message.name))
+                                func = getattr(VacuumGripper, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
                             #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, HighBay):
                                 func = getattr(HighBay, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
-                                func = getattr(SortingLine, str.lower(inputBufferItem.message.name))
+                                func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
                             #     func = getattr(IndexedLine, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
-                                func = getattr(MultiProcessing, str.lower(inputBufferItem.message.name))
+                                func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
-                                func = getattr(ConveyorBelt, str.lower(inputBufferItem.message.name))
+                                func = getattr(ConveyorBelt, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
                             #     func = getattr(PunchingMachine, str.lower(inputBufferItem.message.name))
                             else:
                                 #TODO raise an exception here
+                                #TODO send a COMMAND_FEEDBACK  IGNORED message
                                 logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
-                            # Funktionsparameter in korrekte Reihenfolge bringen und mit Funktion zusammenbringen
-                            logging.debug(f"Type de message : {inputBufferItem.message.type}")
-                            if inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM":
+                            # Call the command function: it must return either None if nothing else is required
+                            #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
+                            # Arrange the function parameters in the correct order and match them with the function.
+                            if func != None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
                                 pos = inputBufferItem.message.parameters
                                 i = len(pos)
                                 if i == 0:
@@ -265,7 +286,7 @@ class RevPiPyMachineController:
                                     ret = func(m, box[0], box[1])
                                 else:
                                     logging.warning(f"unsupported number of parameters: {i}")
-                            elif inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING":
+                            elif func != None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING"):
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
                                 if i == 0:
@@ -274,7 +295,7 @@ class RevPiPyMachineController:
                                     ret = func(m, color[0])
                             #elif inputBufferItem.message.type == "PUNCHING":
                             #    ret = func(m)
-                            elif inputBufferItem.message.type == "CONVEYOR":
+                            elif func != None and (inputBufferItem.message.type == "CONVEYOR"):
                                 mix = inputBufferItem.message.parameters
                                 i = len(mix)
                                 if i == 0:
@@ -287,16 +308,31 @@ class RevPiPyMachineController:
                                     else:
                                         ret = func(m, mix[1], mix[0])
 
-                            # holds the function that is currently executed on each machine
-                            self.currentlyExecuting[m] = [ret, inputBufferItem.message.commandId]
+                            # store the cycleStep function that is currently executed on each machine
+                            cycleStepFunction = self.cast_to_callable(ret)
+                            if cycleStepFunction is not None:
+                                logging.debug(f'cycleStepFunction is not None')
+                                if self.currentlyExecuting[m] is not None:
+                                    logging.debug(f'self.currentlyExecuting[m] is not None')
+                                    # send interruption feedback for the previously running command on the machine
+                                    self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                    m.processSequenceContext = None
+                                self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
+                                                                              f"{inputBufferItem.message.name} [{inspect.getsource(cycleStepFunction).strip()}]",
+                                                                              inputBufferItem.message.commandId)
+                            else:
+                                self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                # an invalid command doesn't interrupt currentlyRunning command
                             break
                         except AttributeError as e:
-                            #TODO activate:
-                            #raise JSONCommandNotSupportedOnThisMachineException()
-                            logging.warning(f"command not supported: \n{e}")
+                            logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
+                            self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                             break
+                    else:
+                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
             if not foundMatchingMachine :
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
+                self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
 
     @abstractmethod
     def read(self) -> None:
@@ -326,74 +362,97 @@ class RevPiPyMachineController:
 
     def exLoop(self) -> None:
         """
-        The execute loop, which activates all the necessary functions on each machine
+        The execute loop, which activates all the necessary "_cycleStep" functions on each machine
+        a "_cycleStep" function is is maintained in the the currentlyExecuting map until it returns
         """
         for key in self.currentlyExecuting.keys():
-            func = self.currentlyExecuting[key][0]
             # call method
-            if func is not None:
-                #print(key)
+            cycleStepCommand = self.currentlyExecuting[key]
+            if not cycleStepCommand is None:
 
-                #logging.debug(f'currentlyExecuting {func} [{inspect.getsource(func).strip()}]')
-                #print(self.currentlyExecuting[key][0])
-                #if key == self.robot41:
-                    #print(self.currentlyExecuting[key][0])
-                # noinspection PyCallingNonCallable
-                ret = func()
-                #logging.debug(f'result of self.currentlyExecuting[key][0]() = {ret}')
+                logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
+                ret = cycleStepCommand.cycleStep()
+                # removes currentlyExecuting function once it indicates it is finished
+                if not ret.must_continue():
+                    self.sendCommandFeedbackOnChange(key, ret)
+                    logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
+                    self.currentlyExecuting[key] = None
+                    logging.debug(f'isExecuting = {key.isExecuting} ')
+                else:
+                    # continue
+                    # maybe the res is different from previous, so it should be published
+                    self.sendCommandFeedbackOnChange(key, ret)
+            # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
+            if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and \
+                    cycleStepCommand != None:
+                logging.warning(f'LEGACY: DEPRECATED, removing {cycleStepCommand.displayName} from currentlyExecuting due to MachineStatus.IDLE')
+                self.currentlyExecuting[key] = None
 
-                # remove currentlyExecuting function once it is finished
-                if key.feedback() == ExecutionStatus.FINISHED:
-                    logging.debug(f'removing {func} from currentlyExecuting')
-                    self.currentlyExecuting[key][0] = None
-            # DVK
-            # if key.fakeFeedback() == ExecutionStatus.FINISHED:
+    def cast_to_callable(self, var: Any) -> Optional[Callable[[], CycleStepResult]]:
+        """Casts a variable to Callable[[], CycleStepResult] if it's compatible, otherwise returns None."""
+        if not callable(var):
+            logging.info(f'{var} is not callable')
+            return None
 
-            # #if (key.fakeFeedback() == ExecutionStatus.FINISHED) and (key.feedback() == ExecutionStatus.FINISHED):
-            #     #logging.debug(str(key) + 'finished execution')
-            #     self.currentlyExecuting[key][0] = None
+        return cast(Callable[[], CycleStepResult], var)
 
-    def createFeedbackOnChange(self) -> None:
+    def createMachineFeedbackOnChange(self) -> None:
         """Whenever the state of the machine changes, feedback is created
-        a machine can be in several states as definded in the ExecutionStatus enum
+        a machine can be in several states as defined in the ExecutionStatus enum
         (currently, only INACTION and FINISHED are used)
         Also update the self.feedback[m] dictionnary
         """
         for m in self.machines:
-            if self.feedback[m] != m.feedback():
-                self.feedback[m] = m.feedback()
-                # for the first time send feedback without command as id 0 (possibly problematic because of undesired program
-                # flow in later real execution in error cases, no problems known so far)
-                if self.currentlyExecuting[m][1] is None:
-                    jsonid = 0
-                else:
-                    jsonid = self.currentlyExecuting[m][1]
+            if self.machineFeedback[m] != m.machineFeedback():
+                self.machineFeedback[m] = m.machineFeedback()
                 # append feedback to outputBuffer
-                f = MachineCommandFeedback("FEEDBACK", jsonid, m.feedback().name,  "")
+                f = MachineFeedback("MACHINE_FEEDBACK",  m.machineFeedback().name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
+                self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
-    def publishMQTTStatus(self) -> None:
-        """for each machines publish the input, output and internal status to MQTT if the MQTT is set
+    def sendCommandFeedbackOnChange(self, machine : Machine, lastResult : CycleStepResult) -> None:
+        if self.commandFeedback[machine] != lastResult:
+            # logging.debug(f'new CycleStepResult for machine {machine.id} {self.currentlyExecuting[machine]}')
+            cycleStepCommand = self.currentlyExecuting[machine]
+            if cycleStepCommand is not None:
+                jsonid = cycleStepCommand.commandId
+                subResult = lastResult.subCycleStepResult
+                if subResult is not None:
+                    info = f'{lastResult.info}\nLast subCycleStepResult: {subResult[1].info} {subResult[1].result}'
+                else:
+                    info = f'{lastResult.info}'
+                f = CommandFeedback("COMMAND_FEEDBACK", jsonid, lastResult.result.name,  info)
+                logging.debug(f'CommandFeedback {f}')
+                j = JSONOutput(machine.id, time.time(), f)
+                self.outputBuffer.put(j, block=False)
+                self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
+
+        else:
+            logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
+        self.commandFeedback[machine] = lastResult
+
+    def publishMQTTMeasurementStatus(self) -> None:
+        """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
         """
         for m in self.machines:
             currentInputStatus = m.inputStatus()
             if self.previousInputStatus.get(m.id, None) != currentInputStatus:
                 logging.debug(f'publishing {m.id} inputStatus to MQTT {self.previousInputStatus.get(m.id, None)} != {currentInputStatus}')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INPUT, currentInputStatus)
                 self.previousInputStatus[m.id] =  currentInputStatus
 
             currentInternalStatus = m.internalStatus()
             if self.previousInternalStatus.get(m.id, None) != currentInternalStatus:
                 logging.debug(f'publishing {m.id} internalStatus to MQTT')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.INTERNAL, currentInternalStatus)
                 self.previousInternalStatus[m.id] = currentInternalStatus
 
             currentOutputStatus = m.outputStatus()
             if self.previousOuputStatus.get(m.id, None) != currentOutputStatus:
                 logging.debug(f'publishing {m.id} outputStatus to MQTT')
-                self.MQTT.publishStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
+                self.MQTT.publishMeasurementStatus(self.plcId, m.machineTypeName(), m.id, StatusKind.OUTPUT, currentOutputStatus)
                 self.previousOuputStatus[m.id] = currentOutputStatus
 
     def start(self):
@@ -425,11 +484,11 @@ class RevPiPyMachineController:
         self.read()
         self.exLoop()
         self.write()
-        self.publishMQTTStatus()
+        self.publishMQTTMeasurementStatus()
         self.reset()
         # # logging.debug(self.currentlyExecuting)
-        self.createFeedbackOnChange()
-
+        self.createMachineFeedbackOnChange()
+        # self.createCommandFeedbackOnChange()
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()

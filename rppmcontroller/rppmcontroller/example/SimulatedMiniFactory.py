@@ -39,13 +39,19 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         
         #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])        
         self.currentlyExecuting = {
-            self.conveyorBeltMachine: [None, None],
-            self.vacuumGripperMachine: [None, None],
-            self.multiProcessingMachine: [None, None],
-            self.sortingLineMachine: [None, None]
+            self.conveyorBeltMachine: None,
+            self.vacuumGripperMachine: None,
+            self.multiProcessingMachine: None,
+            self.sortingLineMachine: None
         }
 
-        self.feedback = {
+        self.machineFeedback = {
+            self.conveyorBeltMachine: None,
+            self.vacuumGripperMachine: None,
+            self.multiProcessingMachine: None,
+            self.sortingLineMachine: None
+        }
+        self.commandFeedback = {
             self.conveyorBeltMachine: None,
             self.vacuumGripperMachine: None,
             self.multiProcessingMachine: None,
@@ -77,8 +83,8 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         self.sortingLineSimulator.simulatedWrite()
    
     def reset(self) -> None:
-        vg = self.vacuumGripperMachine.executeHelper()
-        if vg[0]:
+        vg = self.vacuumGripperMachine.resetHelper()
+        if vg:
             self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":

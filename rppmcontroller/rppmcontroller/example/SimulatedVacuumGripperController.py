@@ -44,13 +44,16 @@ class SimulatedVacuumGripperController(VacuumGripperController):
         self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {
-            self.vacuumGripperMachine: [None, None]
-        }
-
-        self.feedback = {
             self.vacuumGripperMachine: None
         }
 
+        self.machineFeedback = {
+            self.vacuumGripperMachine: None
+        }
+
+        self.commandFeedback = {
+            self.vacuumGripperMachine: None
+        }
 
         self.vaccumGripperSimulator = VacuumGripperSimpleSimulator(self.vacuumGripperMachine)
         """Simulator for the Vacuum Gripper"""
@@ -77,8 +80,8 @@ class SimulatedVacuumGripperController(VacuumGripperController):
         # self.previousOuputStatus = currentOutput
    
     def reset(self) -> None:
-        vg = self.vacuumGripperMachine.executeHelper()
-        if vg[0]:
+        vg = self.vacuumGripperMachine.resetHelper()
+        if vg:
             self.vaccumGripperSimulator.simulatedReset()
 
 if __name__ == "__main__":

@@ -5,10 +5,12 @@ import logging
 
 class JSONParser:
 
+    #TODO this function name is misleading , must be changed ...
+
     @staticmethod
     def parse(obj) -> str:
         s = json.dumps(obj.to_dict(), default=str)
-        logging.debug(s)
+        # logging.debug(s)
         return s
 
 

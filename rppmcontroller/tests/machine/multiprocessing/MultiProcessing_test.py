@@ -1,6 +1,7 @@
 import inspect
 import logging
 
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
 from rppmcontroller.machine.Direction import Direction
 
@@ -31,7 +32,7 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingValveVacuum = True
         #stop
         logging.debug("stop")
-        self.multiProcessing1.stop()
+        self.multiProcessing1.stop_CycleStep()
         self.assertEqual(self.multiProcessing1.multiProcessingActGripperToOven, False)
         self.assertEqual(self.multiProcessing1.multiProcessingActGripperToTurntable, False)
         self.assertEqual(self.multiProcessing1.multiProcessingActRotCounterclockwise, False)
@@ -89,50 +90,55 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingSensTurntablePosSaw = True
         self.multiProcessing1.turnTableDirection = Direction.CLOCKWISE
 
-        self.multiProcessing1.moveTurntableToSaw()
+        ret = self.multiProcessing1.moveTurntableToSaw()
 
         self.assertEqual(self.multiProcessing1.turnTableDirection, Direction.NONE)
         self.assertFalse(self.multiProcessing1.multiProcessingActRotClockwise)
         self.assertFalse(self.multiProcessing1.multiProcessingActRotCounterclockwise)
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
     
     def test_moveTurntableToConveyor_moving(self):
         # Simulate that the turntable is not yet at the conveyor position
         self.multiProcessing1.multiProcessingSensTurntablePosBelt = False
 
-        self.multiProcessing1.moveTurntableToConveyor()
+        ret = self.multiProcessing1.moveTurntableToConveyor()
 
         self.assertTrue(self.multiProcessing1.multiProcessingActRotClockwise)
         self.assertFalse(self.multiProcessing1.multiProcessingActRotCounterclockwise)
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_moveTurntableToConveyor_reached(self):
         # Simulate that the turntable has reached the conveyor position
         self.multiProcessing1.multiProcessingSensTurntablePosBelt = True
 
-        self.multiProcessing1.moveTurntableToConveyor()
+        ret = self.multiProcessing1.moveTurntableToConveyor()
 
         self.assertFalse(self.multiProcessing1.multiProcessingActRotClockwise)
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
     def test_moveTurntableToVacuum_moving(self):
         # Simulate that the turntable is not yet at the vacuum position
         self.multiProcessing1.multiProcessingSensTurntablePosVacuum = False
 
-        self.multiProcessing1.moveTurntableToVacuum()
+        ret = self.multiProcessing1.moveTurntableToVacuum()
 
         self.assertTrue(self.multiProcessing1.multiProcessingActRotCounterclockwise)
         self.assertFalse(self.multiProcessing1.multiProcessingActRotClockwise)
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_moveTurntableToVacuum_reached(self):
         # Simulate that the turntable has reached the vacuum position
         self.multiProcessing1.multiProcessingSensTurntablePosVacuum = True
 
-        self.multiProcessing1.moveTurntableToVacuum()
+        ret = self.multiProcessing1.moveTurntableToVacuum()
 
         self.assertFalse(self.multiProcessing1.multiProcessingActRotCounterclockwise)
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
     
     def test_useSaw_start(self):
         """Test if the saw starts correctly when the turntable is in the saw position"""
@@ -140,14 +146,15 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingSensTurntablePosSaw = True
 
         # Call the useSaw method
-        self.multiProcessing1.useSaw()
+        ret = self.multiProcessing1.useSaw()
 
         # Check that the saw is activated
         self.assertTrue(self.multiProcessing1.multiProcessingActSaw)
         # Check that sawCount is incremented
         self.assertEqual(self.multiProcessing1.sawCount, 1)
         # Check that actionDone is not incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_useSaw_not_at_saw_position(self):
         """Test that the saw does not start when the turntable is not in the saw position"""
@@ -155,14 +162,14 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingSensTurntablePosSaw = False
 
         # Call the useSaw method
-        self.multiProcessing1.useSaw()
+        ret = self.multiProcessing1.useSaw()
 
         # Check that the saw is not activated
         self.assertFalse(self.multiProcessing1.multiProcessingActSaw)
         # Check that sawCount is not incremented
         self.assertEqual(self.multiProcessing1.sawCount, 0)
         # Check that actionDone is incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
 
     ###____________ Conveyor belt ______________
@@ -172,12 +179,13 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingSensEndConveyor = True
 
         # Call the moveConveyorToEnd method
-        self.multiProcessing1.moveConveyorToEnd()
+        ret = self.multiProcessing1.moveConveyorToEnd()
 
         # Check that the conveyor is moving forward
         self.assertTrue(self.multiProcessing1.multiProcessingActConveyorForward)
         # Check that actionDone is not incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_moveConveyorToEnd_reached_end(self):
         """Test that the conveyor stops when the package reaches the light barrier"""
@@ -185,12 +193,13 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingSensEndConveyor = False
 
         # Call the moveConveyorToEnd method
-        self.multiProcessing1.moveConveyorToEnd()
+        ret = self.multiProcessing1.moveConveyorToEnd()
 
         # Check that the conveyor is not moving forward
         self.assertFalse(self.multiProcessing1.multiProcessingActConveyorForward)
         # Check that actionDone is incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
 
     ###____________ Oven _______________
@@ -199,7 +208,7 @@ class MultiProcessingTestCase(unittest.TestCase):
        # Simulate that the package has reached the light barrier
         self.multiProcessing1.multiProcessingSensOvenFeederIn = True
 
-        self.multiProcessing1.heatProduct()
+        ret = self.multiProcessing1.heatProduct()
 
         # Check that ovenCount is incremented
         self.assertEqual(self.multiProcessing1.ovenCount, 1)
@@ -207,9 +216,11 @@ class MultiProcessingTestCase(unittest.TestCase):
         # Check that the oven light is toggled on
         self.assertTrue(self.multiProcessing1.multiProcessingOvenLight)
 
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
+
     def test_moveFeederIn_initial(self):
         """Test moving feeder inside the oven initially"""
-        self.multiProcessing1.moveFeederIn()
+        ret = self.multiProcessing1.moveFeederIn()
 
         # Check that the compressor is activated
         self.assertTrue(self.multiProcessing1.multiProcessingCompressor)
@@ -221,12 +232,12 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.assertTrue(self.multiProcessing1.multiProcessingActOvenInward)
 
         # Check that actionDone is not incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_moveFeederIn_completed(self):
         """Test moving feeder inside the oven when already in"""
         self.multiProcessing1.multiProcessingSensOvenFeederIn = True
-        self.multiProcessing1.moveFeederIn()
+        ret = self.multiProcessing1.moveFeederIn()
 
         # Check that the oven movement is stopped
         self.assertFalse(self.multiProcessing1.multiProcessingActOvenInward)
@@ -238,11 +249,11 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.assertFalse(self.multiProcessing1.multiProcessingValveOvenDoor)
 
         # Check that actionDone is incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
     def test_moveFeederOut_initial(self):
         """Test moving feeder outside the oven initially"""
-        self.multiProcessing1.moveFeederOut()
+        ret = self.multiProcessing1.moveFeederOut()
 
         # Check that the compressor is activated
         self.assertTrue(self.multiProcessing1.multiProcessingCompressor)
@@ -254,12 +265,12 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.assertTrue(self.multiProcessing1.multiProcessingActOvenOutward)
 
         # Check that actionDone is not incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_moveFeederOut_completed(self):
         """Test moving feeder outside the oven when already out"""
         self.multiProcessing1.multiProcessingSensOvenFeederOut = True
-        self.multiProcessing1.moveFeederOut()
+        ret = self.multiProcessing1.moveFeederOut()
 
         # Check that the oven movement is stopped
         self.assertFalse(self.multiProcessing1.multiProcessingActOvenOutward)
@@ -271,30 +282,30 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.assertFalse(self.multiProcessing1.multiProcessingValveOvenDoor)
 
         # Check that actionDone is incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 1)        
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)       
 
 
     ###____________ Vacuum gripper _______________
     def test_moveVacuumToOven_initial(self):
         """Test moving vacuum gripper to the oven initially"""
-        self.multiProcessing1.moveVacuumToOven()
+        ret = self.multiProcessing1.moveVacuumToOven()
 
         # Check that the gripper movement to the oven is activated
         self.assertTrue(self.multiProcessing1.multiProcessingActGripperToOven)
 
         # Check that actionDone is not incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
     def test_moveVacuumToOven_completed(self):
         """Test moving vacuum gripper to the oven when already at the oven"""
         self.multiProcessing1.multiProcessingSensVacuumGripperAtOven = True
-        self.multiProcessing1.moveVacuumToOven()
+        ret = self.multiProcessing1.moveVacuumToOven()
 
         # Check that the gripper movement to the oven is stopped
         self.assertFalse(self.multiProcessing1.multiProcessingActGripperToOven)
 
         # Check that actionDone is incremented
-        self.assertEqual(self.multiProcessing1.actionDone, 1)
+        self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
     def test_gripProduct_initial(self):
         """ Simulate the vacuum gripper inital action """
@@ -302,11 +313,11 @@ class MultiProcessingTestCase(unittest.TestCase):
         self.multiProcessing1.multiProcessingSensVacuumGripperAtTurntable = True
         self.multiProcessing1.multiProcessingSensTurntablePosVacuum = True
 
-        self.multiProcessing1.gripProduct()
+        ret = self.multiProcessing1.gripProduct()
         self.assertTrue(self.multiProcessing1.multiProcessingCompressor)
         self.assertTrue(self.multiProcessing1.multiProcessingActLowerValve)
         self.assertEqual(self.multiProcessing1.vacuumCount, 1)
-        self.assertEqual(self.multiProcessing1.actionDone, 0)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
 
 if __name__ == '__main__':
