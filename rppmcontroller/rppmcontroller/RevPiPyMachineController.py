@@ -1,4 +1,4 @@
-import logging
+import inspect
 import inspect
 import json as json
 import logging
@@ -16,19 +16,15 @@ from queue import Empty
 from typing import Any, Dict, List, Optional, Callable, cast
 
 import yaml
+from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.machine.CommandExecutionStatus import \
-    CommandExecutionStatus
-from rppmcontroller.machine.EventKind import EventKind
-from rppmcontroller.machine.MachineStatus import MachineStatus
-from rppmcontroller.protocol.CommandFeedback import CommandFeedback
-from rppmcontroller.protocol.MachineFeedback import MachineFeedback
-
 from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
+from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.MachineStatus import MachineStatus
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.highbay.HighBay import HighBay
@@ -37,10 +33,12 @@ from rppmcontroller.machine.multiprocessing.MultiProcessing import \
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.protocol import socketConnexionHelper
+from rppmcontroller.protocol.CommandFeedback import CommandFeedback
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.JSONParser import JSONParser
 from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.MQTTFunctions import MQTTFunctions
+from rppmcontroller.protocol.MachineFeedback import MachineFeedback
 from rppmcontroller.protocol.MachineStatusRequestAnswer import \
     MachineStatusRequestAnswer
 
@@ -246,7 +244,7 @@ class RevPiPyMachineController:
                             # Call the command function: it must return either None if nothing else is required
                             #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
                             # Arrange the function parameters in the correct order and match them with the function.
-                            if func != None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
+                            if func is not None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
                                 pos = inputBufferItem.message.parameters
                                 i = len(pos)
                                 if i == 0:
@@ -286,7 +284,7 @@ class RevPiPyMachineController:
                                     ret = func(m, box[0], box[1])
                                 else:
                                     logging.warning(f"unsupported number of parameters: {i}")
-                            elif func != None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING"):
+                            elif func is not None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING"):
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
                                 if i == 0:
@@ -295,7 +293,7 @@ class RevPiPyMachineController:
                                     ret = func(m, color[0])
                             #elif inputBufferItem.message.type == "PUNCHING":
                             #    ret = func(m)
-                            elif func != None and (inputBufferItem.message.type == "CONVEYOR"):
+                            elif func is not None and (inputBufferItem.message.type == "CONVEYOR"):
                                 mix = inputBufferItem.message.parameters
                                 i = len(mix)
                                 if i == 0:
