@@ -308,7 +308,7 @@ class SortingLine(Machine):
                                     None)
     
 
-    def detectEject_CycleStep(self, color) -> CycleStepResult:
+    def deteject_CycleStep(self, color) -> CycleStepResult:
         """
         Used to detect a token, its color and eject it to the appropriate colored storage unit
         """
@@ -366,11 +366,11 @@ class SortingLine(Machine):
                     ret = True # command final goal reached, no need to call this cycleStep again
         if ret:
             return CycleStepResult(CycleStepResultEnum.DONE, 
-                                    f"detectEject_CycleStep", 
+                                    f"deteject_CycleStep", 
                                     None)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
-                                    f"detectEject_CycleStep", 
+                                    f"deteject_CycleStep", 
                                     None)
 
 
@@ -379,6 +379,9 @@ class SortingLine(Machine):
 
     def eject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.eject_CycleStep(color)
+
+    def deteject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
+        return lambda: self.deteject_CycleStep(color)
 
     def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()
