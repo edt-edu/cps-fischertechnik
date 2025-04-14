@@ -38,29 +38,29 @@ Red ;
 Typ voltage : 2V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Images/RedResistor.png[Red led resistor calculation]
+Image::Images/RedResistor.png[Red led resistor calculation]
 
 White ;
 Typ voltage : 2V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Images/WhiteResistor.png[White led resistor calculation]
+Image::Images/WhiteResistor.png[White led resistor calculation]
 
 Blue ;
 Typ voltage : 3.5V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Images/BlueResistor.png[Blue led resistor calculation]
+Image::Images/BlueResistor.png[Blue led resistor calculation]
 
 Green ;
 Typ voltage : 3.6V
 Typ current : 20mA = 0.02A
 Résistor :
-image::Images/GreenResistor.png[Green led resistor calculation]
+Image::Images/GreenResistor.png[Green led resistor calculation]
 
 
 
-image::Images/SchemeArduino.png[Ardunio wiring]
+Image::Images/SchemeArduino.png[Ardunio wiring]
 
 ### cable mapping for the ADC arduino system
 
