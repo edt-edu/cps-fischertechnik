@@ -115,7 +115,7 @@ class HighBay(Machine, TransitioningMachine):
 
         # helper variables
         self.previous_isExecuting_log = None
-        self.reset_rpi_encoder_counters = False
+        self.__setup_finished = False
         self.next_config = None
         self.__state = None
 
@@ -494,7 +494,7 @@ class HighBay(Machine, TransitioningMachine):
         setup_finished = self.goto_config()
         if setup_finished:
             # setup is finished
-            self.reset_rpi_encoder_counters = True
+            self.__setup_finished = True
         return self.setup
 
     def conveyor_forward(self):
@@ -577,7 +577,7 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config)
 
         # perform a setup to recalibrate the encoders
-        runner.then_run(self.setup, until=lambda: self.reset_rpi_encoder_counters)
+        runner.then_run(self.setup, until=lambda: self.__setup_finished)
 
         return runner.run()
 
@@ -602,7 +602,7 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config)
 
         # perform a setup because we need precise encoders now
-        runner.then_run(self.setup, until=lambda: self.reset_rpi_encoder_counters)
+        runner.then_run(self.setup, until=lambda: self.__setup_finished)
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -616,6 +616,6 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config, until=lambda: not self.highbaySensOutside)
 
         # perform another setup
-        runner.then_run(self.setup, until=lambda: self.reset_rpi_encoder_counters)
+        runner.then_run(self.setup, until=lambda: self.__setup_finished)
 
         return runner.run()
