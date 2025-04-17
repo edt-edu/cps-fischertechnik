@@ -1,21 +1,18 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
+
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
-from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine
 from rppmcontroller.machine.sortingLine.SortingLineConfig import \
     SortingLineConfig
-from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
-from typing import Any, Callable, Dict, Optional
-from typing_extensions import override
+from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 
 class SortingLine(Machine, TransitioningMachine):
@@ -73,9 +70,11 @@ class SortingLine(Machine, TransitioningMachine):
 
         # helper variables
         self.isInitialized = True   # SortingLine doesn't require initialization !? is this true ? does the self.__counter need to be put back to 0 from time to time to avoid overflow ?
-        self.__packageOnLine = self.__packageCountSteps = False
+        self.__packageOnLine = False
+        self.__packageCountSteps = False
         self.once = True
         self.previous_isExecuting_log = None
+        self.__counter = None
 
     @property
     def sortingLineSensImpulseCounterRaw(self):
