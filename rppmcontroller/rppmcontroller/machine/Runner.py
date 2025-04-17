@@ -17,7 +17,8 @@ from rppmcontroller.machine.Timer import Timer
 
 class TransitioningMachine:
     def __init__(self):
-        self.__runners: [Runner] = []
+        self.__runners: list[Runner] = []
+        """A list containing all runners which this machine ever created"""
 
     @abstractmethod
     def goto_config(self, config) -> bool:
@@ -42,9 +43,11 @@ class TransitioningMachine:
         return any(runner.running for runner in self.__runners)
 
 
-class Runner:
+class Runner(CycleStepResult):
     """
     Transitions a machine into different configurations.
+
+    Can also be used as momentary CycleStepResult.
     """
 
     def __init__(self, machine: TransitioningMachine):
@@ -53,9 +56,11 @@ class Runner:
 
         :param machine: The machine to control
         """
+        super().__init__(CycleStepResultEnum.MUST_CONTINUE,
+                         "runner hasn't started yet")
         self.__machine: TransitioningMachine = machine
         """The machine we are working on"""
-        self.__routine: [Callable[[], CycleStepResult]] = []
+        self.__routine: list[Callable[[], CycleStepResult]] = []
         """Functions which transition the machine into a desired state"""
         self.__routine_index: int = 0
         """The index of the currently aspirated state"""
@@ -99,7 +104,8 @@ class Runner:
         """
         Appends the specified runnable to this routine. It'll be called
         until it specifies that it is done.
-        :param runnable: The runnable to execute. Must return `True` in
+        :param runnable: The runnable to execute. Must return a
+        CycleStepResult or `True` in
         order to indicate that it is done.
         :param until: A check whether the runnable is done. If set,
         the return value of the runnable is ignored.
@@ -132,10 +138,8 @@ class Runner:
             if timeout_timer is not None and timeout_timer.elapsed():
                 res = CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
                                       "runner timeout",
-                                      (
-                                      f"subRoutineIndex: "
-                                      f"{self.__routine_index}",
-                                      res))
+                                      (f"subRoutineIndex: "
+                                       f"{self.__routine_index}", res))
 
             if res.is_terminated():
                 return res
@@ -149,10 +153,8 @@ class Runner:
             if not timer_elapsed:
                 return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                        "waiting for hold timer",
-                                       (
-                                       f"subRoutineIndex: "
-                                       f"{self.__routine_index}",
-                                       res))
+                                       (f"subRoutineIndex: "
+                                        f"{self.__routine_index}", res))
 
             return res
 
@@ -196,32 +198,37 @@ class Runner:
                 return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
         runner_pointer = RunnerPointer()
-        return self.then_run(runner_pointer.run,
-                             until,
-                             or_timeout_after)
+        return self.then_run(runner_pointer.run, until, or_timeout_after)
 
     def run(self) -> typing.Self:
         """
-        Advance the current routine
+        Advance the current routine and update the CycleStepResult properties
+        of this
         :return: self
         """
-        logging.debug(f"running subroutine {self.__routine_index + 1}/"
-                      f"{len(self.__routine)}")
         self.__running = True
+        self.result = CycleStepResultEnum.MUST_CONTINUE
         sub_routine = self.__routine[self.__routine_index]
+
+        sub_routine_info = f"subroutine {self.__routine_index + 1}/{len(self.__routine)}: {sub_routine}"
+        self.info = f"running {sub_routine_info}"
+
         # call the sub routine
         res = sub_routine()
+        self.subCycleStepResult = (sub_routine_info, res)
 
         if res.is_terminated():
             self.__routine_index = 0
             self.__running = False
-            logging.debug("routine aborted")
+            self.info = "routine aborted"
+            self.result = res.result
         elif not res.must_continue():
             self.__routine_index += 1
             if self.__routine_index >= len(self.__routine):
                 self.__routine_index = 0  # we are done
                 self.__running = False
-                logging.debug("routine finished")
+                self.result = CycleStepResultEnum.DONE
+                self.info = "routine finished"
             else:
                 self.run()  # directly start the next routine to avoid idling
 
