@@ -577,7 +577,7 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config)
 
         # perform a setup to recalibrate the encoders
-        runner.then_run(self.setup, until=lambda: not self.__isExecuting())
+        runner.then_run(self.setup, until=lambda: self.reset_rpi_encoder_counters)
 
         return runner.run()
 
@@ -602,7 +602,7 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config)
 
         # perform a setup because we need precise encoders now
-        runner.then_run(self.setup, until=lambda: not self.__isExecuting())
+        runner.then_run(self.setup, until=lambda: self.reset_rpi_encoder_counters)
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -616,6 +616,6 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config, until=lambda: not self.highbaySensOutside)
 
         # perform another setup
-        runner.then_run(self.setup, until=lambda: not self.__isExecuting())
+        runner.then_run(self.setup, until=lambda: self.reset_rpi_encoder_counters)
 
         return runner.run()
