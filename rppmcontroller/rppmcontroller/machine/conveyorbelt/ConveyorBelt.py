@@ -1,22 +1,19 @@
+import logging
+from typing import Any, Callable, Dict, Optional
+
+from typing_extensions import override
+
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-import logging
-from typing import Any, Dict
-
 from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.Runner import TransitioningMachine
+from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.conveyorbelt.ConveyorBeltConfig import \
     ConveyorBeltConfig
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from typing import Any, Callable, Dict, Optional, Tuple
-from typing_extensions import override
-import logging
 
 
 class ConveyorBelt(Machine, TransitioningMachine):
@@ -36,6 +33,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
     def __init__(self, id1):
         # inputs
+
         self.__conveyorSensImpulseCounterRaw = 0
         self.__conveyorSensFeed = True
         self.__conveyorSensSwap = True
@@ -43,7 +41,6 @@ class ConveyorBelt(Machine, TransitioningMachine):
         #outputs
         self.__conveyorActForward = False
         self.__conveyorActBackward = False
-
 
 
         dictMap = {RequestedParameter.LIGHTBARRIERFEEDSTATION: self.__conveyorSensSwap,
@@ -55,6 +52,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
         #helper variables
         self.__counter = ImpulseCounter()
+        self.current = 0
         self.arrived = False
         self.once = True
         self.isInitialized = True       # Conveyor doesn't require initialization process
@@ -139,6 +137,11 @@ class ConveyorBelt(Machine, TransitioningMachine):
         # logging.debug(f"Step counter : {self.current }")
         return self.current
 
+    @override
+    def goto_config(self, config: ConveyorBeltConfig) -> CycleStepResult:
+        self.conveyorActForward = config.state is ConveyorState.FORWARD
+        self.conveyorActBackward = config.state is ConveyorState.BACKWARD
+        return CycleStepResult(CycleStepResultEnum.DONE, "target config reached")
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
@@ -239,11 +242,6 @@ class ConveyorBelt(Machine, TransitioningMachine):
                                     f"backwardGoto_CycleStep",
                                     None)
 
-    def goto_config(self, config: ConveyorBeltConfig) -> bool:
-        self.conveyorActForward = config.state is ConveyorState.FORWARD
-        self.conveyorActBackward = config.state is ConveyorState.BACKWARD
-        return True
-
     @override
     def stop_CycleStep(self) -> CycleStepResult:
         """Stop the conveyor"""
@@ -259,21 +257,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         """Stop the conveyor"""
         return lambda: self.stop_CycleStep()
 
-
-    def move_out_Command(self, direction: Direction) -> Optional[Callable[[], CycleStepResult]]:
-        """Move the package to a given direction until it leaves the conveyor
-            Args:
-                direction (Direction) : the direction where to move the package
-
-            The conveyor will stop after few steps when the package leaves the coveyor.
-        """
-        self.arrived = False
-        if dir == Direction.FORWARD:
-            return lambda: self.forwardLeaveConveyor_CycleStep()
-        if dir == Direction.BACKWARD:
-            return lambda: self.backwardLeaveConveyor_CycleStep()
-
-    def move_out(self, direction: Direction):
+    def move_out_Command(self, direction: Direction) -> Runner:
         """Move the package to a given direction until it leaves the conveyor
             Args:
                 direction (Direction) : the direction where to move the package

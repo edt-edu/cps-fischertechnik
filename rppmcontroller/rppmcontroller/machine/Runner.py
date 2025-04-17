@@ -21,11 +21,11 @@ class TransitioningMachine:
         """A list containing all runners which this machine ever created"""
 
     @abstractmethod
-    def goto_config(self, config) -> bool:
+    def goto_config(self, config) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
         :param config: A machine config for the specific machine
-        :return: True when the configuration has been reached, otherwise False
+        :return: A CycleStepResult describing the progress
         """
         pass
 
