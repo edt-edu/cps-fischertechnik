@@ -18,7 +18,9 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 class ConveyorBelt(Machine, TransitioningMachine):
 
-
+    @property
+    def isInitialized(self) -> bool:
+        return True
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
@@ -33,6 +35,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
     def __init__(self, id1):
         # inputs
+
 
         self.__conveyorSensImpulseCounterRaw = 0
         self.__conveyorSensFeed = True
@@ -57,6 +60,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         self.once = True
         self.isInitialized = True       # Conveyor doesn't require initialization process
         self.previous_isExecuting_log = None
+        self.sensed = None
 
     @property
     def conveyorSensFeed(self) -> bool:
@@ -267,7 +271,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         runner = self.create_runner()
 
         # move to sensor
-        runner.then_run_runner_from(lambda: self.move_to_sensor(direction))
+        runner.then_run_runner_from(lambda: self.move_to_sensor_Command(direction))
         # keep moving for a second or so
         runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_direction(direction)), and_stay_for=1.0)
         # stop the belt
@@ -289,19 +293,9 @@ class ConveyorBelt(Machine, TransitioningMachine):
             return lambda: self.backwardGoto_CycleStep(steps)
         else:
             logging.error(f"Invalid direction {dir}")
+            return None
 
-
-    def move_to_sensor_Command(self, direction: Direction) -> Optional[Callable[[], CycleStepResult]]:
-        """Move the package to a given direction until it is detected by the destination sensor
-            Args:
-                direction (Direction) : the direction where to move the package
-        """
-        if dir == Direction.FORWARD:
-            return lambda: self.forwardFromAnywhere_CycleStep()
-        if dir == Direction.BACKWARD:
-            return lambda: self.backwardFromAnywhere_CycleStep()
-
-    def move_to_sensor(self, direction: Direction):
+    def move_to_sensor_Command(self, direction: Direction):
         """Move the package to a given direction until it is detected by the destination sensor
             Args:
                 direction (Direction) : the direction where to move the package
