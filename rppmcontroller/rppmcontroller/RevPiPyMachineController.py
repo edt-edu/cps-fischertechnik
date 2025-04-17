@@ -16,7 +16,6 @@ from queue import Empty
 from typing import Any, Dict, List, Optional, Callable, cast
 
 import yaml
-from rppmcontroller.machine.ExecutionStatus import ExecutionStatus
 
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
