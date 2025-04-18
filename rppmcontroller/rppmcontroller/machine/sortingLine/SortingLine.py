@@ -308,7 +308,7 @@ class SortingLine(Machine):
                                     None)
     
 
-    def deteject_CycleStep(self, color) -> CycleStepResult:
+    def deteject_CycleStep(self) -> CycleStepResult:
         """
         Used to detect a token, its color and eject it to the appropriate colored storage unit
         """
@@ -317,53 +317,72 @@ class SortingLine(Machine):
         redCounter = 11
         blueCounter = 20
         current = self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        self.__sortingLineActMotorConveyor = True
+        self.__sortingLineActCompressorOn = True
+        logging.warning('test if 1')
+        logging.debug(f'deteject current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, Motors = {self.__sortingLineActMotorConveyor}, Compressor = {self.__sortingLineActCompressorOn}, Premier capteur = {self.__sortingLineSensInputLightBarrier}, Package on line = {self.__packageOnLine}')
+
         if not self.__packageCountSteps : # and self.once:
-            if not self.__sortingLineSensInputLightBarrier and not self.__packageOnLine:
+            if self.__sortingLineSensInputLightBarrier:
                 self.__packageOnLine = True
                 print("packageOnLine True")
-                self.__sortingLineActMotorConveyor = True
-                self.__sortingLineActCompressorOn = True
-        if self.__packageOnLine:
-            self.__sortingLineActMotorConveyor = True
+                if not self.__sortingLineSensMiddleLightBarrier and self.__packageOnLine:
+                    logging.debug('set count steps true')
+                    self.__packageCountSteps = True            
             if not self.__packageCountSteps:
-                self.__counter.counter = 0
+                        self.__counter.counter = 0
                 
         else:
+            logging.warning('test if false')
+            logging.debug(f'deteject current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, Motors = {self.__sortingLineActMotorConveyor}, Compressor = {self.__sortingLineActCompressorOn}, Premier capteur = {self.__sortingLineSensInputLightBarrier}, Package on line = {self.__packageOnLine}')
+
             if self.__sortingLineSensPresenceADC == 1:
                 if self.__sortingLineSensWhiteADC == 1:
-                    color = Color.WHITE
+                    detcolor = 3
                 elif self.__sortingLineSensRedADC == 1:
-                    color = Color.RED
+                    detcolor = 2
                 elif self.__sortingLineSensBlueADC == 1:
-                    color = Color.BLUE
-            if current > blueCounter and color == Color.BLUE:
-                self.__sortingLineActMotorConveyor = False
-                self.__sortingLineActBlueEjector = True
-                if not self.__sortingLineSensBlueLightBarrier:
-                    self.__packageOnLine = self.__packageCountSteps = False
-                    print("packageOnLine False")
-                    self.__sortingLineActCompressorOn = False
-                    self.__sortingLineActBlueEjector = False
-                    ret = True # command final goal reached, no need to call this cycleStep again
-            if current > redCounter and color == Color.RED:
-                self.__sortingLineActMotorConveyor = False
-                self.__sortingLineActRedEjector = True
-                if not self.__sortingLineSensRedLightBarrier:
-                    self.__packageOnLine = False
-                    self.__packageCountSteps = False
-                    print("packageOnLine False")
-                    self.__sortingLineActCompressorOn = False
-                    self.__sortingLineActRedEjector = False
-                    ret = True # command final goal reached, no need to call this cycleStep again
-            if current > whiteCounter and color == Color.WHITE:
-                self.__sortingLineActMotorConveyor = False
-                self.__sortingLineActWhiteEjector = True
-                if not self.__sortingLineSensWhiteLightBarrier:
-                    self.__packageOnLine = self.__packageCountSteps = False
-                    print("packageOnLine False")
-                    self.__sortingLineActCompressorOn = False
-                    self.__sortingLineActWhiteEjector = False
-                    ret = True # command final goal reached, no need to call this cycleStep again
+                    detcolor = 1
+                logging.warning('test if detcolor')
+                logging.debug(f'detcolor ={detcolor}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, Motors = {self.__sortingLineActMotorConveyor}, Compressor = {self.__sortingLineActCompressorOn}, Premier capteur = {self.__sortingLineSensInputLightBarrier}, Package on line = {self.__packageOnLine}')
+
+                if current > blueCounter and detcolor == 1:
+                    logging.warning('test if blue')
+                    logging.debug(f'deteject current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, Motors = {self.__sortingLineActMotorConveyor}, Compressor = {self.__sortingLineActCompressorOn}, Premier capteur = {self.__sortingLineSensInputLightBarrier}, Package on line = {self.__packageOnLine}')
+
+                    self.__sortingLineActMotorConveyor = False
+                    self.__sortingLineActBlueEjector = True
+                    if not self.__sortingLineSensBlueLightBarrier:
+                        self.__packageOnLine = self.__packageCountSteps = False
+                        print("packageOnLine False")
+                        self.__sortingLineActCompressorOn = False
+                        self.__sortingLineActBlueEjector = False
+                        ret = True # command final goal reached, no need to call this cycleStep again
+                if current > redCounter and detcolor == 2:
+                    logging.warning('test if red')
+                    logging.debug(f'deteject current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, Motors = {self.__sortingLineActMotorConveyor}, Compressor = {self.__sortingLineActCompressorOn}, Premier capteur = {self.__sortingLineSensInputLightBarrier}, Package on line = {self.__packageOnLine}')
+
+                    self.__sortingLineActMotorConveyor = False
+                    self.__sortingLineActRedEjector = True
+                    if not self.__sortingLineSensRedLightBarrier:
+                        self.__packageOnLine = False
+                        self.__packageCountSteps = False
+                        print("packageOnLine False")
+                        self.__sortingLineActCompressorOn = False
+                        self.__sortingLineActRedEjector = False
+                        ret = True # command final goal reached, no need to call this cycleStep again
+                if current > whiteCounter and detcolor == 3:
+                    logging.warning('test if white')
+                    logging.debug(f'deteject current={current}, counter={self.__counter.counter}, __packageCountSteps={self.__packageCountSteps}, __packageOnLine={self.__packageOnLine}, Motors = {self.__sortingLineActMotorConveyor}, Compressor = {self.__sortingLineActCompressorOn}, Premier capteur = {self.__sortingLineSensInputLightBarrier}, Package on line = {self.__packageOnLine}')
+
+                    self.__sortingLineActMotorConveyor = False
+                    self.__sortingLineActWhiteEjector = True
+                    if not self.__sortingLineSensWhiteLightBarrier:
+                        self.__packageOnLine = self.__packageCountSteps = False
+                        print("packageOnLine False")
+                        self.__sortingLineActCompressorOn = False
+                        self.__sortingLineActWhiteEjector = False
+                        ret = True # command final goal reached, no need to call this cycleStep again
         if ret:
             return CycleStepResult(CycleStepResultEnum.DONE, 
                                     f"deteject_CycleStep", 
@@ -380,8 +399,8 @@ class SortingLine(Machine):
     def eject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.eject_CycleStep(color)
 
-    def deteject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
-        return lambda: self.deteject_CycleStep(color)
+    def deteject_Command(self) -> Optional[Callable[[], CycleStepResult]]:
+        return lambda: self.deteject_CycleStep()
 
     def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()
