@@ -62,6 +62,8 @@ image::Images/GreenResistor.png[Green led resistor calculation]
 
 image::Images/SchemeArduino.png[Ardunio wiring]
 
+
+
 ### cable mapping for the ADC arduino system
 
 This part only shows the mapping of the cables linked to the arduino, it does not take into account the other cables linked to the FT and the DIO or the leds and resistors.
@@ -86,6 +88,11 @@ FT side :
 //----------------------
 | 9 | A4 Analog 0-10VDC | color sensor | A0 | analog input 0 | Analog 0-5VDC | The analog signal sent by the FT color sensor is reduced to a 0-5V signal and  sent to the A0 pin
 |===
+
+
+In addition to the arduino 5V alimentation, it requires a 24v alimentation and a ground that is common to the FT machine. 
+
+image::Images/ADC_annotated.png[Annotated picture for wiring]
 
 ## Code
 
