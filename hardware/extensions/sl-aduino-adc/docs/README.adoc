@@ -60,7 +60,17 @@ image::Images/GreenResistor.png[Green led resistor calculation]
 
 
 
-image::Images/SchemeArduino.png[Ardunio wiring]
+image::Images/SchemeArduino_input_read.png[Ardunio input read wiring schema]
+
+#### Output circuit
+
+The Arduino signal must be raised to >10v in order to be a valid input for the RevPi DIO.
+It use a commutation circuit based on a LM339.
+
+Note: It uses a divider bridge in order to succesfully provide enough voltage to the DIO as this one contains an internal resistance that creates a voltage drop.
+
+
+image::Images/SchemaArduino_output_commutation.jpg[Ardunio output commutation schema for one cable]
 
 ### cable mapping for the ADC arduino system
 
@@ -86,6 +96,14 @@ FT side :
 //----------------------
 | 9 | A4 Analog 0-10VDC | color sensor | A0 | analog input 0 | Analog 0-5VDC | The analog signal sent by the FT color sensor is reduced to a 0-5V signal and  sent to the A0 pin
 |===
+
+
+In addition to the arduino 5V alimentation, it requires a 24v alimentation and a ground that is common to the FT machine. 
+
+
+image::Images/SchemaArduino_full.jpg[Arduino Full schema]
+
+image::Images/ADC_annotated.jpeg[Annotated picture of the real card for wiring]
 
 ## Code
 
