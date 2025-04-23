@@ -60,9 +60,17 @@ image::Images/GreenResistor.png[Green led resistor calculation]
 
 
 
-image::Images/SchemeArduino.png[Ardunio wiring]
+image::Images/SchemeArduino_input_read.png[Ardunio input read wiring schema]
+
+#### Output circuit
+
+The Arduino signal must be raised to >10v in order to be a valid input for the RevPi DIO.
+It use a commutation circuit based on a LM339.
+
+Note: It uses a divider bridge in order to succesfully provide enough voltage to the DIO as this one contains an internal resistance that creates a voltage drop.
 
 
+image::Images/SchemeArduino_output_commutation.png[Ardunio output commutation schema for one cable]
 
 ### cable mapping for the ADC arduino system
 
@@ -93,9 +101,9 @@ FT side :
 In addition to the arduino 5V alimentation, it requires a 24v alimentation and a ground that is common to the FT machine. 
 
 
-image::Images/SchemaArduino_full.jpg[Full schema]
+image::Images/SchemaArduino_full.jpg[Arduino Full schema]
 
-image::Images/ADC_annotated.png[Annotated picture for wiring]
+image::Images/ADC_annotated.png[Annotated picture of the real card for wiring]
 
 ## Code
 
