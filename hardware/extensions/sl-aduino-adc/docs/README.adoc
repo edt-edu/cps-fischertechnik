@@ -92,6 +92,9 @@ FT side :
 
 In addition to the arduino 5V alimentation, it requires a 24v alimentation and a ground that is common to the FT machine. 
 
+
+image::Images/SchemaArduino_full.jpg[Full schema]
+
 image::Images/ADC_annotated.png[Annotated picture for wiring]
 
 ## Code
