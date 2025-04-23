@@ -70,7 +70,7 @@ It use a commutation circuit based on a LM339.
 Note: It uses a divider bridge in order to succesfully provide enough voltage to the DIO as this one contains an internal resistance that creates a voltage drop.
 
 
-image::Images/SchemeArduino_output_commutation.png[Ardunio output commutation schema for one cable]
+image::Images/SchemeArduino_output_commutation.jpg[Ardunio output commutation schema for one cable]
 
 ### cable mapping for the ADC arduino system
 
@@ -103,7 +103,7 @@ In addition to the arduino 5V alimentation, it requires a 24v alimentation and a
 
 image::Images/SchemaArduino_full.jpg[Arduino Full schema]
 
-image::Images/ADC_annotated.png[Annotated picture of the real card for wiring]
+image::Images/ADC_annotated.jpg[Annotated picture of the real card for wiring]
 
 ## Code
 
