@@ -112,26 +112,27 @@ image::Images/ADC_annotated.jpeg[Annotated picture of the real card for wiring]
 [mermaid]
 ----
 graph TD
-    A(Start) --> B[Initialize variables]
-    B --> C[Read analog signal]
-    C --> D[digital value = digital value of the analog signal]
-    D --> E[Display values]
-    E --> F{color/object ?}
-    F -->|no| C[Read analog signal]
-    F -->|yes| G[Turn on the green led and off the others]
-    G --> H{Test the digital values}
-    H -->|digital value in the red range for more than sensTime milliseconds| I[Turn on the red led]
-    H -->|digital value in the white range for more than sensTime milliseconds| K[Turn on the white led]
-    H -->|digital value in the blue range for more than sensTime milliseconds| M[Turn on the blue led]
-    I --> J[Delay for onTime milliseconds for the led to stay on]
-    K --> L[Delay for onTime milliseconds for the led to stay on]
-    M --> N[Delay for onTime milliseconds for the led to stay on]
-    J --> O[Turn off all the leds]
-    L --> O
-    N --> O
-    H -->|unknown digital value| O
-    O --> P[Repeat]
-    P --> Q(End)
+  A(Start) --> B[Initialize variables]
+  B --> C[Read analog signal]
+  C --> D[digital value = digital value of the analog signal]
+  D --> E[Display values]
+  E --> F{color/object ?}
+  F -->|no| C[Read analog signal]
+  F -->|yes| G[Turn on the green led and off the others]
+  G --> H{Test the digital values}
+  H -->|digital value in the red range for more than sensTime milliseconds| I[Turn on the red led]
+  H -->|digital value in the white range for more than sensTime milliseconds| K[Turn on the white led]
+  H -->|digital value in the blue range for more than sensTime milliseconds| M[Turn on the blue led]
+  I --> J[Delay for onTime milliseconds for the led to stay on]
+  K --> L[Delay for onTime milliseconds for the led to stay on]
+  M --> N[Delay for onTime milliseconds for the led to stay on]
+  J --> O[Turn off all the leds]
+  L --> O
+  N --> O
+  H -->|unknown digital value| O
+  O --> P[Repeat]
+  P --> C
+  P --> Q(End)
 ----
 
 ### Setup
