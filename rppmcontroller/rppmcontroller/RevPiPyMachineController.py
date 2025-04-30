@@ -180,6 +180,7 @@ class RevPiPyMachineController:
         :param inputBuffer:
         :return:
         """
+        logging.debug("processingJson")
         foundMatchingMachine = False
         func = None
         ret = None
