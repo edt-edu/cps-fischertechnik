@@ -587,7 +587,7 @@ class HighBay(Machine, TransitioningMachine):
 
         # perform a setup to recalibrate the encoders
         runner.then_run(self.setup_Command,
-                        until=lambda: self.__setup_finished)
+                        until=lambda: self.isInitialized)
 
         return runner.run()
 
@@ -613,7 +613,7 @@ class HighBay(Machine, TransitioningMachine):
 
         # perform a setup because we need precise encoders now
         runner.then_run(self.setup_Command,
-                        until=lambda: self.__setup_finished)
+                        until=lambda: self.isInitialized)
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -628,7 +628,7 @@ class HighBay(Machine, TransitioningMachine):
 
         # perform another setup
         runner.then_run(self.setup_Command,
-                        until=lambda: self.__setup_finished)
+                        until=lambda: self.isInitialized)
 
         return runner.run()
 
