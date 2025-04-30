@@ -487,7 +487,7 @@ class RevPiPyMachineController:
         logging.debug("after write")
         self.publishMQTTMeasurementStatus()
         logging.debug("after publish")
-        self.reset()
+        self.reset() # TODO this methods block infinitely - it shouldn't
         logging.debug("after reset")
         # # logging.debug(self.currentlyExecuting)
         self.createMachineFeedbackOnChange()
