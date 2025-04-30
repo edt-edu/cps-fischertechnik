@@ -30,7 +30,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
-        return self.__conveyorActForward or self.__conveyorActBackward
+        return res
 
 
     def __init__(self, id1):
@@ -58,7 +58,6 @@ class ConveyorBelt(Machine, TransitioningMachine):
         self.current = 0
         self.arrived = False
         self.once = True
-        self.isInitialized = True       # Conveyor doesn't require initialization process
         self.previous_isExecuting_log = None
         self.sensed = None
 
@@ -278,21 +277,21 @@ class ConveyorBelt(Machine, TransitioningMachine):
         runner.then_goto(ConveyorBeltConfig())
         return runner.run()
 
-    def move_nb_steps_Command(self, dir: Direction, steps: int) -> Optional[Callable[[], CycleStepResult]]:
+    def move_nb_steps_Command(self, direction: Direction, steps: int) -> Optional[Callable[[], CycleStepResult]]:
         """Move the conveyor belt to a given direction with a given number of steps
             Args:
-                dir (Direction) : the direction where to move the package
+                direction (Direction) : the direction where to move the package
                 steps (int) : the number of steps you want to move the package
 
             There is no control of the position of the package. The conveyor wont stop until it reach the number of steps
         """
         self.sensed = False
-        if dir == Direction.FORWARD:
+        if direction == Direction.FORWARD:
             return lambda: self.forwardGoto_CycleStep(steps)
-        if dir == Direction.BACKWARD:
+        if direction == Direction.BACKWARD:
             return lambda: self.backwardGoto_CycleStep(steps)
         else:
-            logging.error(f"Invalid direction {dir}")
+            logging.error(f"Invalid direction {direction}")
             return None
 
     def move_to_sensor_Command(self, direction: Direction):

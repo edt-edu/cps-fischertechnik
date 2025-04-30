@@ -1,7 +1,9 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, Callable, override
 
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState, \
@@ -119,6 +121,10 @@ class HighBay(Machine, TransitioningMachine):
         self.next_config = None
         self.__state = None
 
+    @property
+    def isInitialized(self) -> bool:
+        return self.__setup_finished
+
     def __isExecuting(self) -> bool:
         return (
             self.__highbayActUp or self.__highbayActDown or
@@ -127,8 +133,7 @@ class HighBay(Machine, TransitioningMachine):
             self.__highbayActHorizontalToConveyor or
             self.__highbayActHorizontalToRack or
             self.__highbayActCantileverForward or
-            self.__highbayActCantileverBackward or
-            self.is_executing_runner)
+            self.__highbayActCantileverBackward or self.is_executing_runner)
 
     @property
     def isExecuting(self) -> bool:
@@ -338,8 +343,10 @@ class HighBay(Machine, TransitioningMachine):
                                  self.highbayActConveyorForward,
                                  self.highbayActConveyorBackward))
 
+    @override
     def goto_config(self,
-                    config: Optional[HighBayConfig] = HighBayConfig()) -> bool:
+                    config: Optional[
+                        HighBayConfig] = HighBayConfig()) -> CycleStepResult:
         """
         Transfer the machine into another configuration
         :param config: The new configuration to transfer the machine to
@@ -347,6 +354,9 @@ class HighBay(Machine, TransitioningMachine):
         otherwise false
         """
         # logging.debug(f"going to {config}")
+
+        # by default, we assume we are not in a setup state
+        self.__setup_finished = False
 
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
@@ -380,7 +390,7 @@ class HighBay(Machine, TransitioningMachine):
                 config.vertical_axis_config.counter_goal or 0)
             if (
                 abs(distance_to_move) > PICKUP_DISTANCE +
-                    self.__axisVertical.tolerance):
+                self.__axisVertical.tolerance):
                 arm_movement = ArmMovement.MAYOR
             else:
                 arm_movement = ArmMovement.MINOR
@@ -389,7 +399,7 @@ class HighBay(Machine, TransitioningMachine):
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(
-                config.horizontal_axis_config):
+            config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
 
         # logging.debug(f"arm_movement: {arm_movement}")
@@ -402,6 +412,9 @@ class HighBay(Machine, TransitioningMachine):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+                                   "cantilever needs to be retracted for "
+                                   "mayor arm movement")
         elif arm_movement is not ArmMovement.IDLE:
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = False
@@ -410,6 +423,8 @@ class HighBay(Machine, TransitioningMachine):
                 self.__axisHorizontal.outputminus)
             self.highbayActUp = self.__axisVertical.outputminus
             self.highbayActDown = self.__axisVertical.outputplus
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+                                   "arm needs to be moved")
         elif (
             config.cantilever_extended and not
         self.highbaySensCantileverFront):
@@ -419,6 +434,8 @@ class HighBay(Machine, TransitioningMachine):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+                                   "cantilever needs to be extended")
         elif (
             not config.cantilever_extended and not
         self.highbaySensCantileverBack):
@@ -428,6 +445,8 @@ class HighBay(Machine, TransitioningMachine):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+                                   "cantilever needs to be retracted")
         else:
             self.highbayActCantileverForward = False
             self.highbayActCantileverBackward = False
@@ -435,35 +454,10 @@ class HighBay(Machine, TransitioningMachine):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
-            return True
-
-        return False
+            return CycleStepResult(CycleStepResultEnum.DONE)
 
     def internalStatus(self) -> Dict[str, Any]:
         return {"isExecuting": self.__isExecuting()}
-
-    def stop(self):
-        self.highbayActUp = False
-        self.highbayActDown = False
-        self.highbayActHorizontalToRack = False
-        self.highbayActHorizontalToConveyor = False
-        self.highbayActConveyorForward = False
-        self.highbayActConveyorBackward = False
-        self.highbayActCantileverForward = False
-        self.highbayActCantileverBackward = False
-
-    def edit_and_goto_config(self, config_editor):
-        """
-        Edits the current config and goes to it.
-        :param config_editor: A consumer of the current config, which edits it
-        :return: A lambda with the goto_config call, intended for the
-        controller
-        """
-        config = self.get_current_config()
-        config_editor(config)
-        runnable = lambda: self.goto_config(config)
-        runnable()
-        return runnable
 
     def create_next_config(self) -> HighBayConfig:
         """
@@ -474,7 +468,7 @@ class HighBay(Machine, TransitioningMachine):
         self.next_config = self.get_current_config()
         return self.next_config
 
-    def goto_next_config(self):
+    def goto_next_config(self) -> Callable[[], CycleStepResult]:
         """
         Goes to the next_config and returns a lambda going to that config
         :return:
@@ -483,71 +477,86 @@ class HighBay(Machine, TransitioningMachine):
         runnable()
         return runnable
 
+    @override
+    def stop_CycleStep(self) -> CycleStepResult:
+        self.highbayActUp = False
+        self.highbayActDown = False
+        self.highbayActHorizontalToRack = False
+        self.highbayActHorizontalToConveyor = False
+        self.highbayActConveyorForward = False
+        self.highbayActConveyorBackward = False
+        self.highbayActCantileverForward = False
+        self.highbayActCantileverBackward = False
+        return CycleStepResult(CycleStepResultEnum.DONE)
+
     # methods intended for orchestrator
 
-    def setup(self):
+    def setup_Command(self) -> Callable[[], CycleStepResult]:
         """
         Set up the highbay and calibrate the counters.
         :return: A lambda rerunning this function
         """
-        # going to the default config is the setup
-        setup_finished = self.goto_config()
-        if setup_finished:
-            # setup is finished
-            self.__setup_finished = True
-        return self.setup
+        def goto_setup():
+            res = self.goto_config()
+            if res.is_done():
+                self.__setup_finished = True
+            return res
 
-    def conveyor_forward(self):
+        return self.create_runner().then_run(goto_setup)
+
+    def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
         return self.goto_next_config()
 
-    def conveyor_backward(self):
+    def conveyor_backward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.BACKWARD
         return self.goto_next_config()
 
-    def conveyor_stop(self):
+    def conveyor_stop_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.IDLE
         return self.goto_next_config()
 
-    def cantilever_forward(self):
+    def cantilever_forward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().cantilever_extended = True
         return self.goto_next_config()
 
-    def cantilever_backward(self):
+    def cantilever_backward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
-    def horizontal_to(self, counter_goal: int):
+    def horizontal_to_Command(self, counter_goal: int) -> Callable[[], CycleStepResult]:
         self.create_next_config().horizontal_axis_config = (
             AxisConfig.to_counter_goal(counter_goal))
         return self.goto_next_config()
 
-    def vertical_to(self, counter_goal: int):
+    def vertical_to_Command(self, counter_goal: int) -> Callable[[], CycleStepResult]:
         self.create_next_config().vertical_axis_config = (
             AxisConfig.to_counter_goal(counter_goal))
         return self.goto_next_config()
 
-    def goto_column(self, column: Union[Column, int]):
+    def goto_column_Command(self, column: Union[Column, int]) -> Callable[[], CycleStepResult]:
         if isinstance(column, int):
             column = Column(column)
 
-        return self.horizontal_to(column.to_counter_goal())
+        return self.horizontal_to_Command(column.to_counter_goal())
 
-    def goto_row(self, row: Union[Row, int]):
+    def goto_row_Command(self, row: Union[Row, int]) -> Callable[[], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
 
-        return self.vertical_to(row.to_counter_goal())
+        return self.vertical_to_Command(row.to_counter_goal())
 
-    def store_to(self, row: Union[Row, int], column: Union[Column, int]):
+    def store_to_Command(self, row: Union[Row, int], column: Union[Column, int]) -> Callable[[], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
             column = Column(column)
 
         # goto conveyor
-        horizontal_axis_config = AxisConfig.to_counter_goal(Column.CONVEYOR.to_counter_goal())
-        vertical_axis_config = AxisConfig.to_counter_goal(Row.CONVEYOR.to_counter_goal())
+        horizontal_axis_config = AxisConfig.to_counter_goal(
+            Column.CONVEYOR.to_counter_goal())
+        vertical_axis_config = AxisConfig.to_counter_goal(
+            Row.CONVEYOR.to_counter_goal())
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
@@ -577,11 +586,12 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config)
 
         # perform a setup to recalibrate the encoders
-        runner.then_run(self.setup, until=lambda: self.__setup_finished)
+        runner.then_run(self.setup_Command,
+                        until=lambda: self.__setup_finished)
 
         return runner.run()
 
-    def pickup_from(self, row: Union[Row, int], column: Union[Column, int]):
+    def pickup_from_Command(self, row: Union[Row, int], column: Union[Column, int]) -> Callable[[], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
@@ -602,7 +612,8 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config)
 
         # perform a setup because we need precise encoders now
-        runner.then_run(self.setup, until=lambda: self.__setup_finished)
+        runner.then_run(self.setup_Command,
+                        until=lambda: self.__setup_finished)
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -616,6 +627,10 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config, until=lambda: not self.highbaySensOutside)
 
         # perform another setup
-        runner.then_run(self.setup, until=lambda: self.__setup_finished)
+        runner.then_run(self.setup_Command,
+                        until=lambda: self.__setup_finished)
 
         return runner.run()
+
+    def stop_Command(self) -> Callable[[], CycleStepResult]:
+        return lambda: self.stop_CycleStep()
