@@ -16,6 +16,13 @@ class CycleStepResult:
             The tuple stores the last ProcessSequenceCommand and its corresponding CycleStepResult that is used to create self.
     """
 
+    @staticmethod
+    def done() -> CycleStepResult:
+        """
+        Convenience method to create a CycleStepResult with result DONE
+        """
+        return CycleStepResult(CycleStepResultEnum.DONE)
+
     def __init__(self, __result: CycleStepResultEnum, info : str = "", subCycleStepResult : Optional[Tuple[str, CycleStepResult ]] = None):
         self._result: CycleStepResultEnum = __result
         self._info: str = info

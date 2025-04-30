@@ -9,13 +9,17 @@ from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.Runner import TransitioningMachine
+from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.sortingLine.SortingLineConfig import \
     SortingLineConfig
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 
 class SortingLine(Machine, TransitioningMachine):
+
+    @property
+    def isInitialized(self) -> bool:
+        return True # no encoder actuators
 
     #TODO self.once: implement reset possibility from execute
 
@@ -69,7 +73,6 @@ class SortingLine(Machine, TransitioningMachine):
         TransitioningMachine.__init__(self)
 
         # helper variables
-        self.isInitialized = True   # SortingLine doesn't require initialization !? is this true ? does the self.__counter need to be put back to 0 from time to time to avoid overflow ?
         self.__packageOnLine = False
         self.__packageCountSteps = False
         self.once = True
@@ -199,7 +202,7 @@ class SortingLine(Machine, TransitioningMachine):
         }
         return status
 
-    def goto_config(self, config: SortingLineConfig) -> bool:
+    def goto_config(self, config: SortingLineConfig) -> CycleStepResult:
         self.sortingLineActMotorConveyor = config.conveyor_active
         self.sortingLineActWhiteEjector = config.white_ejector_active
         self.sortingLineActRedEjector = config.red_ejector_active
@@ -207,7 +210,7 @@ class SortingLine(Machine, TransitioningMachine):
         self.sortingLineActCompressorOn = (self.sortingLineActWhiteEjector or
                                            self.sortingLineActRedEjector or
                                            self.__sortingLineActBlueEjector)
-        return True
+        return CycleStepResult.done()
 
 
     def startOfProcess(self, packageIncoming):
@@ -298,17 +301,13 @@ class SortingLine(Machine, TransitioningMachine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def eject_Command(self, color: Color) -> Optional[Callable[[], CycleStepResult]]:
-        return lambda: self.eject_CycleStep(color)
-
     def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()
 
-    def setup(self):
-        self.stop()
-        return self.setup
+    def setup_Command(self) -> Callable[[], CycleStepResult]:
+        return self.stop_Command()
 
-    def eject(self, color: Color):
+    def eject_Command(self, color: Color) -> Runner:
         runner = self.create_runner()
         config = SortingLineConfig()
 
@@ -342,7 +341,7 @@ class SortingLine(Machine, TransitioningMachine):
 
         return runner.run()
 
-    def sort(self, as_color: Optional[Color] = None):
+    def sort(self, as_color: Optional[Color] = None) -> Runner:
         """
         Wait for a payload and sort it into the specified color, or let the
         color sensor do the work
@@ -368,6 +367,6 @@ class SortingLine(Machine, TransitioningMachine):
                 return Color.RED
             return as_color
 
-        runner.then_run_runner_from(lambda: self.eject(get_color()))
+        runner.then_run_runner_from(lambda: self.eject_Command(get_color()))
 
         return runner.run()
