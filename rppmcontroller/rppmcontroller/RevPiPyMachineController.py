@@ -476,7 +476,7 @@ class RevPiPyMachineController:
             self.mainLoopIteration()
 
     def mainLoopIteration(self):
-        #logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
+        logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
         self.processJson(self.inputBuffer)
         self.read()
         self.exLoop()
