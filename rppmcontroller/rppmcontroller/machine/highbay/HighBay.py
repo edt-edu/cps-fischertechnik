@@ -1,6 +1,8 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional, Union, Callable, override
+from typing import Dict, Any, Optional, Union, Callable
+
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
