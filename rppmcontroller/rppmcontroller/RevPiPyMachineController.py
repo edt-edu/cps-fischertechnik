@@ -478,18 +478,27 @@ class RevPiPyMachineController:
     def mainLoopIteration(self):
         logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
         self.processJson(self.inputBuffer)
+        logging.debug("after processJson")
         self.read()
+        logging.debug("after read")
         self.exLoop()
+        logging.debug("after exLoop")
         self.write()
+        logging.debug("after write")
         self.publishMQTTMeasurementStatus()
+        logging.debug("after publish")
         self.reset()
+        logging.debug("after reset")
         # # logging.debug(self.currentlyExecuting)
         self.createMachineFeedbackOnChange()
+        logging.debug("after feedback")
         # self.createCommandFeedbackOnChange()
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()
+        logging.debug("after decrements")
         time.sleep(self.mainLoopDelay)
+        logging.debug("after sleep")
 
 # Create an empty list
 socket_list : List[socket.socket] = []
