@@ -28,6 +28,8 @@ from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.highbay.HighBay import HighBay
 from rppmcontroller.machine.multiprocessing.MultiProcessing import \
     MultiProcessing
+from rppmcontroller.machine.punchingmachine.PunchingMachine import \
+    PunchingMachine
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.protocol import socketConnexionHelper
@@ -234,8 +236,8 @@ class RevPiPyMachineController:
                                 func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
                                 func = getattr(ConveyorBelt, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            # elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
-                            #     func = getattr(PunchingMachine, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
+                                func = getattr(PunchingMachine, f'{str.lower(inputBufferItem.message.name)}_Command')
                             else:
                                 #TODO raise an exception here
                                 #TODO send a COMMAND_FEEDBACK  IGNORED message
@@ -290,8 +292,8 @@ class RevPiPyMachineController:
                                     ret = func(m)
                                 if i == 1:
                                     ret = func(m, color[0])
-                            #elif inputBufferItem.message.type == "PUNCHING":
-                            #    ret = func(m)
+                            elif inputBufferItem.message.type == "PUNCHING":
+                               ret = func(m)
                             elif func is not None and (inputBufferItem.message.type == "CONVEYOR"):
                                 mix = inputBufferItem.message.parameters
                                 i = len(mix)

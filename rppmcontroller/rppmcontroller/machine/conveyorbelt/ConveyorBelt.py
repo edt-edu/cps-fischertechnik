@@ -41,7 +41,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         self.__conveyorSensFeed = True
         self.__conveyorSensSwap = True
 
-        #outputs
+        # outputs
         self.__conveyorActForward = False
         self.__conveyorActBackward = False
 
@@ -53,7 +53,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         super().__init__(id1, dictMap)
         TransitioningMachine.__init__(self)
 
-        #helper variables
+        # helper variables
         self.__counter = ImpulseCounter()
         self.current = 0
         self.arrived = False
