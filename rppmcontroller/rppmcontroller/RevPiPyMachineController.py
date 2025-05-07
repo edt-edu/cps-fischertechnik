@@ -315,9 +315,13 @@ class RevPiPyMachineController:
                                     self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                                     m.processSequenceContext = None
                                 logging.debug("survived execution check")
+                                display_name = f"{inputBufferItem.message.name} [{inspect.getsource(cycleStepFunction).strip()}]"
+                                logging.debug(f"display_name: {display_name}")
+                                command_id = inputBufferItem.message.commandId
+                                logging.debug(f"command_id: {command_id}")
                                 self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
-                                                                              f"{inputBufferItem.message.name} [{inspect.getsource(cycleStepFunction).strip()}]",
-                                                                              inputBufferItem.message.commandId)
+                                                                              display_name,
+                                                                              command_id)
                                 logging.debug("survived execution update")
                             else:
                                 self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
