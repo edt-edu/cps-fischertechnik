@@ -8,7 +8,7 @@ from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.Runner import TransitioningMachine
+from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
 from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
     MultiProcessingConfig
@@ -409,7 +409,6 @@ class MultiProcessing(Machine, TransitioningMachine):
         :return: A CycleStepResult
         """
 
-        target_config_reached = True
         res = CycleStepResult(CycleStepResultEnum.DONE)
 
         # conveyor
@@ -733,7 +732,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         """Reset the station and move some parts to the initial postion."""
         return self.goto_config
 
-    def process1_Command(self) -> Callable[[], CycleStepResult]:
+    def process1_Command(self) -> Runner:
         """
         Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end
         """
@@ -746,72 +745,67 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         # wait until payload is present
         runner.then_goto(config,
-                         until=lambda: not self.multiProcessingSensOven, and_stay_for=0.5)
+                         until=lambda: not self.multiProcessingSensOven, and_stay_for=0.5, info="waiting for payload")
 
         # open oven door
         config.oven_door_open = True
-        runner.then_goto(config, and_stay_for=0.2)
+        runner.then_goto(config, and_stay_for=0.2, info="open oven door")
 
         # move payload into oven
         config.oven_feeder_expanded = False
-        runner.then_goto(config)
+        runner.then_goto(config, info="move payload into oven")
 
         # activate oven for a few seconds
         config.oven_door_open = False
         config.oven_lamp_on = True
-        runner.then_goto(config, and_stay_for=2.0)
+        runner.then_goto(config, and_stay_for=2.0, info="heat payload")
 
         # deactivate oven
         config.oven_lamp_on = False
         config.oven_feeder_expanded = True
         config.vacuum_arm_at_oven = True
         config.turn_table_position = TurnTablePosition.VACUUM
-        runner.then_goto(config)
+        runner.then_goto(config, info="move out of oven")
 
         # lower arm
         config.vacuum_arm_lowered = True
-        runner.then_goto(config, and_stay_for=0.5)
+        runner.then_goto(config, and_stay_for=0.5, info="lower arm")
 
         # pickup
         config.vacuum_valve_active = True
-        runner.then_goto(config, and_stay_for=0.5)
+        runner.then_goto(config, and_stay_for=0.5, info="pickup payload")
 
         # raise arm
         config.vacuum_arm_lowered = False
-        runner.then_goto(config, and_stay_for=0.5)
+        runner.then_goto(config, and_stay_for=0.5, info="raise arm")
 
-        # move payload to turn table and lower arm
+        # move payload to turn table
         config.vacuum_arm_at_oven = False
-        runner.then_goto(config)
+        runner.then_goto(config, info="go to turn table")
 
         # drop of payload carefully
         config.vacuum_valve_active = False
-        #config.vacuum_arm_lowered = True
-        runner.then_goto(config, and_stay_for=0.5)
+        runner.then_goto(config, and_stay_for=1.0, info="drop of payload")
 
-        # raise arm of payload
-        config.vacuum_arm_lowered = False
-        runner.then_goto(config, and_stay_for=0.5)
-
-        # move to turn table
+        # turn to saw
         config.turn_table_position = TurnTablePosition.SAW
-        runner.then_goto(config)
+        runner.then_goto(config, info="turn to saw")
 
         # saw for a few seconds
         config.saw_active = True
-        runner.then_goto(config, and_stay_for=2.0)
+        runner.then_goto(config, and_stay_for=2.0, info="saw payload")
 
         # drop at conveyor
         config.saw_active = False
         config.turn_table_position = TurnTablePosition.CONVEYOR
         config.conveyor_active = True
-        config.conveyor_feeder_active = True
-        runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor)
+        config.conveyor_feeder_active = True  # will only activate once turntable has turned
+        runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor, info="eject payload")
 
         # stop conveyor and feeder
         config.conveyor_active = False
         config.conveyor_feeder_active = False
-        runner.then_goto(config)
+        runner.then_goto(config, info="stopping feeder and conveyor")
 
         return runner.run()
 
