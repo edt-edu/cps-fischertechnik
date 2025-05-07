@@ -255,7 +255,7 @@ class Runner(CycleStepResult):
                             f"{len(self.__routine)}: {sub_routine}")
         self.info = f"running {sub_routine_info}"
 
-        logging.debug(self.info)
+        # logging.debug(self.info)
 
         # call the sub routine
         res = sub_routine()
@@ -297,3 +297,6 @@ class Runner(CycleStepResult):
         :return: self
         """
         return self.run()
+
+    def __str__(self):
+        return f"Runner(state={self.result}, info={self.info})"

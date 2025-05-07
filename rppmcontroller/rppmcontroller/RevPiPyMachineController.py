@@ -384,7 +384,7 @@ class RevPiPyMachineController:
                 logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
                 ret = cycleStepCommand.cycleStep()
                 # removes currentlyExecuting function once it indicates it is finished
-                logging.debug(f"{ret}")
+                # logging.debug(f"{ret}")
                 if ret.is_done():
                     self.sendCommandFeedbackOnChange(key, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
