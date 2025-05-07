@@ -318,11 +318,11 @@ class RevPiPyMachineController:
                                 message_name = inputBufferItem.message.name
                                 logging.debug(f"message_name: {message_name}")
                                 try:
-                                    source = inspect.getsource(cycleStepFunction).strip()
+                                    source = inspect.getsource(cycleStepFunction)
                                 except OSError:
                                     source = f"{cycleStepFunction}"
                                 logging.debug(f"source: {source}")
-                                display_name = f"{message_name} [{source}]"
+                                display_name = f"{message_name} [{source.strip()}]"
                                 logging.debug(f"display_name: {display_name}")
                                 command_id = inputBufferItem.message.commandId
                                 logging.debug(f"command_id: {command_id}")
