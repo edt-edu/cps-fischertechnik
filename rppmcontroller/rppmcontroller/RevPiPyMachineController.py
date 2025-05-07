@@ -309,7 +309,7 @@ class RevPiPyMachineController:
                             cycleStepFunction = self.cast_to_callable(ret)
                             if cycleStepFunction is not None:
                                 logging.debug(f'cycleStepFunction is not None')
-                                if self.currentlyExecuting[m] is not None:
+                                if m in self.currentlyExecuting and self.currentlyExecuting[m] is not None:
                                     logging.debug(f'self.currentlyExecuting[m] is not None')
                                     # send interruption feedback for the previously running command on the machine
                                     self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
