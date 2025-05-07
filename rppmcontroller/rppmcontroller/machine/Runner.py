@@ -126,7 +126,7 @@ class Runner(CycleStepResult):
             if until is not None:
                 res = until()
                 if ((isinstance(res, bool) and not res) or (isinstance(res,
-                                                                       CycleStepResult) and not res.must_continue())):
+                                                                       CycleStepResult) and res.must_continue())):
                     logging.debug("waiting until condition is reached")
 
             if isinstance(res, bool):
@@ -212,6 +212,8 @@ class Runner(CycleStepResult):
 
         sub_routine_info = f"subroutine {self.__routine_index + 1}/{len(self.__routine)}: {sub_routine}"
         self.info = f"running {sub_routine_info}"
+
+        logging.debug(self.info)
 
         # call the sub routine
         res = sub_routine()

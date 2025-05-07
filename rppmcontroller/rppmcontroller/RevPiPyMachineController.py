@@ -399,18 +399,18 @@ class RevPiPyMachineController:
         (currently, only INACTION and FINISHED are used)
         Also update the self.feedback[m] dictionary
         """
-        logging.debug(f"machines: {self.machines}")
+        # logging.debug(f"machines: {self.machines}")
         for m in self.machines:
-            logging.debug(f"checking feedback for {m}")
-            feedback = m.machineFeedback()
-            logging.debug(f"current feedback: {feedback}")
+            # logging.debug(f"checking feedback for {m}")
+            current_feedback = m.machineFeedback()
+            # logging.debug(f"current feedback: {feedback}")
             cached_feedback = self.machineFeedback[m] if m in self.machineFeedback else None
-            logging.debug(f"cached feedback: {cached_feedback}")
-            if cached_feedback != feedback:
-                logging.debug("feedback changed")
-                self.machineFeedback[m] = feedback
+            # logging.debug(f"cached feedback: {cached_feedback}")
+            if current_feedback != cached_feedback:
+                # logging.debug("feedback changed")
+                self.machineFeedback[m] = current_feedback
                 # append feedback to outputBuffer
-                f = MachineFeedback("MACHINE_FEEDBACK",  feedback.name,  "")
+                f = MachineFeedback("MACHINE_FEEDBACK",  current_feedback.name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
@@ -483,29 +483,29 @@ class RevPiPyMachineController:
             self.mainLoopIteration()
 
     def mainLoopIteration(self):
-        logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
+        # logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
         self.processJson(self.inputBuffer)
-        logging.debug("after processJson")
+        # logging.debug("after processJson")
         self.read()
-        logging.debug("after read")
+        # logging.debug("after read")
         self.exLoop()
-        logging.debug("after exLoop")
+        # logging.debug("after exLoop")
         self.write()
-        logging.debug("after write")
+        # logging.debug("after write")
         self.publishMQTTMeasurementStatus()
-        logging.debug("after publish")
+        # logging.debug("after publish")
         self.reset()
-        logging.debug("after reset")
+        # logging.debug("after reset")
         # # logging.debug(self.currentlyExecuting)
         self.createMachineFeedbackOnChange()
-        logging.debug("after feedback")
+        # logging.debug("after feedback")
         # self.createCommandFeedbackOnChange()
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()
-        logging.debug("after decrements")
+        # logging.debug("after decrements")
         time.sleep(self.mainLoopDelay)
-        logging.debug("after sleep")
+        # logging.debug("after sleep")
 
 # Create an empty list
 socket_list : List[socket.socket] = []
