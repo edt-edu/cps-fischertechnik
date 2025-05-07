@@ -392,7 +392,7 @@ class HighBay(Machine, TransitioningMachine):
                 config.vertical_axis_config.counter_goal or 0)
             if (
                 abs(distance_to_move) > PICKUP_DISTANCE +
-                self.__axisVertical.tolerance):
+                    self.__axisVertical.tolerance):
                 arm_movement = ArmMovement.MAYOR
             else:
                 arm_movement = ArmMovement.MINOR
@@ -401,7 +401,7 @@ class HighBay(Machine, TransitioningMachine):
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(
-            config.horizontal_axis_config):
+                config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
 
         # logging.debug(f"arm_movement: {arm_movement}")
@@ -498,6 +498,7 @@ class HighBay(Machine, TransitioningMachine):
         Set up the highbay and calibrate the counters.
         :return: A lambda rerunning this function
         """
+
         def goto_setup():
             res = self.goto_config()
             if res.is_done():
@@ -526,29 +527,36 @@ class HighBay(Machine, TransitioningMachine):
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
-    def horizontal_to_Command(self, counter_goal: int) -> Callable[[], CycleStepResult]:
+    def horizontal_to_Command(self, counter_goal: int) -> Callable[
+        [], CycleStepResult]:
         self.create_next_config().horizontal_axis_config = (
             AxisConfig.to_counter_goal(counter_goal))
         return self.goto_next_config()
 
-    def vertical_to_Command(self, counter_goal: int) -> Callable[[], CycleStepResult]:
+    def vertical_to_Command(self, counter_goal: int) -> Callable[
+        [], CycleStepResult]:
         self.create_next_config().vertical_axis_config = (
             AxisConfig.to_counter_goal(counter_goal))
         return self.goto_next_config()
 
-    def goto_column_Command(self, column: Union[Column, int]) -> Callable[[], CycleStepResult]:
+    def goto_column_Command(self, column: Union[Column, int]) -> Callable[
+        [], CycleStepResult]:
         if isinstance(column, int):
             column = Column(column)
 
         return self.horizontal_to_Command(column.to_counter_goal())
 
-    def goto_row_Command(self, row: Union[Row, int]) -> Callable[[], CycleStepResult]:
+    def goto_row_Command(self, row: Union[Row, int]) -> Callable[
+        [], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
 
         return self.vertical_to_Command(row.to_counter_goal())
 
-    def store_to_Command(self, row: Union[Row, int], column: Union[Column, int]) -> Callable[[], CycleStepResult]:
+    def store_to_Command(self,
+                         row: Union[Row, int],
+                         column: Union[Column, int]) -> Callable[
+        [], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
@@ -562,16 +570,18 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
-        runner = self.create_runner().then_goto(config)
+        runner = self.create_runner().then_goto(config, info="goto conveyor")
 
         # move item on lever
         config.conveyor_state = ConveyorState.BACKWARD
-        runner.then_goto(config, until=lambda: not self.highbaySensInside)
+        runner.then_goto(config,
+                         until=lambda: not self.highbaySensInside,
+                         info="move item on lever")
 
         # pickup item and stop conveyor
         config.conveyor_state = ConveyorState.IDLE
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
-        runner.then_goto(config)
+        runner.then_goto(config, info="pickup item and stop conveyor")
 
         # move to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -581,19 +591,23 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
-        runner.then_goto(config)
+        runner.then_goto(config, info="move to rack")
 
         # drop off item
         config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
-        runner.then_goto(config)
+        runner.then_goto(config, info="drop off item")
 
         # perform a setup to recalibrate the encoders
         runner.then_run(self.setup_Command,
-                        until=lambda: self.isInitialized)
+                        until=lambda: self.isInitialized,
+                        info="setup")
 
         return runner.run()
 
-    def pickup_from_Command(self, row: Union[Row, int], column: Union[Column, int]) -> Callable[[], CycleStepResult]:
+    def pickup_from_Command(self,
+                            row: Union[Row, int],
+                            column: Union[Column, int]) -> Callable[
+        [], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
@@ -607,15 +621,16 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
-        runner = self.create_runner().then_goto(config)
+        runner = self.create_runner().then_goto(config, info="go to rack")
 
         # pickup item
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
-        runner.then_goto(config)
+        runner.then_goto(config, info="pickup item")
 
         # perform a setup because we need precise encoders now
         runner.then_run(self.setup_Command,
-                        until=lambda: self.isInitialized)
+                        until=lambda: self.isInitialized,
+                        info="recalibrate encoders")
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -626,11 +641,14 @@ class HighBay(Machine, TransitioningMachine):
                                vertical_axis_config,
                                True,
                                ConveyorState.FORWARD)
-        runner.then_goto(config, until=lambda: not self.highbaySensOutside)
+        runner.then_goto(config,
+                         until=lambda: not self.highbaySensOutside,
+                         info="move to conveyor")
 
         # perform another setup
         runner.then_run(self.setup_Command,
-                        until=lambda: self.isInitialized)
+                        until=lambda: self.isInitialized,
+                        info="setup")
 
         return runner.run()
 
