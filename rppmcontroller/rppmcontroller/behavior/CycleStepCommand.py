@@ -1,11 +1,8 @@
-from __future__ import annotations  # place at the very top of the file.
+from __future__ import annotations  # place at the very top of the file. fixes pylance type hinting and forward references
 
-from typing import Callable, Union
+from typing import Callable
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
-
-
-# fixes pylance type hinting and forward references
 
 
 class CycleStepCommand:
@@ -41,7 +38,7 @@ class CycleStepCommand:
         return self._displayName
 
     @displayName.setter
-    def displayName(self, displayName: Union[str, Callable[[], str]]):
+    def displayName(self, displayName: str):
         self._displayName = displayName
 
     @property
