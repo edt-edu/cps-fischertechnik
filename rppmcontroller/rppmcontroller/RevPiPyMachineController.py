@@ -389,12 +389,12 @@ class RevPiPyMachineController:
                     self.sendCommandFeedbackOnChange(key, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
                     self.currentlyExecuting[key] = None
-                    logging.debug(f'isExecuting = {key.isExecuting} ')
+                    logging.debug(f'isExecuting = {key.isExecuting}')
                 else:
                     # continue
                     # maybe the res is different from previous, so it should be published
                     self.sendCommandFeedbackOnChange(key, ret)
-
+            logging.debug("after command evaluation")
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
             if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and cycleStepCommand is not None:
                 logging.warning(f'LEGACY: DEPRECATED, removing {cycleStepCommand.displayName} from currentlyExecuting due to MachineStatus.IDLE')
@@ -431,8 +431,9 @@ class RevPiPyMachineController:
                 self.outputBuffer.put(j, block=False)
                 self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
-    def sendCommandFeedbackOnChange(self, machine : Machine, lastResult : CycleStepResult) -> None:
-        if self.commandFeedback[machine] != lastResult:
+    def sendCommandFeedbackOnChange(self, machine: Machine, lastResult: CycleStepResult) -> None:
+        cached_result = self.commandFeedback[machine] if machine in self.commandFeedback else None
+        if cached_result != lastResult:
             # logging.debug(f'new CycleStepResult for machine {machine.id} {self.currentlyExecuting[machine]}')
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
