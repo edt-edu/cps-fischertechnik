@@ -404,7 +404,7 @@ class RevPiPyMachineController:
             logging.debug(f"checking feedback for {m}")
             feedback = m.machineFeedback()
             logging.debug(f"current feedback: {feedback}")
-            cached_feedback = self.machineFeedback[m]
+            cached_feedback = self.machineFeedback[m] if m in self.machineFeedback else None
             logging.debug(f"cached feedback: {cached_feedback}")
             if cached_feedback != feedback:
                 logging.debug("feedback changed")
