@@ -319,7 +319,8 @@ class RevPiPyMachineController:
                                 logging.debug(f"message_name: {message_name}")
                                 try:
                                     source = inspect.getsource(cycleStepFunction)
-                                except OSError:
+                                except:
+                                    logging.error("Python didn't like that apparently")
                                     source = f"{cycleStepFunction}"
                                 logging.debug(f"source: {source}")
                                 display_name = f"{message_name} [{source.strip()}]"
