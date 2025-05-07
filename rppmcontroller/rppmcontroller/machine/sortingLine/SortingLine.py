@@ -341,7 +341,7 @@ class SortingLine(Machine, TransitioningMachine):
 
         return runner.run()
 
-    def sort(self, as_color: Optional[Color] = None) -> Runner:
+    def sort_Command(self, as_color: Optional[Color] = None) -> Runner:
         """
         Wait for a payload and sort it into the specified color, or let the
         color sensor do the work
