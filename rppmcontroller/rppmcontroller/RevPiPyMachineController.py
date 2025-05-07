@@ -317,7 +317,10 @@ class RevPiPyMachineController:
                                 logging.debug("survived execution check")
                                 message_name = inputBufferItem.message.name
                                 logging.debug(f"message_name: {message_name}")
-                                source = inspect.getsource(cycleStepFunction).strip()
+                                try:
+                                    source = inspect.getsource(cycleStepFunction).strip()
+                                except OSError:
+                                    source = f"{cycleStepFunction}"
                                 logging.debug(f"source: {source}")
                                 display_name = f"{message_name} [{source}]"
                                 logging.debug(f"display_name: {display_name}")
