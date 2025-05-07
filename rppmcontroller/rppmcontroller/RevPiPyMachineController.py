@@ -394,7 +394,7 @@ class RevPiPyMachineController:
                     # continue
                     # maybe the res is different from previous, so it should be published
                     self.sendCommandFeedbackOnChange(key, ret)
-            logging.debug("after command evaluation")
+            # logging.debug("after command evaluation")
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
             if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and cycleStepCommand is not None:
                 logging.warning(f'LEGACY: DEPRECATED, removing {cycleStepCommand.displayName} from currentlyExecuting due to MachineStatus.IDLE')
