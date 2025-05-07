@@ -229,4 +229,4 @@ class PunchingMachine(Machine, TransitioningMachine):
         return runner.run()
 
     def stop_Command(self) -> Callable[[], CycleStepResult]:
-        return self.stop_CycleStep
+        return lambda: self.stop_CycleStep()
