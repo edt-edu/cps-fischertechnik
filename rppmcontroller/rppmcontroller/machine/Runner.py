@@ -43,6 +43,35 @@ class TransitioningMachine:
         return any(runner.running for runner in self.__runners)
 
 
+class Subroutine:
+    """
+    A subroutine within a Runner, mainly representing a Callable[[],
+    CycleStepResult],
+    but may also contain additional info
+    """
+
+    def __init__(self,
+                 runnable: Callable[[], CycleStepResult],
+                 info: str = ""):
+        self.__runnable: Callable[[], CycleStepResult] = runnable
+        """The underlying runnable being called when this is called"""
+        self.info: str = info
+        """More info about what this subroutine does"""
+
+    def __call__(self, *args, **kwargs) -> CycleStepResult:
+        """
+        Call the underlying runnable
+        :param args: ignored
+        :param kwargs: ignored
+        :return: A CycleStepResult
+        """
+        return self.__runnable()
+
+    def __str__(self):
+        return (f"SubRoutine("
+                f"{self.info if len(self.info) > 0 else f'{self.__runnable}'})")
+
+
 class Runner(CycleStepResult):
     """
     Transitions a machine into different configurations.
@@ -60,7 +89,7 @@ class Runner(CycleStepResult):
                          "runner hasn't started yet")
         self.__machine: TransitioningMachine = machine
         """The machine we are working on"""
-        self.__routine: list[Callable[[], CycleStepResult]] = []
+        self.__routine: list[Subroutine] = []
         """Functions which transition the machine into a desired state"""
         self.__routine_index: int = 0
         """The index of the currently aspirated state"""
@@ -73,7 +102,8 @@ class Runner(CycleStepResult):
                       Callable[[], Union[bool, CycleStepResult]]] = None,
                   and_stay_for: float = 0.0,
                   or_timeout_after: float = 0.0,
-                  clone_config: bool = True) -> typing.Self:
+                  clone_config: bool = True,
+                  info: str = "") -> typing.Self:
         """
         Append a transition to the specified config to this routine.
         :param config: The config to transition to.
@@ -86,21 +116,25 @@ class Runner(CycleStepResult):
         time.
         :param clone_config: Whether to clone the config object so it can be
         reused outside of this method.
+        :param info: A human-readable info what the runner is doing in this
+        step, similar to a comment
         :return: self
         """
         if clone_config:
             config = deepcopy(config)
         return self.then_run(lambda: self.__machine.goto_config(config),
                              until,
-                             and_stay_for,
-                             or_timeout_after)
+                             and_stay_for=and_stay_for,
+                             or_timeout_after=or_timeout_after,
+                             info=info)
 
     def then_run(self,
                  runnable: Callable[[], Any],
                  until: Optional[
                      Callable[[], Union[bool, CycleStepResult]]] = None,
                  and_stay_for: float = 0.0,
-                 or_timeout_after: float = 0.0) -> typing.Self:
+                 or_timeout_after: float = 0.0,
+                 info: str = "") -> typing.Self:
         """
         Appends the specified runnable to this routine. It'll be called
         until it specifies that it is done.
@@ -114,6 +148,8 @@ class Runner(CycleStepResult):
         :param or_timeout_after: The number of seconds after which the runnable
         is considered done. Values smaller or equal to zero imply infinite
         time.
+        :param info: A human-readable info what the runner is doing in this
+        step, similar to a comment
         :return: self
         """
         hold_timer = Timer(and_stay_for)
@@ -121,12 +157,12 @@ class Runner(CycleStepResult):
         if or_timeout_after > 0:
             timeout_timer = Timer(or_timeout_after)
 
-        def sub_routine() -> CycleStepResult:
+        def sub_routine_runnable() -> CycleStepResult:
             res = runnable()
             if until is not None:
                 res = until()
-                if ((isinstance(res, bool) and not res) or (isinstance(res,
-                                                                       CycleStepResult) and res.must_continue())):
+                if ((isinstance(res, bool) and not res) or (
+                    isinstance(res, CycleStepResult) and res.must_continue())):
                     logging.debug("waiting until condition is reached")
 
             if isinstance(res, bool):
@@ -158,6 +194,8 @@ class Runner(CycleStepResult):
 
             return res
 
+        sub_routine = Subroutine(sub_routine_runnable, info)
+
         self.__routine.append(sub_routine)
         return self
 
@@ -165,7 +203,8 @@ class Runner(CycleStepResult):
                              runner_supplier: Callable[[], Runner],
                              until: Optional[Callable[
                                  [], Union[bool, CycleStepResult]]] = None,
-                             or_timeout_after: float = 0.0) -> typing.Self:
+                             or_timeout_after: float = 0.0,
+                             info: str = "") -> typing.Self:
         """
         Run the runner provided by the specified runner_supplier until it is
         done.
@@ -175,6 +214,8 @@ class Runner(CycleStepResult):
         :param or_timeout_after: The number of seconds after which the runner
         is considered finished. Values smaller or equal to zero imply infinite
         time.
+        :param info: A human-readable info what the runner is doing in this
+        step, similar to a comment
         :return: self
         """
 
@@ -198,7 +239,7 @@ class Runner(CycleStepResult):
                 return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
         runner_pointer = RunnerPointer()
-        return self.then_run(runner_pointer.run, until, or_timeout_after)
+        return self.then_run(runner_pointer.run, until, or_timeout_after=or_timeout_after, info=info)
 
     def run(self) -> typing.Self:
         """
@@ -210,7 +251,8 @@ class Runner(CycleStepResult):
         self.result = CycleStepResultEnum.MUST_CONTINUE
         sub_routine = self.__routine[self.__routine_index]
 
-        sub_routine_info = f"subroutine {self.__routine_index + 1}/{len(self.__routine)}: {sub_routine}"
+        sub_routine_info = (f"subroutine {self.__routine_index + 1}/"
+                            f"{len(self.__routine)}: {sub_routine}")
         self.info = f"running {sub_routine_info}"
 
         logging.debug(self.info)
