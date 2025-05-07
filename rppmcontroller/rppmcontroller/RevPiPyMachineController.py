@@ -225,7 +225,7 @@ class RevPiPyMachineController:
                             # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
                             #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
                             elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, HighBay):
-                                func = getattr(HighBay, str.lower(inputBufferItem.message.name))
+                                func = getattr(HighBay, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
                                 func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
                             # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
@@ -314,9 +314,11 @@ class RevPiPyMachineController:
                                     # send interruption feedback for the previously running command on the machine
                                     self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                                     m.processSequenceContext = None
+                                logging.debug("survived execution check")
                                 self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
                                                                               f"{inputBufferItem.message.name} [{inspect.getsource(cycleStepFunction).strip()}]",
                                                                               inputBufferItem.message.commandId)
+                                logging.debug("survived execution update")
                             else:
                                 self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                                 # an invalid command doesn't interrupt currentlyRunning command
@@ -327,7 +329,8 @@ class RevPiPyMachineController:
                             break
                     else:
                         self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
-            if not foundMatchingMachine :
+            logging.debug("exited machine loop")
+            if not foundMatchingMachine:
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
                 self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
 
