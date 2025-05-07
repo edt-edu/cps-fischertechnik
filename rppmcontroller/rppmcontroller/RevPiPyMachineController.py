@@ -375,17 +375,17 @@ class RevPiPyMachineController:
     def exLoop(self) -> None:
         """
         The execute loop, which activates all the necessary "_cycleStep" functions on each machine
-        a "_cycleStep" function is is maintained in the the currentlyExecuting map until it returns
+        a "_cycleStep" function is maintained in the currentlyExecuting map until it returns
         """
         for key in self.currentlyExecuting.keys():
             # call method
             cycleStepCommand = self.currentlyExecuting[key]
-            if not cycleStepCommand is None:
-
+            if cycleStepCommand is not None:
                 logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
                 ret = cycleStepCommand.cycleStep()
                 # removes currentlyExecuting function once it indicates it is finished
-                if not ret.must_continue():
+                logging.debug(f"{ret}")
+                if ret.is_done():
                     self.sendCommandFeedbackOnChange(key, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
                     self.currentlyExecuting[key] = None
@@ -394,9 +394,9 @@ class RevPiPyMachineController:
                     # continue
                     # maybe the res is different from previous, so it should be published
                     self.sendCommandFeedbackOnChange(key, ret)
+
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
-            if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and \
-                    cycleStepCommand != None:
+            if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and cycleStepCommand is not None:
                 logging.warning(f'LEGACY: DEPRECATED, removing {cycleStepCommand.displayName} from currentlyExecuting due to MachineStatus.IDLE')
                 self.currentlyExecuting[key] = None
 
