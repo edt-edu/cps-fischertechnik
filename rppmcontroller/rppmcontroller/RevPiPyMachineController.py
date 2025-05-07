@@ -397,13 +397,17 @@ class RevPiPyMachineController:
         """Whenever the state of the machine changes, feedback is created
         a machine can be in several states as defined in the ExecutionStatus enum
         (currently, only INACTION and FINISHED are used)
-        Also update the self.feedback[m] dictionnary
+        Also update the self.feedback[m] dictionary
         """
+        logging.debug(f"machines: {self.machines}")
         for m in self.machines:
-            if self.machineFeedback[m] != m.machineFeedback():
-                self.machineFeedback[m] = m.machineFeedback()
+            logging.debug(f"checking feedback for {m}")
+            feedback = m.machineFeedback()
+            logging.debug(f"current feedback: {feedback}")
+            if self.machineFeedback[m] != feedback:
+                self.machineFeedback[m] = feedback
                 # append feedback to outputBuffer
-                f = MachineFeedback("MACHINE_FEEDBACK",  m.machineFeedback().name,  "")
+                f = MachineFeedback("MACHINE_FEEDBACK",  feedback.name,  "")
                 j = JSONOutput(m.id, time.time(), f)
                 #logging.debug("created Feedback")
                 self.outputBuffer.put(j, block=False)
@@ -487,7 +491,7 @@ class RevPiPyMachineController:
         logging.debug("after write")
         self.publishMQTTMeasurementStatus()
         logging.debug("after publish")
-        self.reset() # TODO this methods block infinitely - it shouldn't
+        self.reset()
         logging.debug("after reset")
         # # logging.debug(self.currentlyExecuting)
         self.createMachineFeedbackOnChange()
