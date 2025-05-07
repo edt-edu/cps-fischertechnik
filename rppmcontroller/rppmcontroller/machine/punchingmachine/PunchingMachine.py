@@ -1,6 +1,5 @@
 import logging
-from collections.abc import Callable
-from typing import Dict, Any
+from typing import Dict, Any, Callable
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -229,4 +228,4 @@ class PunchingMachine(Machine, TransitioningMachine):
         return runner.run()
 
     def stop_Command(self) -> Callable[[], CycleStepResult]:
-        return lambda: self.stop_CycleStep()
+        return self.stop_CycleStep
