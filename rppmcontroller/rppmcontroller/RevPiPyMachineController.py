@@ -314,17 +314,17 @@ class RevPiPyMachineController:
                                     # send interruption feedback for the previously running command on the machine
                                     self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                                     m.processSequenceContext = None
-                                logging.debug("survived execution check")
+                                # logging.debug("survived execution check")
                                 message_name = inputBufferItem.message.name
-                                logging.debug(f"message_name: {message_name}")
+                                # logging.debug(f"message_name: {message_name}")
                                 try:
                                     source = inspect.getsource(cycleStepFunction)
                                 except:
-                                    logging.error("Python didn't like that apparently")
+                                    logging.error("failed to determine source of cycleStepFunction")
                                     source = f"{cycleStepFunction}"
-                                logging.debug(f"source: {source}")
+                                # logging.debug(f"source: {source}")
                                 display_name = f"{message_name} [{source.strip()}]"
-                                logging.debug(f"display_name: {display_name}")
+                                # logging.debug(f"display_name: {display_name}")
                                 command_id = inputBufferItem.message.commandId
                                 logging.debug(f"command_id: {command_id}")
                                 self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
