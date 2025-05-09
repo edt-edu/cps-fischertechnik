@@ -23,6 +23,7 @@ from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MachineStatus import MachineStatus
+from rppmcontroller.machine.Runner import Runner
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.highbay.HighBay import HighBay
@@ -147,7 +148,7 @@ class RevPiPyMachineController:
         isBrokenConnection = False
         while not isBrokenConnection:
             try:
-                if self.outputBuffer.qsize() > 0:
+                if not self.outputBuffer.empty():
                     logging.debug("self.outputBuffer not empty!!!")
                 messageSend = self.outputBuffer.get(block=False)
                 message = JSONParser.parse(messageSend)
@@ -435,7 +436,16 @@ class RevPiPyMachineController:
 
     def sendCommandFeedbackOnChange(self, machine: Machine, lastResult: CycleStepResult) -> None:
         cached_result = self.commandFeedback[machine] if machine in self.commandFeedback else None
-        if cached_result != lastResult:
+        # normal case: a new cycle step result was returned
+        result_changed = cached_result != lastResult
+
+        # special case: a runner is returned, which aggregates multiple steps into a single object
+        runner_advanced = (isinstance(cached_result, Runner) and not cached_result.status_published)
+
+        if result_changed or runner_advanced:
+            if runner_advanced:
+                cached_result.status_published = True
+
             # logging.debug(f'new CycleStepResult for machine {machine.id} {self.currentlyExecuting[machine]}')
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:

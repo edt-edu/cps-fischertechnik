@@ -12,6 +12,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.sortingLine.SortingLineConfig import \
     SortingLineConfig
+from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 
@@ -77,7 +78,8 @@ class SortingLine(Machine, TransitioningMachine):
         self.__packageCountSteps = False
         self.once = True
         self.previous_isExecuting_log = None
-        self.__counter = None
+        # TODO(Hellwig): are the methods using the counter still used?
+        self.__counter = ImpulseCounter()
 
     @property
     def sortingLineSensImpulseCounterRaw(self):

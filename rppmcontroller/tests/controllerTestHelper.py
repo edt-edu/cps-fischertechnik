@@ -13,18 +13,18 @@ def readNotification(controller : RevPiPyMachineController ) -> str :
     """ simple notification reader for test purposes
 
     get the output buffer content as string
-    it doesn't block on the queue 
+    it doesn't block on the queue
 
     this function act like a filter to block COMMAND_FEEDBACK notification
 
     Returns:
         str:  the queue content (string) if it contains data or an empty string
     """
-    while controller.outputBuffer.qsize() > 0:
+    while not controller.outputBuffer.empty():
         notificationSent = controller.outputBuffer.get(block=False)
         logging.debug(f'notification sent and conform ={notificationSent}')
         return str(notificationSent)
-    
+
     logging.debug(f'no notification sent')
     return ""
 
@@ -32,22 +32,22 @@ def readMachineFeedbackNotification(controller : RevPiPyMachineController ) -> s
     """ simple notification reader for test purposes
 
     get the output buffer content as string
-    it doesn't block on the queue 
+    it doesn't block on the queue
 
     this function act like a filter to receive only CMACHINE_FEEDBACK notification
 
     Returns:
         str:  the queue content (string) if it contains data or an empty string
     """
-    while controller.outputBuffer.qsize() > 0:
+    while not controller.outputBuffer.empty():
         notificationSent = controller.outputBuffer.get(block=False)
         logging.debug(f'notification sent={notificationSent}')
-        # msg = JSONParser.parse(notificationSent)            
+        # msg = JSONParser.parse(notificationSent)
         # logging.debug(f'notification sent={msg}')
         if "MACHINE_FEEDBACK" in str(notificationSent):
             logging.debug(f'notification sent and conform ={notificationSent}')
             return str(notificationSent)
-    
+
     logging.debug(f'no notification sent')
     return ""
 
@@ -55,29 +55,29 @@ def readCommandFeedbackNotification(controller : RevPiPyMachineController ) -> s
     """ simple notification reader for test purposes
 
     get the output buffer content as string
-    it doesn't block on the queue 
+    it doesn't block on the queue
 
     this function act like a filter to receive only COMMAND_FEEDBACK notification
 
     Returns:
         str:  the queue content (string) if it contains data or an empty string
     """
-    while controller.outputBuffer.qsize() > 0:
+    while not controller.outputBuffer.empty():
         notificationSent = controller.outputBuffer.get(block=False)
         logging.debug(f'notification sent={notificationSent}')
-        # msg = JSONParser.parse(notificationSent)            
+        # msg = JSONParser.parse(notificationSent)
         # logging.debug(f'notification sent={msg}')
         if "COMMAND_FEEDBACK" in str(notificationSent):
             logging.debug(f'command notification sent and conform ={notificationSent}')
             return str(notificationSent)
-    
+
     logging.debug(f'no notification sent')
     return ""
 
 def sendMessage(controller : RevPiPyMachineController, machineId : str, message) -> None :
     """ send a message after encoding it as a JSONOutput to the inputBuffer queue
     """
-    jsonOutput = JSONOutput(machineId, time.time(), message)    
+    jsonOutput = JSONOutput(machineId, time.time(), message)
     controller.inputBuffer.put(jsonOutput)
-    # we use a multithread Queue in a mono thread, makes sure the message is queued 
+    # we use a multithread Queue in a mono thread, makes sure the message is queued
     time.sleep(0.1)

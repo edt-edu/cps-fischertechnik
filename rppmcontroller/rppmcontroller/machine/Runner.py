@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Callable, Union
 from typing import Optional
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -94,6 +95,14 @@ class Runner(CycleStepResult):
         """The index of the currently aspirated state"""
         self.__running: bool = False
         """Whether we are currently executing our routine"""
+        self.status_published = False
+
+    @override
+    @CycleStepResult.result.setter
+    def result(self, result : CycleStepResultEnum):
+        if self._result != result:
+            self.status_published = False
+            self._result = result
 
     def then_goto(self,
                   config: MachineConfiguration,
@@ -272,6 +281,10 @@ class Runner(CycleStepResult):
             else:
                 self.run()  # directly start the next routine to avoid idling
 
+        # The main loop assumes that every step returns a unique CycleStepResult
+        # But the Runner(subclass of CycleStepResult) aggregates multiple steps into one
+        # Thus, we need to return a new object(with a different id) with the same internal state
+        #return copy.deepcopy(self)
         return self
 
     @property
