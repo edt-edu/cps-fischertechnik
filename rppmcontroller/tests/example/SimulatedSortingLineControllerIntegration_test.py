@@ -74,7 +74,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEquals(9, iterationDone, "Timing of ejector for white was wrong")
+                self.assertEqual(9, iterationDone, "Timing of ejector for white was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -127,7 +127,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEquals(13, iterationDone, "Timing of ejector for red was wrong")
+                self.assertEqual(13, iterationDone, "Timing of ejector for red was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -180,7 +180,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEquals(11, iterationDone, "Timing of ejector for red was wrong")
+                self.assertEqual(11, iterationDone, "Timing of ejector for red was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
