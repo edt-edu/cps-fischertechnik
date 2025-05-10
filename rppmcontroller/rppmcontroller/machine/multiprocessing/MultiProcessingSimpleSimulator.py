@@ -21,12 +21,12 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
     @property
     def controlledMultiProcessing(self):
         return self.__controlledMutiProcessing
-    
-    def simulatedRead(self) -> None:        
+
+    def simulatedRead(self) -> None:
         simulatedReadLog = f"simulatedRead  {self.controlledMultiProcessing.sensorStatusString()} "
         if simulatedReadLog != self.previous_simulatedReadLog :
             logging.debug(simulatedReadLog)
-            self.previous_simulatedReadLog = simulatedReadLog  
+            self.previous_simulatedReadLog = simulatedReadLog
 
     def simulatedWrite(self) -> None:
         simulatedWriteLog = f"simulatedWrite  {self.controlledMultiProcessing.sensorStatusString()} "
@@ -44,6 +44,8 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
             self.controlledMultiProcessing.multiProcessingSensTurntablePosBelt = value
         elif parameter == RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT:
             self.controlledMultiProcessing.multiProcessingSensEndConveyor = value
+        elif parameter == RequestedParameter.LIGHTBARRIEROVEN:
+            self.controlledMultiProcessing.multiProcessingSensOven = value
         elif parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosSaw = value
         elif parameter == RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE:

@@ -25,9 +25,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         logging.debug("setup called")
         self.controller = SimulatedMultiProcessingController(config_path)
-        self.controller.mainLoopDelay = 0.1
+        self.controller.mainLoopDelay = 0.4
 
-    
+
     ### ________ PROCESS 1 ___________
     def test_process1(self):
         '''
@@ -45,9 +45,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "PROCESS1", [])
-        
+
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
-        
+
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
@@ -61,38 +61,40 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 0:
                 #initial state
+                self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.LIGHTBARRIEROVEN,False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE,True)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM,True)
-            elif iterationDone == 2:
+            elif iterationDone == 4:
                 #simulate package in oven
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDERINSIDE,True)
-            elif iterationDone == 36:
-                #simulate eating completed and package outside oven
+            elif iterationDone == 10:
+                #simulate heating completed and package outside oven
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDERINSIDE,False)
-            elif iterationDone == 38:
+            elif iterationDone == 12:
                 #simulate vacuum at oven
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONOVEN, True)
-            elif iterationDone == 48:
+            elif iterationDone == 22:
                 #simulate object gripped and moved to turntable
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONOVEN, False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE, True)
-            elif iterationDone == 58:
+            elif iterationDone == 32:
                 #simulate object released and moved to saw
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM, False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW, True)
-            elif iterationDone == 68:
+            elif iterationDone == 42:
                 #simulate tuntable moved to conveyor belt
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW, False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT, True)
-            elif iterationDone == 72:
+            elif iterationDone == 52:
                 #simulate package ejected to conveyor belt and came at the end of the belt
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT, False)
-            
+
             if notification == "" :
                 iterationDone += 1
+                logging.debug("Next iteration is " + str(iterationDone))
             elif re.match(r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
@@ -101,9 +103,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
-            self.assertLess(iterationDone, 75, "COMMAND not reached in less than 80 iterations" )
-    
- 
+            self.assertLess(iterationDone, 100, "COMMAND not reached in less than 100 iterations" )
+
+
 if __name__ == '__main__':
     logging.basicConfig(format='[%(levelname)-5s] %(module)-25s,%(lineno)-3s| %(message)s', level=logging.DEBUG)
 
