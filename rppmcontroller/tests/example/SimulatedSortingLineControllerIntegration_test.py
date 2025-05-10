@@ -25,7 +25,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         logging.debug("setup called")
         self.controller = SimulatedSortingLineController(config_path)
-        self.controller.mainLoopDelay = 0.1
+        self.controller.mainLoopDelay = 0.5
 
     ### ________ EJECT ___________
     def test_ejectWhite(self):
@@ -44,9 +44,9 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         # send a eject command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.WHITE])
-        
+
         ctHelper.sendMessage(self.controller, "SortingLine01", message)
-        
+
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
@@ -57,8 +57,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
-        
+
+
             '''Simulate sensor changes for testing all the functionnalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
@@ -68,14 +68,13 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-            if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 2:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERWHITE,False)
             logging.debug(f"{iterationDone} iterations")
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
+                self.assertEquals(9, iterationDone, "Timing of ejector for white was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -100,9 +99,9 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.BLUE])
-        
+
         ctHelper.sendMessage(self.controller, "SortingLine01", message)
-        
+
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
@@ -122,14 +121,13 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-            if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 3:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBLUE,False)
-            
+
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
+                self.assertEquals(13, iterationDone, "Timing of ejector for red was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -154,9 +152,9 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.RED])
-        
+
         ctHelper.sendMessage(self.controller, "SortingLine01", message)
-        
+
         self.controller.mainLoopIteration()
         self.controller.mainLoopIteration()
 
@@ -176,14 +174,13 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-            if iterationDone >= 8 and self.controller.sortingLineSimulator.getCounter() == 5:
-                self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERRED,False)
-            
+
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
+                self.assertEquals(11, iterationDone, "Timing of ejector for red was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -191,7 +188,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERRED,True)
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
- 
+
 if __name__ == '__main__':
     logging.basicConfig(format='[%(levelname)-5s] %(module)-25s,%(lineno)-3s| %(message)s', level=logging.DEBUG)
 
