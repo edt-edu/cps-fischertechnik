@@ -176,11 +176,15 @@ class Runner(CycleStepResult):
                 else:
                     res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
-            if timeout_timer is not None and timeout_timer.elapsed():
-                res = CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
-                                      "runner timeout",
-                                      (f"subRoutineIndex: "
-                                       f"{self.__routine_index}", res))
+            if timeout_timer is not None:
+                if not timeout_timer.is_started():
+                    timeout_timer.start()
+
+                if timeout_timer.elapsed():
+                    res = CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
+                                          "runner timeout",
+                                          (f"subRoutineIndex: "
+                                           f"{self.__routine_index}", res))
 
             if res.is_terminated():
                 return res
@@ -190,6 +194,9 @@ class Runner(CycleStepResult):
                 return res
 
             # we can assume that the sub-routine is done
+            if not hold_timer.is_started():
+                hold_timer.start()
+
             timer_elapsed = hold_timer.elapsed()
             if not timer_elapsed:
                 return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,

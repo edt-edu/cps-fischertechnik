@@ -23,8 +23,8 @@ class Timer:
         """
         Check whether the time specified by the timer has elapsed.
 
-        Calling this method either starts the timer, if it has not started yet
-        or checks if it has elapsed.
+        If the Timer has not started yet, an Exception is raised.
+        Otherwise, it checks if the set time has elapsed since the call to `start`.
 
         If the timer is not `single_use` it'll reset itself after it returned
         `True`.
@@ -37,8 +37,7 @@ class Timer:
             return True
 
         if self.__start_time is None:
-            self.__start_time = time.time()
-            return False
+            raise Exception("Timer#elapsed is called without being started!")
 
         elapsed_seconds = time.time() - self.__start_time
 
@@ -59,3 +58,9 @@ class Timer:
             self.__start_time = time.time()
         else:
             self.__start_time = None
+
+    def start(self):
+        self.reset(True)
+
+    def is_started(self):
+        return self.__start_time is not None
