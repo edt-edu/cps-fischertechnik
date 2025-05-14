@@ -56,12 +56,12 @@ class PunchingMachine(Machine, TransitioningMachine):
             self.__punchingMachineActConveyorForward or
             self.__punchingMachineActConveyorBackward)
         # log isexecuting and debug info only if message has changed
-        isExecuting_log = (f'isExecuting({self.id})={res} | Sensors='
+        is_executing_log = (f'isExecuting({self.id})={res} | Sensors='
                            f'{self.sensorStatusString()} | Actuators= '
                            f'{self.actuatorStatusString()}')
-        if isExecuting_log != self.previous_is_executing_log:
-            logging.debug(isExecuting_log)
-            self.previous_is_executing_log = isExecuting_log
+        if is_executing_log != self.previous_is_executing_log:
+            logging.debug(is_executing_log)
+            self.previous_is_executing_log = is_executing_log
         return res
 
     @property
