@@ -12,7 +12,7 @@ from rppmcontroller.machine.ConveyorState import ConveyorState, \
     conveyor_state_from_movements
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.Runner import TransitioningMachine
+from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 
 PICKUP_DISTANCE = 150
@@ -493,19 +493,18 @@ class HighBay(Machine, TransitioningMachine):
 
     # methods intended for orchestrator
 
-    def setup_Command(self) -> Callable[[], CycleStepResult]:
+    def setup_Command(self) -> Runner:
         """
         Set up the highbay and calibrate the counters.
-        :return: A lambda rerunning this function
+        :return: A Runner performing the setup
         """
 
-        def goto_setup():
-            res = self.goto_config()
-            if res.is_done():
-                self.__setup_finished = True
-            return res
+        def mark_setup_finished():
+            self.__setup_finished = True
+            return CycleStepResult.done()
 
-        return self.create_runner().then_run(goto_setup).run()
+        return self.create_runner().then_run(self.goto_config).then_run(
+            mark_setup_finished).run()
 
     def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
@@ -598,9 +597,7 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config, info="drop off item")
 
         # perform a setup to recalibrate the encoders
-        runner.then_run(self.setup_Command,
-                        until=lambda: self.isInitialized,
-                        info="setup")
+        runner.then_run_runner_from(self.setup_Command, info="setup")
 
         return runner.run()
 
@@ -628,9 +625,7 @@ class HighBay(Machine, TransitioningMachine):
         runner.then_goto(config, info="pickup item")
 
         # perform a setup because we need precise encoders now
-        runner.then_run(self.setup_Command,
-                        until=lambda: self.isInitialized,
-                        info="recalibrate encoders")
+        runner.then_run_runner_from(self.setup_Command, info="recalibrate encoders")
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -646,9 +641,7 @@ class HighBay(Machine, TransitioningMachine):
                          info="move to conveyor")
 
         # perform another setup
-        runner.then_run(self.setup_Command,
-                        until=lambda: self.isInitialized,
-                        info="setup")
+        runner.then_run_runner_from(self.setup_Command, info="setup")
 
         return runner.run()
 
