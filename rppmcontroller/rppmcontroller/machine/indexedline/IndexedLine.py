@@ -390,7 +390,7 @@ class IndexedLine(Machine, TransitioningMachine):
         # move payload onto slider2
         config.drilling = False
         config.drilling_conveyor = True
-        runner.then_goto(config, and_stay_for=1.0, info="moving to slider2")
+        runner.then_goto(config, and_stay_for=1.5, info="moving to slider2")
 
         # push payload to swap station
         config.drilling_conveyor = False
@@ -399,7 +399,7 @@ class IndexedLine(Machine, TransitioningMachine):
         runner.then_goto(config, until=lambda: not self.indexedLineSensSwap, info="moving to swap station")
 
         # move payload to end of swap station
-        runner.then_goto(config, and_stay_for=1.5, info="Moving to end of swap station")
+        runner.then_goto(config, and_stay_for=1.0, info="Moving to end of swap station")
 
         # stop station
         config.swap_conveyor = False
