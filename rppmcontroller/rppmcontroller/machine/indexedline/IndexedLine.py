@@ -73,7 +73,8 @@ class IndexedLine(Machine, TransitioningMachine):
             self.__indexedLineActDrillingConveyor or
             self.__indexedLineActSwapConveyor or
             self.__indexedLineActMilling or
-            self.__indexedLineActDrilling)
+            self.__indexedLineActDrilling or
+            self.is_executing_runner)
         # log isexecuting and debug info only if message has changed
         is_executing_log = (f'isExecuting({self.id})={res} | Sensors='
                             f'{self.sensorStatusString()} | Actuators= '
