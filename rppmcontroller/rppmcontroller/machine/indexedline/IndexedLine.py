@@ -354,7 +354,7 @@ class IndexedLine(Machine, TransitioningMachine):
         config = IndexedLineConfig()
 
         # wait until payload is present
-        runner.then_goto(config, until=lambda: not self.indexedLineSensLoading, info="waiting for payload")
+        runner.then_goto(config, until=lambda: not self.indexedLineSensLoading, and_stay_for=0.5, info="waiting for payload")
 
         # move payload onto slider1
         config.feed_conveyor = True
