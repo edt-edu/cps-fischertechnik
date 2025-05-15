@@ -27,6 +27,7 @@ from rppmcontroller.machine.Runner import Runner
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.highbay.HighBay import HighBay
+from rppmcontroller.machine.indexedline.IndexedLine import IndexedLine
 from rppmcontroller.machine.multiprocessing.MultiProcessing import \
     MultiProcessing
 from rppmcontroller.machine.punchingmachine.PunchingMachine import \
@@ -231,8 +232,8 @@ class RevPiPyMachineController:
                                 func = getattr(HighBay, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
                                 func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            # elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
-                            #     func = getattr(IndexedLine, str.lower(inputBufferItem.message.name))
+                            elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
+                                func = getattr(IndexedLine, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
                                 func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
                             elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
