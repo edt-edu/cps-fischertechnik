@@ -384,7 +384,7 @@ class RevPiPyMachineController:
             # call method
             cycleStepCommand = self.currentlyExecuting[key]
             if cycleStepCommand is not None:
-                logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
+                #logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
                 ret = cycleStepCommand.cycleStep()
                 # removes currentlyExecuting function once it indicates it is finished
                 # logging.debug(f"{ret}")
@@ -461,8 +461,8 @@ class RevPiPyMachineController:
                 self.outputBuffer.put(j, block=False)
                 self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
 
-        else:
-            logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
+        # else:
+        #     logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
         self.commandFeedback[machine] = lastResult
 
     def publishMQTTMeasurementStatus(self) -> None:
