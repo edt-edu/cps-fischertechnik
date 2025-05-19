@@ -800,7 +800,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.turn_table_position = TurnTablePosition.CONVEYOR
         config.conveyor_active = True
         config.conveyor_feeder_active = True  # will only activate once turntable has turned
-        runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor, info="eject payload")
+        runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor, and_stay_for=0.1, info="eject payload")
 
         # stop conveyor and feeder
         config.conveyor_active = False
