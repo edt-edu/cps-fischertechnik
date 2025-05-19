@@ -58,7 +58,7 @@ class VacuumGripper(Machine):
                 robotPlaceConf3,
                 robotPlaceConf4,
                 robotPlaceConf5]
-    
+
     def generateTransferMoveList(self, numPickup: Position, numPlace: Position) -> List[CycleStepCommand]:
         offset = 250
         # Enter/retract arm
@@ -112,7 +112,7 @@ class VacuumGripper(Machine):
             self.__vacuumActArmOut or self.__vacuumActArmIn or \
             self.__vacuumActCompressorOn or self.__vacuumActValve or \
             self.nbMinimumRequiredExecutionCycles != 0
-        
+
         # log isexecuting and debug info only if message has changed
         psContext = self.processSequenceContext
         if psContext is not None:
@@ -123,7 +123,7 @@ class VacuumGripper(Machine):
         if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
-        
+
         return res
 
 
@@ -298,7 +298,7 @@ class VacuumGripper(Machine):
         return status
 
     def outputStatus(self) -> Dict[str, Any]:
-        
+
         status = {
             "vacuumActVerticalUp": self.__vacuumActVerticalUp,
             "vacuumActVerticalDown": self.__vacuumActVerticalDown,
@@ -310,7 +310,7 @@ class VacuumGripper(Machine):
             "vacuumActValve": self.__vacuumActValve,
         }
         return status
-    
+
     def internalStatus(self) -> Dict[str, Any]:
         status = {
             "isExecuting": self.isExecuting,
@@ -323,7 +323,7 @@ class VacuumGripper(Machine):
         :return bool: True if self.mustReset
         """
         if self.mustReset:
-            self.mustReset = False    
+            self.mustReset = False
             return True
         else:
             return False
@@ -368,29 +368,29 @@ class VacuumGripper(Machine):
            (self.vacuumActRotRight and self.vacuumSensRotEnd) or \
            (self.vacuumActVerticalUp and self.vacuumSensVerticalEndUp):
             self.vacuumActArmIn = self.vacuumActRotRight = self.vacuumActVerticalUp =False
-            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, 
-                                    f"cannot move beyond reference sensor, machine is probably not initialized", 
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
+                                    f"cannot move beyond reference sensor, machine is probably not initialized",
                                     None)
-        
+
         if (t1 and t2 and t3 and t4):
-            return CycleStepResult(CycleStepResultEnum.DONE, 
-                                    f"gotoconfig {config}", 
+            return CycleStepResult(CycleStepResultEnum.DONE,
+                                    f"gotoconfig {config}",
                                     None)
         else:
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
-                                    f"gotoconfig {config}", 
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+                                    f"gotoconfig {config}",
                                     None)
 
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
-    def setup_CycleStep(self) -> CycleStepResult: 
+    def setup_CycleStep(self) -> CycleStepResult:
         """
         Used to move the engine to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
 
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
-        """  
-        logging.debug("VGR setup")    
+        """
+        logging.debug("VGR setup")
         # activate engines toward the sensors if necessary
         self.vacuumActArmOut = self.vacuumActRotLeft = self.vacuumActVerticalDown = False
         t1 = t2 = t3 = False
@@ -425,11 +425,11 @@ class VacuumGripper(Machine):
     def grip_CycleStep(self) -> CycleStepResult:
         self.__vacuumActCompressorOn = self.__vacuumActValve = True
         return CycleStepResult(CycleStepResultEnum.DONE, "grip")
-    
+
     def release_CycleStep(self) -> CycleStepResult:
         self.__vacuumActCompressorOn = self.__vacuumActValve = False
         return CycleStepResult(CycleStepResultEnum.DONE, "release")
-    
+
     @override
     def stop_CycleStep(self) -> CycleStepResult:
         self.__vacuumActArmOut = self.__vacuumActArmIn = False
@@ -447,7 +447,7 @@ class VacuumGripper(Machine):
         Command to triggering a setup. Used to move the engines to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
 
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the setup
-        """ 
+        """
         return lambda: self.setup_CycleStep()
 
     def go_to_position_Command(self, tartgetPos : Position) -> Optional[Callable[[], CycleStepResult]]:
@@ -455,21 +455,25 @@ class VacuumGripper(Machine):
         Command triggering a go_to_position action. Ie. it moves the gripper to the position without changing the valve or compressor status.
         It may trigger a setup first if the machine is not initialized
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
-        """ 
+        """
         moveList : List[CycleStepCommand] =  []
         if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
-        config = VacuumGripperConfig(tartgetPos.vertical, tartgetPos.rot, tartgetPos.horizontal, False)
-        moveList.append(CycleStepCommand(lambda: self.gotoconfig(config), 
+        config = VacuumGripperConfig(tartgetPos.vertical,
+                                     tartgetPos.rot,
+                                     tartgetPos.horizontal,
+                                     self.vacuumActValve and self.vacuumActCompressorOn)
+
+        moveList.append(CycleStepCommand(lambda: self.gotoconfig(config),
                                          "gotopos \n {config}"))
         return lambda: self.process_sequence_CycleStep(moveList)
-      
+
     def move_Command(self, startPos, endPos) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command triggering a move token action. Ie. it picks a token on the startPos and drop it on the endPos
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the move
-        """ 
-        
+        """
+
         print("move")
 
         moveList : List[CycleStepCommand] =  []
@@ -484,7 +488,7 @@ class VacuumGripper(Machine):
         """
         Command triggering a pick token action. Ie. it move the arm to the startPos and grips a token on that position
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the pick
-        """ 
+        """
         moveList : List[CycleStepCommand] =  []
         if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
@@ -496,7 +500,7 @@ class VacuumGripper(Machine):
         """
         Command triggering a place token action. Ie. it move the arm to the endPos and release the token on that position
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
-        """ 
+        """
         moveList : List[CycleStepCommand] =  []
         if not self.isInitialized:
             moveList.append(CycleStepCommand(lambda: self.setup_CycleStep(), "setup"))
@@ -508,15 +512,15 @@ class VacuumGripper(Machine):
         """
         Command activating the gripper without moving the arm.
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
-        """ 
+        """
         return lambda: self.grip_CycleStep()
 
     def release_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         """
         Command desactivating the gripper without moving the arm.
         :return: as a _Command, this function returns a lamba to a CycleStep method applying the place
-        """ 
+        """
         return lambda: self.release_CycleStep()
-    
+
     def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
         return lambda: self.stop_CycleStep()
