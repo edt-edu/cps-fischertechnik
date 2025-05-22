@@ -58,7 +58,7 @@ class Row(Enum):
 
 
 class HighBay(Machine, TransitioningMachine):
-    def __init__(self, id1):
+    def __init__(self, id1, row_offset = 0, column_offset = 0):
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
@@ -82,6 +82,10 @@ class HighBay(Machine, TransitioningMachine):
         self.__highbaySensVerticalEncoderCounter = 0
         self.__axisHorizontal = Axis(AxisType.Encoder, 20)
         self.__axisVertical = Axis(AxisType.Encoder, 20)
+
+        # offsets
+        self.row_offset = row_offset
+        self.column_offset = column_offset
 
         dictMap = {
             RequestedParameter.REFERENCESWITCHHORIZONTALAXIS:
@@ -543,14 +547,24 @@ class HighBay(Machine, TransitioningMachine):
         if isinstance(column, int):
             column = Column(column)
 
-        return self.horizontal_to_Command(column.to_counter_goal())
+        return self.horizontal_to_Command(
+            max(
+                0,
+                column.to_counter_goal() + self.column_offset
+            )
+        )
 
     def goto_row_Command(self, row: Union[Row, int]) -> Callable[
         [], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
 
-        return self.vertical_to_Command(row.to_counter_goal())
+        return self.vertical_to_Command(
+            max(
+                0,
+                row.to_counter_goal() + self.row_offset
+            )
+        )
 
     def store_to_Command(self,
                          row: Union[Row, int],
