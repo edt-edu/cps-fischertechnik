@@ -25,17 +25,31 @@ class Column(Enum):
     MIDDLE = 2
     LEFT = 3
 
-    def to_counter_goal(self, offset) -> int:
-        if self == Column.CONVEYOR:
-            return max(0, 70 + offset)
-        elif self == Column.RIGHT:
-            return max(0, 1550 + offset)
-        elif self == Column.MIDDLE:
-            return max(0, 2700 + offset)
-        elif self == Column.LEFT:
-            return max(0, 3900 + offset)
+    def to_counter_goal(self, offset: Union[int, tuple[int, int, int, int]]) -> int:
+        if isinstance(offset, int):
+            if self == Column.CONVEYOR:
+                return max(0, 70 + offset)
+            elif self == Column.RIGHT:
+                return max(0, 1550 + offset)
+            elif self == Column.MIDDLE:
+                return max(0, 2700 + offset)
+            elif self == Column.LEFT:
+                return max(0, 3900 + offset)
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
+        elif isinstance(offset, tuple) and len(offset) == 4:
+            if self == Column.CONVEYOR:
+                return max(0, 70 + offset[0])
+            elif self == Column.RIGHT:
+                return max(0, 1550 + offset[1])
+            elif self == Column.MIDDLE:
+                return max(0, 2700 + offset[2])
+            elif self == Column.LEFT:
+                return max(0, 3900 + offset[3])
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
         else:
-            raise ValueError(f"no counter goal defined for {self}")
+            raise TypeError("offset must be an int or a tuple of 4 ints")
 
 
 class Row(Enum):
@@ -44,21 +58,36 @@ class Row(Enum):
     MIDDLE = 2
     TOP = 3
 
-    def to_counter_goal(self, offset) -> int:
-        if self == Row.CONVEYOR:
-            return max(0, 1450 + offset)
-        elif self == Row.BOTTOM:
-            return max(0, 1700 + offset)
-        elif self == Row.MIDDLE:
-            return max(0, 900 + offset)
-        elif self == Row.TOP:
-            return max(0, 200 + offset)
+    def to_counter_goal(self, offset: Union[int, tuple[int, int, int, int]]) -> int:
+        if isinstance(offset, int):
+            if self == Row.CONVEYOR:
+                return max(0, 1450 + offset)
+            elif self == Row.BOTTOM:
+                return max(0, 1700 + offset)
+            elif self == Row.MIDDLE:
+                return max(0, 900 + offset)
+            elif self == Row.TOP:
+                return max(0, 200 + offset)
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
+        elif isinstance(offset, tuple) and len(offset) == 4:
+            if self == Row.CONVEYOR:
+                return max(0, 1450 + offset[0])
+            elif self == Row.BOTTOM:
+                return max(0, 1700 + offset[1])
+            elif self == Row.MIDDLE:
+                return max(0, 900 + offset[2])
+            elif self == Row.TOP:
+                return max(0, 200 + offset[3])
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
         else:
-            raise ValueError(f"no counter goal defined for {self}")
+            raise TypeError("offset must be an int or a tuple of 4 ints")
 
 
 class HighBay(Machine, TransitioningMachine):
-    def __init__(self, id1, row_offset = 0, column_offset = 0):
+    def __init__(self, id1, row_offset: Union[int, tuple[int, int, int, int]] = 0,
+                 column_offset: Union[int, tuple[int, int, int, int]] = 0):
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
