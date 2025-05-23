@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional, Union, Callable
+from typing import Dict, Any, Optional, Union, Callable, Tuple
 
 from typing_extensions import override
 
@@ -25,7 +25,7 @@ class Column(Enum):
     MIDDLE = 2
     LEFT = 3
 
-    def to_counter_goal(self, offset: Union[int, tuple[int, int, int, int]]) -> int:
+    def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
         if isinstance(offset, int):
             if self == Column.CONVEYOR:
                 return max(0, 70 + offset)
@@ -37,7 +37,7 @@ class Column(Enum):
                 return max(0, 3900 + offset)
             else:
                 raise ValueError(f"no counter goal defined for {self}")
-        elif isinstance(offset, tuple) and len(offset) == 4:
+        elif isinstance(offset, Tuple) and len(offset) == 4:
             if self == Column.CONVEYOR:
                 return max(0, 70 + offset[0])
             elif self == Column.RIGHT:
@@ -58,7 +58,7 @@ class Row(Enum):
     MIDDLE = 2
     TOP = 3
 
-    def to_counter_goal(self, offset: Union[int, tuple[int, int, int, int]]) -> int:
+    def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
         if isinstance(offset, int):
             if self == Row.CONVEYOR:
                 return max(0, 1450 + offset)
@@ -70,7 +70,7 @@ class Row(Enum):
                 return max(0, 200 + offset)
             else:
                 raise ValueError(f"no counter goal defined for {self}")
-        elif isinstance(offset, tuple) and len(offset) == 4:
+        elif isinstance(offset, Tuple) and len(offset) == 4:
             if self == Row.CONVEYOR:
                 return max(0, 1450 + offset[0])
             elif self == Row.BOTTOM:
@@ -86,8 +86,8 @@ class Row(Enum):
 
 
 class HighBay(Machine, TransitioningMachine):
-    def __init__(self, id1, row_offset: Union[int, tuple[int, int, int, int]] = 0,
-                 column_offset: Union[int, tuple[int, int, int, int]] = 0):
+    def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
+                 column_offset: Union[int, Tuple[int, int, int, int]] = 0):
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
