@@ -1,5 +1,9 @@
+from dataclasses import dataclass
+
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 
+
+@dataclass
 class VacuumGripperConfig(MachineConfiguration):
 
     def __init__(self, counterVertical:int, counterRot:int, counterArm:int, gripperActive:bool, endVertical=False, endRot=False, endArm=False):

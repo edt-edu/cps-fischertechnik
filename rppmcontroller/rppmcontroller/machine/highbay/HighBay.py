@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional, Union, Callable
+from typing import Dict, Any, Optional, Union, Callable, Tuple
 
 from typing_extensions import override
 
@@ -25,17 +25,31 @@ class Column(Enum):
     MIDDLE = 2
     LEFT = 3
 
-    def to_counter_goal(self) -> int:
-        if self == Column.CONVEYOR:
-            return 70
-        elif self == Column.RIGHT:
-            return 1550
-        elif self == Column.MIDDLE:
-            return 2700
-        elif self == Column.LEFT:
-            return 3900
+    def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
+        if isinstance(offset, int):
+            if self == Column.CONVEYOR:
+                return max(0, 70 + offset)
+            elif self == Column.RIGHT:
+                return max(0, 1550 + offset)
+            elif self == Column.MIDDLE:
+                return max(0, 2700 + offset)
+            elif self == Column.LEFT:
+                return max(0, 3900 + offset)
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
+        elif isinstance(offset, Tuple) and len(offset) == 4:
+            if self == Column.CONVEYOR:
+                return max(0, 70 + offset[0])
+            elif self == Column.RIGHT:
+                return max(0, 1550 + offset[1])
+            elif self == Column.MIDDLE:
+                return max(0, 2700 + offset[2])
+            elif self == Column.LEFT:
+                return max(0, 3900 + offset[3])
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
         else:
-            raise ValueError(f"no counter goal defined for {self}")
+            raise TypeError("offset must be an int or a tuple of 4 ints")
 
 
 class Row(Enum):
@@ -44,21 +58,36 @@ class Row(Enum):
     MIDDLE = 2
     TOP = 3
 
-    def to_counter_goal(self) -> int:
-        if self == Row.CONVEYOR:
-            return 1450
-        elif self == Row.BOTTOM:
-            return 1700
-        elif self == Row.MIDDLE:
-            return 900
-        elif self == Row.TOP:
-            return 200
+    def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
+        if isinstance(offset, int):
+            if self == Row.CONVEYOR:
+                return max(0, 1450 + offset)
+            elif self == Row.BOTTOM:
+                return max(0, 1700 + offset)
+            elif self == Row.MIDDLE:
+                return max(0, 900 + offset)
+            elif self == Row.TOP:
+                return max(0, 200 + offset)
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
+        elif isinstance(offset, Tuple) and len(offset) == 4:
+            if self == Row.CONVEYOR:
+                return max(0, 1450 + offset[0])
+            elif self == Row.BOTTOM:
+                return max(0, 1700 + offset[1])
+            elif self == Row.MIDDLE:
+                return max(0, 900 + offset[2])
+            elif self == Row.TOP:
+                return max(0, 200 + offset[3])
+            else:
+                raise ValueError(f"no counter goal defined for {self}")
         else:
-            raise ValueError(f"no counter goal defined for {self}")
+            raise TypeError("offset must be an int or a tuple of 4 ints")
 
 
 class HighBay(Machine, TransitioningMachine):
-    def __init__(self, id1):
+    def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
+                 column_offset: Union[int, Tuple[int, int, int, int]] = 0):
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
@@ -82,6 +111,10 @@ class HighBay(Machine, TransitioningMachine):
         self.__highbaySensVerticalEncoderCounter = 0
         self.__axisHorizontal = Axis(AxisType.Encoder, 20)
         self.__axisVertical = Axis(AxisType.Encoder, 20)
+
+        # offsets
+        self.row_offset = row_offset
+        self.column_offset = column_offset
 
         dictMap = {
             RequestedParameter.REFERENCESWITCHHORIZONTALAXIS:
@@ -543,14 +576,14 @@ class HighBay(Machine, TransitioningMachine):
         if isinstance(column, int):
             column = Column(column)
 
-        return self.horizontal_to_Command(column.to_counter_goal())
+        return self.horizontal_to_Command(column.to_counter_goal(self.column_offset))
 
     def goto_row_Command(self, row: Union[Row, int]) -> Callable[
         [], CycleStepResult]:
         if isinstance(row, int):
             row = Row(row)
 
-        return self.vertical_to_Command(row.to_counter_goal())
+        return self.vertical_to_Command(row.to_counter_goal(self.row_offset))
 
     def store_to_Command(self,
                          row: Union[Row, int],
@@ -563,9 +596,9 @@ class HighBay(Machine, TransitioningMachine):
 
         # goto conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            Column.CONVEYOR.to_counter_goal())
+            Column.CONVEYOR.to_counter_goal(self.column_offset))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            Row.CONVEYOR.to_counter_goal())
+            Row.CONVEYOR.to_counter_goal(self.row_offset))
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
@@ -584,9 +617,9 @@ class HighBay(Machine, TransitioningMachine):
 
         # move to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            column.to_counter_goal())
+            column.to_counter_goal(self.column_offset))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            row.to_counter_goal() - PICKUP_DISTANCE)
+            row.to_counter_goal(self.row_offset) - PICKUP_DISTANCE)
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
@@ -612,9 +645,9 @@ class HighBay(Machine, TransitioningMachine):
 
         # go to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            column.to_counter_goal())
+            column.to_counter_goal(self.column_offset))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            row.to_counter_goal())
+            row.to_counter_goal(self.row_offset))
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
@@ -629,9 +662,9 @@ class HighBay(Machine, TransitioningMachine):
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            Column.CONVEYOR.to_counter_goal())
+            Column.CONVEYOR.to_counter_goal(self.column_offset))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            Row.CONVEYOR.to_counter_goal())
+            Row.CONVEYOR.to_counter_goal(self.row_offset))
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True,
