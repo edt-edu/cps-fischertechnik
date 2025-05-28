@@ -152,23 +152,26 @@ class HighBay(Machine, TransitioningMachine):
 
         # helper variables
         self.previous_isExecuting_log = None
-        self.__setup_finished = False
+        self.__is_initialized = False
+        self.must_reset = False
         self.next_config = None
         self.__state = None
 
     @property
     def isInitialized(self) -> bool:
-        return self.__setup_finished
+        return self.__is_initialized
 
     def __isExecuting(self) -> bool:
         return (
-            self.__highbayActUp or self.__highbayActDown or
+            self.__highbayActUp or
+            self.__highbayActDown or
             self.__highbayActConveyorForward or
             self.__highbayActConveyorBackward or
             self.__highbayActHorizontalToConveyor or
             self.__highbayActHorizontalToRack or
             self.__highbayActCantileverForward or
-            self.__highbayActCantileverBackward or self.is_executing_runner)
+            self.__highbayActCantileverBackward or
+            self.is_executing_runner)
 
     @property
     def isExecuting(self) -> bool:
@@ -390,9 +393,6 @@ class HighBay(Machine, TransitioningMachine):
         """
         # logging.debug(f"going to {config}")
 
-        # by default, we assume we are not in a setup state
-        self.__setup_finished = False
-
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
             self.highbayActConveyorForward = False
@@ -524,6 +524,15 @@ class HighBay(Machine, TransitioningMachine):
         self.highbayActCantileverBackward = False
         return CycleStepResult(CycleStepResultEnum.DONE)
 
+    def run_setup_unless_initialized(self, runner: Runner) -> None:
+        """
+        Appends a setup step to the provided runner, if this is not initialized
+        :param runner: The Runner to append the setup step to
+        :return: None
+        """
+        if not self.isInitialized:
+            runner.then_run_runner_from(self.setup_Command, info="setup")
+
     # methods intended for orchestrator
 
     def setup_Command(self) -> Runner:
@@ -533,7 +542,8 @@ class HighBay(Machine, TransitioningMachine):
         """
 
         def mark_setup_finished():
-            self.__setup_finished = True
+            self.__is_initialized = True
+            self.must_reset = True
             return CycleStepResult.done()
 
         return self.create_runner().then_run(self.goto_config).then_run(
@@ -559,17 +569,19 @@ class HighBay(Machine, TransitioningMachine):
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
-    def horizontal_to_Command(self, counter_goal: int) -> Callable[
-        [], CycleStepResult]:
-        self.create_next_config().horizontal_axis_config = (
-            AxisConfig.to_counter_goal(counter_goal))
-        return self.goto_next_config()
+    def horizontal_to_Command(self, counter_goal: int) -> Runner:
+        runner = self.create_runner()
+        self.run_setup_unless_initialized(runner)
+        config = self.get_current_config()
+        config.horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        return runner.then_goto(config).run()
 
-    def vertical_to_Command(self, counter_goal: int) -> Callable[
-        [], CycleStepResult]:
-        self.create_next_config().vertical_axis_config = (
-            AxisConfig.to_counter_goal(counter_goal))
-        return self.goto_next_config()
+    def vertical_to_Command(self, counter_goal: int) -> Runner:
+        runner = self.create_runner()
+        self.run_setup_unless_initialized(runner)
+        config = self.get_current_config()
+        config.vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
+        return runner.then_goto(config).run()
 
     def goto_column_Command(self, column: Union[Column, int]) -> Callable[
         [], CycleStepResult]:
@@ -587,12 +599,14 @@ class HighBay(Machine, TransitioningMachine):
 
     def store_to_Command(self,
                          row: Union[Row, int],
-                         column: Union[Column, int]) -> Callable[
-        [], CycleStepResult]:
+                         column: Union[Column, int]) -> Runner:
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
             column = Column(column)
+
+        runner = self.create_runner()
+        self.run_setup_unless_initialized(runner)
 
         # goto conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -602,7 +616,7 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
-        runner = self.create_runner().then_goto(config, info="goto conveyor")
+        runner.then_goto(config, info="goto conveyor")
 
         # move item on lever
         config.conveyor_state = ConveyorState.BACKWARD
@@ -636,12 +650,14 @@ class HighBay(Machine, TransitioningMachine):
 
     def pickup_from_Command(self,
                             row: Union[Row, int],
-                            column: Union[Column, int]) -> Callable[
-        [], CycleStepResult]:
+                            column: Union[Column, int]) -> Runner:
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
             column = Column(column)
+
+        runner = self.create_runner()
+        self.run_setup_unless_initialized(runner)
 
         # go to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
@@ -651,7 +667,7 @@ class HighBay(Machine, TransitioningMachine):
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
-        runner = self.create_runner().then_goto(config, info="go to rack")
+        runner.then_goto(config, info="go to rack")
 
         # pickup item
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
