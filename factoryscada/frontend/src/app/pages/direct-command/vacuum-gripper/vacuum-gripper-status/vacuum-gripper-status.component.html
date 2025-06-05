@@ -1,0 +1,31 @@
+<h3>{{ machine?.name }} - SETUP command</h3>
+<p style="margin-bottom: 2em;">Go return the current status of the gripper, including the vacuum state, gripper
+  position, and any other relevant parameters, without changing the gripper’s operation.</p>
+
+<div class="  fields">
+  <div class="field">
+    <label></label>
+    <select>
+      <option>REFERENCESWITCHVERTICALAXIS</option>
+      <option>REFERENCESWITCHHORIZONTALAXIS</option>
+      <option>REFERENCESWITCHROTATE</option>
+      <option>VERTICALAXISSTEP</option>
+      <option>HORIZONTALAXISSTEP</option>
+      <option>ROTATESTEP</option>
+      <option>MOTORVERTICALAXISUP</option>
+      <option>MOTORVERTICALAXISDOWN</option>
+      <option>MOTORHORIZONTALAXISBACKWARD</option>
+      <option>MOTORHORIZONTALAXISFORWARD</option>
+      <option>MOTORROTATECLOCKWISE</option>
+      <option>MOTORROTATECOUNTERCLOCKWISE</option>
+      <option>COMPRESSOR</option>
+      <option>VALVEVACUUM</option>
+    </select>
+  </div>
+</div>
+
+<!-- TODO RE verifier la route api de la commande status -->
+
+<div class="ui buttons">
+  <button (click)="onExecute()" class="ui primary button">Execute</button>
+</div>

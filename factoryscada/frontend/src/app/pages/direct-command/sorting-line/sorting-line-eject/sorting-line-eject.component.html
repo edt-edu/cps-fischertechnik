@@ -1,0 +1,19 @@
+<p-fieldset legend="{{ machine?.name }} - Eject to color line">
+
+  <p>Move the token on the conveyor and eject it to the specified color line.</p>
+
+  <!-- Parameters -->
+  <div class="form-group flex-grow-1">
+    <label>Color</label>
+    <p-dropdown
+      [options]="colors"
+      optionLabel="name"
+      [placeholder]="'Select the color line'"
+      [(ngModel)]="selectedColor"/>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+</p-fieldset>

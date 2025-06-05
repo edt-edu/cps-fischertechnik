@@ -1,0 +1,14 @@
+<p-fieldset legend="{{ machine?.name }} - MOVE">
+
+  <p style="margin-bottom: 2em;">Move a token: pick up the token from start position and release it on end position.</p>
+
+  <app-vacuum-gripper-position-widget [title]="'Start position'" (onValuesChanged)="handleStartValuesChanged($event)"/>
+  <app-vacuum-gripper-position-widget [title]="'End position'" (onValuesChanged)="handleEndValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+
+</p-fieldset>
+

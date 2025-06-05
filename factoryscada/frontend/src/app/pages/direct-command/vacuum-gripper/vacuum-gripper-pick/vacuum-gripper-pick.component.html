@@ -1,0 +1,13 @@
+
+<p-fieldset legend="{{ machine?.name }} - PICK">
+
+  <p style="margin-bottom: 2em;">Pick up the object at the specified position, once completed, the gripper does not release its grip.</p>
+
+  <app-vacuum-gripper-position-widget (onValuesChanged)="handleValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+
+</p-fieldset>

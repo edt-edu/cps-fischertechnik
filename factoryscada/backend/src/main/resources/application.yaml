@@ -1,0 +1,18 @@
+server:
+  port: 9000
+  http2:
+    enabled: true
+  compression:
+    enabled: true
+
+spring:
+  application:
+    name: factoryscada
+
+logging:
+  file:
+    name: /app/config/scada-backend.log
+  charset:
+    console: UTF-8
+  level:
+    root: INFO

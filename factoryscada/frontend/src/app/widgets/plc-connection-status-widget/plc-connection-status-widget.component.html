@@ -1,0 +1,16 @@
+<p-button (onClick)="op.toggle($event)"
+          [icon]="getIcon()"
+          [severity]="getButtonSeverity()"
+          label="{{plc.host}}"
+          badge="{{plc.machines.length}}" >
+  <p-overlayPanel #op>
+    <p><span class="status-detail-field-label" >Controller:</span> {{ plc.name }}</p>
+    <p><span class="status-detail-field-label" >Host:</span> {{plc.host}}</p>
+    <ul>
+      <li><span class="status-detail-field-label" >Command port:</span> {{plc.commandPort}} {{plcConnectionStatus?.commandPortConnected}}</li>
+      <li><span class="status-detail-field-label" >Notification port:</span> {{plc.notificationPort}} {{plcConnectionStatus?.notificationPortConnected}}</li>
+    </ul>
+    <p><span class="status-detail-field-label" >Number of declared machines:</span> {{plc.machines.length}}</p>
+
+  </p-overlayPanel>
+</p-button>

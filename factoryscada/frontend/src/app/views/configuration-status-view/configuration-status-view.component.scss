@@ -1,0 +1,36 @@
+:host ::ng-deep .p-organizationchart {
+
+  .node-header, .node-content, .node-child-content {
+    padding: .2em .2rem;
+  }
+
+  .node-header {
+    background-color: #495ebb;
+    color: #ffffff;
+  }
+
+  .node-content {
+    text-align: center;
+    border: 1px solid #495ebb;
+  }
+  .node-child-content {
+    text-align: left;
+  }
+  .node-content img {
+    border-radius: 50%;
+  }
+  .p-configuration {
+    padding: 0;
+    border: 0 none;
+  }
+
+  .p-plc {
+    padding: 0;
+    border: 0 none;
+  }
+
+  .p-machine {
+    padding: 0;
+    border: 0 none;
+  }
+}
