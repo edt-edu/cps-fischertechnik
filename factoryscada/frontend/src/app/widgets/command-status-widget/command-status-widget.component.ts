@@ -74,7 +74,7 @@ export class CommandStatusWidgetComponent implements OnInit, OnDestroy, OnChange
 
   protected getCommandInfoHeader(): string{
     const info = this.machineCommandStatus?.commandFeedbackInfo;
-    if (info === undefined) {
+    if (info === undefined || info === null) {
       return "";
     } else {
       const newlineIndex = info.indexOf('\n');
@@ -88,7 +88,7 @@ export class CommandStatusWidgetComponent implements OnInit, OnDestroy, OnChange
 
   protected getCommandInfo(): SafeHtml{
     const info = this.machineCommandStatus?.commandFeedbackInfo;
-    if (info === undefined) {
+    if (info === undefined || info === null) {
       return "";
     } else {
       const replacedHtml = info.replace(/\r\n|\r|\n/g, ' <br> ');
