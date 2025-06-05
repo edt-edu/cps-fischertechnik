@@ -70,7 +70,7 @@ export class MachineStatusWidgetComponent implements OnInit, OnDestroy, OnChange
 
   protected getFeedbackTimeStamp(): string {
     const t = this.machineCommandStatus?.machineFeedbackTimestamp;
-    if (t === undefined) {
+    if (t === undefined || t === null) {
       return "";
     } else {
       return new Date(t * 1000).toLocaleTimeString()
