@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from "@angular/router";
-import { TabMenuModule } from 'primeng/tabmenu';
+import { MenubarModule } from 'primeng/menubar';
 import { MenuItem } from 'primeng/api';
 
 @Component({
@@ -9,7 +9,8 @@ import { MenuItem } from 'primeng/api';
   imports: [
     RouterOutlet,
     RouterLink,
-    TabMenuModule
+    MenubarModule
+    //TabMenuModule
   ],
   templateUrl: './dashboard-layout.component.html',
   styleUrl: './dashboard-layout.component.scss'
@@ -26,18 +27,29 @@ export class DashboardLayoutComponent {
     this.menuItems = [
       {
         label: 'Home',
+        icon: 'pi pi-home',
         routerLink: 'home',
       },
       {
-        label: 'Machine Debug Command',
-        routerLink: 'debug-command',
-      },
-      {
         label: 'Machine Command',
-        routerLink: 'direct-command'
+        icon: 'pi pi-cog',
+        routerLink: 'direct-command',
+        items: [
+          {
+            label: 'Machine Command',
+            icon: 'pi pi-sliders-h',
+            routerLink: 'direct-command'
+          },
+          {
+            label: 'Machine Debug Command',
+            icon: 'pi pi-code',
+            routerLink: 'debug-command',
+          }
+        ]
       },
       {
         label: 'Mission',
+        icon: 'pi pi-sitemap',
         routerLink: 'mission'
       }
     ];
