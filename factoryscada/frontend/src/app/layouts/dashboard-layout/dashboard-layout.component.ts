@@ -37,7 +37,8 @@ export class DashboardLayoutComponent {
         items: [
           {
             label: 'Machine Command',
-            icon: 'pi pi-sliders-h',
+            icon: 'pi pi-cog',
+          //  icon: 'pi pi-sliders-h',
             routerLink: 'direct-command'
           },
           {
