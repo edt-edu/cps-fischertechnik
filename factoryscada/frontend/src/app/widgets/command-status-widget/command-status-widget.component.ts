@@ -98,7 +98,7 @@ export class CommandStatusWidgetComponent implements OnInit, OnDestroy, OnChange
 
   protected getCommandTimeStamp(): string {
     const t = this.machineCommandStatus?.currentCommandTimestamp;
-    if (t === undefined) {
+    if (t === undefined || t === null) {
       return "";
     } else {
       return new Date(t * 1000).toLocaleTimeString()
@@ -106,7 +106,7 @@ export class CommandStatusWidgetComponent implements OnInit, OnDestroy, OnChange
   }
   protected getFeedbackTimeStamp(): string {
     const t = this.machineCommandStatus?.commandFeedbackTimestamp;
-    if (t === undefined) {
+    if (t === undefined || t === null) {
       return "";
     } else {
       return new Date(t * 1000).toLocaleTimeString()

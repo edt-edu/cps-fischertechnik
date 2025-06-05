@@ -6,7 +6,7 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'dashboard/direct-command'
+    redirectTo: 'dashboard/home'
   }, 
   {
     path: 'dashboard',
