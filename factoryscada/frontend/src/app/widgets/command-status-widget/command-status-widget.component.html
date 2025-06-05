@@ -1,0 +1,24 @@
+<p-button (onClick)="op.toggle($event)"
+          [icon]="getIcon()"
+          [severity]="getButtonSeverity()"
+          label="{{machineCommandStatus?.currentCommandName}} "
+          badge="{{getCommandInfoHeader()}} {{machineCommandStatus?.commandFeedbackStatus}}" >
+  <p-overlayPanel #op>
+    <p>{{ machine.name }} command status</p>
+    <ul>
+      <li><p><span class="status-detail-field-label" >Last command:</span> {{machineCommandStatus?.currentCommandName}}</p>
+        <p><span class="status-detail-field-label" >Timestamp:</span> {{this.getCommandTimeStamp()}}</p>
+        <p><span class="status-detail-field-label" >JSON:</span> {{machineCommandStatus?.currentCommandRawJSON}}</p></li>
+      <li>
+        <p><span class="status-detail-field-label" >Status:</span> {{machineCommandStatus?.commandFeedbackStatus}}</p>
+        <p><span class="status-detail-field-label" >Information:</span> <span [innerHTML]="getCommandInfo()"></span></p>
+        <p><span class="status-detail-field-label" >Timestamp:</span> {{this.getFeedbackTimeStamp()}}</p>
+        <p><span class="status-detail-field-label" >JSON:</span> {{machineCommandStatus?.commandFeedbackRawJSON}}</p>
+      </li>
+    </ul>
+
+
+  </p-overlayPanel>
+</p-button>
+
+

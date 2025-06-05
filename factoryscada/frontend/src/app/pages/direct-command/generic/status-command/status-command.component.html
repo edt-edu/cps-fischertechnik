@@ -1,0 +1,16 @@
+
+<p-fieldset legend="{{ machine?.name }} - {{ title }}">
+
+  <p>{{ description }}</p>
+
+  <!-- Parameters -->
+  <div class="form-group flex-grow-1">
+    <label>Status Parameters</label>
+    <p-multiSelect [options]="requestStatusParameters" [(ngModel)]="selectedStatusParameters" optionLabel="name" placeholder="Select Status Parameters"></p-multiSelect>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+</p-fieldset>

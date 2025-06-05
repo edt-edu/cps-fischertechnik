@@ -1,0 +1,31 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'styles/variables';
+
+.block-container {
+    /* Add any additional styles you need */
+    padding: 1em;
+    //background-color: #f9f9f9;
+    border: 1px solid lightgray;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.p-panel-header {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+.p-fieldset-legend {
+    padding: 0.3rem;
+    //border: none;
+}
+.p-fieldset {
+    padding-top: 1rem;
+}
+.p-fieldset-content {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}

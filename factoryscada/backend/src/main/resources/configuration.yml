@@ -1,0 +1,76 @@
+# Configuration (00)
+
+configuration:
+  name: "configuration"
+
+  controllers:
+  #  - name: "plc-1"
+  #    host: 'RevPi103156.local'
+  #    commandPort: 6001
+  #    notificationPort: 6011
+  #    machines:
+  #      - type: "sortingLine"
+  #        name: "SortingLine01"
+  #      - type: "vacuumGripper"
+  #        name: "VacuumGripper01"
+
+  #  - name: "plc-2"
+  #    host: 'RevPi103259.local'
+  #    commandPort: 6001
+  #    notificationPort: 6011
+  #    machines:
+  #      - type: "conveyorBelt"
+  #        name: "ConveyorBelt01"
+  #      - type: "vacuumGripper"
+  #        name: "VacuumGripper02"
+
+  #  - name: "plc-3"
+  #    host: 'RevPi103228.local'
+  #    commandPort: 6001
+  #    notificationPort: 6011
+  #    machines:
+  #       - type: "multiProcessingStation"
+  #         name: "MultiProcessing01"
+  #       - type: "highBayWarehouse"
+  #         name: "HighBayWarehouse01" 
+    
+#    - name: "plc-4"
+#      host: 'localhost'
+#      commandPort: 6001
+#      notificationPort: 6011
+#      machines:
+#        - type: "conveyorBelt"
+#          name: "ConveyorBelt01"
+    # - name: "plc-5"
+    #   host: 'localhost'
+    #   commandPort: 6001
+    #   notificationPort: 6011
+    #   machines:
+    #     - type: "vacuumGripper"
+    #       name: "VacuumGripper01"
+#   - name: "plc-6"
+#     host: 'localhost'
+#     commandPort: 6001
+#     notificationPort: 6011
+#     machines:
+#       - type: "sortingLine"
+#         name: "SortingLine0"
+    - name: "plc-7"
+      host: 'localhost'
+      commandPort: 6001
+      notificationPort: 6011
+      machines:
+        - type: "vacuumGripper"
+          name: "VacuumGripper01"
+        - type: "conveyorBelt"
+          name: "ConveyorBelt01"
+        - type: "sortingLine"
+          name: "SortingLine01"
+        - type: "multiProcessingStation"
+          name: "MultiProcessing01"
+        - type: "punchingMachine"
+          name: "PunchingMachine01"
+        - type: "highBayWarehouse"
+          name: "HighBayWarehouse01"
+        - type: "indexedLine"
+          name: "IndexedLine01"

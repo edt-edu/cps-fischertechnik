@@ -1,0 +1,442 @@
+# Command placeholder
+
+commandPlaceholder:
+
+  # ConveyorBelt command placeholders
+
+  machinesType:
+    - name: "conveyorBelt"
+      commands:
+        - name: "moveOut"
+          placeholder: >
+            {
+              "topicName" : "ConveyorBelt01",
+              "timestamp" : 1677144787.891000000,
+              "message" : {
+                "jsonType" : "COMMAND",
+                "type" : "CONVEYOR",
+                "outputId" : 1,
+                "name" : "MOVE_OUT",
+                "parameters" : [ 
+                  {
+                    "passableType" : "DIRECTION",
+                    "passable" : {
+                      "direction" : "FORWARD"
+                    }
+                  } 
+                ]
+              }
+            }
+        - name: "moveNbSteps"
+          placeholder: >
+            {
+              "topicName" : "ConveyorBelt01",
+              "timestamp" : 1677144787.891000000,
+              "message" : {
+                "jsonType" : "COMMAND",
+                "type" : "CONVEYOR",
+                "outputId" : 1,
+                "name" : "MOVE_NB_STEPS",
+                "parameters" : [ 
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 15
+                    }
+                  },
+                  {
+                    "passableType" : "DIRECTION",
+                    "passable" : {
+                      "direction" : "FORWARD"
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "moveToSensor"
+          placeholder: >
+            {
+              "topicName" : "ConveyorBelt01",
+              "timestamp" : 1677144787.891000000,
+              "message" : {
+                "jsonType" : "COMMAND",
+                "type" : "CONVEYOR",
+                "outputId" : 1,
+                "name" : "MOVE_TO_SENSOR",
+                "parameters" : [ 
+                  {
+                    "passableType" : "DIRECTION",
+                    "passable" : {
+                      "direction" : "FORWARD"
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName" : "ConveyorBelt01",
+              "timestamp" : 1677144787,
+              "message" : {
+                "jsonType" : "COMMAND",
+                "type" : "CONVEYOR",
+                "outputId" : 1,
+                "name" : "STOP",
+                "parameters" : []
+              }
+            }
+        - name: "status"
+          placeholder: >
+            {
+              "topicName": "ConveyorBelt01",
+              "timestamp": 1678444092.417,
+              "message": {
+                "jsonType": "STATUSREQUEST",
+                "type": "CONVEYOR",
+                "requestId": 1,
+                "params": [
+                  "LIGHTBARRIERFEEDSTATION",
+                  "LIGHTBARRIERSWAPSTATION",
+                  "PULSECOUNTER",
+                  "MOTORCONVEYORBELTFORWARD",
+                  "MOTORCONVEYORBELTBACKWARD"
+                ]
+              }
+            }
+
+    # VacuumGripper command placeholders
+
+    - name: "vacuumGripper"
+      commands:
+        - name: "go_to_position"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 1,
+                "name": "GO_TO_POSITION",
+                "parameters": [
+                  {
+                    "passableType": "POSITIONPARAMETERTHREED",
+                    "passable": {
+                      "meaning": "START",
+                      "vertical": 0,
+                      "horizontal": 0,
+                      "rot": 0
+                    }
+                  }
+                ]
+              }
+            }
+
+        - name: "move"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 1,
+                "name": "MOVE",
+                "parameters": [
+                  {
+                    "passableType": "POSITIONPARAMETERTHREED",
+                    "passable": {
+                      "meaning": "START",
+                      "vertical": 1450,
+                      "horizontal": 0,
+                      "rot": 0
+                    }
+                  },
+                  {
+                    "passableType": "POSITIONPARAMETERTHREED",
+                    "passable": {
+                      "meaning": "END",
+                      "vertical": 1450,
+                      "horizontal": 500,
+                      "rot": 500
+                    }
+                  }
+                ]
+              }
+            }
+
+        - name: "pick"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 1,
+                "name": "PICK",
+                "parameters": [
+                  {
+                    "passableType": "POSITIONPARAMETERTHREED",
+                    "passable": {
+                      "meaning": "START",
+                      "vertical": 1500,
+                      "horizontal": 400,
+                      "rot": 0
+                    }
+                  }
+                ]
+              }
+            }
+
+        - name: "place"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 1,
+                "name": "PLACE",
+                "parameters": [
+                  {
+                    "passableType": "POSITIONPARAMETERTHREED",
+                    "passable": {
+                      "meaning": "START",
+                      "vertical": 1500,
+                      "horizontal": 1000,
+                      "rot": 500
+                    }
+                  }
+                ]
+              }
+            }
+
+        - name: "setup"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 2,
+                "name": "SETUP",
+                "parameters": []
+              }
+            }
+
+        - name: "status"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1678444092.417,
+              "message": {
+                "jsonType": "STATUSREQUEST",
+                "type": "VACUUM",
+                "requestId": 1,
+                "params": [
+                  "REFERENCESWITCHROTATE",
+                  "ROTATESTEP"
+                ]
+              }
+            }
+        - name: "grip"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 4,
+                "name": "GRIP",
+                "parameters": []
+              }
+            }
+        - name: "release"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 4,
+                "name": "RELEASE",
+                "parameters": []
+              }
+            }            
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 4,
+                "name": "STOP",
+                "parameters": []
+              }
+            }
+
+    # SortingLine command placeholders ___
+
+    - name: "sortingLine"
+      commands:
+        - name: "eject"
+          placeholder: >
+            {
+              "topicName": "SortingLine01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "SORTING",
+                "outputId": 7,
+                "name": "EJECT",
+                "parameters": [
+                  {
+                    "passableType": "COLOR",
+                    "passable": {
+                      "color": "WHITE"
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "deteject"
+          placeholder: >
+            {
+              "topicName": "SortingLine01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "SORTING",
+                "outputId": 1,
+                "name": "DETEJECT",
+                "parameters": []
+              }
+            }
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName": "SortingLine01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "SORTING",
+                "outputId": 1,
+                "name": "STOP",
+                "parameters": []
+              }
+            }
+
+
+    # MultiProcessing command placeholders ___
+
+    - name: "multiProcessing"
+      commands:
+        - name: "setup"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "SETUP",
+                "parameters": []
+              }
+            }
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "STOP",
+                "parameters": []
+              }
+            } 
+        - name: "process1"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "PROCESS1",
+                "parameters": []
+              }
+            } 
+
+    # PunchingMachine command placeholders ___
+
+    - name: "punchingMachine"
+      commands:
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName": "PunchingMachine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "PUNCHING",
+                "outputId": 1,
+                "name": "STOP",
+                "parameters": []
+              }
+            }
+        - name: "punch"
+          placeholder: >
+            {
+              "topicName": "PunchingMachine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "PUNCHING",
+                "outputId": 1,
+                "name": "PUNCH",
+                "parameters": []
+              }
+            }
+
+    # IndexedLine command placeholders ___
+
+    - name: "indexedLine"
+      commands:
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "STOP",
+                "parameters": []
+              }
+            }
+        - name: "process1"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "PROCESS1",
+                "parameters": []
+              }
+            }

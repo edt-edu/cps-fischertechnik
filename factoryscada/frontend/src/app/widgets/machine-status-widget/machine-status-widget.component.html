@@ -1,0 +1,21 @@
+<p-button (onClick)="op.toggle($event)"
+          [icon]="getIcon()"
+          [severity]="getButtonSeverity()"
+          label=" "
+          badge="{{machineCommandStatus?.machineFeedbackStatus}} " >
+  <p-overlayPanel #op>
+    <p>{{ machine.name }} machine status</p>
+    <ul>
+      <li>
+        <p><span class="status-detail-field-label" >Status:</span> {{machineCommandStatus?.machineFeedbackStatus}}</p>
+        <p><span class="status-detail-field-label" >Information:</span> {{machineCommandStatus?.machineFeedbackInfo}}</p>
+        <p><span class="status-detail-field-label" >Timestamp:</span> {{this.getFeedbackTimeStamp()}}</p>
+        <p><span class="status-detail-field-label" >JSON:</span> {{machineCommandStatus?.machineFeedbackRawJSON}}</p>
+      </li>
+    </ul>
+
+
+  </p-overlayPanel>
+</p-button>
+
+

@@ -1,0 +1,42 @@
+<p-organizationChart [value]="dataTree"
+                     selectionMode="single" [(selection)]="selectedNode"
+                     [collapsible]="true" >
+
+  <ng-template let-node pTemplate="default">
+    {{node.label}}
+  </ng-template>
+  <ng-template let-node pTemplate="configuration">
+    <div class="node-content">
+      {{node.label}}
+      <p-button [icon]="getConfigurationIcon()"
+                [severity]="getConfigurationSeverity()"
+                (onClick)="op.toggle($event)">
+        <p-overlayPanel #op>
+          <p>Connection Backend ↔ Frontend : {{isWSActive()}}</p>
+          <p>{{getConfigurationInfo()}}</p>
+        </p-overlayPanel>
+      </p-button>
+    </div>
+  </ng-template>
+  <ng-template let-node pTemplate="plc">
+    <div class="node-header">{{node.label}}</div>
+    <div class="node-content">
+      <app-plc-connection-status-widget [plc]="node.data"></app-plc-connection-status-widget>
+      @for (machine of node.data.machines; track machine) {
+        <div class="node-child-content">
+          <p-fieldset legend="{{machine.name}}" >
+            <app-machine-status-widget  [machine]="machine"></app-machine-status-widget><br>
+            <app-command-status-widget [machine]="machine"></app-command-status-widget>
+          </p-fieldset>
+        </div>
+      }
+      @empty {  }
+    </div>
+  </ng-template>
+  <ng-template let-node pTemplate="machine">
+    <div class="node-header">{{node.label}}</div>
+    <div class="node-content">
+      <app-machine-status-widget [machine]="node.data"></app-machine-status-widget>
+    </div>
+  </ng-template>
+</p-organizationChart>

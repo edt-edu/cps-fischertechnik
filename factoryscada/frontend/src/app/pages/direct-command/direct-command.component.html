@@ -1,0 +1,268 @@
+<!-- Fischertechnik SCADA Header -->
+<div class="ui container" style="margin-top: 1.5em">
+  <div class="ui stacked segment">
+    <h2>FischerTechnik SCADA - Machine Direct Command View</h2>
+  </div>
+</div>
+
+
+<p-panel header="Machine Commands">
+  <!-- Instructions Section -->
+  <ng-template pTemplate="icons">
+      <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
+        <p-overlayPanel #helpOP>
+          <p-accordion [activeIndex]="0">
+            <p-accordionTab header="Panel Description">
+              <p>Send commands to machines. </p>
+            </p-accordionTab>
+            <p-accordionTab header="How to use the Machine Command Message View?">
+              <ol class="ui list">
+                <li>Select a machine  </li>
+                <li>Select the command you want to perform from the list of template commands available for the machine.</li>
+                <li>Fill the fomr</li>
+              </ol>
+            </p-accordionTab>
+          </p-accordion>
+        </p-overlayPanel>
+  </ng-template>
+  <p-fieldset legend="Command selection">
+    <div class="flex justify-content-evenly flex-wrap">
+
+
+
+      <!-- Machine Selection -->
+      <div class="form-group flex-grow-1">
+        <label>Machine</label>
+        <p-dropdown
+          [options]="getMachines(configuration)"
+          [(ngModel)]="selectedMachine"
+          optionLabel="name"
+          (onClick)="onMachineSelected()"
+          [style]="{'width':'15rem'}"  />
+      </div>
+      <!-- Command Selection -->
+      <div class="form-group flex-grow-1">
+        <label>Command</label>
+        <p-dropdown
+          [options]="getCommandNames(instance, selectedMachine?.name)"
+          [(ngModel)]="selectedCommand"
+          (onClick)="onCommandSelected()"
+          [style]="{'width':'15rem'}"  >
+          <ng-template let-command pTemplate="item">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-pencil" style="font-size: 0.75rem"></i>
+              <div>{{ humanizeCommandName(command) }}</div>
+            </div>
+        </ng-template>
+
+        </p-dropdown>
+      </div>
+      <!-- Preset Command Selection -->
+      <div class="form-group flex-grow-1">
+        <label>Preset Command from missions</label>
+        <p-dropdown
+          [options]="getMissionCommandQualifiedNames(missionConfiguration, selectedMachine?.name)"
+          [(ngModel)]="selectedMissionCommand"
+          (onClick)="onMissionCommandSelected()"
+          [style]="{'width':'15rem'}"  >
+          <ng-template let-command pTemplate="item">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-pencil" style="font-size: 0.75rem"></i>
+              <div>{{ command }}</div>
+            </div>
+        </ng-template>
+
+        </p-dropdown>
+      </div>
+    </div>
+  </p-fieldset>
+
+
+  <!-- Form -->
+
+  <div class="ui form attached fluid segment">
+    <!-- <div style="margin-bottom: 2em; margin-top: 2em; height: 1px; border: solid 1px #dddddd;"></div> -->
+
+    @switch (selectedMachine?.type) {
+
+      <!-- V A C U U M   G R I P P E R -->
+
+      @case ("vacuumGripper") {
+        @switch (selectedCommand) {
+          @case ("status") {
+            <!--<app-vacuum-gripper-status [machine]="selectedMachine"
+                                       [placeholder]="commandToSend"></app-vacuum-gripper-status>-->
+            <app-generic-status-command [machine]="selectedMachine"
+                                        [placeholder]="commandToSend"
+                                        [title]="'Parameters Status'"
+                                        [description]="'Get the values of requested parameters for the machine.'"
+                                        [destinationSuffix]="'/request/status'"
+                                        [requestStatusParameters]="getRequestStatusParameters('vacuumGripper')"></app-generic-status-command>
+          }
+          @case ("setup") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Setup'"
+                                          [description]="'Move the gripper to its reference position. Used to initialize its internal counters.'"
+                                          [destinationSuffix]="'/command/setup'"></app-generic-no-param-command>
+          }
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'STOP'"
+                                          [description]="'Immediately stop any ongoing operation or command on this machine.'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+          @case ("pick") {
+            <app-vacuum-gripper-pick [machine]="selectedMachine"
+                                     [placeholder]="commandToSend"></app-vacuum-gripper-pick>
+          }
+          @case ("move") {
+            <app-vacuum-gripper-move [machine]="selectedMachine"
+                                     [placeholder]="commandToSend"></app-vacuum-gripper-move>
+          }
+          @case ("place") {
+            <app-vacuum-gripper-place [machine]="selectedMachine"
+                                      [placeholder]="commandToSend"></app-vacuum-gripper-place>
+          }
+          @case ("go_to_position") {
+            <app-vacuum-gripper-gotoposition [machine]="selectedMachine"
+                                             [placeholder]="commandToSend"></app-vacuum-gripper-gotoposition>
+          }
+          @case ("grip") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'GRIP'"
+                                          [description]="'Activate the grip of the VGR.'"
+                                          [destinationSuffix]="'/command/grip'"></app-generic-no-param-command>
+          }
+          @case ("release") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'RELEASE'"
+                                          [description]="'Release the grip of the VGR.'"
+                                          [destinationSuffix]="'/command/release'"></app-generic-no-param-command>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
+        }
+        @if (selectedMissionCommand) {
+          <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="selectedMissionCommand"
+                                          [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+        }
+      }
+
+      <!-- S O R T I N G   L I N E -->
+
+      @case ("sortingLine") {
+        @switch (selectedCommand) {
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'STOP'"
+                                          [description]="'Immediately stop any ongoing operation or command on this machine.'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+          @case ("eject") {
+            <app-sorting-line-eject [machine]="selectedMachine"
+                                    [placeholder]="commandToSend"
+                                    [destinationSuffix]="'/command/eject'"></app-sorting-line-eject>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
+        }
+        @if (selectedMissionCommand) {
+          <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="selectedMissionCommand"
+                                          [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+        }
+      }
+
+      <!-- C O N V E Y O R   B E L T -->
+
+      @case ("conveyorBelt") {
+        @switch (selectedCommand) {
+
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'STOP'"
+                                          [description]="'Immediately stop any ongoing operation or command on this machine.'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+          @case ("moveOut") {
+            <app-generic-direction-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_OUT'"
+                                          [description]="'Move the package to a given direction until it leaves the conveyor.'"
+                                          [destinationSuffix]="'/command/move_out'"></app-generic-direction-command>
+          }
+          @case ("moveToSensor") {
+            <app-generic-direction-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_TO_SENSOR'"
+                                          [description]="'Move the package to a given direction until it reaches the sensor.'"
+                                          [destinationSuffix]="'/command/move_to_sensor'"></app-generic-direction-command>
+          }
+          @case ("moveNbSteps") {
+            <app-generic-direction-nb-steps-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_NB_STEPS'"
+                                          [description]="'Move the package to a given direction until it reaches the sensor.'"
+                                          [destinationSuffix]="'/command/move_nb_steps'"></app-generic-direction-nb-steps-command>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
+        }
+        @if (selectedMissionCommand) {
+          <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="selectedMissionCommand"
+                                          [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+        }
+      }
+      @default {
+        <div class="">
+          <p>Machine not selected</p>
+        </div>
+      }
+    }
+  </div>
+  @if (! (selectedMachine === undefined)) {
+    <p-fieldset legend="Machine/Command status">
+      <app-machine-status-widget [machine]="selectedMachine"></app-machine-status-widget>
+      <app-command-status-widget [machine]="selectedMachine"></app-command-status-widget>
+    </p-fieldset>
+  }
+</p-panel>
+
+<div class="block-container">
+  <div class="form-group">
+    <label>Recent messages log</label>
+    <div class="console-log" #commandExecuteLog></div>
+  </div>
+</div>

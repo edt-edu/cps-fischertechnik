@@ -1,0 +1,11 @@
+<p-fieldset legend="{{ machine?.name }} - PLACE">
+
+  <p style="margin-bottom: 2em;">Place and release the token at the specified position.</p>
+
+  <app-vacuum-gripper-position-widget (onValuesChanged)="handleValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+</p-fieldset>

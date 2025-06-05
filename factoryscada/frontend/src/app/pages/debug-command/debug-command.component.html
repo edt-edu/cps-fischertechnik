@@ -1,0 +1,86 @@
+<!-- Fischertechnik SCADA Header -->
+<div class="">
+  <div class="">
+    <h2>FischerTechnik Factory SCADA - Debug View</h2>
+  </div>
+</div>
+
+<!-- Control Panel Section -->
+<p-panel header="Machine Commands">
+  <ng-template pTemplate="icons"> 
+      <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
+        <p-overlayPanel #helpOP>
+          <p-accordion [activeIndex]="0">
+            <p-accordionTab header="Panel Description">
+              <p>Send RAW JSON messages to machines. (This supposes that the machine name (cf. <code>topicName</code>) is uniquely declared in the backend configuration so the message can be directed to the correct PLC)</p>
+              <p>Warning: You may not even receive answer if the message is not undestood by the controller.</p>
+            </p-accordionTab>
+            <p-accordionTab header="How to use the Debug Command Message View?">
+              <ul class="ui list">  
+                <li>Write your JSON message</li>
+                <li>or prepare a message using the templates
+                <ol>
+                  <li>Select a machine  </li>
+                  <li>Select the command you want to perform from the list of template commands available for then chosen machine.</li>
+                  <li>Customize the Command as needed to fit your specific requirements.</li>
+                </ol>
+              </ul>
+            </p-accordionTab>
+          </p-accordion>
+        </p-overlayPanel>
+  </ng-template>
+  
+  
+  <p-fieldset legend="JSON Template">
+    <div class="flex justify-content-evenly flex-wrap">
+
+      
+    
+      <!-- Machine Selection -->
+      <div class="form-group flex-grow-1">
+        <label>Machine</label>
+        <p-dropdown 
+          [options]="getMachines(configuration)" 
+          [(ngModel)]="selectedMachine" 
+          optionLabel="name"
+          (onClick)="onMachineSelected()" 
+          [style]="{'width':'15rem'}"  />
+      </div>
+      <!-- Command Selection -->
+      <div class="form-group flex-grow-1">
+        <label>Command</label>
+        <p-dropdown 
+          [options]="getCommandNames(instance, selectedMachine?.name)" 
+          [(ngModel)]="selectedCommand"
+          (onClick)="onCommandSelected()" 
+          [style]="{'width':'15rem'}"  >
+          <ng-template let-command pTemplate="item">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-pencil" style="font-size: 0.75rem"></i>
+              <div>{{ humanizeCommandName(command) }}</div>
+            </div>
+        </ng-template>
+          
+        </p-dropdown>
+      </div>
+    </div>
+  </p-fieldset>
+  <!-- Command Customization -->
+  <div class="form-group">
+    <label>Command To Send</label>
+    <!--<textarea [(ngModel)]="commandToSend" style="font-family:'Lato', monospace; font-size: 1.9rem;" rows="8" placeholder="{...}"></textarea>-->
+    <textarea [(ngModel)]="commandToSend" class="debug-edit-zone" style="font-size: 0.9rem;" rows="10" placeholder="{...}"></textarea>
+  </div>
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Send" (click)="onExecute()" [disabled]="!isValidJson(commandToSend)" ></p-button>
+  </div>
+</p-panel>
+
+<div class="block-container">
+  <div class="form-group">
+    <label>Recent messages log</label>
+    <div class="console-log" #commandExecuteLog></div>
+  </div>
+</div>
+

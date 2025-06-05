@@ -1,0 +1,78 @@
+factoryMissionsConfiguration:
+  name: "Factory missions"
+  missions:
+    - name: "VGR1/CB1 mini mission"
+      description: >
+        Mission involving VacuumGripper01 and ConveyorBelt01.
+        The VGR picks a token on the left side of the Conveyor and places it on the right side of the Conveyor.
+        Then the conveyor moves back the token to its left side.  
+      commands:
+      - name: "VGR1_Pick"
+        description: "[VGR1] Pick on left of CB1"
+        placeholder: >
+          {
+            "topicName": "VacuumGripper01",
+            "timestamp": 0,
+            "message": {
+              "jsonType": "COMMAND",
+              "type": "VACUUM",
+              "outputId": "AUTO_ID",
+              "name": "PICK",
+              "parameters": [
+                {
+                  "passableType": "POSITIONPARAMETERTHREED",
+                  "passable": {
+                    "meaning": "START",
+                    "vertical": 1450,
+                    "horizontal": 1480,
+                    "rot": 1920
+                  }
+                }
+              ]
+            }
+          }
+      - name: "VGR1_Place"
+        description: "[VGR1] Place on right of CB1"
+        placeholder: >
+          {
+            "topicName": "VacuumGripper01",
+            "timestamp": 0,
+            "message": {
+              "jsonType": "COMMAND",
+              "type": "VACUUM",
+              "outputId": "AUTO_ID",
+              "name": "PLACE",
+              "parameters": [
+                {
+                  "passableType": "POSITIONPARAMETERTHREED",
+                  "passable": {
+                    "meaning": "START",
+                    "vertical": 1450,
+                    "horizontal": 1820,
+                    "rot": 1530
+                  }
+                }
+              ]
+            }
+          }
+      - name: "CB1_Move_to_sensor"
+        description: "[CB1] Move to left sensor"
+        placeholder: >
+          {
+            "topicName" : "ConveyorBelt01",
+            "timestamp" : 0,
+            "message" : {
+              "jsonType" : "COMMAND",
+              "type" : "CONVEYOR",
+              "outputId" : "AUTO_ID",
+              "name": "MOVE_TO_SENSOR",
+              "parameters": [
+                  {
+                      "passableType": "DIRECTION",
+                      "passable": {
+                          "direction": "BACKWARD"
+                      }
+                  }
+              ]
+            }
+          }
