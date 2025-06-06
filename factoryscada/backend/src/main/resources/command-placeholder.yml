@@ -337,7 +337,7 @@ commandPlaceholder:
 
     # MultiProcessing command placeholders ___
 
-    - name: "multiProcessing"
+    - name: "multiProcessingStation"
       commands:
         - name: "setup"
           placeholder: >

@@ -23,6 +23,18 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         //new SetupCommand(this, setupDTO);
     }
 
+    public void process1(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> setupDTO) {
+        log.info("Process1 MultiProcessingStation {}", setupDTO);
+        //new SetupCommand(this, setupDTO);
+    }
+
+    public void stop(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> setupDTO) {
+        log.info("Stop MultiProcessingStation {}", setupDTO);
+        //new SetupCommand(this, setupDTO);
+    }
+
+
+
 //    public void eject(@Valid @NotNull final EjectDTO ejectDTO) {
 //        log.info("Eject sortingLine {}", ejectDTO);
 //        new EjectCommand(this, ejectDTO);
