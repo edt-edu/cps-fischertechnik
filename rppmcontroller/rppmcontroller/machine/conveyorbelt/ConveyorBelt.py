@@ -151,9 +151,21 @@ class ConveyorBelt(Machine, TransitioningMachine):
     def forwardFromAnywhere_CycleStep(self) -> CycleStepResult:
         """Move the package from any place on the conveyor to the right sensor
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
-        self.__conveyorActForward = True
+        ret = False
+        if not self.arrived:
+            self.__conveyorActForward = True
+        else:
+            if self.countSteps() >= 4:  #Wait two cyclesteps to move the token to its middle
+                self.__conveyorActForward = False
+                ret = True  # command final goal reached, no need to call this cycleStep again
+
+        logging.debug("Hello")
+
         if not self.__conveyorSensSwap:
-            self.__conveyorActForward = False
+            self.current = 0
+            self.arrived = True
+
+        if ret:
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -162,9 +174,19 @@ class ConveyorBelt(Machine, TransitioningMachine):
     def backwardFromAnywhere_CycleStep(self) -> CycleStepResult:
         """Move the package from any place on the conveyor to the left sensor
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map"""
-        self.__conveyorActBackward = True
+        ret = False
+        if not self.arrived:
+            self.__conveyorActBackward = True
+        else:
+            if self.countSteps() >= 4:  #Wait two cyclesteps to move the token to its middle
+                self.__conveyorActBackward = False
+                ret = True  # command final goal reached, no need to call this cycleStep again
+
         if not self.__conveyorSensFeed:
-            self.__conveyorActBackward = False
+            self.current = 0
+            self.arrived = True
+
+        if ret:
             return CycleStepResult(CycleStepResultEnum.DONE)
         else:
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
@@ -270,11 +292,11 @@ class ConveyorBelt(Machine, TransitioningMachine):
         runner = self.create_runner()
 
         # move to sensor
-        runner.then_run_runner_from(lambda: self.move_to_sensor_Command(direction))
+        runner.then_run_runner_from(lambda: self.move_to_sensor_Command(direction), info="Move to sensor")
         # keep moving for a second or so
-        runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_direction(direction)), and_stay_for=1.0)
+        runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_direction(direction)), and_stay_for=1.0, info="Sensor passed")
         # stop the belt
-        runner.then_goto(ConveyorBeltConfig())
+        runner.then_goto(ConveyorBeltConfig(), info="Conveyor stopped")
         return runner.run()
 
     def move_nb_steps_Command(self, direction: Direction, steps: int) -> Optional[Callable[[], CycleStepResult]]:
@@ -310,10 +332,13 @@ class ConveyorBelt(Machine, TransitioningMachine):
         else:
             raise ValueError(f"cannot move into that direction: {direction}")
         config.state = state
-        runner.then_goto(config, until=sensor_reached)
+        runner.then_goto(config, until=sensor_reached, and_stay_for=0.07, info="Move to sensor")
+
 
         #stop the belt
         config.state = ConveyorState.IDLE
-        runner.then_goto(config)
+        runner.then_goto(config, info="Conveyor stopped")
+
+        
 
         return runner.run()
