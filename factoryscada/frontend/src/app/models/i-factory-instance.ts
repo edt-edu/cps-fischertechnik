@@ -23,6 +23,7 @@ export interface Machine {
   protocol: Protocol;
   commandNames: string[];     // list of command names defined by reflexivity in the backend
   rawCommandNames: string[];  // list of command names defined in the command-placeholder.yml
+}
 
 // Interface for group of Controllers 
 export interface Controllers {
