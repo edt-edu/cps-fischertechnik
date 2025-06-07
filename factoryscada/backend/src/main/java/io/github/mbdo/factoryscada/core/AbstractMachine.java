@@ -26,6 +26,11 @@ public abstract class AbstractMachine {
     protected final String name;
     
 	protected final Protocol protocol;
+
+    /**
+     * List of the command names defined in the command-placeholder.yml fot this machine
+     */
+    protected final List<String> rawCommandNames;
     
 
     public static String getType() {
@@ -94,5 +99,6 @@ public abstract class AbstractMachine {
         }
         return commandNames;
     }
+
 
 }

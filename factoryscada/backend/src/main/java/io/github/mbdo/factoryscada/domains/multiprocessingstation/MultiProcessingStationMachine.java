@@ -1,5 +1,7 @@
 package io.github.mbdo.factoryscada.domains.multiprocessingstation;
 
+import java.util.List;
+
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.Process1Command;
@@ -13,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MultiProcessingStationMachine extends AbstractMachine {
 
-    public MultiProcessingStationMachine(String name, Protocol protocol) {
-        super(name, protocol);
+    public MultiProcessingStationMachine(String name, Protocol protocol, List<String> rawCommandNames) {
+        super(name, protocol, rawCommandNames);
     }
 
     public static String getType() {

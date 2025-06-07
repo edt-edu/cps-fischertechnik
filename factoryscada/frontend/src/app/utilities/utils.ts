@@ -155,6 +155,22 @@ export function getCommandNames(instance: IFactoryInstance | undefined, machineN
   return machine ? machine.commandNames : [];
 }
 
+/**
+ * Retrieves the command names defined in the command-placeholder.yml for a specific machine instance.
+ * @param instance - The factory instance.
+ * @param machineName - The name of the machine.
+ * @returns An array of command names.
+ */
+export function getRawCommandNames(instance: IFactoryInstance | undefined, machineName: string | undefined): string[] {
+  // Check if instance and machineName are defined
+  if (instance === undefined || machineName === undefined) {
+    return [];
+  }
+  // Check if the machine exists in the instance
+  const machine = instance.machines[machineName];
+  return machine ? machine.rawCommandNames : [];
+}
+
 
 /**
  * Retrieves the mission command qualified names for a specific machine instance.
