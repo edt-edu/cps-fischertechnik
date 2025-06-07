@@ -1,35 +1,36 @@
-// Interface pout l'instance de la factory
+// Interface  the instance of the factory
 export interface IFactoryInstance {
   controllers: Controllers;
   machines: Machines;
 }
 
-// Interface pour le protocole
+// Interface for Protocol
 export interface Protocol {
   hostname: string;
   sendPort: number;
   receivePort: number;
 }
 
-// Interface pour un contrôleur
+// Interface for Controller
 export interface Controller {
   hostname: string;
   sendPort: number;
   receivePort: number;
 }
 
-// Interface pour une machine
+// Interface for machine
 export interface Machine {
   protocol: Protocol;
-  commandNames: string[];
+  commandNames: string[];     // list of command names defined by reflexivity in the backend
+  rawCommandNames: string[];  // list of command names defined in the command-placeholder.yml
 }
 
-// Interface pour l'ensemble des contrôleurs
+// Interface for group of Controllers 
 export interface Controllers {
   [key: string]: Controller;
 }
 
-// Interface pour l'ensemble des machines
+// Interface for group of machines
 export interface Machines {
   [key: string]: Machine;
 }

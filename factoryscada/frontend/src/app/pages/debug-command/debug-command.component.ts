@@ -17,7 +17,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import {
   beautifyJson,
-  getCommandNames,
+  getRawCommandNames,
   getCommandPlaceholder,
   getMachines,
   humanizeCommandName,
@@ -58,7 +58,7 @@ export class DebugCommandComponent implements OnInit {
   instance?: IFactoryInstance;
 
   protected readonly getMachines = getMachines;
-  protected readonly getCommandNames = getCommandNames;
+  protected readonly getCommandNames = getRawCommandNames;  // command names comes from the command-placeholder.yml
   protected readonly humanizeCommandName = humanizeCommandName;
   protected readonly getCommandPlaceholder = getCommandPlaceholder;
   protected readonly isValidJson = isValidJson;

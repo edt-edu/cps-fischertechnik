@@ -5,10 +5,12 @@ import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -208,12 +210,15 @@ public class FactoryScada {
         String machineType = machineConfiguration.type();
 
         try {
+            log.info("creating MachineInstance for "+machineConfiguration.name());
             // Find the concrete machine class corresponding to the machine type
             Class<? extends AbstractMachine> machineClass = findMachineClass(machineType, appEnvironment.getMachineDomainsPackageName());
 
-            // Instantiate the machine using the found class, constructor that takes String and Protocol as parameters
-            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(String.class, Protocol.class);
-            return constructor.newInstance(machineConfiguration.name(), controllerInstance);
+            // Instantiate the machine using the found class, constructor that takes String, Protocol and List<String> as parameters
+            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(String.class, Protocol.class, List.class);
+            Map<String, String> machineRawCommandPlaceholder = this.commandPlaceholder().get(machineType);
+            List<String> rawCommandNames = machineRawCommandPlaceholder != null ? machineRawCommandPlaceholder.keySet().stream().collect(Collectors.toList()) : new ArrayList<>();
+            return constructor.newInstance(machineConfiguration.name(), controllerInstance, rawCommandNames);
 
         } catch (Exception e) {
             log.error("Error during machine instantiation: {}", e.getMessage());

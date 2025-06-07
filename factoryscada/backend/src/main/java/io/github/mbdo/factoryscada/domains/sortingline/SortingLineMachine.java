@@ -1,5 +1,7 @@
 package io.github.mbdo.factoryscada.domains.sortingline;
 
+import java.util.List;
+
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.sortingline.commands.EjectCommand;
@@ -12,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SortingLineMachine extends AbstractMachine {
 
-    public SortingLineMachine(String name, Protocol protocol) {
-        super(name, protocol);
+    public SortingLineMachine(String name, Protocol protocol, List<String> rawCommandNames) {
+        super(name, protocol, rawCommandNames);
     }
 
     public static String getType() {
