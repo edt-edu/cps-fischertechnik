@@ -136,7 +136,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
     def countSteps(self):
         """Count the number of steps when the conveyor is moving """
-        self.current  = self.current + self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        self.current  = self.__counter.compute(self.__conveyorSensImpulseCounterRaw, PlusMinusStop.PLUS)
         # logging.debug(f"Step counter : {self.current }")
         return self.current
 
@@ -307,14 +307,34 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
             There is no control of the position of the package. The conveyor wont stop until it reach the number of steps
         """
-        self.sensed = False
-        if direction == Direction.FORWARD:
-            return lambda: self.forwardGoto_CycleStep(steps)
-        if direction == Direction.BACKWARD:
-            return lambda: self.backwardGoto_CycleStep(steps)
-        else:
-            logging.error(f"Invalid direction {direction}")
-            return None
+        #Create the runner and the config
+        runner = self.create_runner()
+        config = ConveyorBeltConfig()
+
+        state = ConveyorState.from_direction(direction)
+        config.state = state
+
+        self.current = self.countSteps()
+        goal : int = self.current+steps
+
+        state = ConveyorState.from_direction(direction)
+        nb_cycles_reached = lambda: self.current >= goal
+
+        runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_direction(direction)), info="Belt moving")
+
+        def runnable()-> None:
+            self.current = self.countSteps()
+            logging.debug(f"goal : {goal} counter : {self.current}")
+        
+        config.state = state
+        runner.then_run(runnable, until=nb_cycles_reached, info="Move number of cycles")
+
+        #stop the belt
+        runner.then_goto(ConveyorBeltConfig(), info="Conveyor stopped")
+
+        logging.debug(f"Actualgoal : {goal} counter : {self.current}")
+
+        return runner.run()
 
     def move_to_sensor_Command(self, direction: Direction):
         """Move the package to a given direction until it is detected by the destination sensor
