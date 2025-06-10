@@ -258,11 +258,6 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
-            if iterationDone == 2:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
-            if iterationDone == 4:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,True)
             
             if (notification == "") :
                 iterationDone += 1
@@ -308,16 +303,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
-            if iterationDone == 2:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
-            if iterationDone == 4:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
-            if iterationDone%2 == 0:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,True)
-            else:
-                self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.PULSECOUNTER,False)
-
+            
             if notification == "":
                 iterationDone += 1
             elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
