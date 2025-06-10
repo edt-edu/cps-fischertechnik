@@ -327,7 +327,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
             logging.debug(f"goal : {goal} counter : {self.current}")
         
         config.state = state
-        runner.then_run(runnable, until=nb_cycles_reached, info="Move number of cycles")
+        runner.then_run(runnable, until=nb_cycles_reached, info="Wait number of steps")
 
         #stop the belt
         runner.then_goto(ConveyorBeltConfig(), info="Conveyor stopped")
