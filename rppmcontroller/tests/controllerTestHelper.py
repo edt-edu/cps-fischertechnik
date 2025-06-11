@@ -27,16 +27,15 @@ def readNotification(controller: RevPiPyMachineController, notification_filter: 
     for notification in pending_non_conform_notifications:
         if notification_filter is None or notification_filter(notification):
             pending_non_conform_notifications.remove(notification)
-            logging.debug(f"found previous non-conform notification: {notification}")
+            logging.warning(f"found previous non-conform notification: {notification}")
             return notification
 
     # if we didn't find anything, we now check for new feedback
     while not controller.outputBuffer.empty():
         notification_sent = controller.outputBuffer.get(block=False)
-        logging.debug(f"notification sent: {notification_sent}")
         notification_sent = str(notification_sent) # we want to be sure we are working with strings in the following
         if notification_filter is None or notification_filter(notification_sent):
-            logging.debug("notification is conform")
+            logging.info(f"notification is conform: {notification_sent}")
             return notification_sent
 
         logging.debug(f"adding non-conform message to pending: {notification_sent}")
