@@ -1,16 +1,15 @@
 import logging
-import rppmcontroller
-import rppmcontroller.machine
-import rppmcontroller.machine.conveyorbelt
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.conveyorbelt.ConveyorBeltSimpleSimulator import ConveyorBeltSimpleSimulator
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import VacuumGripperSimpleSimulator
+from rppmcontroller.machine.highbay.HighBay import HighBay
+from rppmcontroller.machine.highbay.HighBaySimpleSimulator import HighBaySimpleSimulator
 from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
-from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 from rppmcontroller.machine.multiprocessing.MultiProcessingSimpleSimulator import MultiProcessingSimpleSimulator
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
 from rppmcontroller.machine.sortingLine.SortingLineSimpleSimulator import SortingLineSimpleSimulator
+from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import VacuumGripperSimpleSimulator
+from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 
 class SimulatedMiniFactoryController(RevPiPyMachineController):
     """
@@ -29,12 +28,14 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.multiProcessingMachine = MultiProcessing("MultiProcessing01")
         self.sortingLineMachine = SortingLine("SortingLine01")
+        self.highBayMachine = HighBay("HighBay01")
         
         #the list of all machines that are connected to this core
         self.machines = [self.conveyorBeltMachine,
                          self.vacuumGripperMachine,
                          self.multiProcessingMachine,
-                         self.sortingLineMachine
+                         self.sortingLineMachine,
+                         self.highBayMachine
         ]
         
         #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])        
@@ -42,20 +43,23 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
             self.conveyorBeltMachine: None,
             self.vacuumGripperMachine: None,
             self.multiProcessingMachine: None,
-            self.sortingLineMachine: None
+            self.sortingLineMachine: None,
+            self.highBayMachine: None
         }
 
         self.machineFeedback = {
             self.conveyorBeltMachine: None,
             self.vacuumGripperMachine: None,
             self.multiProcessingMachine: None,
-            self.sortingLineMachine: None
+            self.sortingLineMachine: None,
+            self.highBayMachine: None
         }
         self.commandFeedback = {
             self.conveyorBeltMachine: None,
             self.vacuumGripperMachine: None,
             self.multiProcessingMachine: None,
-            self.sortingLineMachine: None
+            self.sortingLineMachine: None,
+            self.highBayMachine: None
         }
 
         self.conveyorBeltSimulator = ConveyorBeltSimpleSimulator(self.conveyorBeltMachine)
@@ -70,22 +74,32 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         self.sortingLineSimulator = SortingLineSimpleSimulator(self.sortingLineMachine)
         """Simulator for the Sorting Line"""
 
+        self.highBaySimulator = HighBaySimpleSimulator(self.highBayMachine)
+        """Simulator for the HighBay Warehouse"""
+
     def read(self) -> None:
         self.conveyorBeltSimulator.simulatedRead()
         self.vaccumGripperSimulator.simulatedRead()
         self.multiProcessingSimulator.simulatedRead()
         self.sortingLineSimulator.simulatedRead()
+        self.highBaySimulator.simulatedRead()
 
     def write(self) -> None:
         self.conveyorBeltSimulator.simulatedWrite()
         self.vaccumGripperSimulator.simulatedWrite()
         self.multiProcessingSimulator.simulatedWrite()
         self.sortingLineSimulator.simulatedWrite()
+        self.highBaySimulator.simulatedWrite()
    
     def reset(self) -> None:
         vg = self.vacuumGripperMachine.resetHelper()
         if vg:
             self.vaccumGripperSimulator.simulatedReset()
+
+
+        if self.highBayMachine.must_reset:
+            self.highBaySimulator.simulatedReset()
+            self.highBayMachine.must_reset = False
 
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 

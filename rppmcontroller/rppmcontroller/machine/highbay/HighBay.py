@@ -546,8 +546,8 @@ class HighBay(Machine, TransitioningMachine):
             self.must_reset = True
             return CycleStepResult.done()
 
-        return self.create_runner().then_run(self.goto_config).then_run(
-            mark_setup_finished).run()
+        return self.create_runner().then_run(self.goto_config, info="goto_config").then_run(
+            mark_setup_finished, info="mark_setup_finished").run()
 
     def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
