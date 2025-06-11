@@ -5,7 +5,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
-from typing import Callable, Union
+from typing import Callable, Union, List
 from typing import Optional
 from typing_extensions import override
 
@@ -17,7 +17,7 @@ from rppmcontroller.machine.Timer import Timer
 
 class TransitioningMachine:
     def __init__(self):
-        self.__runners: list[Runner] = []
+        self.__runners: List[Runner] = []
         """A list containing all runners which this machine ever created"""
 
     @abstractmethod
@@ -89,7 +89,7 @@ class Runner(CycleStepResult):
                          "runner hasn't started yet")
         self.__machine: TransitioningMachine = machine
         """The machine we are working on"""
-        self.__routine: list[Subroutine] = []
+        self.__routine: List[Subroutine] = []
         """Functions which transition the machine into a desired state"""
         self.__routine_index: int = 0
         """The index of the currently aspirated state"""
