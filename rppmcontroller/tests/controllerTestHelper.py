@@ -1,12 +1,12 @@
 
 import logging
 import time
-from typing import Callable, Optional
+from typing import Callable, Optional, List
 
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 from rppmcontroller.protocol.JSONOutput import JSONOutput
 
-pending_non_conform_notifications: list[str] = []
+pending_non_conform_notifications: List[str] = []
 """a list of read non-conform notifications, in case we want to read those later"""
 
 def clearPendingNotifications():
