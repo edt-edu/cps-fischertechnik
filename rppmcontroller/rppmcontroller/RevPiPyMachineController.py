@@ -312,7 +312,7 @@ class RevPiPyMachineController:
                             # store the cycleStep function that is currently executed on each machine
                             cycleStepFunction = self.cast_to_callable(ret)
                             if cycleStepFunction is not None:
-                                logging.debug(f'cycleStepFunction is not None')
+                                # logging.debug(f'cycleStepFunction is not None')
                                 if m in self.currentlyExecuting and self.currentlyExecuting[m] is not None:
                                     logging.debug(f'self.currentlyExecuting[m] is not None')
                                     # send interruption feedback for the previously running command on the machine
@@ -324,17 +324,17 @@ class RevPiPyMachineController:
                                 try:
                                     source = inspect.getsource(cycleStepFunction)
                                 except:
-                                    logging.error("failed to determine source of cycleStepFunction")
+                                    # logging.debug("failed to determine source of cycleStepFunction")
                                     source = f"{cycleStepFunction}"
                                 # logging.debug(f"source: {source}")
                                 display_name = f"{message_name} [{source.strip()}]"
-                                # logging.debug(f"display_name: {display_name}")
+                                # logging.warning(f"display_name: {display_name}")
                                 command_id = inputBufferItem.message.commandId
-                                logging.debug(f"command_id: {command_id}")
+                                # logging.debug(f"command_id: {command_id}")
                                 self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
                                                                               display_name,
                                                                               command_id)
-                                logging.debug("survived execution update")
+                                # logging.debug("survived execution update")
                             else:
                                 self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                                 # an invalid command doesn't interrupt currentlyRunning command
@@ -345,7 +345,7 @@ class RevPiPyMachineController:
                             break
                     else:
                         self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
-            logging.debug("exited machine loop")
+            # logging.debug("exited machine loop")
             if not foundMatchingMachine:
                 logging.warning(f"unknown id: {inputBufferItem.topicName}")
                 self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))

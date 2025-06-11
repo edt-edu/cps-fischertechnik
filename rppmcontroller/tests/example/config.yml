@@ -16,7 +16,8 @@ controller:
   mainLoopDelay: 1.0
 
 mqtt:
-  server: "localhost"
+  # empty server in order to not send any MQTT message, useful to decrease error message in test suites
+  server: 
   port: 1883
   keepalive: 60
 
