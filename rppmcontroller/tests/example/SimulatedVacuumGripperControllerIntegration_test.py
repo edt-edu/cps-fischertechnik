@@ -4,14 +4,13 @@ import logging
 import os
 import re
 import unittest
-from unittest.mock import patch, Mock
-
-from rppmcontroller.example.SimulatedVacuumGripperController import SimulatedVacuumGripperController
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.machine.Position import Position
-from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 import tests.controllerTestHelper as ctHelper
+from rppmcontroller.example.SimulatedVacuumGripperController import \
+    SimulatedVacuumGripperController
+from rppmcontroller.machine.Position import Position
+from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 
 class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
@@ -30,8 +29,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_setupCommand(self):
-        """Ensure that the setup command is performed and and send feedback"""
+        """Ensure that the setup command is performed and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         # initial feedback
         self.controller.mainLoopIteration()
@@ -76,6 +76,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
     def test_twoSetupCommands(self):
         """Ensure that the setup command is performed and and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         # initial feedback
         self.controller.mainLoopIteration()
@@ -155,8 +156,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_moveCommand_with_internal_setup(self):
-        """Ensure that the pick command is performed and and send feedback"""
+        """Ensure that the pick command is performed and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         # initial feedback
         self.controller.mainLoopIteration()
@@ -166,7 +168,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a setup command
+        # send a move command
         message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE", [
             Position("START", 500, 200, 400),
             Position("END", 500, 1000, 1200)
@@ -187,6 +189,10 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 pass
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                # in between, the machine should have been put into active state
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification,
+                                 r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"MOVE DONE reached in {iterationDone} iterations")
@@ -205,8 +211,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_setup_then_moveCommands(self):
-        """Ensure that the setup command is performed and and send feedback"""
+        """Ensure that the setup command is performed and sends feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         # initial feedback
         self.controller.mainLoopIteration()
@@ -233,6 +240,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
+                logging.debug(f"found a message we are happy with: {notification}")
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -245,7 +253,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             self.controller.mainLoopIteration()
             self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a setup command
+        # send a move command
         message = MachineCommand("COMMAND", "VACUUM", 2, "MOVE", [
             Position("START", 500, 200, 400),
             Position("END", 500, 1000, 1200)
@@ -287,6 +295,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
     def test_two_identical_moveCommands(self):
         """Ensure that the pick command is performed and and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
 
         self.fakeSetupDoneAndSetPos()
@@ -375,6 +384,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
     def test_two_different_moveCommands(self):
         """Ensure that the pick command is performed and and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
 
         self.fakeSetupDoneAndSetPos()
@@ -464,6 +474,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
     def test_placeCommand(self):
         """Ensure that the pick command is performed and and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         self.fakeSetupDoneAndSetPos()
 
@@ -506,6 +517,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
     def test_placeCommand2(self):
         """Ensure that the pick command is performed and and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         self.fakeSetupDoneAndSetPos()
 
@@ -546,8 +558,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_placeCommandFromOtherPos(self):
-        """Ensure that the pick command is performed and and send feedback"""
+        """Ensure that the pick command is performed and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         self.fakeSetupDoneAndSetPos(100, -69, 1000)
 
@@ -598,8 +611,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
     def test_grip_releaseCommand(self):
-        """Ensure that the grip and release commands are performed and and send feedback"""
+        """Ensure that the grip and release commands are performed and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         self.fakeSetupDoneAndSetPos()
 
@@ -662,10 +676,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_go_to_position_grip_off_Command(self):
-        """Ensure that the go to position command is executed and does not change the state of the valve and pump.
+        """Ensure that the go-to position command is executed and does not change the state of the valve and pump.
            Case 1: Pump and valve are off
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         self.fakeSetupDoneAndSetPos()
 
@@ -677,7 +692,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a grip command
+        # send a go-to command
         message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
             Position("END", 500, 0, 1200)
         ])
@@ -695,6 +710,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 pass
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                # in between the machine will be put into active state
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification,r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"GO_TO_POSITION reached in {iterationDone} iterations")
@@ -707,10 +725,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_go_to_position_grip_on_Command(self):
-        """Ensure that the go to position command is executed and does not change the state of the valve and pump.
+        """Ensure that the go-to position command is executed and does not change the state of the valve and pump.
            Case 2: Pump and valve are on
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
 
         self.fakeSetupDoneAndSetPos()
 
