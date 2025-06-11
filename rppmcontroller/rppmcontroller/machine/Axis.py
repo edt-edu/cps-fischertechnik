@@ -25,8 +25,8 @@ class Axis:
         self.__tolerance = tolerance
         self.__first = True
         #variables need to be manually updated/written
-        self.__endpos = False
-        self.__counterinput = False
+        self.__endpos: bool = False
+        self.__counterinput: int = 0
         self.__outputplus = False
         self.__outputminus = False
         if typ == AxisType.Encoder:
@@ -63,7 +63,7 @@ class Axis:
     def tolerance(self) -> int:
         return self.__tolerance + self.play
 
-    def update(self, endpos, counterinput):
+    def update(self, endpos: bool, counterinput: int):
         self.__endpos = endpos
         self.__counterinput = counterinput
 
