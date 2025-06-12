@@ -377,7 +377,78 @@ commandPlaceholder:
                 "name": "PROCESS1",
                 "parameters": []
               }
+            }
+
+
+    # HighBayWarehouse command placeholders ___
+
+    - name: "highBayWarehouse"
+      commands:
+        - name: "setup"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "SETUP",
+                "parameters": []
+              }
+            }
+        - name: "store"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "STORE_TO",
+                "parameters":  [
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  },
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  }
+                ]
+              }
             } 
+        - name: "retrieve"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "PICKUP_FROM",
+                "parameters": [
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  },
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  }
+                ]
+              }
+            }
 
     # PunchingMachine command placeholders ___
 

@@ -245,6 +245,9 @@
                                           [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
         }
       }
+
+      <!-- M U L T I P R O C E S S I N G   S T A T I O N -->
+
       @case ("multiProcessingStation") {
         @switch (selectedCommand) {
           @case ("setup") {
@@ -291,6 +294,44 @@
                                           [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
         }
       }
+
+      <!-- H I G H B A Y   W A R E H O U S E -->
+
+      @case ("highBayWarehouse") {
+        @switch (selectedCommand) {
+          @case ("setup") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Setup'"
+                                          [description]="'Perform a setup by placing the station elements on their reference positions.'"
+                                          [destinationSuffix]="'/command/setup'"></app-generic-no-param-command>
+          }
+          @case ("retrieve") {
+            <app-highbay-warehouse-retrieve [machine]="selectedMachine"
+                                            [placeholder]="commandToSend"></app-highbay-warehouse-retrieve>
+          }
+          @case ("store") {
+            <app-highbay-warehouse-store [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"></app-highbay-warehouse-store>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
+        }
+        @if (selectedMissionCommand) {
+          <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="selectedMissionCommand"
+                                          [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+        }
+      }
+
       @default {
         <div class="">
           <p>Machine not selected</p>
