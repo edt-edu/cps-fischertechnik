@@ -307,8 +307,8 @@
                                           [destinationSuffix]="'/command/setup'"></app-generic-no-param-command>
           }
           @case ("retrieve") {
-            <app-highbay-warehouse-store [machine]="selectedMachine"
-                                         [placeholder]="commandToSend"></app-highbay-warehouse-store>
+            <app-highbay-warehouse-retrieve [machine]="selectedMachine"
+                                            [placeholder]="commandToSend"></app-highbay-warehouse-retrieve>
           }
           @case ("store") {
             <app-highbay-warehouse-store [machine]="selectedMachine"

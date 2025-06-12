@@ -9,6 +9,7 @@ import { VacuumGripperPickComponent } from "./vacuum-gripper/vacuum-gripper-pick
 import { VacuumGripperPlaceComponent } from "./vacuum-gripper/vacuum-gripper-place/vacuum-gripper-place.component";
 
 import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
+import { HighBayWarehouseRetrieveComponent } from "./highbay-warehouse/highbay-warehouse-retrieve/highbay-warehouse-retrieve.component";
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Message } from "@stomp/stompjs";
@@ -71,6 +72,7 @@ declare var $: any;
     SortingLineEjectComponent,
     VacuumGripperStatusComponent,
     HighBayWarehouseStoreComponent,
+    HighBayWarehouseRetrieveComponent,
     GenericNoParamCommandComponent,
     GenericDirectionCommandComponent,
     GenericDirectionNbStepsCommandComponent,
