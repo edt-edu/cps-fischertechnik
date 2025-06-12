@@ -325,10 +325,10 @@ class SortingLine(Machine, TransitioningMachine):
             delay = 0.5
         elif color is Color.RED:
             eject_config.red_ejector_active = True
-            delay = 1.5
+            delay = 1.55
         elif color is Color.BLUE:
             eject_config.blue_ejector_active = True
-            delay = 2.5
+            delay = 2.6
         else:
             raise ValueError(f"invalid color: {color}")
 
