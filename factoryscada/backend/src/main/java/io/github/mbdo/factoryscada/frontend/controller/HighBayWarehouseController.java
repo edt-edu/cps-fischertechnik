@@ -32,7 +32,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
         return executeCommand(machineName, "setup", setupDTO);
     }
 
-    @MessageMapping("/{machineName}/command/process1")
+    @MessageMapping("/{machineName}/command/store")
     public String executeProcess1Command(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> retrieveDTO) {
@@ -40,7 +40,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
         return executeCommand(machineName, "retrieve", retrieveDTO);
     }
 
-    @MessageMapping("/{machineName}/command/stop")
+    @MessageMapping("/{machineName}/command/retrieve")
     public String receiveStopCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> storeDTO) {

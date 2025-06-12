@@ -306,19 +306,13 @@
                                           [description]="'Perform a setup by placing the station elements on their reference positions.'"
                                           [destinationSuffix]="'/command/setup'"></app-generic-no-param-command>
           }
-          @case ("process1") {
-            <app-generic-no-param-command [machine]="selectedMachine"
-                                          [placeholder]="commandToSend"
-                                          [title]="'Retrieve'"
-                                          [description]="'Retrieve element from position.'"
-                                          [destinationSuffix]="'/command/retrieve'"></app-generic-no-param-command>
+          @case ("retrieve") {
+            <app-highbay-warehouse-store [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"></app-highbay-warehouse-store>
           }
-          @case ("stop") {
-            <app-generic-no-param-command [machine]="selectedMachine"
-                                          [placeholder]="commandToSend"
-                                          [title]="'Store'"
-                                          [description]="'Store element to position.'"
-                                          [destinationSuffix]="'/command/store'"></app-generic-no-param-command>
+          @case ("store") {
+            <app-highbay-warehouse-store [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"></app-highbay-warehouse-store>
           }
           @default {
             @if (!selectedMissionCommand) {
