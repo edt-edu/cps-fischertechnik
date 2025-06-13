@@ -299,6 +299,68 @@
 
       @case ("highBayWarehouse") {
         @switch (selectedCommand) {
+          @case ("cantilever_backward") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Cantilever backward'"
+                                          [description]="'Move the cantilever to the rear.'"
+                                          [destinationSuffix]="'/command/cantilever_backward'"></app-generic-no-param-command>
+          }
+          @case ("cantilever_forward") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Cantilever forward'"
+                                          [description]="'Move the cantilever forward.'"
+                                          [destinationSuffix]="'/command/cantilever_forward'"></app-generic-no-param-command>
+          }
+          @case ("conveyor_backward") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Conveyor backward'"
+                                          [description]="'Move the conveyor to the rear.'"
+                                          [destinationSuffix]="'/command/conveyor_backward'"></app-generic-no-param-command>
+          }
+          @case ("conveyor_forward") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Conveyor forward'"
+                                          [description]="'Move the conveyor forward.'"
+                                          [destinationSuffix]="'/command/conveyor_forward'"></app-generic-no-param-command>
+          }
+          @case ("conveyor_stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Conveyor stop'"
+                                          [description]="'Stop the conveyor.'"
+                                          [destinationSuffix]="'/command/conveyor_stop'"></app-generic-no-param-command>
+          }
+          
+          
+          <!--A gerer !!-->
+          @case ("go_to_column") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Go to column'"
+                                          [description]="'Go to specified column.'"
+                                          [destinationSuffix]="'/command/go_to_column'"></app-generic-no-param-command>
+          }
+          @case ("go_to_row") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Go to row'"
+                                          [description]="'Go to specified row.'"
+                                          [destinationSuffix]="'/command/go_to_row'"></app-generic-no-param-command>
+          }
+          @case ("horizontal_to") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Horizontal to'"
+                                          [description]="'Go to specified horizontal position.'"
+                                          [destinationSuffix]="'/command/horizontal_to'"></app-generic-no-param-command>
+          }
+
+
+
           @case ("setup") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
@@ -314,6 +376,27 @@
             <app-highbay-warehouse-store [machine]="selectedMachine"
                                          [placeholder]="commandToSend"></app-highbay-warehouse-store>
           }
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Stop'"
+                                          [description]="'Stop the highbay warehouse'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+
+
+          <!--A gerer !!-->
+          @case ("vertical_to") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'Vertical to'"
+                                          [description]="'Go to specified vertical position.'"
+                                          [destinationSuffix]="'/command/vertical_to'"></app-generic-no-param-command>
+          }
+
+
+
+
           @default {
             @if (!selectedMissionCommand) {
 
