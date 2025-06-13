@@ -9,15 +9,15 @@
     }
 
     <div class="form-group  flex-grow-1" formGroupName="intGroup">
-      <label>Row</label>
+      <label>Value</label>
       <p-inputNumber
-        formControlName="row"
+        formControlName="integer"
         inputId="minmax"
         mode="decimal"
         (onInput)="emitValues()"
         [min]="0"
         [showButtons]="true"
-        [step]="" />
+        [step]="1" />
     </div>
   </div>
 </div>

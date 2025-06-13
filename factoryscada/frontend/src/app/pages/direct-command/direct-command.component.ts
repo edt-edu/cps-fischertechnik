@@ -10,6 +10,10 @@ import { VacuumGripperPlaceComponent } from "./vacuum-gripper/vacuum-gripper-pla
 
 import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
 import { HighBayWarehouseRetrieveComponent } from "./highbay-warehouse/highbay-warehouse-retrieve/highbay-warehouse-retrieve.component";
+import { HighBayWarehouseGoToColumnComponent } from "./highbay-warehouse/highbay-warehouse-gotocolumn/highbay-warehouse-gotocolumn.component";
+import { HighBayWarehouseGoToRowComponent } from "./highbay-warehouse/highbay-warehouse-gotorow/highbay-warehouse-gotorow.component";
+import { HighBayWarehouseHorizontalToComponent } from "./highbay-warehouse/highbay-warehouse-horizontalto/highbay-warehouse-horizontalto.component";
+import { HighBayWarehouseVerticalToComponent } from "./highbay-warehouse/highbay-warehouse-verticalto/highbay-warehouse-verticalto.component";
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Message } from "@stomp/stompjs";
@@ -74,6 +78,10 @@ declare var $: any;
     HighBayWarehouseStoreComponent,
     HighBayWarehouseRetrieveComponent,
     GenericNoParamCommandComponent,
+    HighBayWarehouseGoToColumnComponent,
+    HighBayWarehouseHorizontalToComponent,
+    HighBayWarehouseVerticalToComponent,
+    HighBayWarehouseGoToRowComponent,
     GenericDirectionCommandComponent,
     GenericDirectionNbStepsCommandComponent,
     CardModule,

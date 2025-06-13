@@ -29,7 +29,7 @@ export class CommandSingleIntWidgetComponent {
 
   emitValues(){
     const value = {
-      integer: this.parametersForm.value.rowGroup.row
+      integer: this.parametersForm.value.intGroup.integer
     };
     this.onValuesChanged.emit(value);
   }

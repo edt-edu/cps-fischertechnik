@@ -334,33 +334,18 @@
                                           [description]="'Stop the conveyor.'"
                                           [destinationSuffix]="'/command/conveyor_stop'"></app-generic-no-param-command>
           }
-          
-          
-          <!--A gerer !!-->
           @case ("go_to_column") {
-            <app-generic-no-param-command [machine]="selectedMachine"
-                                          [placeholder]="commandToSend"
-                                          [title]="'Go to column'"
-                                          [description]="'Go to specified column.'"
-                                          [destinationSuffix]="'/command/go_to_column'"></app-generic-no-param-command>
+            <app-highbay-warehouse-go-to-column [machine]="selectedMachine"
+                                                [placeholder]="commandToSend"></app-highbay-warehouse-go-to-column>
           }
           @case ("go_to_row") {
-            <app-generic-no-param-command [machine]="selectedMachine"
-                                          [placeholder]="commandToSend"
-                                          [title]="'Go to row'"
-                                          [description]="'Go to specified row.'"
-                                          [destinationSuffix]="'/command/go_to_row'"></app-generic-no-param-command>
+            <app-highbay-warehouse-go-to-row [machine]="selectedMachine"
+                                             [placeholder]="commandToSend"></app-highbay-warehouse-go-to-row>
           }
           @case ("horizontal_to") {
-            <app-generic-no-param-command [machine]="selectedMachine"
-                                          [placeholder]="commandToSend"
-                                          [title]="'Horizontal to'"
-                                          [description]="'Go to specified horizontal position.'"
-                                          [destinationSuffix]="'/command/horizontal_to'"></app-generic-no-param-command>
+            <app-highbay-warehouse-horizontal-to [machine]="selectedMachine"
+                                                 [placeholder]="commandToSend"></app-highbay-warehouse-horizontal-to>
           }
-
-
-
           @case ("setup") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
@@ -383,20 +368,10 @@
                                           [description]="'Stop the highbay warehouse'"
                                           [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
           }
-
-
-          <!--A gerer !!-->
           @case ("vertical_to") {
-            <app-generic-no-param-command [machine]="selectedMachine"
-                                          [placeholder]="commandToSend"
-                                          [title]="'Vertical to'"
-                                          [description]="'Go to specified vertical position.'"
-                                          [destinationSuffix]="'/command/vertical_to'"></app-generic-no-param-command>
+            <app-highbay-warehouse-vertical-to [machine]="selectedMachine"
+                                               [placeholder]="commandToSend"></app-highbay-warehouse-vertical-to>
           }
-
-
-
-
           @default {
             @if (!selectedMissionCommand) {
 

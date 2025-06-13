@@ -1,8 +1,8 @@
 <p-fieldset legend="{{ machine?.name }} - Store">
 
-  <p style="margin-bottom: 2em;">Store a box at row, column</p>
+  <p style="margin-bottom: 2em;">Move to a row</p>
 
-  <app-highbay-warehouse-position-widget (onValuesChanged)="handleValuesChanged($event)"/>
+  <app-single-int-widget (onValuesChanged)="handleValuesChanged($event)"/>
 
   <!-- Action Buttons -->
   <div class="">

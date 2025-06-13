@@ -3,37 +3,37 @@ import { MyRxStompService } from "../../../../services/my-rx-stomp.service";
 import { Machine } from "../../../../models/i-factory-configuration";
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
 import {
-    HighBayWarehousePositionWidgetComponent
-} from "../../../../widgets/highbay-warehouse-position-widget/highbay-warehouse-position-widget.component";
+    CommandSingleIntWidgetComponent
+} from "../../../../widgets/command-single-int-widget/command-single-int-widget.component";
 import {FieldsetModule} from "primeng/fieldset";
 import {Button} from "primeng/button";
 
 @Component({
-  selector: 'app-highbay-warehouse-store',
+  selector: 'app-highbay-warehouse-go-to-column',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    HighBayWarehousePositionWidgetComponent,
+    CommandSingleIntWidgetComponent,
     FieldsetModule,
     Button
   ],
-  templateUrl: './highbay-warehouse-store.component.html',
-  styleUrl: './highbay-warehouse-store.component.scss'
+  templateUrl: './highbay-warehouse-gotocolumn.component.html',
+  styleUrl: './highbay-warehouse-gotocolumn.component.scss'
 })
-export class HighBayWarehouseStoreComponent {
+export class HighBayWarehouseGoToColumnComponent {
 
   myRxStompService = inject(MyRxStompService);
 
   @Input() machine: Machine | undefined;
   @Input() placeholder: any;
 
-  endPositionValues = { row: 1, column: 1 };
+  endValues = { integer: 0 };
 
   constructor() {
 
   }
-  handleValuesChanged(values: { row: number, column: number }) {
-    this.endPositionValues = values;
+  handleValuesChanged(values: { integer: number }) {
+    this.endValues = values;
   }
   onExecute() {
     const {name, type} = this.machine || {};
@@ -48,13 +48,7 @@ export class HighBayWarehouseStoreComponent {
             {
                 "passableType": "NUMBERNATURAL",
                 "passable": {
-                    "number": this.endPositionValues.row
-                }
-            },
-            {
-                "passableType": "NUMBERNATURAL",
-                "passable": {
-                    "number": this.endPositionValues.column
+                    "number": this.endValues.integer
                 }
             }
         ]
@@ -62,7 +56,7 @@ export class HighBayWarehouseStoreComponent {
     };
 
     this.myRxStompService.publish({
-      destination: `/app/${type}/${name}/command/store`,
+      destination: `/app/${type}/${name}/command/go_to_column`,
       body: JSON.stringify(payload) // Directly stringify the object
     });
   }
