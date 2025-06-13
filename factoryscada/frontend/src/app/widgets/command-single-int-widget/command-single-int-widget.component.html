@@ -1,0 +1,23 @@
+<!-- Parameters -->
+<div class="form-group " [formGroup]="parametersForm">
+  <div class="flex justify-content-evenly flex-wrap">
+
+    @if (! (title === undefined)) {
+      <div class="form-group  flex-grow-1" formGroupName="integerGroup">
+        <label>{{ title }}</label>
+      </div>
+    }
+
+    <div class="form-group  flex-grow-1" formGroupName="intGroup">
+      <label>Value</label>
+      <p-inputNumber
+        formControlName="integer"
+        inputId="minmax"
+        mode="decimal"
+        (onInput)="emitValues()"
+        [min]="0"
+        [showButtons]="true"
+        [step]="1" />
+    </div>
+  </div>
+</div>

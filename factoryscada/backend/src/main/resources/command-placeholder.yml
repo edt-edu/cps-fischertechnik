@@ -384,6 +384,157 @@ commandPlaceholder:
 
     - name: "highBayWarehouse"
       commands:
+        - name: "cantilever_backward"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "CANTILEVER_BACKWARD",
+                "parameters": []
+              }
+            } 
+        - name: "cantilever_forward"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "CANTILEVER_FORWARD",
+                "parameters": []
+              }
+            } 
+        - name: "conveyor_backward"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "CONVEYOR_BACKWARD",
+                "parameters": []
+              }
+            } 
+        - name: "conveyor_forward"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "CONVEYOR_FORWARD",
+                "parameters": []
+              }
+            } 
+        - name: "conveyor_stop"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "CONVEYOR_STOP",
+                "parameters": []
+              }
+            }
+        - name: "go_to_column"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "GOTO_COLUMN",
+                "parameters":  [
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "go_to_row"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "GOTO_ROW",
+                "parameters":  [
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "horizontal_to"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "HORIZONTAL_TO",
+                "parameters":  [
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "retrieve"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "PICKUP_FROM",
+                "parameters": [
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  },
+                  {
+                    "passableType": "NUMBERNATURAL",
+                    "passable": {
+                      "number": 1
+                    }
+                  }
+                ]
+              }
+            }
         - name: "setup"
           placeholder: >
             {
@@ -395,6 +546,19 @@ commandPlaceholder:
                 "outputId": 1,
                 "name": "SETUP",
                 "parameters": []
+              }
+            }
+        - name: "stop"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "STOP",
+                "parameters":  []
               }
             }
         - name: "store"
@@ -422,8 +586,8 @@ commandPlaceholder:
                   }
                 ]
               }
-            } 
-        - name: "retrieve"
+            }
+        - name: "vertical_to"
           placeholder: >
             {
               "topicName": "HighBay01",
@@ -432,14 +596,8 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",
                 "outputId": 1,
-                "name": "PICKUP_FROM",
-                "parameters": [
-                  {
-                    "passableType": "NUMBERNATURAL",
-                    "passable": {
-                      "number": 1
-                    }
-                  },
+                "name": "VERTICAL_TO",
+                "parameters":  [
                   {
                     "passableType": "NUMBERNATURAL",
                     "passable": {

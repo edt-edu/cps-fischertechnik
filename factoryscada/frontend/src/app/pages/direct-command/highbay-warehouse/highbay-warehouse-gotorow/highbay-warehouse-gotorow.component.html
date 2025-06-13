@@ -1,0 +1,11 @@
+<p-fieldset legend="{{ machine?.name }} - Store">
+
+  <p style="margin-bottom: 2em;">Move to a row</p>
+
+  <app-single-int-widget (onValuesChanged)="handleValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+</p-fieldset>

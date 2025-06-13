@@ -71,6 +71,6 @@ configuration:
         - type: "punchingMachine"
           name: "PunchingMachine01"
         - type: "highBayWarehouse"
-          name: "HighBayWarehouse01"
+          name: "HighBay01"
         - type: "indexedLine"
           name: "IndexedLine01"
