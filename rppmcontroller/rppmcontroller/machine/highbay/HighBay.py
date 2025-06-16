@@ -322,21 +322,21 @@ class HighBay(Machine, TransitioningMachine):
         self.__highbaySensVerticalEncoderCounter = value
 
     def sensorStatusString(self) -> str:
-        return (f"[{self.highbaySensHorizontalEncoderCounter}, "
+        return (f" (CNT: [{self.highbaySensHorizontalEncoderCounter}, "
                 f"{self.highbaySensVerticalEncoderCounter}], "
-                f"[{self.highbaySensCantileverBack}, "
-                f"{self.highbaySensCantileverFront}, "
-                f"{self.highbaySensHorizontal}, {self.highbaySensInside}, "
-                f"{self.highbaySensOutside}, {self.highbaySensVertical}]")
+                f"CLV: [{self.highbaySensCantileverBack}, "
+                f"{self.highbaySensCantileverFront}], "
+                f"SHV: [{self.highbaySensHorizontal}, {self.highbaySensVertical}], "
+                f"SIO: [{self.highbaySensInside}, {self.highbaySensOutside}])")
 
     def actuatorStatusString(self) -> str:
-        return (f"[{self.highbayActUp}, {self.highbayActDown}, "
-                f"{self.highbayActHorizontalToRack}, "
+        return (f" (VER: [{self.highbayActUp}, {self.highbayActDown}], "
+                f"HOR: [{self.highbayActHorizontalToRack}, "
                 f"{self.highbayActHorizontalToConveyor}], "
-                f"[{self.highbayActCantileverBackward}, "
-                f"{self.highbayActCantileverForward}, "
-                f"{self.highbayActConveyorBackward}, "
-                f"{self.highbayActConveyorForward}]")
+                f"CLV: [{self.highbayActCantileverBackward}, "
+                f"{self.highbayActCantileverForward}], "
+                f"COV: [{self.highbayActConveyorBackward}, "
+                f"{self.highbayActConveyorForward}])")
 
     def inputStatus(self) -> Dict[str, Any]:
         return {  # TODO better adjust the names, I just made them up
