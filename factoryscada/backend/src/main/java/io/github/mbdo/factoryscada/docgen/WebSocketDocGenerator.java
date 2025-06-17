@@ -41,7 +41,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
 
             String classMappingPath = classMapping != null ? String.join(", ", classMapping.value()) : "";
 
-            for (Method method : clazz.getDeclaredMethods()) {
+            for (Method method : clazz.getMethods()) {
                 if (method.isAnnotationPresent(MessageMapping.class) ) {
                     MessageMapping mapping = method.getAnnotation(MessageMapping.class);
                     String mappingPath = classMappingPath + String.join(", ", mapping.value());
