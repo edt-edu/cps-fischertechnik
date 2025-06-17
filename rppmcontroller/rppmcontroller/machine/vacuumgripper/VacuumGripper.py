@@ -18,7 +18,7 @@ from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 class VacuumGripper(Machine, TransitioningMachine):
 
-    def __init__(self, id1):
+    def __init__(self, id1, safetyPos : dict = {}):
         # inputs
         self.__vacuumSensArmEndIn = False
         self.__vacuumSensVerticalEndUp = False
@@ -67,6 +67,11 @@ class VacuumGripper(Machine, TransitioningMachine):
         self.configGoal = None
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
+
+        # safety position
+        self.safeHorizontal = safetyPos.get('horizontal', None)
+        self.safeVertical = safetyPos.get('vertical', None)
+        self.safeRotation = safetyPos.get('rotation', None)
 
     @property
     def isInitialized(self) -> bool:
@@ -521,3 +526,16 @@ class VacuumGripper(Machine, TransitioningMachine):
 
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         return self.stop_CycleStep
+
+    def move_to_safe_position_Command(self) -> Runner:
+        """
+        Moves the Vacuum Gripper to the safe position if specified. Go to setup position else
+        :return: A Runner performing the command
+        """
+        runner = self.create_runner()
+
+        if (self.safeVertical != None and self.safeRotation != None and self.safeHorizontal != None):
+            position = Position("END", self.safeVertical, self.safeRotation, self.safeHorizontal)
+            return self.go_to_position_Command(position)
+        else:
+            return self.setup_Command()
