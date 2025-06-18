@@ -28,24 +28,24 @@ class Column(Enum):
     def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
         if isinstance(offset, int):
             if self == Column.CONVEYOR:
-                return max(0, 60 + offset)
+                return max(0, 70 + offset)
             elif self == Column.RIGHT:
-                return max(0, 1525 + offset)
+                return max(0, 1550 + offset)
             elif self == Column.MIDDLE:
-                return max(0, 2675 + offset)
+                return max(0, 2700 + offset)
             elif self == Column.LEFT:
-                return max(0, 3825 + offset)
+                return max(0, 3900 + offset)
             else:
                 raise ValueError(f"no counter goal defined for {self}")
         elif isinstance(offset, Tuple) and len(offset) == 4:
             if self == Column.CONVEYOR:
-                return max(0, 60 + offset[0])
+                return max(0, 70 + offset[0])
             elif self == Column.RIGHT:
-                return max(0, 1525 + offset[1])
+                return max(0, 1550 + offset[1])
             elif self == Column.MIDDLE:
-                return max(0, 2675 + offset[2])
+                return max(0, 2700 + offset[2])
             elif self == Column.LEFT:
-                return max(0, 3825 + offset[3])
+                return max(0, 3900 + offset[3])
             else:
                 raise ValueError(f"no counter goal defined for {self}")
         else:
