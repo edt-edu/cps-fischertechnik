@@ -92,4 +92,12 @@ public class VacuumGripperController extends AbstractMachineController<VacuumGri
         log.info("Received request on /vacuumGripper/{}/command/release", machineName);
         return executeCommand(machineName, "release", releaseDTO);
     }
+
+    @MessageMapping("/{machineName}/command/move_to_safe_position")
+    public String executeMoveToSafePositionCommand(
+            @DestinationVariable("machineName") String machineName,
+            @Valid @Payload GenericMachineCommandDTO<VacuumGripperMachine> move_to_safe_positionDTO) {
+        log.info("Received request on /{}/command/move_to_safe_position", machineName);
+        return executeCommand(machineName, "move_to_safe_position", move_to_safe_positionDTO);
+    }
 }

@@ -82,7 +82,7 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         return res
 
-    def __init__(self, id1):
+    def __init__(self, id1, safetyPos : dict = {}):
         #  inputs
         self.__multiProcessingSensTurntablePosVacuum = False
         self.__multiProcessingSensTurntablePosBelt = False
@@ -146,6 +146,9 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.previous_isExecuting_log = None
         self.__last_target_config = None
         self.__turn_table_direction = TurnTableDirection.NONE
+
+        # safety position
+        self.safeToOven = safetyPos.get('toOven', None)
 
     @property
     def multiProcessingSensTurntablePosVacuum(self) -> bool:
@@ -812,3 +815,13 @@ class MultiProcessing(Machine, TransitioningMachine):
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         """ Stop the machine """
         return self.stop_CycleStep
+    
+    def move_to_safe_position_Command(self) -> CycleStepResult:
+        """ Set the machine in a safe position """
+        if self.safeToOven != None:
+            if self.safeToOven:
+                return self.moveVacuumToOven()
+            else :
+                return self.moveVacuumToTurntable()
+        else :
+            return self.moveVacuumToOven()
