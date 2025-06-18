@@ -291,7 +291,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "VACUUM",
                 "outputId": 4,
-                "name": "MOV_TO_SAFE_POSITION",
+                "name": "MOVE_TO_SAFE_POSITION",
                 "parameters": []
               }
             }
@@ -400,7 +400,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "MULTIPROCESSING",
                 "outputId": 1,
-                "name": "MOV_TO_SAFE_POSITION",
+                "name": "MOVE_TO_SAFE_POSITION",
                 "parameters": []
               }
             }
@@ -642,7 +642,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",
                 "outputId": 1,
-                "name": "MOV_TO_SAFE_POSITION",
+                "name": "MOVE_TO_SAFE_POSITION",
                 "parameters":  []
               }
             }

@@ -708,8 +708,15 @@ class HighBay(Machine, TransitioningMachine):
         """
         if (self.safeVertical != None and self.safeHorizontal != None):
             runner = self.create_runner()
-            runner.then_run(self.vertical_to_Command(self.safeVertical), info="Moving vertically to safe pos")
-            runner.then_run(self.horizontal_to_Command(self.safeHorizontal), info="Moving horizontally to safe pos")
-            return runner.run()
+            self.run_setup_unless_initialized(runner)
+            config = self.get_current_config()
+            config.horizontal_axis_config = AxisConfig.to_counter_goal(self.safeHorizontal)
+            config.vertical_axis_config = AxisConfig.to_counter_goal(self.safeVertical)
+            return runner.then_goto(config).run()
+            
+            # runner = self.create_runner()
+            # runner.then_run(self.vertical_to_Command(self.safeVertical), info="Moving vertically to safe pos")
+            # runner.then_run(self.horizontal_to_Command(self.safeHorizontal), info="Moving horizontally to safe pos")
+            # return runner.run()
         else:
             return self.setup_Command()
