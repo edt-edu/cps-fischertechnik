@@ -126,6 +126,14 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
         return executeCommand(machineName, "vertical_to", vertical_toDTO);
     }
 
+    @MessageMapping("/{machineName}/command/move_to_safe_position")
+    public String executeMoveToSafePositionCommand(
+            @DestinationVariable("machineName") String machineName,
+            @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> move_to_safe_positionDTO) {
+        log.info("Received request on /{}/command/move_to_safe_position", machineName);
+        return executeCommand(machineName, "move_to_safe_position", move_to_safe_positionDTO);
+    }
+
 
 //    @MessageMapping("/{machineName}/command/eject")
 //    public String executeBackwardCommand(

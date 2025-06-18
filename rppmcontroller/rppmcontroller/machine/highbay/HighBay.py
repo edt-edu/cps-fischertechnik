@@ -87,7 +87,7 @@ class Row(Enum):
 
 class HighBay(Machine, TransitioningMachine):
     def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
-                 column_offset: Union[int, Tuple[int, int, int, int]] = 0):
+                 column_offset: Union[int, Tuple[int, int, int, int]] = 0, safetyPos : dict = {}):
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
@@ -156,6 +156,10 @@ class HighBay(Machine, TransitioningMachine):
         self.must_reset = False
         self.next_config = None
         self.__state = None
+
+        # safety position
+        self.safeHorizontal = safetyPos.get('horizontal', None)
+        self.safeVertical = safetyPos.get('vertical', None)
 
     @property
     def isInitialized(self) -> bool:
@@ -696,3 +700,16 @@ class HighBay(Machine, TransitioningMachine):
 
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         return lambda: self.stop_CycleStep()
+
+    def move_to_safe_position_Command(self) -> Runner:
+        """
+        Moves the Vacuum Gripper to the safe position if specified. Go to setup position else
+        :return: A Runner performing the command
+        """
+        if (self.safeVertical != None and self.safeHorizontal != None):
+            runner = self.create_runner()
+            runner.then_run(self.vertical_to_Command(self.safeVertical), info="Moving vertically to safe pos")
+            runner.then_run(self.horizontal_to_Command(self.safeHorizontal), info="Moving horizontally to safe pos")
+            return runner.run()
+        else:
+            return self.setup_Command()

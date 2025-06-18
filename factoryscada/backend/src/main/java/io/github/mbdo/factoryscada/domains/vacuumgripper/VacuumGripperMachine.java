@@ -5,12 +5,13 @@ import java.util.List;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GoToPositionCommand;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GripCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveCommand;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveToSafePositionCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PickCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PlaceCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.SetupCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.StatusCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GripCommand;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -70,6 +71,11 @@ public class VacuumGripperMachine extends AbstractMachine {
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> stopDTO) {
         log.info("Stopping vacuum gripper {}", stopDTO);
         new GripCommand(this, stopDTO).execute();
+    }
+
+    public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> dto) {
+        log.info("Move To Safe Position {}", dto);
+        new MoveToSafePositionCommand(this, dto).execute();
     }
 
 }

@@ -532,7 +532,6 @@ class VacuumGripper(Machine, TransitioningMachine):
         Moves the Vacuum Gripper to the safe position if specified. Go to setup position else
         :return: A Runner performing the command
         """
-        runner = self.create_runner()
 
         if (self.safeVertical != None and self.safeRotation != None and self.safeHorizontal != None):
             position = Position("END", self.safeVertical, self.safeRotation, self.safeHorizontal)
