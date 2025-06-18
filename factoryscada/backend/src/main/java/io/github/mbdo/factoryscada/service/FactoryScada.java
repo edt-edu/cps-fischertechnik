@@ -5,6 +5,7 @@ import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.net.http.WebSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -27,6 +28,7 @@ import io.github.mbdo.factoryscada.domain.MachineStatus;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryMissionsConfiguration;
+import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
 import io.github.mbdo.factoryscada.frontend.mapper.MachineStatusMapper;
@@ -54,6 +56,8 @@ public class FactoryScada {
     private final FactoryScadaInstance factoryScadaInstance;
 
     private final Map<String, Map<String, String>> commandPlaceholder;
+
+    private final WebSocketPublisher webSocketPublisher;
     
     /**
      * data coming from the mission configuration yaml file, usually : "missions-configuration.yml" 
@@ -69,10 +73,11 @@ public class FactoryScada {
     private final ApplicationContext applicationContext;
 
     @Autowired
-    public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment, ApplicationContext applicationContext) {
+    public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment, ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
+        this.webSocketPublisher = webSocketPublisher;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
@@ -113,13 +118,12 @@ public class FactoryScada {
                     controllerConfiguration.notificationPort(),
                     (message) -> {
                     	// forward raw feedback / notify frontend
-                    	template.convertAndSend("/topic/controller-feedbacks", message);
+                        webSocketPublisher.sendControllerFeedback(message);
                     	// store feedback for later request and use  
                     	updateMachineLastCommandStatusFeedback(message);
                     },
                     (sendChannelConnected, receivedChannelConnected) -> {
-                    	template.convertAndSend("/topic/"+controllerConfiguration.name()+"/plc-connection-status", 
-                    			new PlcConnectionStatusDto(controllerConfiguration.name(), sendChannelConnected, receivedChannelConnected));
+                        webSocketPublisher.sendPlcStatus(controllerConfiguration.name(), sendChannelConnected, receivedChannelConnected);
                     }
             );
             try {
@@ -169,8 +173,7 @@ public class FactoryScada {
 
                     this.machineLastCommandStatusMap.put(machineName, commandStatus);
                     // publish changes to frontend
-                    template.convertAndSend("/topic/"+machineName+"/command-status", 
-                            CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(commandStatus));
+                    webSocketPublisher.sendCommandStatus(machineName, commandStatus);
                     // notify MissionOrchestrator
                     this.missionOrchestrator.receivedMachineCommandFeedback(commandStatus);
                     break;
@@ -184,8 +187,7 @@ public class FactoryScada {
                     
                     this.machineLastMachineStatusMap.put(machineName, machineStatus);
                     // publish changes to frontend
-                    template.convertAndSend("/topic/"+machineName+"/machine-status", 
-                            MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(machineStatus));
+                    webSocketPublisher.sendMachineStatus(machineName, machineStatus);
                     
                     break;
                 default:

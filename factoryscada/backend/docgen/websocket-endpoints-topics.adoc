@@ -1,0 +1,2396 @@
+= WebSocket Protocols of factoryscada backend
+
+== Topics overview
+
+[mermaid]
+----
+sequenceDiagram
+box frontend
+participant Client
+end
+box backend
+participant SortingLineController
+participant FactoryScadaController
+participant MultiProcessingStationController
+participant ConveyorBeltController
+participant PlcController
+participant WebSocketPublisher
+participant IndexedLineController
+participant VacuumGripperController
+participant HighBayWarehouseController
+participant MissionOrchestratorController
+participant PunchingMachineController
+end
+Client ->> SortingLineController :/sortingLine/{machineName}/command/eject
+activate SortingLineController
+deactivate SortingLineController
+Client ->> SortingLineController :/sortingLine**
+activate SortingLineController
+deactivate SortingLineController
+Client ->> SortingLineController :/sortingLine/{machineName}/command/stop
+activate SortingLineController
+deactivate SortingLineController
+Client ->> SortingLineController :/sortingLine/{machineName}/command/debug
+activate SortingLineController
+deactivate SortingLineController
+Client ->> SortingLineController :/sortingLine/{machineName}/machine-status
+activate SortingLineController
+SortingLineController->> Client :/topic/{machineName}/machine-status
+deactivate SortingLineController
+Client ->> SortingLineController :/sortingLine/{machineName}/command-status
+activate SortingLineController
+SortingLineController->> Client :/topic/{machineName}/command-status
+deactivate SortingLineController
+Client ->> FactoryScadaController :/factory/instance
+activate FactoryScadaController
+FactoryScadaController->> Client :/topic/factory-instance
+deactivate FactoryScadaController
+Client ->> FactoryScadaController :/factory**
+activate FactoryScadaController
+deactivate FactoryScadaController
+Client ->> FactoryScadaController :/factory/configuration
+activate FactoryScadaController
+FactoryScadaController->> Client :/topic/factory-configuration
+deactivate FactoryScadaController
+Client ->> FactoryScadaController :/factory/placeholder
+activate FactoryScadaController
+FactoryScadaController->> Client :/topic/command-placeholder
+deactivate FactoryScadaController
+Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/setup
+activate MultiProcessingStationController
+deactivate MultiProcessingStationController
+Client ->> MultiProcessingStationController :/multiProcessingStation**
+activate MultiProcessingStationController
+deactivate MultiProcessingStationController
+Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/stop
+activate MultiProcessingStationController
+deactivate MultiProcessingStationController
+Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/debug
+activate MultiProcessingStationController
+deactivate MultiProcessingStationController
+Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/machine-status
+activate MultiProcessingStationController
+MultiProcessingStationController->> Client :/topic/{machineName}/machine-status
+deactivate MultiProcessingStationController
+Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/process1
+activate MultiProcessingStationController
+deactivate MultiProcessingStationController
+Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command-status
+activate MultiProcessingStationController
+MultiProcessingStationController->> Client :/topic/{machineName}/command-status
+deactivate MultiProcessingStationController
+Client ->> ConveyorBeltController :/conveyorBelt**
+activate ConveyorBeltController
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/move_nb_steps
+activate ConveyorBeltController
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/stop
+activate ConveyorBeltController
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/debug
+activate ConveyorBeltController
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/machine-status
+activate ConveyorBeltController
+ConveyorBeltController->> Client :/topic/{machineName}/machine-status
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/move_out
+activate ConveyorBeltController
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/move_to_sensor
+activate ConveyorBeltController
+deactivate ConveyorBeltController
+Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command-status
+activate ConveyorBeltController
+ConveyorBeltController->> Client :/topic/{machineName}/command-status
+deactivate ConveyorBeltController
+Client ->> PlcController :/plc/{plcName}/plc-connection
+activate PlcController
+PlcController->> Client :/topic/{plcName}/plc-connection-status
+deactivate PlcController
+Client ->> PlcController :/plc**
+activate PlcController
+deactivate PlcController
+Client ->> IndexedLineController :/indexedLine**
+activate IndexedLineController
+deactivate IndexedLineController
+Client ->> IndexedLineController :/indexedLine/{machineName}/command/stop
+activate IndexedLineController
+deactivate IndexedLineController
+Client ->> IndexedLineController :/indexedLine/{machineName}/command/debug
+activate IndexedLineController
+deactivate IndexedLineController
+Client ->> IndexedLineController :/indexedLine/{machineName}/machine-status
+activate IndexedLineController
+IndexedLineController->> Client :/topic/{machineName}/machine-status
+deactivate IndexedLineController
+Client ->> IndexedLineController :/indexedLine/{machineName}/command/process1
+activate IndexedLineController
+deactivate IndexedLineController
+Client ->> IndexedLineController :/indexedLine/{machineName}/command-status
+activate IndexedLineController
+IndexedLineController->> Client :/topic/{machineName}/command-status
+deactivate IndexedLineController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/setup
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/pick
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/request/status
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/place
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/debug
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/release
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/move
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command-status
+activate VacuumGripperController
+VacuumGripperController->> Client :/topic/{machineName}/command-status
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper**
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/stop
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/grip
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/machine-status
+activate VacuumGripperController
+VacuumGripperController->> Client :/topic/{machineName}/machine-status
+deactivate VacuumGripperController
+Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/go_to_position
+activate VacuumGripperController
+deactivate VacuumGripperController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/setup
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/debug
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/conveyor_backward
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/go_to_row
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/horizontal_to
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command-status
+activate HighBayWarehouseController
+HighBayWarehouseController->> Client :/topic/{machineName}/command-status
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse**
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/cantilever_backward
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/retrieve
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/stop
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/go_to_column
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/machine-status
+activate HighBayWarehouseController
+HighBayWarehouseController->> Client :/topic/{machineName}/machine-status
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/conveyor_stop
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/cantilever_forward
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/conveyor_forward
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/vertical_to
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/store
+activate HighBayWarehouseController
+deactivate HighBayWarehouseController
+Client ->> MissionOrchestratorController :/factoryMission/command/stop
+activate MissionOrchestratorController
+deactivate MissionOrchestratorController
+Client ->> MissionOrchestratorController :/factoryMission/command/start/{missionName}
+activate MissionOrchestratorController
+deactivate MissionOrchestratorController
+Client ->> MissionOrchestratorController :/factoryMission/list
+activate MissionOrchestratorController
+MissionOrchestratorController->> Client :/topic/mission-configuration
+deactivate MissionOrchestratorController
+Client ->> MissionOrchestratorController :/factoryMission**
+activate MissionOrchestratorController
+deactivate MissionOrchestratorController
+Client ->> MissionOrchestratorController :/factoryMission/mission-configuration
+activate MissionOrchestratorController
+MissionOrchestratorController->> Client :/topic/mission-configuration
+deactivate MissionOrchestratorController
+Client ->> MissionOrchestratorController :/factoryMission/status
+activate MissionOrchestratorController
+MissionOrchestratorController->> Client :/topic/mission-status
+deactivate MissionOrchestratorController
+Client ->> PunchingMachineController :/punchingMachine**
+activate PunchingMachineController
+deactivate PunchingMachineController
+Client ->> PunchingMachineController :/punchingMachine/{machineName}/command/stop
+activate PunchingMachineController
+deactivate PunchingMachineController
+Client ->> PunchingMachineController :/punchingMachine/{machineName}/command/debug
+activate PunchingMachineController
+deactivate PunchingMachineController
+Client ->> PunchingMachineController :/punchingMachine/{machineName}/machine-status
+activate PunchingMachineController
+PunchingMachineController->> Client :/topic/{machineName}/machine-status
+deactivate PunchingMachineController
+Client ->> PunchingMachineController :/punchingMachine/{machineName}/command/punch
+activate PunchingMachineController
+deactivate PunchingMachineController
+Client ->> PunchingMachineController :/punchingMachine/{machineName}/command-status
+activate PunchingMachineController
+PunchingMachineController->> Client :/topic/{machineName}/command-status
+deactivate PunchingMachineController
+WebSocketPublisher->> Client :/topic/{machineName}/machine-status
+WebSocketPublisher->> Client :/topic/{controllerName}/plc-connection-status
+WebSocketPublisher->> Client :/topic/{machineName}/command-status
+WebSocketPublisher->> Client :/topic/controller-feedbacks
+----
+
+== Incoming Topics
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveNbStepsCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveStepsDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_out`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveOutDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveToSensorCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveToLightBarrierDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/conveyorBelt**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factory/placeholder`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetCommandPlaceholder()`
+
+*Send To:* `/topic/command-placeholder`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+}
+----
+
+===  Incoming Topic: `/factory/configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryConfiguration()`
+
+*Send To:* `/topic/factory-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "name": "String",
+  "controllers": "List"
+}
+----
+
+===  Incoming Topic: `/factory/instance`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryInstance()`
+
+*Send To:* `/topic/factory-instance`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "controllers": "Map",
+  "machines": "Map"
+}
+----
+
+===  Incoming Topic: `/factory**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_backward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteCantileverBackwardCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `cantilever_backwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_forward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteCantileverFrontendCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `cantilever_forwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_backward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorBackwardCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `conveyor_backwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_forward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorFrontendCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `conveyor_forwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `conveyor_stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_column`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteGoToColumnCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `go_to_columnDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_row`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteGoToRowCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `go_to_rowDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/horizontal_to`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteHorizontalToCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `horizontal_toDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/retrieve`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteRetrieveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `retrieveDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/setup`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteSetupCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteStoreCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `storeDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/vertical_to`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteVerticalToCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `vertical_toDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/highBayWarehouse**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command/process1`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveMoveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveOutDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/indexedLine/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/indexedLine**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/mission-configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "name": "String",
+  "missions": "List"
+}
+----
+
+===  Incoming Topic: `/factoryMission/command/start/{missionName}`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstartMission()`
+
+==== Parameters
+
+- `missionName` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstopMission()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+class java.lang.String
+
+===  Incoming Topic: `/factoryMission/list`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "name": "String",
+  "missions": "List"
+}
+----
+
+===  Incoming Topic: `/factoryMission**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/process1`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteProcess1Command()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/setup`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteSetupCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/multiProcessingStation**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/plc**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/plc/{plcName}/plc-connection`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
+
+*Send To:* `/topic/{plcName}/plc-connection-status`
+
+==== Parameters
+
+- `plcName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "controllerName": "String",
+  "commandPortConnected": "boolean",
+  "notificationPortConnected": "boolean"
+}
+----
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command/punch`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceivePunchCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `punchDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/punchingMachine/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/punchingMachine**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command/eject`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerexecuteEjectCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `ejectDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/sortingLine/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/sortingLine**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/setup`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteSetupCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/move`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteMoveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecutePickCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `pickDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecutePlaceCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `placeDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/go_to_position`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteGoToPositionCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `goToPositionDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/request/status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteStatusRequest()`
+
+==== Parameters
+
+- `machineName` (String)
+- `statusDTO` (GenericMachineStatusRequestDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "RequestMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/grip`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteGripCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `gripDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/release`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteReleaseCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `releaseDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "serialVersionUID": "long",
+  "topicName": "String",
+  "timestamp": "String",
+  "message": "CommandMessage"
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+===  Incoming Topic: `/vacuumGripper**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+== Outgoing Topics
+
+
+=== Outgoing Topic: `/topic/controller-feedbacks`
+_Broadcasts raw feedback from the controller_
+
+Payload: `String`
+{
+  "value": "byte[]",
+  "coder": "byte",
+  "hash": "int",
+  "hashIsZero": "boolean",
+  "serialVersionUID": "long",
+  "COMPACT_STRINGS": "boolean",
+  "serialPersistentFields": "ObjectStreamField[]",
+  "REPL": "char",
+  "CASE_INSENSITIVE_ORDER": "Comparator",
+  "LATIN1": "byte",
+  "UTF16": "byte"
+}
+
+=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
+_Broadcasts PLC connection status updates_
+
+Payload: `PlcConnectionStatusDto`
+{
+  "controllerName": "String",
+  "commandPortConnected": "boolean",
+  "notificationPortConnected": "boolean"
+}
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+_Broadcasts Command status updates_
+
+Payload: `CommandStatusDTO`
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+_Broadcasts Machine status updates_
+
+Payload: `CommandStatusDTO`
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/conveyorBelt/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/conveyorBelt/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/command-placeholder`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetCommandPlaceholder()`
+
+*Request Mapping:* `@MessageMapping("/factory/placeholder")`
+
+*Send To:* `/topic/command-placeholder`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+}
+----
+
+=== Outgoing Topic: `/topic/factory-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryConfiguration()`
+
+*Request Mapping:* `@MessageMapping("/factory/configuration")`
+
+*Send To:* `/topic/factory-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "name": "String",
+  "controllers": "List"
+}
+----
+
+=== Outgoing Topic: `/topic/factory-instance`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryInstance()`
+
+*Request Mapping:* `@MessageMapping("/factory/instance")`
+
+*Send To:* `/topic/factory-instance`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "controllers": "Map",
+  "machines": "Map"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/highBayWarehouse/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/highBayWarehouse/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/indexedLine/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/indexedLine/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/mission-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "name": "String",
+  "missions": "List"
+}
+----
+
+=== Outgoing Topic: `/topic/mission-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/status")`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "value": "byte[]",
+  "coder": "byte",
+  "hash": "int",
+  "hashIsZero": "boolean",
+  "serialVersionUID": "long",
+  "COMPACT_STRINGS": "boolean",
+  "serialPersistentFields": "ObjectStreamField[]",
+  "REPL": "char",
+  "CASE_INSENSITIVE_ORDER": "Comparator",
+  "LATIN1": "byte",
+  "UTF16": "byte"
+}
+----
+
+=== Outgoing Topic: `/topic/mission-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/list")`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "name": "String",
+  "missions": "List"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/multiProcessingStation/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/multiProcessingStation/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{plcName}/plc-connection-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
+
+*Request Mapping:* `@MessageMapping("/plc/{plcName}/plc-connection")`
+
+*Send To:* `/topic/{plcName}/plc-connection-status`
+
+==== Parameters
+
+- `plcName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "controllerName": "String",
+  "commandPortConnected": "boolean",
+  "notificationPortConnected": "boolean"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/punchingMachine/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/punchingMachine/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/sortingLine/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/sortingLine/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/vacuumGripper/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "currentCommandRawJSON": "String",
+  "currentCommandId": "String",
+  "currentCommandName": "String",
+  "currentCommandTimestamp": "String",
+  "commandFeedbackRawJSON": "String",
+  "commandFeedbackStatus": "String",
+  "commandFeedbackTimestamp": "String",
+  "commandFeedbackInfo": "String"
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/vacuumGripper/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "machineName": "String",
+  "machineFeedbackRawJSON": "String",
+  "machineFeedbackStatus": "String",
+  "machineFeedbackTimestamp": "String",
+  "machineFeedbackInfo": "String"
+}
+----
+
