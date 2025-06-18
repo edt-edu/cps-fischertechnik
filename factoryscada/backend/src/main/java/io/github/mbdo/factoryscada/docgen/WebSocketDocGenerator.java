@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -79,7 +80,9 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         }
 
         // Write to file
-        Files.write(Paths.get("docgen/websocket-topics.adoc"), doc.toString().getBytes(StandardCharsets.UTF_8));
+        Path outputPath = Paths.get("docgen/websocket-endpoints-topics.adoc");
+        Files.createDirectories(outputPath.getParent()); // Ensure parent directory exists
+        Files.write(outputPath, doc.toString().getBytes(StandardCharsets.UTF_8));        
     }
 
     private String buildJsonSchema(Class<?> clazz) {
