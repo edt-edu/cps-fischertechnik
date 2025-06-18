@@ -281,6 +281,19 @@ commandPlaceholder:
                 "name": "STOP",
                 "parameters": []
               }
+            }            
+        - name: "move_to_safe_position"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 4,
+                "name": "MOVE_TO_SAFE_POSITION",
+                "parameters": []
+              }
             }
 
     # SortingLine command placeholders ___
@@ -375,6 +388,19 @@ commandPlaceholder:
                 "type": "MULTIPROCESSING",
                 "outputId": 1,
                 "name": "PROCESS1",
+                "parameters": []
+              }
+            }
+        - name: "move_to_safe_position"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "MOVE_TO_SAFE_POSITION",
                 "parameters": []
               }
             }
@@ -605,6 +631,19 @@ commandPlaceholder:
                     }
                   }
                 ]
+              }
+            }
+        - name: "move_to_safe_position"
+          placeholder: >
+            {
+              "topicName": "HighBay01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "WAREHOUSE",
+                "outputId": 1,
+                "name": "MOVE_TO_SAFE_POSITION",
+                "parameters":  []
               }
             }
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.MoveToSafePositionCommand;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.Process1Command;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.SetupCommand;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.StopCommand;
@@ -36,6 +37,11 @@ public class MultiProcessingStationMachine extends AbstractMachine {
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Stop MultiProcessingStation {}", dto);
         new StopCommand(this, dto).execute();
+    }
+
+    public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
+        log.info("Move To Safe Position {}", dto);
+        new MoveToSafePositionCommand(this, dto).execute();
     }
 
 

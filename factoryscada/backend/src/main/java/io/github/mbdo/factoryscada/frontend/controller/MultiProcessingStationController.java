@@ -46,6 +46,14 @@ public class MultiProcessingStationController extends AbstractMachineController<
     ) {
         return executeCommand(machineName, "stop", stopDTO);
     }
+
+    @MessageMapping("/{machineName}/command/move_to_safe_position")
+    public String executeMoveToSafePositionCommand(
+            @DestinationVariable("machineName") String machineName,
+            @Valid @Payload GenericMachineCommandDTO<MultiProcessingStationMachine> move_to_safe_positionDTO) {
+        log.info("Received request on /{}/command/move_to_safe_position", machineName);
+        return executeCommand(machineName, "move_to_safe_position", move_to_safe_positionDTO);
+    }
 //    @MessageMapping("/{machineName}/command/eject")
 //    public String executeBackwardCommand(
 //            @DestinationVariable("machineName") String machineName,

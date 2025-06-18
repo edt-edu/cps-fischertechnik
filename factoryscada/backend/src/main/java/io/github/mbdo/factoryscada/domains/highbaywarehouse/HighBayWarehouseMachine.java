@@ -12,6 +12,7 @@ import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.ConveyorSto
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.GoToColumnCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.GoToRowCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.HorizontalToCommand;
+import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.MoveToSafePositionCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.RetrieveCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.SetupCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.StopCommand;
@@ -96,6 +97,11 @@ public class HighBayWarehouseMachine extends AbstractMachine {
     public void vertical_to(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Vertical To HighBayWarehouse {}", dto);
         new VerticalToCommand(this, dto).execute();
+    }
+
+    public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+        log.info("Move To Safe Position {}", dto);
+        new MoveToSafePositionCommand(this, dto).execute();
     }
 
 //    public void eject(@Valid @NotNull final EjectDTO ejectDTO) {
