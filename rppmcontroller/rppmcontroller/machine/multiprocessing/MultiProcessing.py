@@ -816,12 +816,21 @@ class MultiProcessing(Machine, TransitioningMachine):
         """ Stop the machine """
         return self.stop_CycleStep
     
-    def move_to_safe_position_Command(self) -> CycleStepResult:
+    def move_to_safe_position_Command(self) -> Callable[[], CycleStepResult]:
         """ Set the machine in a safe position """
+        runner = self.create_runner()
+        config = MultiProcessingConfig(turn_table_position=TurnTablePosition.from_actuators(
+            self.multiProcessingSensTurntablePosVacuum,
+            self.multiProcessingSensTurntablePosSaw,
+            self.multiProcessingSensTurntablePosBelt))
+        
         if self.safeToOven != None:
             if self.safeToOven:
-                return self.moveVacuumToOven()
+                config.vacuum_arm_at_oven = True
+                runner.then_goto(config, info="go to oven")
             else :
-                return self.moveVacuumToTurntable()
+                config.vacuum_arm_at_oven = False
+                runner.then_goto(config, info="go to turn table")
+            return runner.run()
         else :
-            return self.moveVacuumToOven()
+            return self.setup_Command()
