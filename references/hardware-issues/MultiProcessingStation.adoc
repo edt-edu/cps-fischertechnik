@@ -22,7 +22,7 @@ Remove the red block on the side of the gear and place it between the two red pa
 
 .Moved parts
 [#img-mps-move-parts]
-image::./img/MultiProcessingStation/MPS_moved_part.jpg[float="left",align="center", 240]
+image::./img/MultiProcessingStation/MPS_move_part.jpg[float="left",align="center", 240]
 
 Replace the gear. It should be much more stable.
 
