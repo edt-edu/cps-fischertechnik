@@ -786,9 +786,17 @@ class MultiProcessing(Machine, TransitioningMachine):
         config.vacuum_arm_at_oven = False
         runner.then_goto(config, info="go to turn table")
 
+        # lower arm
+        config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5, info="lower arm")
+
         # drop of payload carefully
         config.vacuum_valve_active = False
         runner.then_goto(config, and_stay_for=1.0, info="drop of payload")
+
+        # raise arm
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5, info="raise arm")
 
         # turn to saw
         config.turn_table_position = TurnTablePosition.SAW
