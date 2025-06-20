@@ -12,7 +12,23 @@ The gears driving the turntable may not correctly touch together (red gear/black
 image::./img/MultiProcessingStation/MPS_turntable_gear_issue.jpg[float="left",align="center", 240]
 
 
-**Fix:** No clear solution so far. Any suggestion ?
+**Fix:** Remove the gear and it's support.
+
+.Removed gear
+[#img-mps-removed-gear]
+image::./img/MultiProcessingStation/MPS_remove_gear.jpg[float="left",align="center", 240]
+
+Remove the red block on the side of the gear and place it between the two red parts as shown below. Remove or replace the attachment part as shown.
+
+.Moved parts
+[#img-mps-move-parts]
+image::./img/MultiProcessingStation/MPS_moved_part.jpg[float="left",align="center", 240]
+
+Replace the gear. It should be much more stable.
+
+.Replace gear
+[#img-mps-gear-replaced]
+image::./img/MultiProcessingStation/MPS_final_state.jpg[float="left",align="center", 240]
 
 ### Problem: light barrier at oven is positioned too high to detect payload
 
