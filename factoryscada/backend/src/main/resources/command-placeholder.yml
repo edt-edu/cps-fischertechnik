@@ -295,7 +295,6 @@ commandPlaceholder:
                 "parameters": []
               }
             }
-
         - name: "retract_arm"
           placeholder: >
             {
@@ -309,8 +308,38 @@ commandPlaceholder:
                 "parameters": []
               }
             }
-
-        
+        - name: "ordered_move_to"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 2,
+                "name": "ORDERED_MOVE_TO",
+                "parameters": [
+                  {
+                    "passableType": "POSITIONPARAMETERTHREED",
+                    "passable": {
+                      "meaning": "START",
+                      "vertical": 1500,
+                      "horizontal": 1000,
+                      "rot": 500
+                    }
+                  },
+                  {
+                    "passableType": "AXISPRIORITIZED",
+                    "passable": {
+                      "vertical": true,
+                      "horizontal": false,
+                      "rot": true
+                    }
+                  }
+                
+                ]
+              }
+            }
 
     # SortingLine command placeholders ___
 

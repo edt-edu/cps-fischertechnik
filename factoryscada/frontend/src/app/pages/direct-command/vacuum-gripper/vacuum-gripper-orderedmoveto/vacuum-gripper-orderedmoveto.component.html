@@ -1,0 +1,14 @@
+<p-fieldset legend="{{ machine?.name }} - ORDERED_MOVE_TO">
+
+  <p style="margin-bottom: 2em;">Move the gripper to reach the given position without altering the valve or compressor status with an axis priority order.</p>
+
+  <app-vacuum-gripper-position-widget (onValuesChanged)="handleValuesChanged($event)"/>
+  <app-vacuum-gripper-axis-bool-widget (onValuesChanged)="handleBooleanValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+
+</p-fieldset>
+

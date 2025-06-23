@@ -7,6 +7,7 @@ import {
 import { VacuumGripperMoveComponent } from "./vacuum-gripper/vacuum-gripper-move/vacuum-gripper-move.component";
 import { VacuumGripperPickComponent } from "./vacuum-gripper/vacuum-gripper-pick/vacuum-gripper-pick.component";
 import { VacuumGripperPlaceComponent } from "./vacuum-gripper/vacuum-gripper-place/vacuum-gripper-place.component";
+import { VacuumGripperOrderedMoveToComponent } from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
 
 import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
 import { HighBayWarehouseRetrieveComponent } from "./highbay-warehouse/highbay-warehouse-retrieve/highbay-warehouse-retrieve.component";
@@ -73,6 +74,7 @@ declare var $: any;
     VacuumGripperPickComponent,
     VacuumGripperMoveComponent,
     VacuumGripperGoToPositionComponent,
+    VacuumGripperOrderedMoveToComponent,
     SortingLineEjectComponent,
     VacuumGripperStatusComponent,
     HighBayWarehouseStoreComponent,

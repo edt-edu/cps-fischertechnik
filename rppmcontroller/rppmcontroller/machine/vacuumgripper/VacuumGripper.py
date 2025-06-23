@@ -9,6 +9,7 @@ from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
+from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import \
@@ -547,5 +548,26 @@ class VacuumGripper(Machine, TransitioningMachine):
         config.horizontal_axis_config = AxisConfig.to_end_position()
         return self.create_runner().then_goto(config, info="retracting arm").run()
     
-    def ordered_move_to_Command(self, prioritized_dir: dict = {}) -> Runner:
-        return self.create_runner()
+    def ordered_move_to_Command(self, dest_pos: Position, prioritized_dir: AxisBoolThreeD) -> Runner:
+        """
+        Move the arm to position moving first the specified axis and then the others.
+        :return: A Runner performing the command
+        """
+        config = self.get_current_config()
+        runner = self.create_runner()
+
+        #Initialized if needed
+        if not self.isInitialized:
+            runner.then_run_runner_from(self.setup_Command, info="setup")
+
+        #Move to destination along the prioritized axis
+        if prioritized_dir.horizontal: config.horizontal_axis_config = AxisConfig.to_counter_goal(dest_pos.horizontal)
+        if prioritized_dir.vertical: config.vertical_axis_config = AxisConfig.to_counter_goal(dest_pos.vertical)
+        if prioritized_dir.rot: config.rotation_axis_config = AxisConfig.to_counter_goal(dest_pos.rot)
+        runner.then_goto(config, info="Moving according to priority")
+
+        #Move to destination along remaining axis
+        config = self.config_from_target_pos(dest_pos)
+        runner.then_goto(config, info="Moving to dest position")
+
+        return runner.run()
