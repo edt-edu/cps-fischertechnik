@@ -538,7 +538,7 @@ class VacuumGripper(Machine, TransitioningMachine):
         else:
             return self.setup_Command()
         
-    def retract_arm_command(self) -> Runner:
+    def retract_arm_Command(self) -> Runner:
         """
         Retract the arm of the vacuum gripper.
         :return: A Runner performing the command
