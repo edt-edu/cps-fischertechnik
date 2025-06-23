@@ -6,6 +6,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
@@ -41,8 +42,8 @@ public class PlcController {
     }
     
     @MessageMapping("/{plcName}/plc-connection")
-    //@SendTo("/topic/{plcName}/plc-connection-status")
-    public void getPlcConnectionStatus(
+    @SendTo("/topic/{plcName}/plc-connection-status")
+    public PlcConnectionStatusDto getPlcConnectionStatus(
         	@DestinationVariable("plcName") String plcName) {
         log.info("Received request on /plc/"+plcName+"/plc-connection");
         Protocol controller = factoryScadaInstance.controllers().get(plcName);
@@ -56,7 +57,8 @@ public class PlcController {
         	topicDto = new PlcConnectionStatusDto();
         }
         // send message to front end
-        this.factoryScada.getTemplate().convertAndSend("/topic/"+plcName+"/plc-connection-status", topicDto);
+        //this.factoryScada.getTemplate().convertAndSend("/topic/"+plcName+"/plc-connection-status", topicDto);
+        return topicDto;
     }
     
     @MessageMapping("**")

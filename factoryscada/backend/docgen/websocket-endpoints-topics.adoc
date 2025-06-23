@@ -1,0 +1,4757 @@
+= WebSocket Protocols of factoryscada backend
+
+== Topics overview
+
+[cols="1,1,1"]
+|===
+| Implementing class | Incoming topic | Outgoing topic 
+
+|SortingLineController
+|/sortingLine/{machineName}/command/eject
+|  
+
+|SortingLineController
+|/sortingLine**
+|  
+
+|SortingLineController
+|/sortingLine/{machineName}/command/stop
+|  
+
+|SortingLineController
+|/sortingLine/{machineName}/command/debug
+|  
+
+|SortingLineController
+|/sortingLine/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|SortingLineController
+|/sortingLine/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|FactoryScadaController
+|/factory/instance
+|/topic/factory-instance
+
+|FactoryScadaController
+|/factory**
+|  
+
+|FactoryScadaController
+|/factory/configuration
+|/topic/factory-configuration
+
+|FactoryScadaController
+|/factory/placeholder
+|/topic/command-placeholder
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/setup
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation**
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/stop
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/debug
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/process1
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|ConveyorBeltController
+|/conveyorBelt**
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/move_nb_steps
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/stop
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/debug
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/move_out
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/move_to_sensor
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|PlcController
+|/plc/{plcName}/plc-connection
+|/topic/{plcName}/plc-connection-status
+
+|PlcController
+|/plc**
+|  
+
+|IndexedLineController
+|/indexedLine**
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/command/stop
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/command/debug
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|IndexedLineController
+|/indexedLine/{machineName}/command/process1
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/setup
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/pick
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/request/status
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/place
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/debug
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/release
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/move
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|VacuumGripperController
+|/vacuumGripper**
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/stop
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/grip
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/go_to_position
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/setup
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/debug
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/conveyor_backward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/go_to_row
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/horizontal_to
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|HighBayWarehouseController
+|/highBayWarehouse**
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/cantilever_backward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/retrieve
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/stop
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/go_to_column
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/conveyor_stop
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/cantilever_forward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/conveyor_forward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/vertical_to
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/store
+|  
+
+|MissionOrchestratorController
+|/factoryMission/command/stop
+|  
+
+|MissionOrchestratorController
+|/factoryMission/command/start/{missionName}
+|  
+
+|MissionOrchestratorController
+|/factoryMission/list
+|/topic/mission-configuration
+
+|MissionOrchestratorController
+|/factoryMission**
+|  
+
+|MissionOrchestratorController
+|/factoryMission/mission-configuration
+|/topic/mission-configuration
+
+|MissionOrchestratorController
+|/factoryMission/status
+|/topic/mission-status
+
+|PunchingMachineController
+|/punchingMachine**
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command/stop
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command/debug
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command/punch
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|WebSocketPublisher
+| 
+|/topic/{machineName}/machine-status
+|WebSocketPublisher
+| 
+|/topic/{controllerName}/plc-connection-status
+|WebSocketPublisher
+| 
+|/topic/{machineName}/command-status
+|WebSocketPublisher
+| 
+|/topic/controller-feedbacks
+|===
+
+== Incoming Topics
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveNbStepsCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveStepsDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_out`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveOutDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveToSensorCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveToLightBarrierDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/conveyorBelt/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/conveyorBelt**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factory/placeholder`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetCommandPlaceholder()`
+
+*Send To:* `/topic/command-placeholder`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "additionalProperties" : {
+    "type" : "object",
+    "id" : "urn:jsonschema:java:lang:Object"
+  }
+}
+----
+
+===  Incoming Topic: `/factory/configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryConfiguration()`
+
+*Send To:* `/topic/factory-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "controllers" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "host" : {
+            "type" : "string"
+          },
+          "commandPort" : {
+            "type" : "integer"
+          },
+          "notificationPort" : {
+            "type" : "integer"
+          },
+          "machines" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration:MachineConfiguration",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "type" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/factory/instance`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryInstance()`
+
+*Send To:* `/topic/factory-instance`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaInstance",
+  "properties" : {
+    "controllers" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol",
+        "properties" : {
+          "sendChannelConnected" : {
+            "type" : "boolean"
+          },
+          "receivedChannelConnected" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "machines" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:AbstractMachine",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "protocol" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol"
+          },
+          "rawCommandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "commandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/factory**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_backward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteCantileverBackwardCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `cantilever_backwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_forward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteCantileverFrontendCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `cantilever_forwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_backward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorBackwardCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `conveyor_backwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_forward`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorFrontendCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `conveyor_forwardDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `conveyor_stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_column`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteGoToColumnCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `go_to_columnDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_row`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteGoToRowCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `go_to_rowDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/horizontal_to`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteHorizontalToCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `horizontal_toDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/retrieve`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteRetrieveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `retrieveDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/setup`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteSetupCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteStoreCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `storeDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/vertical_to`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteVerticalToCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `vertical_toDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/highBayWarehouse/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/highBayWarehouse**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command/process1`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveMoveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveOutDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/indexedLine/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/indexedLine/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/indexedLine**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/mission-configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/factoryMission/command/start/{missionName}`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstartMission()`
+
+==== Parameters
+
+- `missionName` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstopMission()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+class java.lang.String
+
+===  Incoming Topic: `/factoryMission/list`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/factoryMission**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/process1`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteProcess1Command()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/setup`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteSetupCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/multiProcessingStation/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/multiProcessingStation**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/plc**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/plc/{plcName}/plc-connection`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
+
+*Send To:* `/topic/{plcName}/plc-connection-status`
+
+==== Parameters
+
+- `plcName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command/punch`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceivePunchCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `punchDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/punchingMachine/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/punchingMachine/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/punchingMachine**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerreceiveStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command/eject`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerexecuteEjectCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `ejectDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/sortingLine/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/sortingLine/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/sortingLine**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/setup`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteSetupCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `setupDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteStopCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `stopDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/move`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteMoveCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `moveDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecutePickCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `pickDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecutePlaceCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `placeDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/go_to_position`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteGoToPositionCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `goToPositionDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/request/status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteStatusRequest()`
+
+==== Parameters
+
+- `machineName` (String)
+- `statusDTO` (GenericMachineStatusRequestDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineStatusRequestDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:RequestMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "requestId" : {
+          "type" : "string"
+        },
+        "params" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [ "REFERENCESWITCHHORIZONTALAXIS", "LIGHTBARRIERINSIDE", "LIGHTBARRIEROUTSIDE", "REFERENCESWITCHVERTICALAXIS", "HORIZONTALAXISSTEP", "VERTICALAXISSTEP", "REFERENCESWITCHCANTILEVERFRONT", "REFERENCESWITCHCANTILEVERBACK", "MOTORCONVEYORBELTFORWARD", "MOTORCONVEYORBELTBACKWARD", "MOTORVERTICALAXISDOWNWARD", "MOTORVERTICALAXISUPWARD", "MOTORCANTILEVERFORWARD", "MOTORCANTILEVERBACKWARD", "PUSHBUTTONSLIDER1FRONT", "PUSHBUTTONSLIDER1REAR", "PUSHBUTTONSLIDER2FRONT", "PUSHBUTTONSLIDER2REAR", "LIGHTBARRIERSLIDER1", "LIGHTBARRIERMILLINGMACHINE", "LIGHTBARRIERLOADINGSTATION", "LIGHTBARRIERDRILLINGMACHINE", "LIGHTBARRIERCONVEYORBELTSWAP", "MOTORSLIDER1BACKWARD", "MOTORSLIDER1FORWARD", "MOTORSLIDER2BACKWARD", "MOTORSLIDER2FORWARD", "MOTORCONVEYORBELTFEED", "MOTORCONVEYORBELTMILLINGMACHINE", "MOTORMILLINGMACHINE", "MOTORCONVEYORBELTDRILLINGMACHINE", "MOTORDRILLINGMACHINE", "MOTORCONVEYORBELTSWAP", "REFERENCESWITCHTURNTABLEPOSITOINVACUUM", "REFERENCESWITCHTURNTABLEPOSITIONBELT", "LIGHTBARRIERENDOFCONVEYORBELT", "REFERENCESWITCHTURNTABLEPOSITIONSAW", "REFERENCESWITCHVACUUMPOSITIONTURNTABLE", "REFERENCESWITCHOVENFEEDERINSIDE", "REFERENCESWITCHOVENFEEDEROUTSIDE", "REFERENCESWITCHVACUUMPOSITIONOVEN", "LIGHTBARRIEROVEN", "MOTORTURNTABLECLOCKWISE", "MOTORTURNTABLECOUNTERCLOCKWISE", "MOTORSAW", "MOTOROVENFEEDERRETRACT", "MOTOROVENFEEDEREXTEND", "MOTORVACUUMTOWARDSOVEN", "MOTORVACUUMTOWARDSTURNTABLE", "LIGHTOVEN", "VALVEVACUUM", "VALVELOWERING", "VALVEOVENDOOR", "VALVEFEEDER", "PULSECOUNTER", "LIGHTBARRIERINLET", "LIGHTBARRIERBEHINDCOLORSENSOR", "LIGHTBARRIERWHITE", "LIGHTBARRIERRED", "LIGHTBARRIERBLUE", "MOTORCONVEYORBELT", "COMPRESSOR", "VALVEFIRSTEJECTORWHITE", "VALVESECONDEJECTORRED", "VALVETHIRDEJECTORBLUE", "REFERENCESWITCHROTATE", "ROTATESTEP", "MOTORVERTICALAXISUP", "MOTORVERTICALAXISDOWN", "MOTORHORIZONTALAXISBACKWARD", "MOTORHORIZONTALAXISFORWARD", "MOTORROTATECLOCKWISE", "MOTORROTATECOUNTERCLOCKWISE", "LIGHTBARRIERFEEDSTATION", "LIGHTBARRIERSWAPSTATION", "LIGHTBARRIERGOODSINOUT", "LIGHTBARRIERPUNCHINGMACHINE", "SWITCHPUNCHINGMACHINEUP", "SWITCHPUNCHINGMACHINEDOWN", "MOTORPUNCHINGMACHINEUP", "MOTORPUNCHINGMACHINEDOWN", "REFERNCESWITCHCLAW", "PULSECOUNTERGRIPPER", "REFERENCESWITCHGRIPARM", "PULSECOUNTERGRIPARM", "MOTORGRIPPEROPEN", "MOTORGRIPPERCLOSE", "MOTORGRIPARMFORWARD", "MOTORGRIPARMBACKWARD", "ALL" ]
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/grip`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteGripCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `gripDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/release`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteReleaseCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `releaseDTO` (GenericMachineCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/debug`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerreceiveDebugCommand()`
+
+==== Parameters
+
+- `machineName` (String)
+- `message` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/command-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetCommandStatus()`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/vacuumGripper/{machineName}/machine-status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetMachineStatus()`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+===  Incoming Topic: `/vacuumGripper**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+== Outgoing Topics
+
+
+=== Outgoing Topic: `/topic/controller-feedbacks`
+_Broadcasts raw feedback from the controller_
+
+Payload: `String`
+{
+  "type" : "string"
+}
+
+=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
+_Broadcasts PLC connection status updates_
+
+Payload: `PlcConnectionStatusDto`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
+}
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+_Broadcasts Command status updates_
+
+Payload: `CommandStatusDTO`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+_Broadcasts Machine status updates_
+
+Payload: `CommandStatusDTO`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/conveyorBelt/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/conveyorBelt/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/command-placeholder`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetCommandPlaceholder()`
+
+*Request Mapping:* `@MessageMapping("/factory/placeholder")`
+
+*Send To:* `/topic/command-placeholder`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "additionalProperties" : {
+    "type" : "object",
+    "id" : "urn:jsonschema:java:lang:Object"
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/factory-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryConfiguration()`
+
+*Request Mapping:* `@MessageMapping("/factory/configuration")`
+
+*Send To:* `/topic/factory-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "controllers" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "host" : {
+            "type" : "string"
+          },
+          "commandPort" : {
+            "type" : "integer"
+          },
+          "notificationPort" : {
+            "type" : "integer"
+          },
+          "machines" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration:MachineConfiguration",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "type" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/factory-instance`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryInstance()`
+
+*Request Mapping:* `@MessageMapping("/factory/instance")`
+
+*Send To:* `/topic/factory-instance`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaInstance",
+  "properties" : {
+    "controllers" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol",
+        "properties" : {
+          "sendChannelConnected" : {
+            "type" : "boolean"
+          },
+          "receivedChannelConnected" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "machines" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:AbstractMachine",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "protocol" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol"
+          },
+          "rawCommandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "commandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/highBayWarehouse/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/highBayWarehouse/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/indexedLine/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/indexedLine/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/mission-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/mission-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/status")`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "string"
+}
+----
+
+=== Outgoing Topic: `/topic/mission-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/list")`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/multiProcessingStation/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/multiProcessingStation/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{plcName}/plc-connection-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
+
+*Request Mapping:* `@MessageMapping("/plc/{plcName}/plc-connection")`
+
+*Send To:* `/topic/{plcName}/plc-connection-status`
+
+==== Parameters
+
+- `plcName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/punchingMachine/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/punchingMachine/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/sortingLine/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/sortingLine/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/command-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetCommandStatus()`
+
+*Request Mapping:* `@MessageMapping("/vacuumGripper/{machineName}/command-status")`
+
+*Send To:* `/topic/{machineName}/command-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+=== Outgoing Topic: `/topic/{machineName}/machine-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetMachineStatus()`
+
+*Request Mapping:* `@MessageMapping("/vacuumGripper/{machineName}/machine-status")`
+
+*Send To:* `/topic/{machineName}/machine-status`
+
+==== Parameters
+
+- `machineName` (String)
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
+}
+----
+

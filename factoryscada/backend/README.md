@@ -65,3 +65,8 @@ To start the application, you have two options:
       ```sh
       java -jar build/libs/factoryscada-0.0.1-SNAPSHOT.jar
       ```
+
+
+## Documentation
+
+- [WebSocket protocol API](docgen/websocket-endpoints-topics.adoc) (backend to frontend communication)
