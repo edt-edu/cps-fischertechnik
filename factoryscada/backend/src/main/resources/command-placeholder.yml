@@ -296,6 +296,22 @@ commandPlaceholder:
               }
             }
 
+        - name: "retract_arm"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 2,
+                "name": "RETRACT_ARM",
+                "parameters": []
+              }
+            }
+
+        
+
     # SortingLine command placeholders ___
 
     - name: "sortingLine"

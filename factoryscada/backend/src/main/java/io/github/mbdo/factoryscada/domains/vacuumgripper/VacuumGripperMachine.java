@@ -10,6 +10,7 @@ import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveToSafePositionCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PickCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PlaceCommand;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.RetractArmCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.SetupCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.StatusCommand;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -76,6 +77,11 @@ public class VacuumGripperMachine extends AbstractMachine {
     public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> dto) {
         log.info("Move To Safe Position {}", dto);
         new MoveToSafePositionCommand(this, dto).execute();
+    }
+
+    public void retract_arm(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> retract_armDTO) {
+        log.info("Setting up vacuum gripper {}", retract_armDTO);
+        new RetractArmCommand(this, retract_armDTO).execute();
     }
 
 }

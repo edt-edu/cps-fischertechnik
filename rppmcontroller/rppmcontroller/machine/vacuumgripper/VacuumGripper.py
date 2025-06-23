@@ -532,9 +532,17 @@ class VacuumGripper(Machine, TransitioningMachine):
         Moves the Vacuum Gripper to the safe position if specified. Go to setup position else
         :return: A Runner performing the command
         """
-
         if (self.safeVertical != None and self.safeRotation != None and self.safeHorizontal != None):
             position = Position("END", self.safeVertical, self.safeRotation, self.safeHorizontal)
             return self.go_to_position_Command(position)
         else:
             return self.setup_Command()
+        
+    def retract_arm_command(self) -> Runner:
+        """
+        Retract the arm of the vacuum gripper.
+        :return: A Runner performing the command
+        """
+        config = self.get_current_config()
+        config.horizontal_axis_config = AxisConfig.to_end_position()
+        return self.create_runner().then_goto(config, info="retracting arm").run()
