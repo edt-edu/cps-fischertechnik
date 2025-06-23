@@ -427,19 +427,8 @@ class VacuumGripper(Machine, TransitioningMachine):
         :return: A Runner performing the move
         """
         runner = self.create_runner()
-        config = self.get_current_config()
-
-        # retract arm; no init needed for that
-        config.horizontal_axis_config = AxisConfig.to_end_position()
-        runner.then_goto(config, info="retracting arm")
-
-        # goto retracted pos; will perform setup first if needed
-        retracted_position = Position(target_position.meaning, target_position.vertical, target_position.rot, 0)
-        runner.then_run_runner_from(lambda: self.go_to_position_Command(retracted_position), info="moving to retracted position")
-
-        # extend arm
-        runner.then_run_runner_from(lambda: self.go_to_position_Command(target_position), info="moving to target position")
-
+        runner.then_run_runner_from(lambda: self.retract_arm_Command(), info="Retracting arm")
+        runner.then_run_runner_from(lambda: self.ordered_move_to_Command(target_position, AxisBoolThreeD(vertical=True, horizontal=False, rot=True)), info="Move to position")
         return runner.run()
 
 
@@ -477,7 +466,7 @@ class VacuumGripper(Machine, TransitioningMachine):
         runner.then_run_runner_from(lambda: self.go_to_position_Command(pressure_pos), info="preparing pickup")
 
         # pickup
-        runner.then_run_runner_from(self.grip_Command, info="grab payload")
+        runner.then_run_runner_from(lambda: self.grip_Command(), info="grab payload")
 
         # move back to hover pos
         runner.then_run_runner_from(lambda: self.go_to_position_Command(hover_pos), info="lift payload")
@@ -500,7 +489,7 @@ class VacuumGripper(Machine, TransitioningMachine):
         runner.then_run_runner_from(lambda: self.go_to_position_Command(pressure_pos), info="preparing drop-off")
 
         # release token
-        runner.then_run_runner_from(self.release_Command, info="releasing")
+        runner.then_run_runner_from(lambda: self.release_Command(), info="releasing")
 
         # move up again
         runner.then_run_runner_from(lambda: self.go_to_position_Command(hover_pos), info="retreat from drop-off position")
@@ -568,6 +557,7 @@ class VacuumGripper(Machine, TransitioningMachine):
 
         #Move to destination along remaining axis
         config = self.config_from_target_pos(dest_pos)
+        config.gripper_active = self.vacuumActValve
         runner.then_goto(config, info="Moving to dest position")
 
         return runner.run()
