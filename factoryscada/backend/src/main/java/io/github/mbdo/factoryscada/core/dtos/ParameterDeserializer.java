@@ -13,6 +13,7 @@ import io.github.mbdo.factoryscada.core.passable.Direction;
 import io.github.mbdo.factoryscada.core.passable.NumberNatural;
 import io.github.mbdo.factoryscada.core.passable.PositionParameterThreeD;
 import io.github.mbdo.factoryscada.core.passable.AxisPrioritized;
+import io.github.mbdo.factoryscada.core.passable.MPSOutput;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -37,6 +38,7 @@ public class ParameterDeserializer extends JsonDeserializer<Parameter> {
             case POSITIONPARAMETERTHREED -> mapper.treeToValue(node.get("passable"), PositionParameterThreeD.class);
             case NUMBERNATURAL -> mapper.treeToValue(node.get("passable"), NumberNatural.class);
             case AXISPRIORITIZED -> mapper.treeToValue(node.get("passable"), AxisPrioritized.class);
+            case MPSOUTPUT -> mapper.treeToValue(node.get("passable"), MPSOutput.class);
             default -> {
                 log.error("Unknown passable type: {}", passableType);
                 throw new IllegalArgumentException("Unknown passable type: " + passableType);
