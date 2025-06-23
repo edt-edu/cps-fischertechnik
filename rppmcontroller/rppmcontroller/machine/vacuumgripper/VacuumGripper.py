@@ -546,3 +546,6 @@ class VacuumGripper(Machine, TransitioningMachine):
         config = self.get_current_config()
         config.horizontal_axis_config = AxisConfig.to_end_position()
         return self.create_runner().then_goto(config, info="retracting arm").run()
+    
+    def ordered_move_to_Command(self, prioritized_dir: dict = {}) -> Runner:
+        return self.create_runner()
