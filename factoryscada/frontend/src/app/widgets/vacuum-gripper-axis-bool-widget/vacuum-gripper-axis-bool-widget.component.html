@@ -1,0 +1,36 @@
+<!-- Parameters -->
+<div class="form-group " [formGroup]="parametersForm">
+  <div class="flex justify-content-evenly flex-wrap">
+
+    @if (! (title === undefined)) {
+    <div class="form-group  flex-grow-1" formGroupName="rotationGroup">
+      <label>{{ title }}</label>
+    </div>
+    }
+
+    <div class="form-group  flex-grow-1" formGroupName="rotationGroup">
+      <label>Rotation priority</label>
+      <p-checkbox
+        formControlName="rotationBool"
+        (onChange)="emitValues()"
+        binary="true">
+      </p-checkbox>
+    </div>
+    <div class="form-group   flex-grow-1" formGroupName="verticalGroup">
+      <label>Vertical priority</label>
+      <p-checkbox
+        formControlName="verticalBool"
+        (onChange)="emitValues()"
+        binary="true">
+      </p-checkbox>
+    </div>
+    <div class="form-group   flex-grow-1" formGroupName="horizontalGroup">
+      <label>Horizontal priority</label>
+      <p-checkbox
+        formControlName="horizontalBool"
+        (onChange)="emitValues()"
+        binary="true">
+      </p-checkbox>
+    </div>
+  </div>
+</div>

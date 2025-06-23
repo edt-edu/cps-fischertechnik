@@ -10,6 +10,8 @@ import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveToSafePositionCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PickCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PlaceCommand;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.OrderedMoveToCommand;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.RetractArmCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.SetupCommand;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.StatusCommand;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -76,6 +78,16 @@ public class VacuumGripperMachine extends AbstractMachine {
     public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> dto) {
         log.info("Move To Safe Position {}", dto);
         new MoveToSafePositionCommand(this, dto).execute();
+    }
+
+    public void retract_arm(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> retract_armDTO) {
+        log.info("Retracting vacuum gripper's arm {}", retract_armDTO);
+        new RetractArmCommand(this, retract_armDTO).execute();
+    }
+
+    public void ordered_move_to(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> ordered_move_toDTO) {
+        log.info("Moving vacuum gripper with priotized axis {}", ordered_move_toDTO);
+        new OrderedMoveToCommand(this, ordered_move_toDTO).execute();
     }
 
 }

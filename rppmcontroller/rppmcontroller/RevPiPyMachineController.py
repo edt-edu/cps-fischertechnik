@@ -263,7 +263,12 @@ class RevPiPyMachineController:
                                     m.incrementNbMinimumRequiredExecutionCycles()
                                     ret = func(m, pos[0])
                                 if i == 2:
-                                    if pos[0].meaning == "START" and pos[1].meaning == "END":
+                                    #for the ordered move command
+                                    if isinstance(pos[1].horizontal, bool) :
+                                        logging.debug("function called with two args")
+                                        m.incrementNbMinimumRequiredExecutionCycles()
+                                        ret = func(m, pos[0], pos[1])
+                                    elif pos[0].meaning == "START" and pos[1].meaning == "END":
                                         logging.debug("function called with two args")
                                         m.incrementNbMinimumRequiredExecutionCycles()
                                         ret = func(m, pos[0], pos[1])

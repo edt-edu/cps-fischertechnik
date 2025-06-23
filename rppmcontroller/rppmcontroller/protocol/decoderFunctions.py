@@ -6,6 +6,7 @@ from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.BoxNumber import BoxNumber
 from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.protocol.RequestedParameter import RequestedParameter
 
@@ -41,6 +42,12 @@ def customDecoder(idict):
                     rot = passable['rot']
                     horizontal = passable['horizontal']
                     parameterList.append(Position(meaning, vertical, rot, horizontal))
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'AXISPRIORITIZED':
+                    passable = param['passable']
+                    vertical = passable['vertical']
+                    rot = passable['rot']
+                    horizontal = passable['horizontal']
+                    parameterList.append(AxisBoolThreeD(vertical, rot, horizontal))
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'BOXNUMBER':
                     passable = param['passable']
                     parameterList.append(BoxNumber[passable])
