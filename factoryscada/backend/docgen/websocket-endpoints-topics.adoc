@@ -2,276 +2,323 @@
 
 == Topics overview
 
-[mermaid]
-----
-sequenceDiagram
-box frontend
-participant Client
-end
-box backend
-participant SortingLineController
-participant FactoryScadaController
-participant MultiProcessingStationController
-participant ConveyorBeltController
-participant PlcController
-participant WebSocketPublisher
-participant IndexedLineController
-participant VacuumGripperController
-participant HighBayWarehouseController
-participant MissionOrchestratorController
-participant PunchingMachineController
-end
-Client ->> SortingLineController :/sortingLine/{machineName}/command/eject
-activate SortingLineController
-deactivate SortingLineController
-Client ->> SortingLineController :/sortingLine**
-activate SortingLineController
-deactivate SortingLineController
-Client ->> SortingLineController :/sortingLine/{machineName}/command/stop
-activate SortingLineController
-deactivate SortingLineController
-Client ->> SortingLineController :/sortingLine/{machineName}/command/debug
-activate SortingLineController
-deactivate SortingLineController
-Client ->> SortingLineController :/sortingLine/{machineName}/machine-status
-activate SortingLineController
-SortingLineController->> Client :/topic/{machineName}/machine-status
-deactivate SortingLineController
-Client ->> SortingLineController :/sortingLine/{machineName}/command-status
-activate SortingLineController
-SortingLineController->> Client :/topic/{machineName}/command-status
-deactivate SortingLineController
-Client ->> FactoryScadaController :/factory/instance
-activate FactoryScadaController
-FactoryScadaController->> Client :/topic/factory-instance
-deactivate FactoryScadaController
-Client ->> FactoryScadaController :/factory**
-activate FactoryScadaController
-deactivate FactoryScadaController
-Client ->> FactoryScadaController :/factory/configuration
-activate FactoryScadaController
-FactoryScadaController->> Client :/topic/factory-configuration
-deactivate FactoryScadaController
-Client ->> FactoryScadaController :/factory/placeholder
-activate FactoryScadaController
-FactoryScadaController->> Client :/topic/command-placeholder
-deactivate FactoryScadaController
-Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/setup
-activate MultiProcessingStationController
-deactivate MultiProcessingStationController
-Client ->> MultiProcessingStationController :/multiProcessingStation**
-activate MultiProcessingStationController
-deactivate MultiProcessingStationController
-Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/stop
-activate MultiProcessingStationController
-deactivate MultiProcessingStationController
-Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/debug
-activate MultiProcessingStationController
-deactivate MultiProcessingStationController
-Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/machine-status
-activate MultiProcessingStationController
-MultiProcessingStationController->> Client :/topic/{machineName}/machine-status
-deactivate MultiProcessingStationController
-Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command/process1
-activate MultiProcessingStationController
-deactivate MultiProcessingStationController
-Client ->> MultiProcessingStationController :/multiProcessingStation/{machineName}/command-status
-activate MultiProcessingStationController
-MultiProcessingStationController->> Client :/topic/{machineName}/command-status
-deactivate MultiProcessingStationController
-Client ->> ConveyorBeltController :/conveyorBelt**
-activate ConveyorBeltController
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/move_nb_steps
-activate ConveyorBeltController
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/stop
-activate ConveyorBeltController
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/debug
-activate ConveyorBeltController
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/machine-status
-activate ConveyorBeltController
-ConveyorBeltController->> Client :/topic/{machineName}/machine-status
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/move_out
-activate ConveyorBeltController
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command/move_to_sensor
-activate ConveyorBeltController
-deactivate ConveyorBeltController
-Client ->> ConveyorBeltController :/conveyorBelt/{machineName}/command-status
-activate ConveyorBeltController
-ConveyorBeltController->> Client :/topic/{machineName}/command-status
-deactivate ConveyorBeltController
-Client ->> PlcController :/plc/{plcName}/plc-connection
-activate PlcController
-PlcController->> Client :/topic/{plcName}/plc-connection-status
-deactivate PlcController
-Client ->> PlcController :/plc**
-activate PlcController
-deactivate PlcController
-Client ->> IndexedLineController :/indexedLine**
-activate IndexedLineController
-deactivate IndexedLineController
-Client ->> IndexedLineController :/indexedLine/{machineName}/command/stop
-activate IndexedLineController
-deactivate IndexedLineController
-Client ->> IndexedLineController :/indexedLine/{machineName}/command/debug
-activate IndexedLineController
-deactivate IndexedLineController
-Client ->> IndexedLineController :/indexedLine/{machineName}/machine-status
-activate IndexedLineController
-IndexedLineController->> Client :/topic/{machineName}/machine-status
-deactivate IndexedLineController
-Client ->> IndexedLineController :/indexedLine/{machineName}/command/process1
-activate IndexedLineController
-deactivate IndexedLineController
-Client ->> IndexedLineController :/indexedLine/{machineName}/command-status
-activate IndexedLineController
-IndexedLineController->> Client :/topic/{machineName}/command-status
-deactivate IndexedLineController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/setup
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/pick
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/request/status
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/place
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/debug
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/release
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/move
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command-status
-activate VacuumGripperController
-VacuumGripperController->> Client :/topic/{machineName}/command-status
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper**
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/stop
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/grip
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/machine-status
-activate VacuumGripperController
-VacuumGripperController->> Client :/topic/{machineName}/machine-status
-deactivate VacuumGripperController
-Client ->> VacuumGripperController :/vacuumGripper/{machineName}/command/go_to_position
-activate VacuumGripperController
-deactivate VacuumGripperController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/setup
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/debug
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/conveyor_backward
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/go_to_row
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/horizontal_to
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command-status
-activate HighBayWarehouseController
-HighBayWarehouseController->> Client :/topic/{machineName}/command-status
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse**
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/cantilever_backward
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/retrieve
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/stop
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/go_to_column
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/machine-status
-activate HighBayWarehouseController
-HighBayWarehouseController->> Client :/topic/{machineName}/machine-status
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/conveyor_stop
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/cantilever_forward
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/conveyor_forward
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/vertical_to
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> HighBayWarehouseController :/highBayWarehouse/{machineName}/command/store
-activate HighBayWarehouseController
-deactivate HighBayWarehouseController
-Client ->> MissionOrchestratorController :/factoryMission/command/stop
-activate MissionOrchestratorController
-deactivate MissionOrchestratorController
-Client ->> MissionOrchestratorController :/factoryMission/command/start/{missionName}
-activate MissionOrchestratorController
-deactivate MissionOrchestratorController
-Client ->> MissionOrchestratorController :/factoryMission/list
-activate MissionOrchestratorController
-MissionOrchestratorController->> Client :/topic/mission-configuration
-deactivate MissionOrchestratorController
-Client ->> MissionOrchestratorController :/factoryMission**
-activate MissionOrchestratorController
-deactivate MissionOrchestratorController
-Client ->> MissionOrchestratorController :/factoryMission/mission-configuration
-activate MissionOrchestratorController
-MissionOrchestratorController->> Client :/topic/mission-configuration
-deactivate MissionOrchestratorController
-Client ->> MissionOrchestratorController :/factoryMission/status
-activate MissionOrchestratorController
-MissionOrchestratorController->> Client :/topic/mission-status
-deactivate MissionOrchestratorController
-Client ->> PunchingMachineController :/punchingMachine**
-activate PunchingMachineController
-deactivate PunchingMachineController
-Client ->> PunchingMachineController :/punchingMachine/{machineName}/command/stop
-activate PunchingMachineController
-deactivate PunchingMachineController
-Client ->> PunchingMachineController :/punchingMachine/{machineName}/command/debug
-activate PunchingMachineController
-deactivate PunchingMachineController
-Client ->> PunchingMachineController :/punchingMachine/{machineName}/machine-status
-activate PunchingMachineController
-PunchingMachineController->> Client :/topic/{machineName}/machine-status
-deactivate PunchingMachineController
-Client ->> PunchingMachineController :/punchingMachine/{machineName}/command/punch
-activate PunchingMachineController
-deactivate PunchingMachineController
-Client ->> PunchingMachineController :/punchingMachine/{machineName}/command-status
-activate PunchingMachineController
-PunchingMachineController->> Client :/topic/{machineName}/command-status
-deactivate PunchingMachineController
-WebSocketPublisher->> Client :/topic/{machineName}/machine-status
-WebSocketPublisher->> Client :/topic/{controllerName}/plc-connection-status
-WebSocketPublisher->> Client :/topic/{machineName}/command-status
-WebSocketPublisher->> Client :/topic/controller-feedbacks
-----
+[cols="1,1,1"]
+|===
+| Implementing class | Incoming topic | Outgoing topic 
+
+|SortingLineController
+|/sortingLine/{machineName}/command/eject
+|  
+
+|SortingLineController
+|/sortingLine**
+|  
+
+|SortingLineController
+|/sortingLine/{machineName}/command/stop
+|  
+
+|SortingLineController
+|/sortingLine/{machineName}/command/debug
+|  
+
+|SortingLineController
+|/sortingLine/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|SortingLineController
+|/sortingLine/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|FactoryScadaController
+|/factory/instance
+|/topic/factory-instance
+
+|FactoryScadaController
+|/factory**
+|  
+
+|FactoryScadaController
+|/factory/configuration
+|/topic/factory-configuration
+
+|FactoryScadaController
+|/factory/placeholder
+|/topic/command-placeholder
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/setup
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation**
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/stop
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/debug
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command/process1
+|  
+
+|MultiProcessingStationController
+|/multiProcessingStation/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|ConveyorBeltController
+|/conveyorBelt**
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/move_nb_steps
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/stop
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/debug
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/move_out
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command/move_to_sensor
+|  
+
+|ConveyorBeltController
+|/conveyorBelt/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|PlcController
+|/plc/{plcName}/plc-connection
+|/topic/{plcName}/plc-connection-status
+
+|PlcController
+|/plc**
+|  
+
+|IndexedLineController
+|/indexedLine**
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/command/stop
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/command/debug
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|IndexedLineController
+|/indexedLine/{machineName}/command/process1
+|  
+
+|IndexedLineController
+|/indexedLine/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/setup
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/pick
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/request/status
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/place
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/debug
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/release
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/move
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|VacuumGripperController
+|/vacuumGripper**
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/stop
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/grip
+|  
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|VacuumGripperController
+|/vacuumGripper/{machineName}/command/go_to_position
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/setup
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/debug
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/conveyor_backward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/go_to_row
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/horizontal_to
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|HighBayWarehouseController
+|/highBayWarehouse**
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/cantilever_backward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/retrieve
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/stop
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/go_to_column
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/conveyor_stop
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/cantilever_forward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/conveyor_forward
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/vertical_to
+|  
+
+|HighBayWarehouseController
+|/highBayWarehouse/{machineName}/command/store
+|  
+
+|MissionOrchestratorController
+|/factoryMission/command/stop
+|  
+
+|MissionOrchestratorController
+|/factoryMission/command/start/{missionName}
+|  
+
+|MissionOrchestratorController
+|/factoryMission/list
+|/topic/mission-configuration
+
+|MissionOrchestratorController
+|/factoryMission**
+|  
+
+|MissionOrchestratorController
+|/factoryMission/mission-configuration
+|/topic/mission-configuration
+
+|MissionOrchestratorController
+|/factoryMission/status
+|/topic/mission-status
+
+|PunchingMachineController
+|/punchingMachine**
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command/stop
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command/debug
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/machine-status
+|/topic/{machineName}/machine-status
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command/punch
+|  
+
+|PunchingMachineController
+|/punchingMachine/{machineName}/command-status
+|/topic/{machineName}/command-status
+
+|WebSocketPublisher
+| 
+|/topic/{machineName}/machine-status
+|WebSocketPublisher
+| 
+|/topic/{controllerName}/plc-connection-status
+|WebSocketPublisher
+| 
+|/topic/{machineName}/command-status
+|WebSocketPublisher
+| 
+|/topic/controller-feedbacks
+|===
 
 == Incoming Topics
 
@@ -289,10 +336,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -313,10 +401,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -337,10 +466,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -361,10 +531,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -397,15 +608,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -424,11 +657,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -457,6 +704,11 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 [source,json]
 ----
 {
+  "type" : "object",
+  "additionalProperties" : {
+    "type" : "object",
+    "id" : "urn:jsonschema:java:lang:Object"
+  }
 }
 ----
 
@@ -474,8 +726,49 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 [source,json]
 ----
 {
-  "name": "String",
-  "controllers": "List"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "controllers" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "host" : {
+            "type" : "string"
+          },
+          "commandPort" : {
+            "type" : "integer"
+          },
+          "notificationPort" : {
+            "type" : "integer"
+          },
+          "machines" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration:MachineConfiguration",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "type" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -493,8 +786,53 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 [source,json]
 ----
 {
-  "controllers": "Map",
-  "machines": "Map"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaInstance",
+  "properties" : {
+    "controllers" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol",
+        "properties" : {
+          "sendChannelConnected" : {
+            "type" : "boolean"
+          },
+          "receivedChannelConnected" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "machines" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:AbstractMachine",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "protocol" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol"
+          },
+          "rawCommandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "commandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -523,10 +861,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -547,10 +926,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -571,10 +991,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -595,10 +1056,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -619,10 +1121,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -643,10 +1186,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -667,10 +1251,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -691,10 +1316,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -715,10 +1381,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -739,10 +1446,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -763,10 +1511,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -787,10 +1576,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -811,10 +1641,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -847,15 +1718,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -874,11 +1767,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -907,10 +1814,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -931,10 +1879,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -967,15 +1956,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -994,11 +2005,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1027,8 +2052,46 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 [source,json]
 ----
 {
-  "name": "String",
-  "missions": "List"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1078,8 +2141,46 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 [source,json]
 ----
 {
-  "name": "String",
-  "missions": "List"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1108,10 +2209,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1132,10 +2274,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1156,10 +2339,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1192,15 +2416,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1219,11 +2465,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1264,9 +2524,19 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlc
 [source,json]
 ----
 {
-  "controllerName": "String",
-  "commandPortConnected": "boolean",
-  "notificationPortConnected": "boolean"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
 }
 ----
 
@@ -1284,10 +2554,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1308,10 +2619,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1344,15 +2696,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1371,11 +2745,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1404,10 +2792,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1428,10 +2857,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1464,15 +2934,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1491,11 +2983,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1524,10 +3030,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1548,10 +3095,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1572,10 +3160,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1596,10 +3225,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1620,10 +3290,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1644,10 +3355,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1668,10 +3420,38 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "RequestMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineStatusRequestDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:RequestMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "requestId" : {
+          "type" : "string"
+        },
+        "params" : {
+          "type" : "array",
+          "items" : {
+            "type" : "string",
+            "enum" : [ "REFERENCESWITCHHORIZONTALAXIS", "LIGHTBARRIERINSIDE", "LIGHTBARRIEROUTSIDE", "REFERENCESWITCHVERTICALAXIS", "HORIZONTALAXISSTEP", "VERTICALAXISSTEP", "REFERENCESWITCHCANTILEVERFRONT", "REFERENCESWITCHCANTILEVERBACK", "MOTORCONVEYORBELTFORWARD", "MOTORCONVEYORBELTBACKWARD", "MOTORVERTICALAXISDOWNWARD", "MOTORVERTICALAXISUPWARD", "MOTORCANTILEVERFORWARD", "MOTORCANTILEVERBACKWARD", "PUSHBUTTONSLIDER1FRONT", "PUSHBUTTONSLIDER1REAR", "PUSHBUTTONSLIDER2FRONT", "PUSHBUTTONSLIDER2REAR", "LIGHTBARRIERSLIDER1", "LIGHTBARRIERMILLINGMACHINE", "LIGHTBARRIERLOADINGSTATION", "LIGHTBARRIERDRILLINGMACHINE", "LIGHTBARRIERCONVEYORBELTSWAP", "MOTORSLIDER1BACKWARD", "MOTORSLIDER1FORWARD", "MOTORSLIDER2BACKWARD", "MOTORSLIDER2FORWARD", "MOTORCONVEYORBELTFEED", "MOTORCONVEYORBELTMILLINGMACHINE", "MOTORMILLINGMACHINE", "MOTORCONVEYORBELTDRILLINGMACHINE", "MOTORDRILLINGMACHINE", "MOTORCONVEYORBELTSWAP", "REFERENCESWITCHTURNTABLEPOSITOINVACUUM", "REFERENCESWITCHTURNTABLEPOSITIONBELT", "LIGHTBARRIERENDOFCONVEYORBELT", "REFERENCESWITCHTURNTABLEPOSITIONSAW", "REFERENCESWITCHVACUUMPOSITIONTURNTABLE", "REFERENCESWITCHOVENFEEDERINSIDE", "REFERENCESWITCHOVENFEEDEROUTSIDE", "REFERENCESWITCHVACUUMPOSITIONOVEN", "LIGHTBARRIEROVEN", "MOTORTURNTABLECLOCKWISE", "MOTORTURNTABLECOUNTERCLOCKWISE", "MOTORSAW", "MOTOROVENFEEDERRETRACT", "MOTOROVENFEEDEREXTEND", "MOTORVACUUMTOWARDSOVEN", "MOTORVACUUMTOWARDSTURNTABLE", "LIGHTOVEN", "VALVEVACUUM", "VALVELOWERING", "VALVEOVENDOOR", "VALVEFEEDER", "PULSECOUNTER", "LIGHTBARRIERINLET", "LIGHTBARRIERBEHINDCOLORSENSOR", "LIGHTBARRIERWHITE", "LIGHTBARRIERRED", "LIGHTBARRIERBLUE", "MOTORCONVEYORBELT", "COMPRESSOR", "VALVEFIRSTEJECTORWHITE", "VALVESECONDEJECTORRED", "VALVETHIRDEJECTORBLUE", "REFERENCESWITCHROTATE", "ROTATESTEP", "MOTORVERTICALAXISUP", "MOTORVERTICALAXISDOWN", "MOTORHORIZONTALAXISBACKWARD", "MOTORHORIZONTALAXISFORWARD", "MOTORROTATECLOCKWISE", "MOTORROTATECOUNTERCLOCKWISE", "LIGHTBARRIERFEEDSTATION", "LIGHTBARRIERSWAPSTATION", "LIGHTBARRIERGOODSINOUT", "LIGHTBARRIERPUNCHINGMACHINE", "SWITCHPUNCHINGMACHINEUP", "SWITCHPUNCHINGMACHINEDOWN", "MOTORPUNCHINGMACHINEUP", "MOTORPUNCHINGMACHINEDOWN", "REFERNCESWITCHCLAW", "PULSECOUNTERGRIPPER", "REFERENCESWITCHGRIPARM", "PULSECOUNTERGRIPARM", "MOTORGRIPPEROPEN", "MOTORGRIPPERCLOSE", "MOTORGRIPARMFORWARD", "MOTORGRIPARMBACKWARD", "ALL" ]
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1692,10 +3472,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1716,10 +3537,51 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "serialVersionUID": "long",
-  "topicName": "String",
-  "timestamp": "String",
-  "message": "CommandMessage"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:GenericMachineCommandDTO",
+  "properties" : {
+    "topicName" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "object",
+      "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:CommandMessage",
+      "properties" : {
+        "jsonType" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        },
+        "outputId" : {
+          "type" : "string"
+        },
+        "name" : {
+          "type" : "string"
+        },
+        "parameters" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+            "properties" : {
+              "passableType" : {
+                "type" : "string",
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL" ]
+              },
+              "passable" : {
+                "type" : "object",
+                "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1752,15 +3614,37 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1779,11 +3663,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1806,17 +3704,7 @@ _Broadcasts raw feedback from the controller_
 
 Payload: `String`
 {
-  "value": "byte[]",
-  "coder": "byte",
-  "hash": "int",
-  "hashIsZero": "boolean",
-  "serialVersionUID": "long",
-  "COMPACT_STRINGS": "boolean",
-  "serialPersistentFields": "ObjectStreamField[]",
-  "REPL": "char",
-  "CASE_INSENSITIVE_ORDER": "Comparator",
-  "LATIN1": "byte",
-  "UTF16": "byte"
+  "type" : "string"
 }
 
 === Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
@@ -1824,9 +3712,19 @@ _Broadcasts PLC connection status updates_
 
 Payload: `PlcConnectionStatusDto`
 {
-  "controllerName": "String",
-  "commandPortConnected": "boolean",
-  "notificationPortConnected": "boolean"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
 }
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
@@ -1834,15 +3732,37 @@ _Broadcasts Command status updates_
 
 Payload: `CommandStatusDTO`
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
@@ -1850,15 +3770,37 @@ _Broadcasts Machine status updates_
 
 Payload: `CommandStatusDTO`
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
@@ -1877,15 +3819,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1906,11 +3870,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -1930,6 +3908,11 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 [source,json]
 ----
 {
+  "type" : "object",
+  "additionalProperties" : {
+    "type" : "object",
+    "id" : "urn:jsonschema:java:lang:Object"
+  }
 }
 ----
 
@@ -1949,8 +3932,49 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 [source,json]
 ----
 {
-  "name": "String",
-  "controllers": "List"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "controllers" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "host" : {
+            "type" : "string"
+          },
+          "commandPort" : {
+            "type" : "integer"
+          },
+          "notificationPort" : {
+            "type" : "integer"
+          },
+          "machines" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:ControllerConfiguration:MachineConfiguration",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "type" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1970,8 +3994,53 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 [source,json]
 ----
 {
-  "controllers": "Map",
-  "machines": "Map"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaInstance",
+  "properties" : {
+    "controllers" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol",
+        "properties" : {
+          "sendChannelConnected" : {
+            "type" : "boolean"
+          },
+          "receivedChannelConnected" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    },
+    "machines" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:AbstractMachine",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "protocol" : {
+            "type" : "object",
+            "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:socket:Protocol"
+          },
+          "rawCommandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "commandNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -1992,15 +4061,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2021,11 +4112,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2046,15 +4151,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2075,11 +4202,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2099,8 +4240,46 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 [source,json]
 ----
 {
-  "name": "String",
-  "missions": "List"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -2120,17 +4299,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 [source,json]
 ----
 {
-  "value": "byte[]",
-  "coder": "byte",
-  "hash": "int",
-  "hashIsZero": "boolean",
-  "serialVersionUID": "long",
-  "COMPACT_STRINGS": "boolean",
-  "serialPersistentFields": "ObjectStreamField[]",
-  "REPL": "char",
-  "CASE_INSENSITIVE_ORDER": "Comparator",
-  "LATIN1": "byte",
-  "UTF16": "byte"
+  "type" : "string"
 }
 ----
 
@@ -2150,8 +4319,46 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 [source,json]
 ----
 {
-  "name": "String",
-  "missions": "List"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "commands" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "properties" : {
+                "name" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "placeholder" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
 ----
 
@@ -2172,15 +4379,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2201,11 +4430,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2226,9 +4469,19 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlc
 [source,json]
 ----
 {
-  "controllerName": "String",
-  "commandPortConnected": "boolean",
-  "notificationPortConnected": "boolean"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
 }
 ----
 
@@ -2249,15 +4502,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2278,11 +4553,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2303,15 +4592,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2332,11 +4643,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2357,15 +4682,37 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "machineName": "String",
-  "currentCommandRawJSON": "String",
-  "currentCommandId": "String",
-  "currentCommandName": "String",
-  "currentCommandTimestamp": "String",
-  "commandFeedbackRawJSON": "String",
-  "commandFeedbackStatus": "String",
-  "commandFeedbackTimestamp": "String",
-  "commandFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "currentCommandRawJSON" : {
+      "type" : "string"
+    },
+    "currentCommandId" : {
+      "type" : "string"
+    },
+    "currentCommandName" : {
+      "type" : "string"
+    },
+    "currentCommandTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "commandFeedbackStatus" : {
+      "type" : "string"
+    },
+    "commandFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "commandFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 
@@ -2386,11 +4733,25 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 [source,json]
 ----
 {
-  "machineName": "String",
-  "machineFeedbackRawJSON": "String",
-  "machineFeedbackStatus": "String",
-  "machineFeedbackTimestamp": "String",
-  "machineFeedbackInfo": "String"
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "machineFeedbackRawJSON" : {
+      "type" : "string"
+    },
+    "machineFeedbackStatus" : {
+      "type" : "string"
+    },
+    "machineFeedbackTimestamp" : {
+      "type" : "string"
+    },
+    "machineFeedbackInfo" : {
+      "type" : "string"
+    }
+  }
 }
 ----
 

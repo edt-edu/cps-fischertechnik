@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.springframework.aop.support.AopUtils;
@@ -25,6 +26,12 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
 import io.github.mbdo.factoryscada.frontend.WebSocketPublish;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +57,8 @@ public class WebSocketDocGenerator implements ApplicationRunner {
        StringBuilder doc = new StringBuilder("= WebSocket Protocols of "+applicationName+" backend\n\n");
        String incomingAdoc = generateIncomingTopicsAsciidoc();
        String outgoingAdoc = generateOutgoingTopicsAsciidoc();
-       doc.append(generateAllTopicsMermaid());
+       // doc.append(generateAllTopicsMermaid());
+       doc.append(generateAllTopicsOverview());
        doc.append(incomingAdoc);
        doc.append(outgoingAdoc);
 
@@ -61,59 +69,51 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         log.info("Generated protocol documentation: " + outputPath);   
     }
 
+   
+
     /**
-     * generate the mermaid  overview
+     * generate the overview as a table
      * requires methodToIncomingTopicMap and methodToOutgoingTopicMap  that are computed by generateOutgoingTopicsAsciidoc() 
      * @return
      */
-    private String generateAllTopicsMermaid() {
+    private String generateAllTopicsOverview() {
         StringBuilder doc = new StringBuilder("== Topics overview\n\n");
-        doc.append("[mermaid]\n");
-        doc.append("----\n");
-        doc.append("sequenceDiagram\n");
+        doc.append("[cols=\"1,1,1\"]\n");
+        doc.append("|===\n");
+        doc.append("| Implementing class | Incoming topic | Outgoing topic \n\n");
 
-        Set<String> participants = new HashSet<>();
-        participants.addAll(methodToIncomingTopicMap.keySet());
-        participants.addAll(methodToOutgoingTopicMap.keySet());
-        doc.append("box frontend\n");
-        doc.append("participant Client\n");
-        doc.append("end\n");
-        doc.append("box backend\n");
-        for (String className : participants) {
-            doc.append("participant "+className+"\n");
-        }
-        doc.append("end\n");
-        
         for (String className : methodToIncomingTopicMap.keySet()) {
             for( Entry<String, Set<String>> methodMap : methodToIncomingTopicMap.get(className).entrySet()) {
                 String methodName = methodMap.getKey();
                 for (String topic : methodMap.getValue()) {
-                    doc.append("Client ->> "+className+" :"+topic+ "\n");
-                    doc.append("activate "+className+"\n");
+                    doc.append("|"+className+"\n");
+                    doc.append("|"+topic+"\n");
                     if(methodToOutgoingTopicMap.containsKey(className) ){
                         Set<String> topics = methodToOutgoingTopicMap.get(className).get(methodName);
                         if(topics !=null) {
-                            for (String outgoingTopic : topics) {
-                                 doc.append(className+"->> Client :"+outgoingTopic+ "\n");
-                            }
+                            doc.append("|"+topics.stream().collect(Collectors.joining(", "))+"\n");
+                        } else {
+                            doc.append("|  \n");
                         }
-                         methodToOutgoingTopicMap.get(className).remove(methodName); //  remove processed outgoing
+                        methodToOutgoingTopicMap.get(className).remove(methodName); //  remove processed outgoing
+                    } else {
+                        doc.append("|  \n");
                     }
-                    doc.append("deactivate "+className+"\n");
+                    doc.append("\n");
                 }
             }
         }
         // process remaining outgoing topics
         for (String className : methodToOutgoingTopicMap.keySet()) {
             for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
-                for (String outgoingTopic : methodMap.getValue()) {
-                    doc.append(className+"->> Client :"+outgoingTopic+ "\n");
-                }
+                    doc.append("|"+className+"\n");
+                    doc.append("| \n");
+                    doc.append("|"+methodMap.getValue().stream().collect(Collectors.joining(", "))+"\n");
             }
         }
 
 
-        doc.append("----\n\n");
+        doc.append("|===\n\n");
         return doc.toString();
     }
 
@@ -279,16 +279,18 @@ public class WebSocketDocGenerator implements ApplicationRunner {
 
 
     private String buildJsonSchema(Class<?> clazz) {
-        StringBuilder json = new StringBuilder("{\n");
-        for (Field field : clazz.getDeclaredFields()) {
-            json.append("  \"").append(field.getName()).append("\": \"")
-                .append(field.getType().getSimpleName()).append("\",\n");
+        ObjectMapper mapper = new ObjectMapper();
+        // configure mapper, if necessary, then create schema generator
+        JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
+        try {
+            JsonSchema schema = schemaGen.generateSchema(clazz);
+            return mapper.writerWithDefaultPrettyPrinter()
+                                      .writeValueAsString(schema)+"\n";
+        
+        } catch (JsonProcessingException e) {
+            log.error("Error generating json schema for clazz "+clazz.getName(), e);
         }
-        if (json.lastIndexOf(",") > 0) {
-            json.deleteCharAt(json.lastIndexOf(","));
-        }
-        json.append("}\n");
-        return json.toString();
+        return "";
     }
 
     private boolean isSimpleType(Class<?> clazz) {
