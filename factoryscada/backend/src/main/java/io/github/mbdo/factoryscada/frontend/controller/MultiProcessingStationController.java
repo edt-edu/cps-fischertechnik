@@ -39,6 +39,14 @@ public class MultiProcessingStationController extends AbstractMachineController<
         return executeCommand(machineName, "setup", setupDTO);
     }
 
+    @MessageMapping("/{machineName}/command/process")
+    public String executeProcessCommand(
+            @DestinationVariable("machineName") String machineName,
+            @Valid @Payload GenericMachineCommandDTO<MultiProcessingStationMachine> setupDTO) {
+        log.info("Received request on /{}/command/process", machineName);
+        return executeCommand(machineName, "setup", setupDTO);
+    }
+
     @MessageMapping("/{machineName}/command/stop")
     public String receiveStopCommand(
             @DestinationVariable("machineName") String machineName,

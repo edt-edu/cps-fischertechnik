@@ -288,6 +288,10 @@
                                           eject payload via conveyor)'"
                                           [destinationSuffix]="'/command/process1'"></app-generic-no-param-command>
           }
+          @case ("process") {
+            <app-multiprocessing-process [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"></app-multiprocessing-process>
+          }
           @case ("stop") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"

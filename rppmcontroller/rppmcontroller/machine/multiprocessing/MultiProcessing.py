@@ -857,6 +857,7 @@ class MultiProcessing(Machine, TransitioningMachine):
             self.multiProcessingSensTurntablePosBelt))
 
         if (oven_time == 0 and saw_time == 0 and output == MPSOutput.OVEN):
+            runner.then_run(lambda: True, and_stay_for=0.5, info="Finishing command")
             return runner.run()
 
         # wait until payload is present

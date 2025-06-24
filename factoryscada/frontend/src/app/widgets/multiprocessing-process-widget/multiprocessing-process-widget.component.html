@@ -1,0 +1,41 @@
+<!-- Parameters -->
+<div class="form-group " [formGroup]="parametersForm">
+  <div class="flex justify-content-evenly flex-wrap">
+
+    @if (! (title === undefined)) {
+      <div class="form-group  flex-grow-1" formGroupName="ovenGroup">
+        <label>{{ title }}</label>
+      </div>
+    }
+
+    <div class="form-group  flex-grow-1" formGroupName="ovenGroup">
+      <label>Oven time</label>
+      <p-inputNumber
+        formControlName="oven"
+        inputId="minmax"
+        mode="decimal"
+        (onInput)="emitValues()"
+        [min]="0"/>
+    </div>
+    <div class="form-group   flex-grow-1"  formGroupName="sawGroup">
+      <label>Saw time</label>
+      <p-inputNumber
+        formControlName="saw"
+        inputId="minmax"
+        mode="decimal"
+        (onInput)="emitValues()"
+        [min]="0"/>
+    </div>
+    <div class="form-group flex-grow-1" formGroupName="outputGroup">
+      <label>Output</label>
+      <p-dropdown
+        [options]="outputs" 
+        optionLabel="name"
+        optionValue="code"  
+        formControlName="output" 
+        placeholder="Select output"
+        (onChange)="emitValues()">
+      </p-dropdown>
+    </div>
+  </div>
+</div>

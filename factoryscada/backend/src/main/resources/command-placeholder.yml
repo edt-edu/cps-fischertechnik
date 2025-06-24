@@ -435,6 +435,37 @@ commandPlaceholder:
                 "name": "PROCESS1",
                 "parameters": []
               }
+            } 
+        - name: "process"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1750753835245,
+              "message": {
+                  "jsonType": "COMMAND",
+                  "type": "MULTIPROCESSING",
+                  "outputId": 1,
+                  "name": "PROCESS",
+                  "parameters": [
+                      {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 3
+                          }
+                      },
+                      {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 0
+                          }
+                      },{
+                          "passableType": "MPSOUTPUT",
+                          "passable": {
+                              "output": "OVEN"
+                          }
+                      }
+                  ]
+              }
             }
         - name: "move_to_safe_position"
           placeholder: >
