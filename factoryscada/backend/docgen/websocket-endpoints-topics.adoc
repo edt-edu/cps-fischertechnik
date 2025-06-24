@@ -6,336 +6,336 @@
 |===
 | Implementing class | Incoming topic | Outgoing topic 
 
-|SortingLineController
+|SortingLineController.executeEjectCommand()
 |/sortingLine/{machineName}/command/eject
 |  
 
-|SortingLineController
+|SortingLineController.handleUnmappedMessage()
 |/sortingLine**
 |  
 
-|SortingLineController
+|SortingLineController.receiveStopCommand()
 |/sortingLine/{machineName}/command/stop
 |  
 
-|SortingLineController
+|SortingLineController.receiveDebugCommand()
 |/sortingLine/{machineName}/command/debug
 |  
 
-|SortingLineController
+|SortingLineController.getMachineStatus()
 |/sortingLine/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|SortingLineController
+|SortingLineController.getCommandStatus()
 |/sortingLine/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|FactoryScadaController
+|FactoryScadaController.getFactoryInstance()
 |/factory/instance
 |/topic/factory-instance
 
-|FactoryScadaController
+|FactoryScadaController.handleUnmappedMessage()
 |/factory**
 |  
 
-|FactoryScadaController
+|FactoryScadaController.getFactoryConfiguration()
 |/factory/configuration
 |/topic/factory-configuration
 
-|FactoryScadaController
+|FactoryScadaController.getCommandPlaceholder()
 |/factory/placeholder
 |/topic/command-placeholder
 
-|MultiProcessingStationController
+|MultiProcessingStationController.executeSetupCommand()
 |/multiProcessingStation/{machineName}/command/setup
 |  
 
-|MultiProcessingStationController
+|MultiProcessingStationController.handleUnmappedMessage()
 |/multiProcessingStation**
 |  
 
-|MultiProcessingStationController
+|MultiProcessingStationController.receiveStopCommand()
 |/multiProcessingStation/{machineName}/command/stop
 |  
 
-|MultiProcessingStationController
+|MultiProcessingStationController.receiveDebugCommand()
 |/multiProcessingStation/{machineName}/command/debug
 |  
 
-|MultiProcessingStationController
+|MultiProcessingStationController.getMachineStatus()
 |/multiProcessingStation/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|MultiProcessingStationController
+|MultiProcessingStationController.executeMoveToSafePositionCommand()
 |/multiProcessingStation/{machineName}/command/move_to_safe_position
 |  
 
-|MultiProcessingStationController
+|MultiProcessingStationController.executeProcess1Command()
 |/multiProcessingStation/{machineName}/command/process1
 |  
 
-|MultiProcessingStationController
+|MultiProcessingStationController.getCommandStatus()
 |/multiProcessingStation/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|ConveyorBeltController
+|ConveyorBeltController.handleUnmappedMessage()
 |/conveyorBelt**
 |  
 
-|ConveyorBeltController
+|ConveyorBeltController.receiveMoveNbStepsCommand()
 |/conveyorBelt/{machineName}/command/move_nb_steps
 |  
 
-|ConveyorBeltController
+|ConveyorBeltController.receiveStopCommand()
 |/conveyorBelt/{machineName}/command/stop
 |  
 
-|ConveyorBeltController
+|ConveyorBeltController.receiveDebugCommand()
 |/conveyorBelt/{machineName}/command/debug
 |  
 
-|ConveyorBeltController
+|ConveyorBeltController.getMachineStatus()
 |/conveyorBelt/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|ConveyorBeltController
+|ConveyorBeltController.receiveMoveCommand()
 |/conveyorBelt/{machineName}/command/move_out
 |  
 
-|ConveyorBeltController
+|ConveyorBeltController.receiveMoveToSensorCommand()
 |/conveyorBelt/{machineName}/command/move_to_sensor
 |  
 
-|ConveyorBeltController
+|ConveyorBeltController.getCommandStatus()
 |/conveyorBelt/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|PlcController
+|PlcController.getPlcConnectionStatus()
 |/plc/{plcName}/plc-connection
 |/topic/{plcName}/plc-connection-status
 
-|PlcController
+|PlcController.handleUnmappedMessage()
 |/plc**
 |  
 
-|IndexedLineController
+|IndexedLineController.handleUnmappedMessage()
 |/indexedLine**
 |  
 
-|IndexedLineController
+|IndexedLineController.receiveStopCommand()
 |/indexedLine/{machineName}/command/stop
 |  
 
-|IndexedLineController
+|IndexedLineController.receiveDebugCommand()
 |/indexedLine/{machineName}/command/debug
 |  
 
-|IndexedLineController
+|IndexedLineController.getMachineStatus()
 |/indexedLine/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|IndexedLineController
+|IndexedLineController.receiveMoveCommand()
 |/indexedLine/{machineName}/command/process1
 |  
 
-|IndexedLineController
+|IndexedLineController.getCommandStatus()
 |/indexedLine/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|VacuumGripperController
+|VacuumGripperController.executeSetupCommand()
 |/vacuumGripper/{machineName}/command/setup
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executePickCommand()
 |/vacuumGripper/{machineName}/command/pick
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeStatusRequest()
 |/vacuumGripper/{machineName}/request/status
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeOrderedMoveToCommand()
 |/vacuumGripper/{machineName}/command/ordered_move_to
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executePlaceCommand()
 |/vacuumGripper/{machineName}/command/place
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeRetractArmCommand()
 |/vacuumGripper/{machineName}/command/retract_arm
 |  
 
-|VacuumGripperController
+|VacuumGripperController.receiveDebugCommand()
 |/vacuumGripper/{machineName}/command/debug
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeMoveToSafePositionCommand()
 |/vacuumGripper/{machineName}/command/move_to_safe_position
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeReleaseCommand()
 |/vacuumGripper/{machineName}/command/release
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeMoveCommand()
 |/vacuumGripper/{machineName}/command/move
 |  
 
-|VacuumGripperController
+|VacuumGripperController.getCommandStatus()
 |/vacuumGripper/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|VacuumGripperController
+|VacuumGripperController.handleUnmappedMessage()
 |/vacuumGripper**
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeStopCommand()
 |/vacuumGripper/{machineName}/command/stop
 |  
 
-|VacuumGripperController
+|VacuumGripperController.executeGripCommand()
 |/vacuumGripper/{machineName}/command/grip
 |  
 
-|VacuumGripperController
+|VacuumGripperController.getMachineStatus()
 |/vacuumGripper/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|VacuumGripperController
+|VacuumGripperController.executeGoToPositionCommand()
 |/vacuumGripper/{machineName}/command/go_to_position
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeSetupCommand()
 |/highBayWarehouse/{machineName}/command/setup
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.receiveDebugCommand()
 |/highBayWarehouse/{machineName}/command/debug
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeConveyorBackwardCommand()
 |/highBayWarehouse/{machineName}/command/conveyor_backward
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeMoveToSafePositionCommand()
 |/highBayWarehouse/{machineName}/command/move_to_safe_position
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeGoToRowCommand()
 |/highBayWarehouse/{machineName}/command/go_to_row
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeHorizontalToCommand()
 |/highBayWarehouse/{machineName}/command/horizontal_to
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.getCommandStatus()
 |/highBayWarehouse/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|HighBayWarehouseController
+|HighBayWarehouseController.handleUnmappedMessage()
 |/highBayWarehouse**
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeCantileverBackwardCommand()
 |/highBayWarehouse/{machineName}/command/cantilever_backward
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeRetrieveCommand()
 |/highBayWarehouse/{machineName}/command/retrieve
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeStopCommand()
 |/highBayWarehouse/{machineName}/command/stop
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeGoToColumnCommand()
 |/highBayWarehouse/{machineName}/command/go_to_column
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.getMachineStatus()
 |/highBayWarehouse/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeConveyorStopCommand()
 |/highBayWarehouse/{machineName}/command/conveyor_stop
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeCantileverFrontendCommand()
 |/highBayWarehouse/{machineName}/command/cantilever_forward
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeConveyorFrontendCommand()
 |/highBayWarehouse/{machineName}/command/conveyor_forward
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeVerticalToCommand()
 |/highBayWarehouse/{machineName}/command/vertical_to
 |  
 
-|HighBayWarehouseController
+|HighBayWarehouseController.executeStoreCommand()
 |/highBayWarehouse/{machineName}/command/store
 |  
 
-|MissionOrchestratorController
+|MissionOrchestratorController.stopMission()
 |/factoryMission/command/stop
 |  
 
-|MissionOrchestratorController
+|MissionOrchestratorController.startMission()
 |/factoryMission/command/start/{missionName}
 |  
 
-|MissionOrchestratorController
+|MissionOrchestratorController.getMissionList()
 |/factoryMission/list
 |/topic/mission-configuration
 
-|MissionOrchestratorController
+|MissionOrchestratorController.handleUnmappedMessage()
 |/factoryMission**
 |  
 
-|MissionOrchestratorController
+|MissionOrchestratorController.getFactoryMissionsConfiguration()
 |/factoryMission/mission-configuration
 |/topic/mission-configuration
 
-|MissionOrchestratorController
+|MissionOrchestratorController.getMissionStatus()
 |/factoryMission/status
 |/topic/mission-status
 
-|PunchingMachineController
+|PunchingMachineController.handleUnmappedMessage()
 |/punchingMachine**
 |  
 
-|PunchingMachineController
+|PunchingMachineController.receiveStopCommand()
 |/punchingMachine/{machineName}/command/stop
 |  
 
-|PunchingMachineController
+|PunchingMachineController.receiveDebugCommand()
 |/punchingMachine/{machineName}/command/debug
 |  
 
-|PunchingMachineController
+|PunchingMachineController.getMachineStatus()
 |/punchingMachine/{machineName}/machine-status
 |/topic/{machineName}/machine-status
 
-|PunchingMachineController
+|PunchingMachineController.receivePunchCommand()
 |/punchingMachine/{machineName}/command/punch
 |  
 
-|PunchingMachineController
+|PunchingMachineController.getCommandStatus()
 |/punchingMachine/{machineName}/command-status
 |/topic/{machineName}/command-status
 
-|WebSocketPublisher
+|WebSocketPublisher.sendMachineStatus()
 | 
 |/topic/{machineName}/machine-status
-|WebSocketPublisher
+|WebSocketPublisher.sendPlcStatus()
 | 
 |/topic/{controllerName}/plc-connection-status
-|WebSocketPublisher
+|WebSocketPublisher.sendCommandStatus()
 | 
 |/topic/{machineName}/command-status
-|WebSocketPublisher
+|WebSocketPublisher.sendControllerFeedback()
 | 
 |/topic/controller-feedbacks
 |===
@@ -344,7 +344,7 @@
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveNbStepsCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveNbStepsCommand()`
 
 ==== Parameters
 
@@ -409,7 +409,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_out`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveCommand()`
 
 ==== Parameters
 
@@ -474,7 +474,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveStopCommand()`
 
 ==== Parameters
 
@@ -539,7 +539,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveMoveToSensorCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveToSensorCommand()`
 
 ==== Parameters
 
@@ -604,7 +604,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -615,7 +615,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -664,7 +664,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 ===  Incoming Topic: `/conveyorBelt/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -701,7 +701,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 ===  Incoming Topic: `/conveyorBelt**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -712,7 +712,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/factory/placeholder`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetCommandPlaceholder()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getCommandPlaceholder()`
 
 *Send To:* `/topic/command-placeholder`
 
@@ -734,7 +734,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 ===  Incoming Topic: `/factory/configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryConfiguration()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryConfiguration()`
 
 *Send To:* `/topic/factory-configuration`
 
@@ -794,7 +794,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 ===  Incoming Topic: `/factory/instance`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryInstance()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryInstance()`
 
 *Send To:* `/topic/factory-instance`
 
@@ -858,7 +858,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 ===  Incoming Topic: `/factory**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -869,7 +869,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_backward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteCantileverBackwardCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeCantileverBackwardCommand()`
 
 ==== Parameters
 
@@ -934,7 +934,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_forward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteCantileverFrontendCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeCantileverFrontendCommand()`
 
 ==== Parameters
 
@@ -999,7 +999,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_backward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorBackwardCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorBackwardCommand()`
 
 ==== Parameters
 
@@ -1064,7 +1064,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_forward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorFrontendCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorFrontendCommand()`
 
 ==== Parameters
 
@@ -1129,7 +1129,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteConveyorStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorStopCommand()`
 
 ==== Parameters
 
@@ -1194,7 +1194,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_column`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteGoToColumnCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeGoToColumnCommand()`
 
 ==== Parameters
 
@@ -1259,7 +1259,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_row`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteGoToRowCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeGoToRowCommand()`
 
 ==== Parameters
 
@@ -1324,7 +1324,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/horizontal_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteHorizontalToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeHorizontalToCommand()`
 
 ==== Parameters
 
@@ -1389,7 +1389,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/retrieve`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteRetrieveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeRetrieveCommand()`
 
 ==== Parameters
 
@@ -1454,7 +1454,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/setup`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteSetupCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeSetupCommand()`
 
 ==== Parameters
 
@@ -1519,7 +1519,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStopCommand()`
 
 ==== Parameters
 
@@ -1584,7 +1584,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteStoreCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStoreCommand()`
 
 ==== Parameters
 
@@ -1649,7 +1649,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/vertical_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteVerticalToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeVerticalToCommand()`
 
 ==== Parameters
 
@@ -1714,7 +1714,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/move_to_safe_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerexecuteMoveToSafePositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeMoveToSafePositionCommand()`
 
 ==== Parameters
 
@@ -1779,7 +1779,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -1790,7 +1790,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -1839,7 +1839,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -1876,7 +1876,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 ===  Incoming Topic: `/highBayWarehouse**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -1887,7 +1887,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/indexedLine/{machineName}/command/process1`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveMoveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveMoveCommand()`
 
 ==== Parameters
 
@@ -1952,7 +1952,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/indexedLine/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveStopCommand()`
 
 ==== Parameters
 
@@ -2017,7 +2017,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/indexedLine/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -2028,7 +2028,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/indexedLine/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -2077,7 +2077,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 ===  Incoming Topic: `/indexedLine/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -2114,7 +2114,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 ===  Incoming Topic: `/indexedLine**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2125,7 +2125,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/factoryMission/mission-configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -2182,7 +2182,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 ===  Incoming Topic: `/factoryMission/command/start/{missionName}`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstartMission()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.startMission()`
 
 ==== Parameters
 
@@ -2192,7 +2192,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/factoryMission/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstopMission()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.stopMission()`
 
 ==== Parameters
 
@@ -2201,7 +2201,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/factoryMission/status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
 
 *Send To:* `/topic/mission-status`
 
@@ -2214,7 +2214,7 @@ class java.lang.String
 
 ===  Incoming Topic: `/factoryMission/list`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -2271,7 +2271,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 ===  Incoming Topic: `/factoryMission**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2282,7 +2282,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerreceiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.receiveStopCommand()`
 
 ==== Parameters
 
@@ -2347,7 +2347,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/process1`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteProcess1Command()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeProcess1Command()`
 
 ==== Parameters
 
@@ -2412,7 +2412,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/setup`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteSetupCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeSetupCommand()`
 
 ==== Parameters
 
@@ -2477,7 +2477,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/move_to_safe_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerexecuteMoveToSafePositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeMoveToSafePositionCommand()`
 
 ==== Parameters
 
@@ -2542,7 +2542,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -2553,7 +2553,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -2602,7 +2602,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -2639,7 +2639,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 ===  Incoming Topic: `/multiProcessingStation**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2650,7 +2650,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/plc**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2661,7 +2661,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/plc/{plcName}/plc-connection`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.getPlcConnectionStatus()`
 
 *Send To:* `/topic/{plcName}/plc-connection-status`
 
@@ -2692,7 +2692,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlc
 
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receiveStopCommand()`
 
 ==== Parameters
 
@@ -2757,7 +2757,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/punch`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceivePunchCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receivePunchCommand()`
 
 ==== Parameters
 
@@ -2822,7 +2822,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -2833,7 +2833,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/punchingMachine/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -2882,7 +2882,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 ===  Incoming Topic: `/punchingMachine/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -2919,7 +2919,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 ===  Incoming Topic: `/punchingMachine**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2930,7 +2930,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/sortingLine/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerreceiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.receiveStopCommand()`
 
 ==== Parameters
 
@@ -2995,7 +2995,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/sortingLine/{machineName}/command/eject`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerexecuteEjectCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.executeEjectCommand()`
 
 ==== Parameters
 
@@ -3060,7 +3060,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/sortingLine/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -3071,7 +3071,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/sortingLine/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -3120,7 +3120,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 ===  Incoming Topic: `/sortingLine/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -3157,7 +3157,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 ===  Incoming Topic: `/sortingLine**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -3168,7 +3168,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/setup`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteSetupCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeSetupCommand()`
 
 ==== Parameters
 
@@ -3233,7 +3233,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeStopCommand()`
 
 ==== Parameters
 
@@ -3298,7 +3298,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/move_to_safe_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteMoveToSafePositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeMoveToSafePositionCommand()`
 
 ==== Parameters
 
@@ -3363,7 +3363,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/move`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteMoveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeMoveCommand()`
 
 ==== Parameters
 
@@ -3428,7 +3428,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecutePickCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePickCommand()`
 
 ==== Parameters
 
@@ -3493,7 +3493,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecutePlaceCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePlaceCommand()`
 
 ==== Parameters
 
@@ -3558,7 +3558,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/go_to_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteGoToPositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeGoToPositionCommand()`
 
 ==== Parameters
 
@@ -3623,7 +3623,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/request/status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteStatusRequest()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeStatusRequest()`
 
 ==== Parameters
 
@@ -3675,7 +3675,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/grip`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteGripCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeGripCommand()`
 
 ==== Parameters
 
@@ -3740,7 +3740,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/release`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteReleaseCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeReleaseCommand()`
 
 ==== Parameters
 
@@ -3805,7 +3805,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/retract_arm`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteRetractArmCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeRetractArmCommand()`
 
 ==== Parameters
 
@@ -3870,7 +3870,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/ordered_move_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerexecuteOrderedMoveToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeOrderedMoveToCommand()`
 
 ==== Parameters
 
@@ -3935,7 +3935,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerreceiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.receiveDebugCommand()`
 
 ==== Parameters
 
@@ -3946,7 +3946,7 @@ NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`
 
 *Send To:* `/topic/{machineName}/command-status`
 
@@ -3995,7 +3995,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 ===  Incoming Topic: `/vacuumGripper/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`
 
 *Send To:* `/topic/{machineName}/machine-status`
 
@@ -4032,7 +4032,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 ===  Incoming Topic: `/vacuumGripper**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllerhandleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -4149,7 +4149,7 @@ Payload: `CommandStatusDTO`
 }
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/conveyorBelt/{machineName}/command-status")`
 
@@ -4200,7 +4200,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/conveyorBelt/{machineName}/machine-status")`
 
@@ -4239,7 +4239,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 === Outgoing Topic: `/topic/command-placeholder`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetCommandPlaceholder()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getCommandPlaceholder()`
 
 *Request Mapping:* `@MessageMapping("/factory/placeholder")`
 
@@ -4263,7 +4263,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 === Outgoing Topic: `/topic/factory-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryConfiguration()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryConfiguration()`
 
 *Request Mapping:* `@MessageMapping("/factory/configuration")`
 
@@ -4325,7 +4325,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 === Outgoing Topic: `/topic/factory-instance`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControllergetFactoryInstance()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryInstance()`
 
 *Request Mapping:* `@MessageMapping("/factory/instance")`
 
@@ -4391,7 +4391,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/highBayWarehouse/{machineName}/command-status")`
 
@@ -4442,7 +4442,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/highBayWarehouse/{machineName}/machine-status")`
 
@@ -4481,7 +4481,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/indexedLine/{machineName}/command-status")`
 
@@ -4532,7 +4532,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/indexedLine/{machineName}/machine-status")`
 
@@ -4571,7 +4571,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 === Outgoing Topic: `/topic/mission-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
 
 *Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
 
@@ -4630,7 +4630,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 === Outgoing Topic: `/topic/mission-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
 
 *Request Mapping:* `@MessageMapping("/factoryMission/status")`
 
@@ -4650,7 +4650,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 === Outgoing Topic: `/topic/mission-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
 
 *Request Mapping:* `@MessageMapping("/factoryMission/list")`
 
@@ -4709,7 +4709,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/multiProcessingStation/{machineName}/command-status")`
 
@@ -4760,7 +4760,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/multiProcessingStation/{machineName}/machine-status")`
 
@@ -4799,7 +4799,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 === Outgoing Topic: `/topic/{plcName}/plc-connection-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.getPlcConnectionStatus()`
 
 *Request Mapping:* `@MessageMapping("/plc/{plcName}/plc-connection")`
 
@@ -4832,7 +4832,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlc
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/punchingMachine/{machineName}/command-status")`
 
@@ -4883,7 +4883,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/punchingMachine/{machineName}/machine-status")`
 
@@ -4922,7 +4922,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/sortingLine/{machineName}/command-status")`
 
@@ -4973,7 +4973,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/sortingLine/{machineName}/machine-status")`
 
@@ -5012,7 +5012,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 === Outgoing Topic: `/topic/{machineName}/command-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetCommandStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`
 
 *Request Mapping:* `@MessageMapping("/vacuumGripper/{machineName}/command-status")`
 
@@ -5063,7 +5063,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperControllergetMachineStatus()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`
 
 *Request Mapping:* `@MessageMapping("/vacuumGripper/{machineName}/machine-status")`
 

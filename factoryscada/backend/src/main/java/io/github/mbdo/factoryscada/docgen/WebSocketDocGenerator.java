@@ -86,7 +86,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
             for( Entry<String, Set<String>> methodMap : methodToIncomingTopicMap.get(className).entrySet()) {
                 String methodName = methodMap.getKey();
                 for (String topic : methodMap.getValue()) {
-                    doc.append("|"+className+"\n");
+                    doc.append("|"+className+"."+methodName+"()\n");
                     doc.append("|"+topic+"\n");
                     if(methodToOutgoingTopicMap.containsKey(className) ){
                         Set<String> topics = methodToOutgoingTopicMap.get(className).get(methodName);
@@ -106,7 +106,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         // process remaining outgoing topics
         for (String className : methodToOutgoingTopicMap.keySet()) {
             for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
-                    doc.append("|"+className+"\n");
+                    doc.append("|"+className+"."+methodMap.getKey()+"()\n");
                     doc.append("| \n");
                     doc.append("|"+methodMap.getValue().stream().collect(Collectors.joining(", "))+"\n");
             }
@@ -145,7 +145,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                    
 
                     doc.append("===  Incoming Topic: `").append(mappingPath).append("`\n\n");
-                    doc.append("Declared in `").append(clazz.getName()).append(method.getName()).append("()`\n\n");
+                    doc.append("Declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
                     this.addTopicInMap(this.methodToIncomingTopicMap, clazz.getSimpleName(), method.getName(), mappingPath);
                     if(method.isAnnotationPresent(SendTo.class)) {
                         doc.append("*Send To:* `").append(sendToPath).append("`\n\n");
@@ -241,7 +241,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     
 
                     doc.append("=== Outgoing Topic: `").append(sendToPath).append("`\n\n");
-                    doc.append("declared in `").append(clazz.getName()).append(method.getName()).append("()`\n\n");
+                    doc.append("declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
 
                     this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), sendToPath);
                     doc.append("*Request Mapping:* `@MessageMapping(\"").append(mappingPath).append("\")`\n\n");
