@@ -389,7 +389,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -454,7 +454,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -519,7 +519,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -584,7 +584,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -914,7 +914,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -979,7 +979,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1044,7 +1044,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1109,7 +1109,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1174,7 +1174,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1239,7 +1239,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1304,7 +1304,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1369,7 +1369,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1434,7 +1434,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1499,7 +1499,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1564,7 +1564,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1629,7 +1629,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1694,7 +1694,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1759,7 +1759,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1932,7 +1932,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -1997,7 +1997,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2123,9 +2123,41 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 NOTE: This endpoint does not send a response back via a topic.
 
-===  Incoming Topic: `/factoryMission/mission-configuration`
+===  Incoming Topic: `/factoryMission/command/start/{missionName}`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstartMission()`
+
+==== Parameters
+
+- `missionName` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstopMission()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+===  Incoming Topic: `/factoryMission/status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+class java.lang.String
+
+===  Incoming Topic: `/factoryMission/list`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -2180,41 +2212,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 }
 ----
 
-===  Incoming Topic: `/factoryMission/command/start/{missionName}`
+===  Incoming Topic: `/factoryMission/mission-configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstartMission()`
-
-==== Parameters
-
-- `missionName` (String)
-
-NOTE: This endpoint does not send a response back via a topic.
-
-===  Incoming Topic: `/factoryMission/command/stop`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllerstopMission()`
-
-==== Parameters
-
-
-NOTE: This endpoint does not send a response back via a topic.
-
-===  Incoming Topic: `/factoryMission/status`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
-
-*Send To:* `/topic/mission-status`
-
-==== Parameters
-
-
-==== Response Payload
-
-class java.lang.String
-
-===  Incoming Topic: `/factoryMission/list`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -2327,7 +2327,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2392,7 +2392,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2457,7 +2457,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2522,7 +2522,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2648,17 +2648,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 NOTE: This endpoint does not send a response back via a topic.
 
-===  Incoming Topic: `/plc**`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllerhandleUnmappedMessage()`
-
-==== Parameters
-
-- `destination` (String)
-- `messageContent` (String)
-
-NOTE: This endpoint does not send a response back via a topic.
-
 ===  Incoming Topic: `/plc/{plcName}/plc-connection`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlcConnectionStatus()`
@@ -2689,6 +2678,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllergetPlc
   }
 }
 ----
+
+===  Incoming Topic: `/plc**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcControllerhandleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
 
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/stop`
 
@@ -2737,7 +2737,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2802,7 +2802,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -2975,7 +2975,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3040,7 +3040,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3213,7 +3213,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3278,7 +3278,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3343,7 +3343,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3408,7 +3408,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3473,7 +3473,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3538,7 +3538,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3603,7 +3603,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3720,7 +3720,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3785,7 +3785,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3850,7 +3850,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -3915,7 +3915,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
             "properties" : {
               "passableType" : {
                 "type" : "string",
-                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED" ]
+                "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT" ]
               },
               "passable" : {
                 "type" : "object",
@@ -4569,11 +4569,31 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 }
 ----
 
+=== Outgoing Topic: `/topic/mission-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/status")`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "string"
+}
+----
+
 === Outgoing Topic: `/topic/mission-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
 
-*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
+*Request Mapping:* `@MessageMapping("/factoryMission/list")`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -4628,31 +4648,11 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 }
 ----
 
-=== Outgoing Topic: `/topic/mission-status`
-
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionStatus()`
-
-*Request Mapping:* `@MessageMapping("/factoryMission/status")`
-
-*Send To:* `/topic/mission-status`
-
-==== Parameters
-
-
-==== Response Payload
-
-[source,json]
-----
-{
-  "type" : "string"
-}
-----
-
 === Outgoing Topic: `/topic/mission-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetMissionList()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorControllergetFactoryMissionsConfiguration()`
 
-*Request Mapping:* `@MessageMapping("/factoryMission/list")`
+*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
 
 *Send To:* `/topic/mission-configuration`
 

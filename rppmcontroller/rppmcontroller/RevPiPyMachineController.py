@@ -292,14 +292,24 @@ class RevPiPyMachineController:
                                     ret = func(m, box[0], box[1])
                                 else:
                                     logging.warning(f"unsupported number of parameters: {i}")
-                            elif func is not None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE" or inputBufferItem.message.type == "MULTIPROCESSING"):
+                            elif func is not None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE"):
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
                                 if i == 0:
                                     ret = func(m)
                                 if i == 1:
                                     ret = func(m, color[0])
-                            elif inputBufferItem.message.type == "PUNCHING":
+                            elif func is not None and inputBufferItem.message.type == "MULTIPROCESSING":
+                                parameters = inputBufferItem.message.parameters
+                                i = len(parameters)
+                                if i == 0:
+                                    ret = func(m)
+                                elif i == 3:
+                                    ret = func(m, parameters[0], parameters[1], parameters[2])
+                                else:
+                                    logging.warning(f"unsupported number of parameters: {i}")
+                                    logging.warning(parameters)
+                            elif func is not None and inputBufferItem.message.type == "PUNCHING":
                                ret = func(m)
                             elif func is not None and (inputBufferItem.message.type == "CONVEYOR"):
                                 mix = inputBufferItem.message.parameters

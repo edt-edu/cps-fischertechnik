@@ -7,6 +7,7 @@ from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.MPSOutput import MPSOutput
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
@@ -842,3 +843,161 @@ class MultiProcessing(Machine, TransitioningMachine):
             return runner.run()
         else :
             return self.setup_Command()
+        
+    def process_Command(self, oven_time: int, saw_time: int, output: MPSOutput) -> Runner:
+        """
+        Execute process according to oven_time (time in oven in sec), saw_time (time in saw in sec),
+        and output the product on the specified output
+        :return: A Runner performing the process
+        """
+        runner = self.create_runner()
+        config = MultiProcessingConfig(turn_table_position=TurnTablePosition.from_actuators(
+            self.multiProcessingSensTurntablePosVacuum,
+            self.multiProcessingSensTurntablePosSaw,
+            self.multiProcessingSensTurntablePosBelt))
+
+        if (oven_time == 0 and saw_time == 0 and output == MPSOutput.OVEN):
+            return runner.run()
+
+        # wait until payload is present
+        config.turn_table_position = TurnTablePosition.VACUUM
+        runner.then_goto(config,
+                         until=lambda: not self.multiProcessingSensOven, and_stay_for=0.5, info="waiting for payload")
+        
+        #Oven process
+        if (oven_time > 0):
+            # open oven door
+            config.oven_door_open = True
+            runner.then_goto(config, and_stay_for=0.2, info="open oven door")
+
+            # move payload into oven
+            config.oven_feeder_expanded = False
+            runner.then_goto(config, info="move payload into oven")
+
+            # activate oven for a few seconds
+            config.oven_door_open = False
+            config.oven_lamp_on = True
+            runner.then_goto(config, and_stay_for=oven_time, info="heat payload")
+
+            # deactivate oven
+            config.oven_lamp_on = False
+            config.oven_feeder_expanded = True
+            runner.then_goto(config, info="move out of oven")
+
+        #End the process if no sawing time and output at oven
+        if (saw_time == 0 and output == MPSOutput.OVEN):
+            return runner.run()
+        
+        # moving arm to oven
+        config.turn_table_position = TurnTablePosition.VACUUM
+        config.vacuum_arm_at_oven = True
+        runner.then_goto(config, info="move arm to oven")
+
+        # lower arm
+        config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5, info="lower arm")
+
+        # pickup
+        config.vacuum_valve_active = True
+        runner.then_goto(config, and_stay_for=0.5, info="pickup payload")
+
+        # raise arm
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5, info="raise arm")
+
+        # move payload to turn table
+        config.vacuum_arm_at_oven = False
+        runner.then_goto(config, info="go to turn table")
+
+        # lower arm
+        config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5, info="lower arm")
+
+        # drop of payload carefully
+        config.vacuum_valve_active = False
+        runner.then_goto(config, and_stay_for=1.0, info="drop of payload")
+
+        # raise arm
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5, info="raise arm")
+        
+        #If no saw time, output on the conveyor
+        if (saw_time == 0):
+            # turn to conveyor
+            config.turn_table_position = TurnTablePosition.CONVEYOR
+            runner.then_goto(config, info="turn to conveyor")
+
+            # drop at conveyor
+            config.conveyor_active = True
+            config.conveyor_feeder_active = True
+            runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor, and_stay_for=0.1, info="eject payload")
+
+            # stop conveyor and feeder
+            config.conveyor_active = False
+            config.conveyor_feeder_active = False
+            runner.then_goto(config, info="stopping feeder and conveyor")
+
+            return runner.run()
+
+        # turn to saw
+        config.turn_table_position = TurnTablePosition.SAW
+        runner.then_goto(config, info="turn to saw")
+
+        # saw for a few seconds
+        config.saw_active = True
+        runner.then_goto(config, and_stay_for=saw_time, info="saw payload")
+
+        #If output on conveyor, move payload to conveyor
+        if (output == MPSOutput.CONVEYOR):
+            # drop at conveyor
+            config.saw_active = False
+            config.turn_table_position = TurnTablePosition.CONVEYOR
+            config.conveyor_active = True
+            config.conveyor_feeder_active = True  # will only activate once turntable has turned
+            runner.then_goto(config, until=lambda: not self.multiProcessingSensEndConveyor, and_stay_for=0.1, info="eject payload")
+
+            # stop conveyor and feeder
+            config.conveyor_active = False
+            config.conveyor_feeder_active = False
+            runner.then_goto(config, info="stopping feeder and conveyor")
+
+            return runner.run()
+    
+        #Return the payload on oven output
+        config.saw_active = False
+        config.turn_table_position = TurnTablePosition.VACUUM
+        runner.then_goto(config, info="turn payload to vacuum")
+
+        # lower arm
+        config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5, info="lower arm")
+
+        # pickup
+        config.vacuum_valve_active = True
+        runner.then_goto(config, and_stay_for=0.5, info="pickup payload")
+
+        # raise arm
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5, info="raise arm")
+
+        # moving arm to oven
+        config.vacuum_arm_at_oven = True
+        runner.then_goto(config, info="move arm to oven")
+
+        # lower arm
+        config.vacuum_arm_lowered = True
+        runner.then_goto(config, and_stay_for=0.5, info="lower arm")
+
+        # drop of payload carefully
+        config.vacuum_valve_active = False
+        runner.then_goto(config, and_stay_for=1.0, info="drop of payload")
+
+        # raise arm
+        config.vacuum_arm_lowered = False
+        runner.then_goto(config, and_stay_for=0.5, info="raise arm")
+
+        # move payload to turn table
+        config.vacuum_arm_at_oven = False
+        runner.then_goto(config, info="go back to turn table")
+
+        return runner.run()
