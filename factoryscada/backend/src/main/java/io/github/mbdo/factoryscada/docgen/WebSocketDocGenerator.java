@@ -86,12 +86,14 @@ public class WebSocketDocGenerator implements ApplicationRunner {
             for( Entry<String, Set<String>> methodMap : methodToIncomingTopicMap.get(className).entrySet()) {
                 String methodName = methodMap.getKey();
                 for (String topic : methodMap.getValue()) {
-                    doc.append("|"+className+"\n");
-                    doc.append("|"+topic+"\n");
+                    doc.append("|"+className+"."+methodName+"()\n");
+                    doc.append("|<<incoming_"+toAsciiDocAnchor(topic)+","+topic+">>\n");
                     if(methodToOutgoingTopicMap.containsKey(className) ){
                         Set<String> topics = methodToOutgoingTopicMap.get(className).get(methodName);
                         if(topics !=null) {
-                            doc.append("|"+topics.stream().collect(Collectors.joining(", "))+"\n");
+                            doc.append("|"+topics.stream()
+                                .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+stopic+">>")
+                                .collect(Collectors.joining(", "))+"\n");
                         } else {
                             doc.append("|  \n");
                         }
@@ -106,7 +108,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         // process remaining outgoing topics
         for (String className : methodToOutgoingTopicMap.keySet()) {
             for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
-                    doc.append("|"+className+"\n");
+                    doc.append("|"+className+"."+methodMap.getKey()+"()\n");
                     doc.append("| \n");
                     doc.append("|"+methodMap.getValue().stream().collect(Collectors.joining(", "))+"\n");
             }
@@ -144,8 +146,9 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     }
                    
 
+                    doc.append("[[incoming_"+toAsciiDocAnchor(mappingPath)+"]]\n");
                     doc.append("===  Incoming Topic: `").append(mappingPath).append("`\n\n");
-                    doc.append("Declared in `").append(clazz.getName()).append(method.getName()).append("()`\n\n");
+                    doc.append("Declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
                     this.addTopicInMap(this.methodToIncomingTopicMap, clazz.getSimpleName(), method.getName(), mappingPath);
                     if(method.isAnnotationPresent(SendTo.class)) {
                         doc.append("*Send To:* `").append(sendToPath).append("`\n\n");
@@ -239,9 +242,9 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     SendTo sendTo = method.getAnnotation(SendTo.class);
                     sendToPath = String.join(", ", sendTo.value());
                     
-
+                    doc.append("[[outgoing_"+toAsciiDocAnchor(sendToPath)+"]]\n");
                     doc.append("=== Outgoing Topic: `").append(sendToPath).append("`\n\n");
-                    doc.append("declared in `").append(clazz.getName()).append(method.getName()).append("()`\n\n");
+                    doc.append("declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
 
                     this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), sendToPath);
                     doc.append("*Request Mapping:* `@MessageMapping(\"").append(mappingPath).append("\")`\n\n");
@@ -292,6 +295,21 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         }
         return "";
     }
+
+    public String toAsciiDocAnchor(String input) {
+    if (input == null) return "";
+
+    // Convert to lowercase
+    String anchor = input.toLowerCase();
+
+    // Replace all sequences of non-alphanumeric characters with a dash
+    anchor = anchor.replaceAll("[^a-z0-9]+", "-");
+
+    // Remove leading/trailing dashes
+    anchor = anchor.replaceAll("(^-+)|(-+$)", "");
+
+    return anchor;
+}
 
     private boolean isSimpleType(Class<?> clazz) {
     return clazz.isPrimitive() ||
