@@ -87,11 +87,13 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                 String methodName = methodMap.getKey();
                 for (String topic : methodMap.getValue()) {
                     doc.append("|"+className+"."+methodName+"()\n");
-                    doc.append("|"+topic+"\n");
+                    doc.append("|<<incoming_"+toAsciiDocAnchor(topic)+","+topic+">>\n");
                     if(methodToOutgoingTopicMap.containsKey(className) ){
                         Set<String> topics = methodToOutgoingTopicMap.get(className).get(methodName);
                         if(topics !=null) {
-                            doc.append("|"+topics.stream().collect(Collectors.joining(", "))+"\n");
+                            doc.append("|"+topics.stream()
+                                .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+stopic+">>")
+                                .collect(Collectors.joining(", "))+"\n");
                         } else {
                             doc.append("|  \n");
                         }
@@ -144,6 +146,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     }
                    
 
+                    doc.append("[[incoming_"+toAsciiDocAnchor(mappingPath)+"]]\n");
                     doc.append("===  Incoming Topic: `").append(mappingPath).append("`\n\n");
                     doc.append("Declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
                     this.addTopicInMap(this.methodToIncomingTopicMap, clazz.getSimpleName(), method.getName(), mappingPath);
@@ -239,7 +242,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     SendTo sendTo = method.getAnnotation(SendTo.class);
                     sendToPath = String.join(", ", sendTo.value());
                     
-
+                    doc.append("[[outgoing_"+toAsciiDocAnchor(sendToPath)+"]]\n");
                     doc.append("=== Outgoing Topic: `").append(sendToPath).append("`\n\n");
                     doc.append("declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
 
@@ -292,6 +295,21 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         }
         return "";
     }
+
+    public String toAsciiDocAnchor(String input) {
+    if (input == null) return "";
+
+    // Convert to lowercase
+    String anchor = input.toLowerCase();
+
+    // Replace all sequences of non-alphanumeric characters with a dash
+    anchor = anchor.replaceAll("[^a-z0-9]+", "-");
+
+    // Remove leading/trailing dashes
+    anchor = anchor.replaceAll("(^-+)|(-+$)", "");
+
+    return anchor;
+}
 
     private boolean isSimpleType(Class<?> clazz) {
     return clazz.isPrimitive() ||
