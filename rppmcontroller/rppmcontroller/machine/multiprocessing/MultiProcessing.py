@@ -76,13 +76,13 @@ class MultiProcessing(Machine, TransitioningMachine):
                self.__multiProcessingValveFeeder or
                self.is_executing_runner)
         
-        #if (self.executing_runner == None):
-        #    routine = ""
-        #else:
-        #    routine = str(self.executing_runner)
+        if (self.executing_runner == None):
+            routine = "None"
+        else:
+            routine = str(self.executing_runner)
         
         # log isexecuting and debug info only if message has changed
-        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | \n\tActuators= {self.actuatorStatusString()}'
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
@@ -359,17 +359,21 @@ class MultiProcessing(Machine, TransitioningMachine):
             self.multiProcessingActRotCounterclockwise = True
 
     def sensorStatusString(self) -> str:
-        return f"TT[{self.multiProcessingSensTurntablePosVacuum}, {self.multiProcessingSensTurntablePosBelt}, {self.multiProcessingSensTurntablePosSaw}], " + \
-            f"LB[{self.multiProcessingSensEndConveyor}, {self.multiProcessingSensOven}], " + \
-            f"VG[{self.multiProcessingSensVacuumGripperAtTurntable}, {self.multiProcessingSensVacuumGripperAtOven}], " + \
-            f"OF[{self.multiProcessingSensOvenFeederIn}, {self.multiProcessingSensOvenFeederOut}]"
+        s = lambda bool: "T" if bool else "F"
+
+        return f"TurnTab[{s(self.multiProcessingSensTurntablePosVacuum)}, {s(self.multiProcessingSensTurntablePosBelt)}, {s(self.multiProcessingSensTurntablePosSaw)}], " + \
+               f"Sensors[{s(self.multiProcessingSensEndConveyor)}, {s(self.multiProcessingSensOven)}], " + \
+               f"VacGrip[{s(self.multiProcessingSensVacuumGripperAtTurntable)}, {s(self.multiProcessingSensVacuumGripperAtOven)}], " + \
+               f"OvenFeed[{s(self.multiProcessingSensOvenFeederIn)}, {s(self.multiProcessingSensOvenFeederOut)}]"
 
     def actuatorStatusString(self) -> str:
-        return f"TT[{self.multiProcessingActRotClockwise}, {self.multiProcessingActRotCounterclockwise}], " + \
-            f"{self.multiProcessingActConveyorForward}, {self.multiProcessingActSaw}, " + \
-            f"O[{self.multiProcessingActOvenInward}, {self.multiProcessingActOvenOutward}], " + \
-            f"VG[{self.__multiProcessingActGripperToOven}, {self.__multiProcessingActGripperToTurntable}], " + \
-            f"{self.__multiProcessingOvenLight}, {self.__multiProcessingCompressor}, {self.__multiProcessingValveVacuum}, {self.__multiProcessingActLowerValve},{self.__multiProcessingValveOvenDoor}, {self.__multiProcessingValveFeeder}"
+        s = lambda bool: "T" if bool else "F"
+
+        return f"TurnTab[{s(self.multiProcessingActRotClockwise)}, {s(self.multiProcessingActRotCounterclockwise)}], " + \
+               f"ConvSaw[{s(self.multiProcessingActConveyorForward)}, {s(self.multiProcessingActSaw)}], " + \
+               f"Oven[{s(self.multiProcessingActOvenInward)}, {s(self.multiProcessingActOvenOutward)}, {s(self.__multiProcessingOvenLight)}], " + \
+               f"VacGrip[{s(self.__multiProcessingActGripperToOven)}, {s(self.__multiProcessingActGripperToTurntable)}], " + \
+               f"CompValv[{s(self.__multiProcessingCompressor)}, {s(self.__multiProcessingValveVacuum)}, {s(self.__multiProcessingActLowerValve)}, {s(self.__multiProcessingValveOvenDoor)}, {s(self.__multiProcessingValveFeeder)}]"
 
     def inputStatus(self) -> Dict[str, Any]:
         status = {

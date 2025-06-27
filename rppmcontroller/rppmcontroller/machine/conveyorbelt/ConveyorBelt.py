@@ -25,8 +25,14 @@ class ConveyorBelt(Machine, TransitioningMachine):
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         res = self.__conveyorActForward or self.__conveyorActBackward
+        
+        if (self.executing_runner == None):
+            routine = "None"
+        else:
+            routine = str(self.executing_runner)
+        
         # log isexecuting and debug info only if message has changed
-        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
@@ -106,10 +112,12 @@ class ConveyorBelt(Machine, TransitioningMachine):
         return self.__counter.counter
 
     def sensorStatusString(self) -> str:
-        return f"[{self.conveyorSensFeed}, {self.conveyorSensSwap}], {self.conveyorSensImpulse}"
+        s = lambda bool: "T" if bool else "F"
+        return f"Sensors[{s(self.conveyorSensFeed)}, {s(self.conveyorSensSwap)}, {s(self.conveyorSensImpulse)}]"
 
     def actuatorStatusString(self) -> str:
-        return f"[{self.conveyorActForward}, {self.conveyorActBackward}]"
+        s = lambda bool: "T" if bool else "F"
+        return f"Conveyor[{s(self.conveyorActForward)}, {s(self.conveyorActBackward)}]"
 
     def inputStatus(self) -> Dict[str, Any]:
         status = {
