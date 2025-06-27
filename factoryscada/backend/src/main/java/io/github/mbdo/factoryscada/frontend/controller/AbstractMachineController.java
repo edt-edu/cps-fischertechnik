@@ -57,7 +57,8 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 status.setCurrentCommandRawJSON(message);
                 this.factoryScada.getMachineLastCommandStatusMap().put(machineName, status);
                 // publish to frontend
-                this.factoryScada.getWebSocketPublisher().sendCommandStatus(machineName, status);
+                this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
+    					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
                 
                 
             } catch (ProtocolException e) {
@@ -89,7 +90,8 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 status.setCurrentCommandRawJSON(mapper.writeValueAsString(commandDTO));
                 this.factoryScada.getMachineLastCommandStatusMap().put(machineName, status);
                 // publish to frontend
-                this.factoryScada.getWebSocketPublisher().sendCommandStatus(machineName, status);
+                this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
+    					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
                 
             } else {
                 log.warn("Machine '{}' not found", machineName);

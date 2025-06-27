@@ -1,0 +1,13 @@
+<p-fieldset legend="{{ machine?.name }} - PROCESS">
+
+  <p style="margin-bottom: 2em;">Execute the process. Oven time is the time of heating (0 means no heating). Saw time is the time of sawing (0 means no sawing).</p>
+
+  <app-multiprocessing-process-widget (onValuesChanged)="handleValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+
+</p-fieldset>
+

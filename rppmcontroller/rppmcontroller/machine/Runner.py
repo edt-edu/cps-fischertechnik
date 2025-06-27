@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import typing
 from abc import abstractmethod
 from copy import deepcopy
@@ -41,6 +42,12 @@ class TransitioningMachine:
     @property
     def is_executing_runner(self) -> bool:
         return any(runner.running for runner in self.__runners)
+    
+    @property
+    def executing_runner(self) -> Optional[Subroutine]:
+        for runner in self.__runners:
+            if runner.running:
+                return runner.__routine[runner.__routine_index]
 
 
 class Subroutine:
@@ -267,7 +274,7 @@ class Runner(CycleStepResult):
                             f"{len(self.__routine)}: {sub_routine}")
         self.info = f"running {sub_routine_info}"
 
-        # logging.debug(self.info)
+        #logging.debug(self.info)
 
         # call the sub routine
         res = sub_routine()
