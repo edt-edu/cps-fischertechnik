@@ -84,27 +84,26 @@ class VacuumGripper(Machine, TransitioningMachine):
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
-
         res = (self.isProcessingSequence() or
-                self.__vacuumActVerticalUp or
-                self.__vacuumActVerticalDown or
-                self.__vacuumActRotRight or
-                self.__vacuumActRotLeft or
-                self.__vacuumActArmOut or
-                self.__vacuumActArmIn or
-                self.__vacuumActCompressorOn or
-                self.__vacuumActValve or
-                self.nbMinimumRequiredExecutionCycles != 0 or
-                self.is_executing_runner)
-
-        # log isexecuting and debug info only if message has changed
-        psContext = self.processSequenceContext
-        if psContext is not None:
-            processSequencContextStatus = f'| {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} '
+               self.__vacuumActVerticalUp or
+               self.__vacuumActVerticalDown or
+               self.__vacuumActRotRight or
+               self.__vacuumActRotLeft or
+               self.__vacuumActArmOut or
+               self.__vacuumActArmIn or
+               self.__vacuumActCompressorOn or
+               self.__vacuumActValve or
+               self.nbMinimumRequiredExecutionCycles != 0 or
+               self.is_executing_runner)
+        
+        if (self.executing_runner == None):
+            routine = "None"
         else:
-            processSequencContextStatus = ''
-        isExecuting_log = f'isExecuting({self.id})={res} {processSequencContextStatus}| Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()} | nbMinimumRequiredExecutionCycles={self.nbMinimumRequiredExecutionCycles} '
-        if isExecuting_log != self.previous_isExecuting_log:
+            routine = str(self.executing_runner)
+        
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
 
@@ -232,10 +231,18 @@ class VacuumGripper(Machine, TransitioningMachine):
         self.__vacuumActRotLeft = value
 
     def sensorStatusString(self) -> str:
-        return f"[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}][{self.vacuumSensVerticalEndUp}, {self.vacuumSensRotEnd}, {self.vacuumSensArmEndIn}]"
+        s = lambda bool: "T" if bool else "F"
+
+        return f"CountVRH[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}], " + \
+               f"SensVRH[{s(self.vacuumSensVerticalEndUp)}, {s(self.vacuumSensRotEnd)}, {s(self.vacuumSensArmEndIn)}]"
 
     def actuatorStatusString(self) -> str:
-        return f"[{self.vacuumActVerticalUp}, {self.vacuumActVerticalDown}], [{self.vacuumActRotRight}, {self.vacuumActRotLeft}], [{self.vacuumActArmOut}, {self.vacuumActArmIn}], [{self.vacuumActCompressorOn}, {self.vacuumActValve}]"
+        s = lambda bool: "T" if bool else "F"
+        
+        return f"MoveVert[{s(self.vacuumActVerticalUp)}, {s(self.vacuumActVerticalDown)}], " + \
+               f"MoveRot[{s(self.vacuumActRotRight)}, {s(self.vacuumActRotLeft)}], " + \
+               f"MoveHor[{s(self.vacuumActArmOut)}, {s(self.vacuumActArmIn)}], " + \
+               f"CompValv[{s(self.vacuumActCompressorOn)}, {s(self.vacuumActValve)}]"
 
 
     def inputStatus(self) -> Dict[str, Any]:

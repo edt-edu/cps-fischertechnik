@@ -165,27 +165,26 @@ class HighBay(Machine, TransitioningMachine):
     def isInitialized(self) -> bool:
         return self.__is_initialized
 
-    def __isExecuting(self) -> bool:
-        return (
-            self.__highbayActUp or
-            self.__highbayActDown or
-            self.__highbayActConveyorForward or
-            self.__highbayActConveyorBackward or
-            self.__highbayActHorizontalToConveyor or
-            self.__highbayActHorizontalToRack or
-            self.__highbayActCantileverForward or
-            self.__highbayActCantileverBackward or
-            self.is_executing_runner)
-
-    @property
+    @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
-        res = self.__isExecuting()
-
-        # log isExecuting and debug info only if message has changed
-        isExecuting_log = (f'isExecuting({self.id})={res} | Sensors='
-                           f'{self.sensorStatusString()} | Actuators= '
-                           f'{self.actuatorStatusString()}')
-        if isExecuting_log != self.previous_isExecuting_log:
+        res = (self.__highbayActUp or
+               self.__highbayActDown or
+               self.__highbayActConveyorForward or
+               self.__highbayActConveyorBackward or
+               self.__highbayActHorizontalToConveyor or
+               self.__highbayActHorizontalToRack or
+               self.__highbayActCantileverForward or
+               self.__highbayActCantileverBackward or
+               self.is_executing_runner)
+        
+        if (self.executing_runner == None):
+            routine = "None"
+        else:
+            routine = str(self.executing_runner)
+        
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
 
@@ -326,21 +325,18 @@ class HighBay(Machine, TransitioningMachine):
         self.__highbaySensVerticalEncoderCounter = value
 
     def sensorStatusString(self) -> str:
-        return (f" (CNT: [{self.highbaySensHorizontalEncoderCounter}, "
-                f"{self.highbaySensVerticalEncoderCounter}], "
-                f"CLV: [{self.highbaySensCantileverBack}, "
-                f"{self.highbaySensCantileverFront}], "
-                f"SHV: [{self.highbaySensHorizontal}, {self.highbaySensVertical}], "
-                f"SIO: [{self.highbaySensInside}, {self.highbaySensOutside}])")
+        s = lambda bool: "T" if bool else "F"
+        return (f"Counter: [{self.highbaySensHorizontalEncoderCounter}, {self.highbaySensVerticalEncoderCounter}], "
+                f"Cantilev: [{s(self.highbaySensCantileverBack)}, {s(self.highbaySensCantileverFront)}], "
+                f"SensorHV: [{s(self.highbaySensHorizontal)}, {s(self.highbaySensVertical)}], "
+                f"SensConv: [{s(self.highbaySensInside)}, {s(self.highbaySensOutside)}]")
 
     def actuatorStatusString(self) -> str:
-        return (f" (VER: [{self.highbayActUp}, {self.highbayActDown}], "
-                f"HOR: [{self.highbayActHorizontalToRack}, "
-                f"{self.highbayActHorizontalToConveyor}], "
-                f"CLV: [{self.highbayActCantileverBackward}, "
-                f"{self.highbayActCantileverForward}], "
-                f"COV: [{self.highbayActConveyorBackward}, "
-                f"{self.highbayActConveyorForward}])")
+        s = lambda bool: "T" if bool else "F"
+        return (f"Vertical: [{s(self.highbayActUp)}, {s(self.highbayActDown)}], "
+                f"Horizont: [{s(self.highbayActHorizontalToRack)}, {s(self.highbayActHorizontalToConveyor)}], "
+                f"Cantilev: [{s(self.highbayActCantileverBackward)}, {s(self.highbayActCantileverForward)}], "
+                f"Conveyor: [{s(self.highbayActConveyorBackward)}, {s(self.highbayActConveyorForward)}]")
 
     def inputStatus(self) -> Dict[str, Any]:
         return {  # TODO better adjust the names, I just made them up
@@ -496,7 +492,7 @@ class HighBay(Machine, TransitioningMachine):
             return CycleStepResult(CycleStepResultEnum.DONE)
 
     def internalStatus(self) -> Dict[str, Any]:
-        return {"isExecuting": self.__isExecuting()}
+        return {"isExecuting": self.isExecuting}
 
     def create_next_config(self) -> HighBayConfig:
         """

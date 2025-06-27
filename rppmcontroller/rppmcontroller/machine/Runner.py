@@ -47,7 +47,7 @@ class TransitioningMachine:
     def executing_runner(self) -> Optional[Subroutine]:
         for runner in self.__runners:
             if runner.running:
-                return runner.__routine[runner.__routine_index]
+                return runner.actual_routine()
 
 
 class Subroutine:
@@ -323,3 +323,6 @@ class Runner(CycleStepResult):
 
     def __str__(self):
         return f"Runner(state={self.result}, info={self.info})"
+    
+    def actual_routine(self) -> Subroutine:
+        return self.__routine[self.__routine_index]

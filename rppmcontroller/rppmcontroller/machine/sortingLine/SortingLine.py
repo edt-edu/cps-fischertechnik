@@ -23,22 +23,23 @@ class SortingLine(Machine, TransitioningMachine):
         return True # no encoder actuators
 
     #TODO self.once: implement reset possibility from execute
-
-
-    def __isExecuting(self) -> bool:
-        return (self.sortingLineActCompressorOn or
+    
+    @Machine.isExecuting.getter
+    def isExecuting(self) -> bool:
+        res = (self.sortingLineActCompressorOn or
                 self.sortingLineActMotorConveyor or
                 self.sortingLineActWhiteEjector or
                 self.sortingLineActRedEjector or
                 self.sortingLineActBlueEjector or
                 self.is_executing_runner)
-
-    @Machine.isExecuting.getter
-    def isExecuting(self) -> bool:
-        res = self.__isExecuting()
-
+        
+        if (self.executing_runner == None):
+            routine = "None"
+        else:
+            routine = str(self.executing_runner)
+        
         # log isexecuting and debug info only if message has changed
-        isExecuting_log = f'isExecuting({self.id})={res} | Sensors={self.sensorStatusString()} | Actuators= {self.actuatorStatusString()}'
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
             logging.debug(isExecuting_log)
             self.previous_isExecuting_log = isExecuting_log
@@ -170,10 +171,17 @@ class SortingLine(Machine, TransitioningMachine):
         self.__sortingLineActBlueEjector = value
 
     def sensorStatusString(self) -> str:
-        return f"[{self.sortingLineSensInputLightBarrier}, {self.sortingLineSensMiddleLightBarrier}], [{self.sortingLineSensWhiteLightBarrier}, {self.sortingLineSensBlueLightBarrier}, {self.sortingLineSensRedLightBarrier}], {self.sortingLineSensImpulseCounterRaw}"
+        s = lambda bool: "T" if bool else "F"
+
+        return f"ConvSens[{s(self.sortingLineSensInputLightBarrier)}, {s(self.sortingLineSensMiddleLightBarrier)}], " + \
+               f"ColoSens[{s(self.sortingLineSensWhiteLightBarrier)}, {s(self.sortingLineSensBlueLightBarrier)}, {s(self.sortingLineSensRedLightBarrier)}], " + \
+               f"Counter[{self.sortingLineSensImpulseCounterRaw}]"
 
     def actuatorStatusString(self) -> str:
-        return f"{self.sortingLineActMotorConveyor}, {self.sortingLineActCompressorOn}, [{self.sortingLineActWhiteEjector}, {self.sortingLineActRedEjector}, {self.sortingLineActBlueEjector}]"
+        s = lambda bool: "T" if bool else "F"
+
+        return f"Conveyor[{s(self.sortingLineActMotorConveyor)}], " + \
+               f"CompValv[{s(self.sortingLineActCompressorOn)}, {s(self.sortingLineActWhiteEjector)}, {s(self.sortingLineActRedEjector)}, {s(self.sortingLineActRedEjector)}]"
 
 
     def inputStatus(self) -> Dict[str, Any]:
@@ -200,7 +208,7 @@ class SortingLine(Machine, TransitioningMachine):
 
     def internalStatus(self) -> Dict[str, Any]:
         status = {
-            "isExecuting": self.__isExecuting(),
+            "isExecuting": self.isExecuting,
         }
         return status
 
