@@ -2,7 +2,7 @@
 Compiling the turtlebot3 software on the pi is slow and sometimes fails without good reasons.
 Compiling on a real computer using docker is much faster.
 
-This guide replaces Step 13 of https://emanual.robotis.com/docs/en/platform/turtlebot3/sbc_setup/#sbc-setup.
+This guide replaces in section **3.2.5 Install  packages on Raspberry Pi** the step *''2. Install and build ROS Packages ...''*  of https://emanual.robotis.com/docs/en/platform/turtlebot3/sbc_setup/#sbc-setup.
 
 Instructions to cross compile using docker:
 1. Check that docker is correctly installed: Check by calling `docker run hello-world`, which should print `Hello from Docker!...`
