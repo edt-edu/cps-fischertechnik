@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.core.dtos;
+package io.github.mbdo.factoryscada.domains.mission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

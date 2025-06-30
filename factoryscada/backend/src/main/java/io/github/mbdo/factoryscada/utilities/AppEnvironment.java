@@ -39,6 +39,12 @@ public class AppEnvironment {
      */
     private String missionsConfigurationFilePath = "missions-configuration.yml";
 
+    /**
+     * The file path for the main configuration file.
+     * This is set to "configuration.yml" by default.
+     */
+    private String missionsConfigurationParallelizedFilePath = "missions-configuration.yml";
+
 
     @Autowired
     public AppEnvironment(ApplicationArguments args) {
@@ -60,6 +66,16 @@ public class AppEnvironment {
             log.warn("No mission configuration file provided. The default missions configuration file is being used. (ie. \"classpath:missions-configuration.yml\")");
             log.info("you can specify the mission configuration file using the option --missions.configuration.path=/app/config/missions-configuration.yml");
             missionsConfigurationFilePath = "classpath:missions-configuration.yml";
+        }
+
+        argumentName = "missions.parallelized.configuration.path";
+        if (args.containsOption(argumentName)) {
+            missionsConfigurationParallelizedFilePath = "file:" + args.getOptionValues(argumentName).getFirst();
+            System.out.println("--> " + missionsConfigurationParallelizedFilePath);
+        } else {
+            log.warn("No mission configuration file provided. The default missions configuration file is being used. (ie. \"classpath:missions-parallelized-configuration.yml\")");
+            log.info("you can specify the mission configuration file using the option --missions.configuration.path=/app/config/missions-parallelized-configuration.yml");
+            missionsConfigurationParallelizedFilePath = "classpath:missions-parallelized-configuration.yml";
         }
     }
 
