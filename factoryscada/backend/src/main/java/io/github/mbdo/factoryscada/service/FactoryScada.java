@@ -28,7 +28,7 @@ import io.github.mbdo.factoryscada.domain.MachineStatus;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryMissionsConfiguration;
-import io.github.mbdo.factoryscada.domains.mission.FactoryMissionsParallelized;
+import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
@@ -64,7 +64,7 @@ public class FactoryScada {
      * data coming from the mission configuration yaml file, usually : "missions-configuration.yml" 
      */
     private final FactoryMissionsConfiguration missionsConfiguration;
-    private final FactoryMissionsParallelized missionsParallelized;
+    private final FactoryMissionsParallelized_dto missionsParallelized_dto;
     private final Map<String, CommandStatus> machineLastCommandStatusMap = new HashMap<>();
     private final Map<String, MachineStatus> machineLastMachineStatusMap = new HashMap<>();
     private final SimpMessagingTemplate template;
@@ -84,7 +84,7 @@ public class FactoryScada {
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.missionsConfiguration = missionsConfiguration();
-        this.missionsParallelized = missionsParallelized();
+        this.missionsParallelized_dto = missionsParallelized();
         this.commandIdGenerator = new CommandIdGenerator();
         this.missionOrchestrator = new MissionOrchestrator(this); // missionsConfiguration
     }
@@ -284,7 +284,7 @@ public class FactoryScada {
      * @return The missions parallelizedConfiguration instance parsed from the YAML file.
      * @throws RuntimeException If there is an error during YAML parsing or file reading.
      */
-    private FactoryMissionsParallelized missionsParallelized() {
-        return convertYamlToObject(applicationContext, appEnvironment.getMissionsConfigurationParallelizedFilePath(), FactoryMissionsParallelized.class);
+    private FactoryMissionsParallelized_dto missionsParallelized() {
+        return convertYamlToObject(applicationContext, appEnvironment.getMissionsConfigurationParallelizedFilePath(), FactoryMissionsParallelized_dto.class);
     }
 }

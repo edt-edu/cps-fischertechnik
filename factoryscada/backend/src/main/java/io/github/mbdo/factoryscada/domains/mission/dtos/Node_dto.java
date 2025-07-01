@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.domains.mission;
+package io.github.mbdo.factoryscada.domains.mission.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public abstract class Node{
+public abstract class Node_dto{
     @JsonProperty("id")
     private String id;
 
@@ -17,7 +17,5 @@ public abstract class Node{
     private String description;
 
     @JsonProperty("outputs")
-    private List<Node> outputs;
-
-    public abstract void accept(Visitor v);
+    private List<String> outputs;
 }
