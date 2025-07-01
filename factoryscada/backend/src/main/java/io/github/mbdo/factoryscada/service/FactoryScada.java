@@ -82,7 +82,7 @@ public class FactoryScada {
         this.webSocketPublisher = webSocketPublisher;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
-        this.factoryScadaConfiguration = factoryConfiguration();
+        this.factoryScadaConfiguration = factoryConfiguration(); 
         this.missionsConfiguration = missionsConfiguration();
         this.missionsParallelized_dto = missionsParallelized();
         this.commandIdGenerator = new CommandIdGenerator();

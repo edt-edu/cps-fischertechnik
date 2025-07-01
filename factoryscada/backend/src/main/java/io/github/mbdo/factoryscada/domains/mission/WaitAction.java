@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.github.mbdo.factoryscada.service.Visitor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class WaitAction extends ActionNode{
     @JsonProperty("time")
     private int time;

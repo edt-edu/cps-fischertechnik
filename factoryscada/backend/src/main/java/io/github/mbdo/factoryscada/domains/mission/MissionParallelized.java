@@ -8,4 +8,4 @@ public class MissionParallelized{
     String name;
     String description;
     List<Node> nodes;
-}
+} 

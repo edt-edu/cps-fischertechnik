@@ -1,13 +1,25 @@
 package io.github.mbdo.factoryscada.domains.mission.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.github.mbdo.factoryscada.service.Visitor;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.List;
 
 import lombok.Data;
 
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type"
+)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = EntryNode_dto.class, name = "entryNode"),
+    @JsonSubTypes.Type(value = Fork_dto.class, name = "fork"),
+    @JsonSubTypes.Type(value = RawMachineCommand_dto.class, name = "rawMachineCommand"),
+    @JsonSubTypes.Type(value = WaitAction_dto.class, name = "waitAction"),
+    @JsonSubTypes.Type(value = Join_dto.class, name = "join"),
+})
 @Data
 public abstract class Node_dto{
     @JsonProperty("id")
