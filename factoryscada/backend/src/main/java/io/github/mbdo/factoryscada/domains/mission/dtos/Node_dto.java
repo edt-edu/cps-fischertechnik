@@ -30,4 +30,8 @@ public abstract class Node_dto{
 
     @JsonProperty("outputs")
     private List<String> outputs;
+
+    // This attributes will be initialized during the visitor's pass.
+    // It contains the references to the nodes that are given (by id) in the yaml conf file.
+    List<Node_dto> outputNodes;
 }

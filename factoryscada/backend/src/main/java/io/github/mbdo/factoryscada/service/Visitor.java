@@ -1,21 +1,21 @@
 package io.github.mbdo.factoryscada.service;
 
-import io.github.mbdo.factoryscada.domains.mission.EntryNode;
-import io.github.mbdo.factoryscada.domains.mission.Fork;
-import io.github.mbdo.factoryscada.domains.mission.Join;
-import io.github.mbdo.factoryscada.domains.mission.RawMachineCommand;
-import io.github.mbdo.factoryscada.domains.mission.WaitAction;
+import io.github.mbdo.factoryscada.domains.mission.dtos.EntryNode_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.Fork_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.Join_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.RawMachineCommand_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.WaitAction_dto;
 
 public abstract class Visitor {
 
-    public abstract void visitFork(Fork node);
+    public abstract void visitFork(Fork_dto node);
 
-    public abstract void visitJoin(Join node);
+    public abstract void visitJoin(Join_dto node);
 
-    public abstract void visitRawMachineCommand(RawMachineCommand node);
+    public abstract void visitRawMachineCommand(RawMachineCommand_dto node);
 
-    public abstract void visitWaitAction(WaitAction node);
+    public abstract void visitWaitAction(WaitAction_dto node);
 
-    public abstract void visitEntryNode(EntryNode node);
+    public abstract void visitEntryNode(EntryNode_dto node);
 
 }
