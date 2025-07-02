@@ -1,0 +1,44 @@
+FactoryMissionsParallelized:
+  name: "Factory missions parallelized"
+  missions:
+    - name: "First mission"
+      description: >
+        Just the first mission
+      nodes:
+        - type: entryNode
+          id: "Entry node"
+          description: >
+              The entry node
+          outputs: 
+            - Fork1
+
+        - type: fork
+          id: "Fork1"
+          description: >
+            The first Fork
+          outputs:
+            - ActionNode1
+            - WaitAction1
+
+        - type: rawMachineCommand
+          id: "ActionNode1"
+          description: >
+            The action node
+          placeholder: >
+            {THE COMMAND}
+          outputs:
+            - Join1
+
+        - type: waitAction
+          id: "WaitAction1"
+          description: >
+            The delay action
+          time: 5
+          outputs: 
+            - Join1
+
+        - type: join
+          id: "Join1"
+          description: >
+            The last join
+          outputs: []
