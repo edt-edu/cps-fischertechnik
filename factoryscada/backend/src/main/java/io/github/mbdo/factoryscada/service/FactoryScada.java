@@ -29,10 +29,13 @@ import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfigu
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryMissionsConfiguration;
 import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
 import io.github.mbdo.factoryscada.frontend.mapper.MachineStatusMapper;
+import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
@@ -84,7 +87,17 @@ public class FactoryScada {
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration(); 
         this.missionsConfiguration = missionsConfiguration();
+
+        // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
+        for (MissionParallelized_dto mission : this.missionsParallelized_dto.getMissions()){
+            InitializerVisitor resolver = new InitializerVisitor(mission.getNodes());
+            for (Node_dto node : mission.getNodes()) {
+                node.accept(resolver);
+            }
+        }
+        
+
         this.commandIdGenerator = new CommandIdGenerator();
         this.missionOrchestrator = new MissionOrchestrator(this); // missionsConfiguration
     }

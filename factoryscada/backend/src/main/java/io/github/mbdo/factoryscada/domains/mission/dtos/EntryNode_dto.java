@@ -1,7 +1,6 @@
 package io.github.mbdo.factoryscada.domains.mission.dtos;
 
-import io.github.mbdo.factoryscada.service.Visitor;
-
+import io.github.mbdo.factoryscada.service.Visitor.Visitor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,6 +8,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class EntryNode_dto extends Node_dto{
     public void accept(Visitor v){
-        v.visitEntryNode(this);
+        v.visit(this);
     }
 }

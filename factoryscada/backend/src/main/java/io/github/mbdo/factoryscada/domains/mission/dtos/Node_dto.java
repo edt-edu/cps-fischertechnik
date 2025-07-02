@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import io.github.mbdo.factoryscada.service.Visitor.Visitor;
+
 import java.util.List;
 
 import lombok.Data;
@@ -34,4 +36,6 @@ public abstract class Node_dto{
     // This attributes will be initialized during the visitor's pass.
     // It contains the references to the nodes that are given (by id) in the yaml conf file.
     List<Node_dto> outputNodes;
+
+    public abstract void accept(Visitor v);
 }
