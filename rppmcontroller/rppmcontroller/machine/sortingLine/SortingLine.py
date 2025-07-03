@@ -46,7 +46,10 @@ class SortingLine(Machine, TransitioningMachine):
 
         return res
 
-    def __init__(self, id1: str):
+    def __init__(self, id1: str, delay_offsets = (0.0, 0.0, 0.0)):
+        # configuration
+        self.__delay_offsets = delay_offsets # offset for the delay while injecting white, red, blue tokens
+
         # inputs
         self.__sortingLineSensImpulseCounterRaw = 0
         self.__sortingLineSensInputLightBarrier = True
@@ -330,13 +333,13 @@ class SortingLine(Machine, TransitioningMachine):
         eject_config = SortingLineConfig()
         if color is Color.WHITE:
             eject_config.white_ejector_active = True
-            delay = 0.5
+            delay = 0.5 + self.__delay_offsets[0]
         elif color is Color.RED:
             eject_config.red_ejector_active = True
-            delay = 1.55
+            delay = 1.55 + self.__delay_offsets[1]
         elif color is Color.BLUE:
             eject_config.blue_ejector_active = True
-            delay = 2.6
+            delay = 2.6 + self.__delay_offsets[2]
         else:
             raise ValueError(f"invalid color: {color}")
 
