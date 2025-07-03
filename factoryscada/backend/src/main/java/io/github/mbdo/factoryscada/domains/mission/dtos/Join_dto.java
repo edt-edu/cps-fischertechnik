@@ -10,4 +10,8 @@ public class Join_dto extends ControlNode_dto{
     public void accept(Visitor v){
         v.visit(this);
     }
+
+    // This attributes will be initialized during the visitor's pass.
+    // It contains the number of nodes pointing to this join.
+    private Integer numberInputs;
 }

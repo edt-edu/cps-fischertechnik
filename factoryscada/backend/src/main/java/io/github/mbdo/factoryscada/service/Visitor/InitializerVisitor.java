@@ -1,11 +1,10 @@
 package io.github.mbdo.factoryscada.service.Visitor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +29,9 @@ public class InitializerVisitor extends Visitor {
     
         int numberEntryNode = 0;
 
+        List<String> outputs = new ArrayList<>();
+
+        // This first pass is to verify unicity of Ids, count number of entry, and list all outputs of nodes
         for (Node_dto node : nodes) {
             String id = node.getId();
             if (tempMap.containsKey(id)) {
@@ -42,6 +44,8 @@ public class InitializerVisitor extends Visitor {
             if (node instanceof EntryNode_dto) {
                 numberEntryNode ++;
             }
+
+            outputs.addAll(node.getOutputs());
         }
 
         this.idToNodeMap = tempMap;
@@ -54,6 +58,13 @@ public class InitializerVisitor extends Visitor {
             String error = "Mission graph must contain only one EntryNode, multiple were found.";
             log.error(error);
             throw new IllegalStateException(error);
+        }
+
+        // The second pass is to initialize the number of inputs for join nodes
+        for (Node_dto node : nodes) {
+            if (node instanceof Join_dto joinNode) {
+                joinNode.setNumberInputs(Collections.frequency(outputs, joinNode.getId()));
+            }
         }
     }
 
