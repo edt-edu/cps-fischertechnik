@@ -48,7 +48,7 @@ class SortingLine(Machine, TransitioningMachine):
 
     def __init__(self, id1: str, delay_offsets = (0.0, 0.0, 0.0)):
         # configuration
-        self.__delay_offsets = delay_offsets # offset for the delay while injecting white, red, blue tokens
+        self.__delay_offsets = delay_offsets # offset for the delay while ejecting white, red, blue tokens
 
         # inputs
         self.__sortingLineSensImpulseCounterRaw = 0
