@@ -35,6 +35,7 @@ import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
 import io.github.mbdo.factoryscada.frontend.mapper.MachineStatusMapper;
+import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.SocketProtocol;
@@ -73,6 +74,7 @@ public class FactoryScada {
     private final SimpMessagingTemplate template;
     private final AppEnvironment appEnvironment;
     private final MissionOrchestrator missionOrchestrator;
+    private final ExecuterVisitor executerVisitor;
     private final CommandIdGenerator commandIdGenerator;
 
     private final ApplicationContext applicationContext;
@@ -96,7 +98,7 @@ public class FactoryScada {
                 node.accept(resolver);
             }
         }
-        
+        this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto);
 
         this.commandIdGenerator = new CommandIdGenerator();
         this.missionOrchestrator = new MissionOrchestrator(this); // missionsConfiguration
@@ -192,6 +194,8 @@ public class FactoryScada {
                     webSocketPublisher.sendCommandStatus(machineName, commandStatus);
                     // notify MissionOrchestrator
                     this.missionOrchestrator.receivedMachineCommandFeedback(commandStatus);
+                    // notify ExecuterVisitor
+                    this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
                     break;
                 case "MACHINE_FEEDBACK":
                     MachineStatus machineStatus = this.machineLastMachineStatusMap.getOrDefault(machineName, new MachineStatus());

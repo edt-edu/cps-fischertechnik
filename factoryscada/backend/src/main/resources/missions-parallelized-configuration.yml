@@ -1,9 +1,9 @@
 FactoryMissionsParallelized:
   name: "Factory missions parallelized"
   missions:
-    - name: "First mission"
+    - name: "VGR setup and CB moving"
       description: >
-        Just the first mission
+        Setup the vacuum gripper and forward the conveyor belt a few step
       nodes:
         - type: entryNode
           id: "Entry node"
@@ -18,27 +18,96 @@ FactoryMissionsParallelized:
             The first Fork
           outputs:
             - ActionNode1
-            - WaitAction1
+            - ActionNode2
 
         - type: rawMachineCommand
           id: "ActionNode1"
           description: >
-            The action node
+            Setup the VG1
           placeholder: >
-            {THE COMMAND}
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1751547231773,
+              "message": 
+                {
+                  "jsonType": "COMMAND",
+                  "type": "VACUUM",
+                  "outputId": 1,
+                  "name": "SETUP",
+                  "parameters": []
+                }
+            }
           outputs:
             - Join1
 
-        - type: waitAction
-          id: "WaitAction1"
+        - type: rawMachineCommand
+          id: "ActionNode2"
           description: >
-            The delay action
-          time: 5
-          outputs: 
+            Setup the VG2
+          placeholder: >
+            {
+              "topicName": "ConveyorBelt01",
+              "timestamp": 1751547508462,
+              "message": 
+                {
+                  "jsonType": "COMMAND",
+                  "type": "CONVEYOR",
+                  "outputId": 2,
+                  "name": "MOVE_NB_STEPS",
+                  "parameters": [
+                      {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 15
+                          }
+                      },
+                      {
+                          "passableType": "DIRECTION",
+                          "passable": {
+                              "direction": "FORWARD"
+                          }
+                      }
+                  ]
+                }
+            }
+          outputs:
             - Join1
 
         - type: join
           id: "Join1"
           description: >
             The last join
+          outputs:
+            - ActionNode3
+        
+        - type: rawMachineCommand
+          id: "ActionNode3"
+          description: >
+            Move back the CB
+          placeholder: >
+            {
+              "topicName": "ConveyorBelt01",
+              "timestamp": 1751547508462,
+              "message": 
+                {
+                  "jsonType": "COMMAND",
+                  "type": "CONVEYOR",
+                  "outputId": 3,
+                  "name": "MOVE_NB_STEPS",
+                  "parameters": [
+                      {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 5
+                          }
+                      },
+                      {
+                          "passableType": "DIRECTION",
+                          "passable": {
+                              "direction": "BACKWARD"
+                          }
+                      }
+                  ]
+                }
+            }
           outputs: []

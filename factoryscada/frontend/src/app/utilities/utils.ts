@@ -3,6 +3,7 @@ import { ICommandPlaceholder } from "../models/i-command-placeholder";
 import { IFactoryInstance } from "../models/i-factory-instance";
 import { IRxStompPublishParams } from "@stomp/rx-stomp";
 import { IFactoryMissionsConfiguration, Mission } from "../models/i-factory-missions";
+import { IFactoryParallelizedMissionsConfiguration, MissionParallelized, Nodes } from "../models/i-factory-paralelized_missions";
 
 /**
  * Retrieves the list of machines from the given configuration.
@@ -25,9 +26,9 @@ export function getMachines(config: IConfiguration | undefined): Machine[] {
  * @param config - The mission configuration object.
  * @returns An array of missions.
  */
-export function getMissions(config: IFactoryMissionsConfiguration | undefined): Mission[] {
+export function getMissions(config: IFactoryParallelizedMissionsConfiguration | undefined): MissionParallelized[] {
   if (config === undefined) return [];
-  var missions: Mission[] = [];
+  var missions: MissionParallelized[] = [];
   missions.push(...config.missions);
   return missions;
 }
@@ -39,13 +40,13 @@ export function getMissions(config: IFactoryMissionsConfiguration | undefined): 
  * @returns An array of machines.
  */
 export function getMachinesInMission( config: IConfiguration | undefined,
-                                      mission: Mission | undefined): Machine[] {
+                                      mission: MissionParallelized | undefined): Machine[] {
   console.error('CALLING getMachinesInMission '+config+mission);
   if (config === undefined || mission === undefined) return [];
   var machines: Machine[] = [];
 
   var missionMachineNames = new Set<string>();
-  for(const command of mission.commands) {
+  for(const command of mission.nodes) {
     missionMachineNames.add(JSON.parse(command.placeholder).topicName);
   }
   console.log(missionMachineNames);

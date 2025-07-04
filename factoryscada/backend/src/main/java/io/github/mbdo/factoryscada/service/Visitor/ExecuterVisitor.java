@@ -2,8 +2,10 @@ package io.github.mbdo.factoryscada.service.Visitor;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -35,13 +37,13 @@ public class ExecuterVisitor extends Visitor {
      * This visitor is used to execute a mission.
      */
 
-    private Map<String, Node_dto> missionIdToEntryNode;
+    private Map<String, Node_dto> missionIdToEntryNode = new HashMap<>();
     private FactoryMissionsParallelized_dto factoryMissions;
     private FactoryScada factoryScada;
-    private List<Node_dto> isCurrentlyVisiting;
-    private Map<String, String> nodeIdToCommandId;
+    private List<Node_dto> isCurrentlyVisiting = new CopyOnWriteArrayList<>();
+    private Map<String, String> nodeIdToCommandId = new HashMap<>();
 
-    private Map<String, Integer> joinIdNumberInputs;
+    private Map<String, Integer> joinIdNumberInputs = new HashMap<>();
 
     private String actualMissionName;
 
@@ -53,8 +55,8 @@ public class ExecuterVisitor extends Visitor {
         for (MissionParallelized_dto mission : factoryMissions.getMissions()) {
             for (Node_dto node : mission.getNodes()) {
                 if (node instanceof EntryNode_dto) {
-                    String id = node.getId();
-                    missionIdToEntryNode.put(id, node);
+                    String missionName = mission.getName();
+                    missionIdToEntryNode.put(missionName, node);
                     break;
                 }                
             }
@@ -64,6 +66,9 @@ public class ExecuterVisitor extends Visitor {
 
     public String startMission(String missionName){
         if (missionIdToEntryNode.containsKey(missionName)){
+            //Clear HashMaps from previous missions
+            nodeIdToCommandId.clear();
+            joinIdNumberInputs.clear();
             actualMissionName = missionName;
             missionIdToEntryNode.get(missionName).accept(this);
             return "Mission "+missionName+" started";
@@ -127,11 +132,13 @@ public class ExecuterVisitor extends Visitor {
                             //   if success , send next command, or notify end of mission if this is the last
                             if (!node.getOutputs().isEmpty()){
                                 log.info("Processing command {} of Mission {}", node.getOutputNodes().get(0).getId(), this.actualMissionName);
-                                nodeIdToCommandId.remove(commandStatus.getCurrentCommandId());
                                 node.getOutputNodes().get(0).accept(this);
                             } else {
                                 log.info("Last command of Mission {} has finished", this.actualMissionName);
                             }
+                            //nodeIdToCommandId.remove(node.getId());
+                            isCurrentlyVisiting.remove(node);
+                            break;
                         case "INTERRUPTED":
                         case "ABORTED_ERROR":
                         case "ABORTED_TIMEOUT":
@@ -148,12 +155,14 @@ public class ExecuterVisitor extends Visitor {
     }
 
     public void visit(Fork_dto node) {
+        log.info("Visiting fork : {}", node.getId());
         for (Node_dto outputNodes : node.getOutputNodes()){
             outputNodes.accept(this);
         }
     }
 
     public void visit(Join_dto node) {
+        log.info("Visiting join : {}", node.getId());
         if (joinIdNumberInputs.containsKey(node.getId())){
             String id = node.getId();
             joinIdNumberInputs.put(id, joinIdNumberInputs.get(id) + 1);
@@ -161,23 +170,26 @@ public class ExecuterVisitor extends Visitor {
             joinIdNumberInputs.put(node.getId(), 1);
         }
 
-        if (joinIdNumberInputs.get(node.getId()) <= node.getNumberInputs()){
-            joinIdNumberInputs.remove(node.getId());
+        if (joinIdNumberInputs.get(node.getId()) >= node.getNumberInputs()){
+            //joinIdNumberInputs.remove(node.getId());
             node.getOutputNodes().get(0).accept(this);
         }
     }
 
     public void visit(RawMachineCommand_dto node) {
+        log.info("Visiting RMC : {}", node.getId());
         isCurrentlyVisiting.add(node);
         sendMissionCommand(node);
     }
 
     public void visit(WaitAction_dto node) {
+        log.info("Visiting WA : {}", node.getId());
         node.getOutputNodes().get(0).accept(this);
         //TODO implements the wait action
     }
 
     public void visit(EntryNode_dto node) {
+        log.info("Visiting EntNo : {}", node.getId());
         node.getOutputNodes().get(0).accept(this);
     }
 
@@ -226,6 +238,9 @@ public class ExecuterVisitor extends Visitor {
                     String commandId = Long.toString(factoryScada.getCommandIdGenerator().generateId());
                     commandDTO.getMessage().setOutputId(commandId);
 
+                    nodeIdToCommandId.put(node.getId(), commandId);
+                } else {
+                    String commandId = commandDTO.getMessage().getOutputId().trim();
                     nodeIdToCommandId.put(node.getId(), commandId);
                 }
                 command = commandDTO.getMessage().getOutputId();
