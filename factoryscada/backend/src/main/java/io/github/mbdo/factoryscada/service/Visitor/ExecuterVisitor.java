@@ -136,7 +136,6 @@ public class ExecuterVisitor extends Visitor {
                             } else {
                                 log.info("Last command of Mission {} has finished", this.actualMissionName);
                             }
-                            //nodeIdToCommandId.remove(node.getId());
                             isCurrentlyVisiting.remove(node);
                             break;
                         case "INTERRUPTED":
@@ -171,8 +170,11 @@ public class ExecuterVisitor extends Visitor {
         }
 
         if (joinIdNumberInputs.get(node.getId()) >= node.getNumberInputs()){
-            //joinIdNumberInputs.remove(node.getId());
-            node.getOutputNodes().get(0).accept(this);
+            if (node.getOutputNodes().isEmpty()){
+                log.info("Last command of Mission {} has finished", this.actualMissionName);
+            } else {
+                node.getOutputNodes().get(0).accept(this);
+            }
         }
     }
 
