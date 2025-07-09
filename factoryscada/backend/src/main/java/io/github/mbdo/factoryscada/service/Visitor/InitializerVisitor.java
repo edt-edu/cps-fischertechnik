@@ -25,30 +25,39 @@ public class InitializerVisitor extends Visitor {
     private final Map<String, Node_dto> idToNodeMap;
 
     public InitializerVisitor(List<Node_dto> nodes) {
-        Map<String, Node_dto> tempMap = new HashMap<>();
+        Map<String, Node_dto> IdtoNode = new HashMap<>();
     
         int numberEntryNode = 0;
 
         List<String> outputs = new ArrayList<>();
 
-        // This first pass is to verify unicity of Ids, count number of entry, and list all outputs of nodes
+        // This first pass is to :
+        //          - verify unicity of Ids
+        //          - count number of entry
+        //          - list all outputs of nodes
+        //          - verify number of output for each nodes
         for (Node_dto node : nodes) {
             String id = node.getId();
-            if (tempMap.containsKey(id)) {
+            if (IdtoNode.containsKey(id)) {
                 String error = String.format("Duplicate node ID detected: '%s'.", id);
                 log.error(error);
                 throw new IllegalArgumentException(error);
             }
-            tempMap.put(id, node);
+            IdtoNode.put(id, node);
 
             if (node instanceof EntryNode_dto) {
                 numberEntryNode ++;
             }
 
             outputs.addAll(node.getOutputs());
+
+            if (node.getOutputs().size()>1 && !(node instanceof Fork_dto)){
+                String warning = String.format("Multiple output detected, should be unique for non-fork node: '%s'.", id);
+                log.warn(warning);
+            }
         }
 
-        this.idToNodeMap = tempMap;
+        this.idToNodeMap = IdtoNode;
 
         if (numberEntryNode == 0) {
             String error = "Mission graph must contain one EntryNode, none were found.";
@@ -60,10 +69,20 @@ public class InitializerVisitor extends Visitor {
             throw new IllegalStateException(error);
         }
 
-        // The second pass is to initialize the number of inputs for join nodes
+        // The second pass is to :
+        //      - initialize the number of inputs for join nodes
+        //      - verifiy the existence of nodes outputs
         for (Node_dto node : nodes) {
             if (node instanceof Join_dto joinNode) {
                 joinNode.setNumberInputs(Collections.frequency(outputs, joinNode.getId()));
+            }
+
+            for (String output : node.getOutputs()){
+                if (!IdtoNode.containsKey(output)){
+                    String error = String.format("The specified output ID cannot be found: '%s'.", output);
+                    log.error(error);
+                    throw new IllegalArgumentException(error);
+                }
             }
         }
     }
