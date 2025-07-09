@@ -5,7 +5,6 @@ import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
-import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryMissionsConfiguration;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
@@ -69,7 +68,7 @@ public class MissionOrchestratorController {
             //@Valid @Payload MissionCommandDTO missionCommandDTO
     ) {
         log.info("Received request on /factoryMission/command/stop/");
-        return factoryScada.getMissionOrchestrator().stopMission();
+        return factoryScada.getExecuterVisitor().stopMission();
     }
     
     @MessageMapping("/status")
@@ -83,8 +82,8 @@ public class MissionOrchestratorController {
 
     @MessageMapping("/list")
     @SendTo("/topic/mission-configuration")
-    public FactoryMissionsConfiguration getMissionList() {
-        return factoryScada.getMissionOrchestrator().getMissionsConfiguration();
+    public FactoryMissionsParallelized_dto getMissionList() {
+        return factoryScada.getExecuterVisitor().getFactoryMissions();
     }
 
 

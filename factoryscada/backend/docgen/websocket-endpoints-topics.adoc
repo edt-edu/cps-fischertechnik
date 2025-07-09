@@ -2282,7 +2282,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -2291,7 +2291,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -2299,20 +2299,30 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
           "description" : {
             "type" : "string"
           },
-          "commands" : {
+          "nodes" : {
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
               "properties" : {
-                "name" : {
+                "outputNodes" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                  }
+                },
+                "id" : {
                   "type" : "string"
                 },
                 "description" : {
                   "type" : "string"
                 },
-                "placeholder" : {
-                  "type" : "string"
+                "outputs" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
                 }
               }
             }
@@ -4847,7 +4857,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -4856,7 +4866,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:MissionConfiguration",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -4864,20 +4874,30 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
           "description" : {
             "type" : "string"
           },
-          "commands" : {
+          "nodes" : {
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryMissionsConfiguration:Command",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
               "properties" : {
-                "name" : {
+                "outputNodes" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                  }
+                },
+                "id" : {
                   "type" : "string"
                 },
                 "description" : {
                   "type" : "string"
                 },
-                "placeholder" : {
-                  "type" : "string"
+                "outputs" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
                 }
               }
             }

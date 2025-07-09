@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
@@ -32,6 +33,7 @@ import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 
 @Slf4j
+@Getter
 public class ExecuterVisitor extends Visitor {
     /*
      * This visitor is used to execute a mission.
