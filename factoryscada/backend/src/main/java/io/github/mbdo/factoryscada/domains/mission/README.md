@@ -57,6 +57,9 @@ classDiagram
         -Integer numberInputs
     }
 
+    class Entry_dto {
+    }
+
     FactoryMissionsParallelized_dto --> MissionParallelized_dto : contains
     MissionParallelized_dto --> Node_dto : contains
 
@@ -68,4 +71,5 @@ classDiagram
 
     ControlNode_dto <|-- Fork_dto
     ControlNode_dto <|-- Join_dto
+    ControlNode_dto <|-- Entry_dto
 ```
