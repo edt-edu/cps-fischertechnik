@@ -52,7 +52,7 @@ import { GenericStatusCommandComponent } from "./generic/status-command/status-c
 import { VacuumGripperStatusComponent } from "./vacuum-gripper/vacuum-gripper-status/vacuum-gripper-status.component";
 import { MachineStatusWidgetComponent } from "../../widgets/machine-status-widget/machine-status-widget.component";
 import { CommandStatusWidgetComponent } from "../../widgets/command-status-widget/command-status-widget.component";
-import { IFactoryMissionsConfiguration } from '../../models/i-factory-missions';
+import { IFactoryParallelizedMissionsConfiguration, MissionParallelized, Nodes } from "../../models/i-factory-paralelized_missions";
 
 declare var $: any;
 
@@ -107,7 +107,7 @@ export class DirectCommandComponent implements OnInit {
 
   placeholder?: ICommandPlaceholder;
   configuration?: IConfiguration;
-  missionConfiguration?: IFactoryMissionsConfiguration;
+  missionConfiguration?: IFactoryParallelizedMissionsConfiguration;
   instance?: IFactoryInstance;
 
   protected readonly getMachines = getMachines;

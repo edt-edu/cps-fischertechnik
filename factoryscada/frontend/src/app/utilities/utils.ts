@@ -2,7 +2,6 @@ import { IConfiguration, Machine } from "../models/i-factory-configuration";
 import { ICommandPlaceholder } from "../models/i-command-placeholder";
 import { IFactoryInstance } from "../models/i-factory-instance";
 import { IRxStompPublishParams } from "@stomp/rx-stomp";
-import { IFactoryMissionsConfiguration, Mission } from "../models/i-factory-missions";
 import { IFactoryParallelizedMissionsConfiguration, MissionParallelized, Nodes } from "../models/i-factory-paralelized_missions";
 
 /**
@@ -41,13 +40,15 @@ export function getMissions(config: IFactoryParallelizedMissionsConfiguration | 
  */
 export function getMachinesInMission( config: IConfiguration | undefined,
                                       mission: MissionParallelized | undefined): Machine[] {
-  console.error('CALLING getMachinesInMission '+config+mission);
+  console.log('CALLING getMachinesInMission '+config+mission);
   if (config === undefined || mission === undefined) return [];
   var machines: Machine[] = [];
 
   var missionMachineNames = new Set<string>();
-  for(const command of mission.nodes) {
-    missionMachineNames.add(JSON.parse(command.placeholder).topicName);
+  for(const node of mission.nodes) {
+    if (node.placeholder != undefined){
+      missionMachineNames.add(JSON.parse(node.placeholder).topicName);
+    }
   }
   console.log(missionMachineNames);
   for (const controller of config.controllers) {
@@ -66,11 +67,11 @@ export function getMachinesInMission( config: IConfiguration | undefined,
  * @param config - The missions configuration object.
  * @returns An array of missions.
  */
-export function getMissionInvolvingMachine(machine: Machine | undefined, config: IFactoryMissionsConfiguration | undefined): Mission[] {
+export function getMissionInvolvingMachine(machine: Machine | undefined, config: IFactoryParallelizedMissionsConfiguration | undefined): MissionParallelized[] {
   if (config === undefined || machine === undefined) return [];
-  var missions: Mission[] = [];
+  var missions: MissionParallelized[] = [];
   for ( const mission of config.missions) {
-    for ( const command of mission.commands) {
+    for ( const command of mission.nodes) {
       const commandPlaceHolder = JSON.parse(command.placeholder)
       if (commandPlaceHolder.topicName == machine.name) {
         if(!missions.includes(mission)) {
@@ -108,7 +109,7 @@ export function getCommandPlaceholder(commands: ICommandPlaceholder | undefined,
  * @param commandName - The name of the command.
  * @returns The command placeholder as a string.
  */
-export function getMissionCommandPlaceholder(missionsConfiguration: IFactoryMissionsConfiguration | undefined,
+export function getMissionCommandPlaceholder(missionsConfiguration: IFactoryParallelizedMissionsConfiguration | undefined,
   commandQualifierName: string | undefined): string | undefined{
   // Check if parameters are defined
   if (missionsConfiguration === undefined || commandQualifierName === undefined) {
@@ -116,7 +117,7 @@ export function getMissionCommandPlaceholder(missionsConfiguration: IFactoryMiss
   }
   const qname = commandQualifierName.split('::');
   const mission = missionsConfiguration.missions.find(mission => mission.name === qname[0])
-  const command = mission?.commands.find(command => command.name === qname[1] )
+  const command = mission?.nodes.find(command => command.placeholder === qname[1] )
   // Return the command placeholder if the machine and command exist
   return command ? command.placeholder : undefined;
 }
@@ -127,7 +128,7 @@ export function getMissionCommandPlaceholder(missionsConfiguration: IFactoryMiss
  * @param commandName - The name of the command.
  * @returns The command placeholder as a string.
  */
-export function getMissionCommandDescription(missionsConfiguration: IFactoryMissionsConfiguration | undefined,
+export function getMissionCommandDescription(missionsConfiguration: IFactoryParallelizedMissionsConfiguration | undefined,
   commandQualifierName: string | undefined): string {
   // Check if parameters are defined
   if (missionsConfiguration === undefined || commandQualifierName === undefined) {
@@ -135,7 +136,7 @@ export function getMissionCommandDescription(missionsConfiguration: IFactoryMiss
   }
   const qname = commandQualifierName.split('::');
   const mission = missionsConfiguration.missions.find(mission => mission.name === qname[0])
-  const command = mission?.commands.find(command => command.name === qname[1] )
+  const command = mission?.nodes.find(command => command.description === qname[1] )
   // Return the command placeholder if the machine and command exist
   return command ? command.description : '';
 }
@@ -180,14 +181,17 @@ export function getRawCommandNames(instance: IFactoryInstance | undefined, machi
  * @param machineName - The name of the machine.
  * @returns An array of command names.
  */
-export function getMissionCommandQualifiedNames(missionsConfig: IFactoryMissionsConfiguration | undefined, machineName: string | undefined): string[] {
+export function getMissionCommandQualifiedNames(missionsConfig: IFactoryParallelizedMissionsConfiguration | undefined, machineName: string | undefined): string[] {
   if (missionsConfig === undefined || machineName === undefined) return [];
   var commandNames: string[] = [];
   for ( const mission of missionsConfig.missions) {
-    for ( const command of mission.commands) {
-      const commandPlaceHolder = JSON.parse(command.placeholder)
-      if (commandPlaceHolder.topicName == machineName) {
-        commandNames.push(`${mission.name}::${command.name}`)
+    for ( const command of mission.nodes) {
+      console.log(command.placeholder)
+      if (command.placeholder != undefined){
+        const commandPlaceHolder = JSON.parse(command.placeholder)
+        if (commandPlaceHolder.topicName == machineName) {
+          commandNames.push(`${mission.name}::${command.id}`)
+        }
       }
     }
   }
