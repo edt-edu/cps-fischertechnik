@@ -13,6 +13,7 @@ public class WaitAction_dto extends ActionNode_dto{
         v.visit(this);
     }
 
+    //time wait in seconds
     @JsonProperty("time")
     private int time;
 }

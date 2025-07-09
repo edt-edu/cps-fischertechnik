@@ -60,30 +60,30 @@ public class ExecuterVisitor extends Visitor {
                     String missionName = mission.getName();
                     missionIdToEntryNode.put(missionName, node);
                     break;
-                }                
+                }
             }
         }
-        
+
     }
 
-    public String startMission(String missionName){
-        if (missionIdToEntryNode.containsKey(missionName)){
-            //Clear HashMaps from previous missions
+    public String startMission(String missionName) {
+        if (missionIdToEntryNode.containsKey(missionName)) {
+            // Clear HashMaps from previous missions
             nodeIdToCommandId.clear();
             joinIdNumberInputs.clear();
             actualMissionName = missionName;
             missionIdToEntryNode.get(missionName).accept(this);
-            return "Mission "+missionName+" started";
+            return "Mission " + missionName + " started";
         } else {
             log.error("no mission {} found in the configuration", missionName);
-            return "Mission "+missionName+" not found";
+            return "Mission " + missionName + " not found";
         }
     }
 
-    public String stopMission(){
-        if (!isCurrentlyVisiting.isEmpty()){
-            for (Node_dto node : isCurrentlyVisiting){
-                if (node instanceof RawMachineCommand_dto rawMachineCommand_dto){
+    public String stopMission() {
+        if (!isCurrentlyVisiting.isEmpty()) {
+            for (Node_dto node : isCurrentlyVisiting) {
+                if (node instanceof RawMachineCommand_dto rawMachineCommand_dto) {
                     // look for the machine that is currently running a command in this node
                     String machineName = this.getMachineNameFromJsonCommand(rawMachineCommand_dto.getPlaceholder());
                     AbstractMachine machine = factoryScada.getFactoryScadaInstance().machines().get(machineName);
@@ -94,7 +94,8 @@ public class ExecuterVisitor extends Visitor {
                     stopMessage.setName("STOP");
                     stopMessage.setType(this.getMachineTypeFromJsonCommand(rawMachineCommand_dto.getPlaceholder()));
                     stopMessage.setOutputId(Long.toString(factoryScada.getCommandIdGenerator().generateId()));
-                    GenericMachineCommandDTO<?> commandDTO = new GenericMachineCommandDTO<>(machineName, String.valueOf(Instant.now().toEpochMilli()),
+                    GenericMachineCommandDTO<?> commandDTO = new GenericMachineCommandDTO<>(machineName,
+                            String.valueOf(Instant.now().toEpochMilli()),
                             stopMessage);
                     ObjectMapper mapper = new ObjectMapper();
                     Protocol protocol = machine.getProtocol();
@@ -103,7 +104,8 @@ public class ExecuterVisitor extends Visitor {
                         // send to plc socket
                         protocol.send(jsonString);
                         // update storage in backend
-                        CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName, new CommandStatus());
+                        CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap()
+                                .getOrDefault(machineName, new CommandStatus());
                         status.setCurrentCommandTimestamp(commandDTO.getTimestamp());
                         status.setCurrentCommandName(commandDTO.getMessage().getName());
                         status.setCurrentCommandId(commandDTO.getMessage().getOutputId());
@@ -117,23 +119,24 @@ public class ExecuterVisitor extends Visitor {
                 }
                 isCurrentlyVisiting.remove(node);
             }
-            return "Mission "+ this.actualMissionName +" stopped";
+            return "Mission " + this.actualMissionName + " stopped";
         } else {
             return "";
         }
-        
+
     }
 
     public void receivedMachineCommandFeedback(CommandStatus commandStatus) {
         // if isRunning a mission, wait for the current command feedback
-        if(!isCurrentlyVisiting.isEmpty()) {
-            for (Node_dto node : isCurrentlyVisiting){
+        if (!isCurrentlyVisiting.isEmpty()) {
+            for (Node_dto node : isCurrentlyVisiting) {
                 if (commandStatus.getCurrentCommandId().equals(nodeIdToCommandId.get(node.getId()))) {
-                    switch ( (commandStatus.getCommandFeedbackStatus().toUpperCase())){
+                    switch ((commandStatus.getCommandFeedbackStatus().toUpperCase())) {
                         case "DONE":
-                            //   if success , send next command, or notify end of mission if this is the last
-                            if (!node.getOutputs().isEmpty()){
-                                log.info("Processing command {} of Mission {}", node.getOutputNodes().get(0).getId(), this.actualMissionName);
+                            // if success , send next command, or notify end of mission if this is the last
+                            if (!node.getOutputs().isEmpty()) {
+                                log.info("Processing command {} of Mission {}", node.getOutputNodes().get(0).getId(),
+                                        this.actualMissionName);
                                 node.getOutputNodes().get(0).accept(this);
                             } else {
                                 log.info("Last command of Mission {} has finished", this.actualMissionName);
@@ -143,7 +146,7 @@ public class ExecuterVisitor extends Visitor {
                         case "INTERRUPTED":
                         case "ABORTED_ERROR":
                         case "ABORTED_TIMEOUT":
-                            //   if aborted, notify mission aborted
+                            // if aborted, notify mission aborted
                             this.stopMission();
                             break;
                         default:
@@ -157,22 +160,22 @@ public class ExecuterVisitor extends Visitor {
 
     public void visit(Fork_dto node) {
         log.info("Visiting fork : {}", node.getId());
-        for (Node_dto outputNodes : node.getOutputNodes()){
+        for (Node_dto outputNodes : node.getOutputNodes()) {
             outputNodes.accept(this);
         }
     }
 
     public void visit(Join_dto node) {
         log.info("Visiting join : {}", node.getId());
-        if (joinIdNumberInputs.containsKey(node.getId())){
+        if (joinIdNumberInputs.containsKey(node.getId())) {
             String id = node.getId();
             joinIdNumberInputs.put(id, joinIdNumberInputs.get(id) + 1);
         } else {
             joinIdNumberInputs.put(node.getId(), 1);
         }
 
-        if (joinIdNumberInputs.get(node.getId()) >= node.getNumberInputs()){
-            if (node.getOutputNodes().isEmpty()){
+        if (joinIdNumberInputs.get(node.getId()) >= node.getNumberInputs()) {
+            if (node.getOutputNodes().isEmpty()) {
                 log.info("Last command of Mission {} has finished", this.actualMissionName);
             } else {
                 node.getOutputNodes().get(0).accept(this);
@@ -188,8 +191,13 @@ public class ExecuterVisitor extends Visitor {
 
     public void visit(WaitAction_dto node) {
         log.info("Visiting WA : {}", node.getId());
+        try {
+            Thread.sleep(node.getTime() * 1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Thread was interrupted during sleep.");
+        }
         node.getOutputNodes().get(0).accept(this);
-        //TODO implements the wait action
     }
 
     public void visit(EntryNode_dto node) {
@@ -199,20 +207,22 @@ public class ExecuterVisitor extends Visitor {
 
     protected String getMachineNameFromJsonCommand(String jsonCommandString) {
         ObjectMapper mapper = new ObjectMapper();
-    	try {
-            GenericMachineCommandDTO<?> machineCommand = mapper.readValue(jsonCommandString, GenericMachineCommandDTO.class);
+        try {
+            GenericMachineCommandDTO<?> machineCommand = mapper.readValue(jsonCommandString,
+                    GenericMachineCommandDTO.class);
 
             return machineCommand.getTopicName();
-		} catch (JsonProcessingException e) {
-			log.error("Error parsing feedback: {}", e.getMessage());
-		}
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing feedback: {}", e.getMessage());
+        }
         return null;
     }
 
     protected String getMachineTypeFromJsonCommand(String jsonCommandString) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            GenericMachineCommandDTO<?> machineCommand = mapper.readValue(jsonCommandString, GenericMachineCommandDTO.class);
+            GenericMachineCommandDTO<?> machineCommand = mapper.readValue(jsonCommandString,
+                    GenericMachineCommandDTO.class);
 
             return machineCommand.getMessage().getType();
         } catch (JsonProcessingException e) {
@@ -221,24 +231,27 @@ public class ExecuterVisitor extends Visitor {
         return null;
     }
 
-    protected GenericMachineCommandDTO<?> genericMachineCommand( String jsonCommandString ) throws JsonProcessingException {
-        ObjectMapper mapper = JsonMapper.builder().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build();
-        TypeReference<GenericMachineCommandDTO<?>> typeRef = new TypeReference<GenericMachineCommandDTO<?>>() {};
+    protected GenericMachineCommandDTO<?> genericMachineCommand(String jsonCommandString)
+            throws JsonProcessingException {
+        ObjectMapper mapper = JsonMapper.builder().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .build();
+        TypeReference<GenericMachineCommandDTO<?>> typeRef = new TypeReference<GenericMachineCommandDTO<?>>() {
+        };
         return mapper.readValue(jsonCommandString, typeRef);
     }
 
-    protected void sendMissionCommand(RawMachineCommand_dto node){
+    protected void sendMissionCommand(RawMachineCommand_dto node) {
         /*
          * This function take a rawMachineCommand node and execute it's command
          */
         String command = node.getPlaceholder();
         String machineName = this.getMachineNameFromJsonCommand(command);
         AbstractMachine machine = factoryScada.getFactoryScadaInstance().machines().get(machineName);
-        if(machine != null) {
+        if (machine != null) {
             try {
                 // update template with timestamp and generated commandId
                 GenericMachineCommandDTO<?> commandDTO = genericMachineCommand(command);
-                if(commandDTO.getMessage().getOutputId().trim().equalsIgnoreCase("AUTO_ID")) {
+                if (commandDTO.getMessage().getOutputId().trim().equalsIgnoreCase("AUTO_ID")) {
                     String commandId = Long.toString(factoryScada.getCommandIdGenerator().generateId());
                     commandDTO.getMessage().setOutputId(commandId);
 
@@ -258,7 +271,8 @@ public class ExecuterVisitor extends Visitor {
                     protocol.send(jsonString);
 
                     // update storage in backend
-                    CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName, new CommandStatus());
+                    CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName,
+                            new CommandStatus());
                     status.setCurrentCommandTimestamp(commandDTO.getTimestamp());
                     status.setCurrentCommandName(commandDTO.getMessage().getName());
                     status.setCurrentCommandId(commandDTO.getMessage().getOutputId());
@@ -268,7 +282,6 @@ public class ExecuterVisitor extends Visitor {
                     log.error("Communication error with controller {}", e.getMessage());
                     throw new RuntimeException(e);
                 }
-
 
             } catch (JsonProcessingException e) {
                 log.error("Json conversion error {}", e.getMessage());
