@@ -6,6 +6,7 @@ import { JsonPipe } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { IFactoryInstance } from "../../models/i-factory-instance";
 import { IFactoryMissionsConfiguration, Mission } from "../../models/i-factory-missions";
+import { IFactoryParallelizedMissionsConfiguration, MissionParallelized, Nodes } from "../../models/i-factory-paralelized_missions";
 import { IConfiguration, Machine } from "../../models/i-factory-configuration";
 import { ICommandPlaceholder } from "../../models/i-command-placeholder";
 import { ButtonModule } from 'primeng/button';
@@ -53,13 +54,13 @@ declare var $: any;
 export class MissionComponent implements OnInit {
   @ViewChild('commandExecuteLog', {static: true}) commandExecuteLog!: ElementRef<HTMLDivElement>;
 
-  selectedMission?: Mission;
+  selectedMission?: MissionParallelized;
   selectedMachine?: string;
   commandToSend?: string;
 
   placeholder?: ICommandPlaceholder;
   configuration?: IConfiguration;
-  missionConfiguration?: IFactoryMissionsConfiguration;
+  missionConfiguration?: IFactoryParallelizedMissionsConfiguration;
   instance?: IFactoryInstance;
 
   protected readonly getMissions = getMissions;
@@ -147,6 +148,7 @@ export class MissionComponent implements OnInit {
   canStartMission():  boolean {
     return this.selectedMission != undefined;
   }
+
   private subscribeToTopic(destination: string, callback: (message: Message) => void): void {
     this.myRxStompService.watch(destination)
       .pipe(takeUntilDestroyed(this.destroyRef))

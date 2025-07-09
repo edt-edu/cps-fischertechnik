@@ -5,7 +5,6 @@ import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.net.http.WebSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -27,11 +26,12 @@ import io.github.mbdo.factoryscada.domain.CommandStatus;
 import io.github.mbdo.factoryscada.domain.MachineStatus;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
-import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryMissionsConfiguration;
+import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
-import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
-import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
-import io.github.mbdo.factoryscada.frontend.mapper.MachineStatusMapper;
+import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
+import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
@@ -62,12 +62,12 @@ public class FactoryScada {
     /**
      * data coming from the mission configuration yaml file, usually : "missions-configuration.yml" 
      */
-    private final FactoryMissionsConfiguration missionsConfiguration;
+    private final FactoryMissionsParallelized_dto missionsParallelized_dto;
     private final Map<String, CommandStatus> machineLastCommandStatusMap = new HashMap<>();
     private final Map<String, MachineStatus> machineLastMachineStatusMap = new HashMap<>();
     private final SimpMessagingTemplate template;
     private final AppEnvironment appEnvironment;
-    private final MissionOrchestrator missionOrchestrator;
+    private final ExecuterVisitor executerVisitor;
     private final CommandIdGenerator commandIdGenerator;
 
     private final ApplicationContext applicationContext;
@@ -80,10 +80,19 @@ public class FactoryScada {
         this.webSocketPublisher = webSocketPublisher;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
-        this.factoryScadaConfiguration = factoryConfiguration();
-        this.missionsConfiguration = missionsConfiguration();
+        this.factoryScadaConfiguration = factoryConfiguration(); 
+
+        // Initialization and validation of mission graph
+        this.missionsParallelized_dto = missionsParallelized();
+        for (MissionParallelized_dto mission : this.missionsParallelized_dto.getMissions()){
+            InitializerVisitor resolver = new InitializerVisitor(mission.getNodes());
+            for (Node_dto node : mission.getNodes()) {
+                node.accept(resolver);
+            }
+        }
+        this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto);
+
         this.commandIdGenerator = new CommandIdGenerator();
-        this.missionOrchestrator = new MissionOrchestrator(this); // missionsConfiguration
     }
 
     /**
@@ -174,8 +183,8 @@ public class FactoryScada {
                     this.machineLastCommandStatusMap.put(machineName, commandStatus);
                     // publish changes to frontend
                     webSocketPublisher.sendCommandStatus(machineName, commandStatus);
-                    // notify MissionOrchestrator
-                    this.missionOrchestrator.receivedMachineCommandFeedback(commandStatus);
+                    // notify ExecuterVisitor
+                    this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
                     break;
                 case "MACHINE_FEEDBACK":
                     MachineStatus machineStatus = this.machineLastMachineStatusMap.getOrDefault(machineName, new MachineStatus());
@@ -265,13 +274,13 @@ public class FactoryScada {
         return result;
     }
     /**
-     * Retrieves the missions configuration by converting a YAML file located at the specified path
+     * Retrieves the missions parallelized configuration by converting a YAML file located at the specified path
      * into an instance of {@link FactoryScadaConfiguration} using Jackson ObjectMapper.
      *
-     * @return The MissionsConfiguration instance parsed from the YAML file.
+     * @return The missions parallelizedConfiguration instance parsed from the YAML file.
      * @throws RuntimeException If there is an error during YAML parsing or file reading.
      */
-    private FactoryMissionsConfiguration missionsConfiguration() {
-        return convertYamlToObject(applicationContext, appEnvironment.getMissionsConfigurationFilePath(), FactoryMissionsConfiguration.class);
+    private FactoryMissionsParallelized_dto missionsParallelized() {
+        return convertYamlToObject(applicationContext, appEnvironment.getMissionsConfigurationParallelizedFilePath(), FactoryMissionsParallelized_dto.class);
     }
 }

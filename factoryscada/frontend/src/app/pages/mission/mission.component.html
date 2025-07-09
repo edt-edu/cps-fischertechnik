@@ -45,10 +45,10 @@
           <p-accordion >
             <p-accordionTab header="Command list">
               <table>
-                @for (command of selectedMission.commands; track $index) {
+                @for (node of selectedMission.nodes; track $index) {
                     <tr>
-                      <td><b>{{ command.name }}</b></td>
-                      <td>{{ command.description }}</td>
+                      <td><b>{{ node.id }}</b></td>
+                      <td>{{ node.description }}</td>
                     </tr>
                 }
               </table>
@@ -69,10 +69,10 @@
   }
   @empty { }
 </div>
-
+  <p>{{ selectedMission?.name }}</p>
   <!-- Action Buttons -->
   <div class="">
-    <p-button label="Start" (click)="onStartMission()" [disabled]="!canStartMission()" ></p-button>
+    <p-button label="Start" (click)="onStartMission()" [disabled]="!canStartMission" ></p-button>
     <p-button label="Stop" (click)="onStopMission()" ></p-button>
   </div>
 </p-panel>
