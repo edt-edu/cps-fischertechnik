@@ -24,6 +24,9 @@ import {
   CommandStatusWidgetComponent
 } from "../../widgets/command-status-widget/command-status-widget.component";
 import {
+  GraphMissionsView
+} from "../../widgets/parallelized-missions-graph-widget/parallelized-missions-graph-widget.component";
+import {
   getMissions,
   getMachinesInMission
 } from "../../utilities/utils";
@@ -46,13 +49,14 @@ declare var $: any;
     ReactiveFormsModule,
     ScrollPanelModule,
     MachineStatusWidgetComponent,
-    CommandStatusWidgetComponent
-],
+    CommandStatusWidgetComponent,
+    GraphMissionsView
+  ],
   templateUrl: './mission.component.html',
   styleUrls: ['./mission.component.scss']
 })
 export class MissionComponent implements OnInit {
-  @ViewChild('commandExecuteLog', {static: true}) commandExecuteLog!: ElementRef<HTMLDivElement>;
+  @ViewChild('commandExecuteLog', { static: true }) commandExecuteLog!: ElementRef<HTMLDivElement>;
 
   selectedMission?: MissionParallelized;
   selectedMachine?: string;
@@ -72,6 +76,8 @@ export class MissionComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
 
+  missionsGraph = `flowchart LR\n  Empty[No mission selected]`;
+
   ngOnInit(): void {
     //this.initializeSemanticJS();
     this.subscribeToTopics();
@@ -81,6 +87,7 @@ export class MissionComponent implements OnInit {
   onMissionSelected(): void {
     if (this.selectedMission) {
       this.missionDescription = this.selectedMission?.description;
+      this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
     }
   }
 
@@ -88,7 +95,7 @@ export class MissionComponent implements OnInit {
     if (this.selectedMission) {
       const destination = `/app/factoryMission/command/start/${encodeURIComponent(this.selectedMission.name)}`;
       const body = "";
-      let publishParams = {destination, body};
+      let publishParams = { destination, body };
       if (publishParams) {
         this.myRxStompService.publish(publishParams);
       } else {
@@ -103,7 +110,7 @@ export class MissionComponent implements OnInit {
     if (this.selectedMission) {
       const destination = `/app/factoryMission/command/stop`;
       const body = "";
-      let publishParams = {destination, body};
+      let publishParams = { destination, body };
       if (publishParams) {
         this.myRxStompService.publish(publishParams);
       } else {
@@ -123,8 +130,8 @@ export class MissionComponent implements OnInit {
 
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
-    this.myRxStompService.publish({destination: '/app/factory/instance'});
-    this.myRxStompService.publish({destination: '/app/factoryMission/mission-configuration'});
+    this.myRxStompService.publish({ destination: '/app/factory/instance' });
+    this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
   }
 
   private subscribeToTopics(): void {
@@ -145,7 +152,7 @@ export class MissionComponent implements OnInit {
     });
   }
 
-  canStartMission():  boolean {
+  canStartMission(): boolean {
     return this.selectedMission != undefined;
   }
 
@@ -163,4 +170,26 @@ export class MissionComponent implements OnInit {
       return undefined;
     }
   }
+
+  private buildMermaidDiagramFromMission(mission: MissionParallelized): string {
+    const lines: string[] = [];
+    const sanitize = (id: string) => id.replace(/\s+/g, '_');
+
+    lines.push("flowchart TD");
+
+    for (const node of mission.nodes) {
+      lines.push(`${sanitize(node.id)}[${(node.description ?? node.id).trim().replace(/;/g, ":").replace(/[\[\]]/g, "")}]`);
+    }
+
+    for (const node of mission.nodes) {
+      for (const output of node.outputs ?? []) {
+        lines.push(`${sanitize(node.id)} --> ${sanitize(output)}`);
+      }
+    }
+
+    console.log(lines.join("\n"));
+    return lines.join("\n");
+  }
+
 }
+

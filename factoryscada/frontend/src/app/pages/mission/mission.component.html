@@ -7,73 +7,74 @@
 
 <!-- Control Panel Section -->
 <p-panel header="Missions">
-  <ng-template pTemplate="icons"> 
-      <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
-        <p-overlayPanel #helpOP>
-          <p-accordion [activeIndex]="0">
-            <p-accordionTab header="Panel Description">
-              <p>This page allow to select a mission, then start and stop it</p>
-              <p>Note: Starting a mission automatically interrupt any previoulsy running mission.</p>
-            </p-accordionTab>
-            <p-accordionTab header="How to use the Missions View?">
-              <ul class="ui list">  
-                <li>Select a mission</li>
-                <li>click on Start or Stop</li>
-              </ul>
-            </p-accordionTab>
-          </p-accordion>
-        </p-overlayPanel>
+  <ng-template pTemplate="icons">
+    <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
+    <p-overlayPanel #helpOP>
+      <p-accordion [activeIndex]="0">
+        <p-accordionTab header="Panel Description">
+          <p>This page allow to select a mission, then start and stop it</p>
+          <p>Note: Starting a mission automatically interrupt any previoulsy running mission.</p>
+        </p-accordionTab>
+        <p-accordionTab header="How to use the Missions View?">
+          <ul class="ui list">
+            <li>Select a mission</li>
+            <li>click on Start or Stop</li>
+          </ul>
+        </p-accordionTab>
+      </p-accordion>
+    </p-overlayPanel>
   </ng-template>
-  
+
   <!-- Mission Selection -->
 
   <div class="flex flex-wrap wrap">
     <div class="form-group flex-grow-0">
       <label>Mission</label>
-      <p-dropdown 
-        [options]="getMissions(missionConfiguration)" 
-        [(ngModel)]="selectedMission" 
-        optionLabel="name"
-        (onClick)="onMissionSelected()" 
-        [style]="{'width':'15rem'}"  />
-      
+      <p-dropdown [options]="getMissions(missionConfiguration)" [(ngModel)]="selectedMission" optionLabel="name"
+        (onClick)="onMissionSelected()" [style]="{'width':'15rem'}" />
+
     </div>
     <div class="form-group  flex-grow-1" style="padding-left: 20px;">
       <label>Description</label>
-        <p> {{ missionDescription }}</p>
-        @if (selectedMission) {
-          <p-accordion >
-            <p-accordionTab header="Command list">
-              <table>
-                @for (node of selectedMission.nodes; track $index) {
-                    <tr>
-                      <td><b>{{ node.id }}</b></td>
-                      <td>{{ node.description }}</td>
-                    </tr>
-                }
-              </table>
-            </p-accordionTab>
-          </p-accordion>
-        }
+      <p> {{ missionDescription }}</p>
+      @if (selectedMission) {
+      <p-accordion>
+        <p-accordionTab header="Command list">
+          <table>
+            @for (node of selectedMission.nodes; track $index) {
+            <tr>
+              <td><b>{{ node.id }}</b></td>
+              <td>{{ node.description }}</td>
+            </tr>
+            }
+          </table>
+        </p-accordionTab>
+      </p-accordion>
+      <p-accordion>
+        <p-accordionTab header="Mission graph">
+          <div>
+            <app-parralelized-missions-graph [diagramSource]="missionsGraph"></app-parralelized-missions-graph>
+          </div>
+        </p-accordionTab>
+      </p-accordion>
+      }
     </div>
   </div>
 
-
-
   <div style="display: flex; flex-wrap: wrap;">
-  @for (machine of getMachinesInMission(configuration, selectedMission); track machine) {
-      <p-fieldset legend="{{machine.name}}" >
-        <app-machine-status-widget  [machine]="machine"></app-machine-status-widget><br>
-        <app-command-status-widget [machine]="machine"></app-command-status-widget>
-      </p-fieldset>
-  }
-  @empty { }
-</div>
+    @for (machine of getMachinesInMission(configuration, selectedMission); track machine) {
+    <p-fieldset legend="{{machine.name}}">
+      <app-machine-status-widget [machine]="machine"></app-machine-status-widget><br>
+      <app-command-status-widget [machine]="machine"></app-command-status-widget>
+    </p-fieldset>
+    }
+    @empty { }
+  </div>
   <p>{{ selectedMission?.name }}</p>
   <!-- Action Buttons -->
   <div class="">
-    <p-button label="Start" (click)="onStartMission()" [disabled]="!canStartMission" ></p-button>
-    <p-button label="Stop" (click)="onStopMission()" ></p-button>
+    <p-button label="Start" (click)="onStartMission()" [disabled]="!canStartMission"></p-button>
+    <p-button label="Stop" (click)="onStopMission()"></p-button>
   </div>
 </p-panel>
 
@@ -83,4 +84,3 @@
     <div class="console-log" #commandExecuteLog></div>
   </div>
 </div>
-
