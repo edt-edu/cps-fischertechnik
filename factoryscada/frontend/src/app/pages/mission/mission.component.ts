@@ -67,6 +67,8 @@ export class MissionComponent implements OnInit {
   missionConfiguration?: IFactoryParallelizedMissionsConfiguration;
   instance?: IFactoryInstance;
 
+  actualMissionsExecuted: Nodes[] = [];
+
   protected readonly getMissions = getMissions;
   protected readonly getMachinesInMission = getMachinesInMission;
 
@@ -132,6 +134,7 @@ export class MissionComponent implements OnInit {
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
     this.myRxStompService.publish({ destination: '/app/factory/instance' });
     this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
+    this.myRxStompService.publish({ destination: '/app/factoryMission/actual-command-executing' });
   }
 
   private subscribeToTopics(): void {
@@ -143,8 +146,28 @@ export class MissionComponent implements OnInit {
     this.subscribeToTopic('/topic/factory-configuration', (message: Message) => {
       this.configuration = this.parseMessage(message);
     });
+
     this.subscribeToTopic('/topic/mission-configuration', (message: Message) => {
       this.missionConfiguration = this.parseMessage(message);
+    });
+
+    this.subscribeToTopic('/topic/actual-command-executing', (message: Message) => {
+      // Save scroll position
+      const el = this.commandExecuteLog.nativeElement;
+      const scrollPos = el.scrollTop;
+
+      // Update the data (replace or append)
+      this.actualMissionsExecuted = this.parseMessage(message);
+
+      // Optionally update your DOM / graph as you do:
+      if (this.selectedMission != undefined) {
+        this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
+      }
+
+      // Restore scroll position
+      setTimeout(() => {
+        el.scrollTop = scrollPos;
+      });
     });
 
     this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
@@ -185,6 +208,11 @@ export class MissionComponent implements OnInit {
       for (const output of node.outputs ?? []) {
         lines.push(`${sanitize(node.id)} --> ${sanitize(output)}`);
       }
+    }
+
+    lines.push(`classDef surveillance fill:#ffcccc,stroke:#ff0000,stroke-width:2px;`)
+    for (const node of this.actualMissionsExecuted) {
+      lines.push(`class ${node.id} surveillance`)
     }
 
     console.log(lines.join("\n"));

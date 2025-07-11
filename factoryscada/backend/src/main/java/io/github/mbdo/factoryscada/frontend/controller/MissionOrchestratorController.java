@@ -5,6 +5,7 @@ import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 
@@ -51,6 +53,13 @@ public class MissionOrchestratorController {
     public FactoryMissionsParallelized_dto getFactoryMissionsConfiguration() {
         log.info("Received request on /factoryMission/mission-configuration");
         return factoryScada.getMissionsParallelized_dto();
+    }
+
+    @MessageMapping("/actual-command-executing")
+    @SendTo("/topic/actual-command-executing")
+    public List<Node_dto> getFactoryActualMissions() {
+        log.info("Received request on /factoryMission/actual-command-executing");
+        return factoryScada.getExecuterVisitor().getIsCurrentlyVisiting();
     }
 
     @MessageMapping("/command/start/{missionName}")
