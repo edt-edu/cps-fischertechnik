@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any, Callable, Tuple
+from typing import Dict, Any, Callable
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -353,12 +353,9 @@ class IndexedLine(Machine, TransitioningMachine):
         runner = self.create_runner()
         config = IndexedLineConfig()
 
-        # wait until payload is present
-        runner.then_goto(config, until=lambda: not self.indexedLineSensLoading, and_stay_for=0.5, info="waiting for payload")
-
         # move payload onto slider1
         config.feed_conveyor = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensSlider1, info="moving payload onto slider1")
+        runner.then_goto(config, until=lambda: not self.indexedLineSensSlider1 or not self.indexedLineSensMilling, info="moving payload onto slider1")
 
         # keep moving payload onto slider, since light-barrier is way in front of that
         runner.then_goto(config, and_stay_for=0.5, info="moving payload onto slider1")
@@ -368,6 +365,12 @@ class IndexedLine(Machine, TransitioningMachine):
         config.milling_conveyor = True
         config.slider_1_extended = True
         runner.then_goto(config, until=lambda: not self.indexedLineSensMilling, info="move payload to milling machine")
+
+        config.feed_conveyor = False
+        config.milling_conveyor = False
+        config.slider_1_extended = False
+        runner.then_goto(config, info="Stopping milling conveyor")
+
         return runner.run()
 
     def mill_Command(self) -> Runner:
@@ -375,20 +378,25 @@ class IndexedLine(Machine, TransitioningMachine):
         config = IndexedLineConfig()
 
         # mill for a few seconds
-        config.milling_conveyor = False
         config.milling = True
         runner.then_goto(config, and_stay_for=2.0, info="milling")
+        config.milling = False
+        runner.then_goto(config, info="Stopping mill")
         return runner.run()
-    
+
     def move_to_drill_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # move payload to drilling machine
-        config.milling = False
         config.milling_conveyor = True
         config.drilling_conveyor = True
         runner.then_goto(config, until=lambda: not self.indexedLineSensDrilling, info="moving to drilling machine")
+
+        config.milling_conveyor = False
+        config.drilling_conveyor = False
+        runner.then_goto(config, info="stopping conveyors")
+
         return runner.run()
 
     def drill_Command(self) -> Runner:
@@ -396,18 +404,19 @@ class IndexedLine(Machine, TransitioningMachine):
         config = IndexedLineConfig()
 
         # drill for a few seconds
-        config.milling_conveyor = False
-        config.drilling_conveyor = False
         config.drilling = True
         runner.then_goto(config, and_stay_for=2.0, info="drilling")
+
+        config.drilling = False
+        runner.then_goto(config, info="stopping drill")
+
         return runner.run()
-    
+
     def move_to_output_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
-    
+
          # move payload onto slider2
-        config.drilling = False
         config.drilling_conveyor = True
         runner.then_goto(config, and_stay_for=1.5, info="moving to slider2")
 
@@ -425,64 +434,31 @@ class IndexedLine(Machine, TransitioningMachine):
         config.slider_2_extended = False
         runner.then_goto(config, info="stopping")
         return runner.run()
-    
 
-    # TODO: compose this of the commands above
     def process1_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # wait until payload is present
-        runner.then_goto(config, until=lambda: not self.indexedLineSensLoading, and_stay_for=0.5, info="waiting for payload")
+        runner.then_goto(config,
+                         until=lambda: not self.indexedLineSensLoading,
+                         and_stay_for=0.5,
+                         info="waiting for payload")
 
-        # move payload onto slider1
-        config.feed_conveyor = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensSlider1, info="moving payload onto slider1")
+        # move to mill
+        runner.then_run_runner_from(self.move_to_mill_Command, info="moving to mill")
 
-        # keep moving payload onto slider, since light-barrier is way in front of that
-        runner.then_goto(config, and_stay_for=0.5, info="moving payload onto slider1")
+        # mill
+        runner.then_run_runner_from(self.mill_Command, info="milling")
 
-        # move payload to milling machine
-        config.feed_conveyor = False
-        config.milling_conveyor = True
-        config.slider_1_extended = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensMilling, info="move payload to milling machine")
+        # move to drill
+        runner.then_run_runner_from(self.move_to_drill_Command, info="moving to drill")
 
-        # mill for a few seconds
-        config.milling_conveyor = False
-        config.milling = True
-        runner.then_goto(config, and_stay_for=2.0, info="milling")
+        # drill
+        runner.then_run_runner_from(self.drill_Command, info="drilling")
 
-        # move payload to drilling machine
-        config.milling = False
-        config.milling_conveyor = True
-        config.drilling_conveyor = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensDrilling, info="moving to drilling machine")
-
-        # drill for a few seconds
-        config.milling_conveyor = False
-        config.drilling_conveyor = False
-        config.drilling = True
-        runner.then_goto(config, and_stay_for=2.0, info="drilling")
-
-        # move payload onto slider2
-        config.drilling = False
-        config.drilling_conveyor = True
-        runner.then_goto(config, and_stay_for=1.5, info="moving to slider2")
-
-        # push payload to swap station
-        config.drilling_conveyor = False
-        config.slider_2_extended = True
-        config.swap_conveyor = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensSwap, info="moving to swap station")
-
-        # move payload to end of swap station
-        runner.then_goto(config, and_stay_for=1.0, info="Moving to end of swap station")
-
-        # stop station
-        config.swap_conveyor = False
-        config.slider_2_extended = False
-        runner.then_goto(config, info="stopping")
+        # move to output
+        runner.then_run_runner_from(self.move_to_output_Command, info="moving to output")
 
         return runner.run()
 
