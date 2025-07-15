@@ -198,15 +198,20 @@ export class MissionComponent implements OnInit {
     const lines: string[] = [];
     const sanitize = (id: string) => id.replace(/\s+/g, '_');
 
-    lines.push("flowchart TD");
+    lines.push("flowchart LR");
 
     for (const node of mission.nodes) {
-      lines.push(`${sanitize(node.id)}[${(node.description ?? node.id).trim().replace(/;/g, ":").replace(/[\[\]]/g, "")}]`);
+      if (!["Fork"].includes(node.type)) {
+        lines.push(`${sanitize(node.id)}[${(node.description ?? node.id).trim().replace(/;/g, ":").replace(/[\[\]]/g, "")}]`);
+      }
     }
 
     for (const node of mission.nodes) {
-      for (const output of node.outputs ?? []) {
-        lines.push(`${sanitize(node.id)} --> ${sanitize(output)}`);
+      if (!["Fork"].includes(node.type)) {
+        const outputs = this.getoutputsNodes(node);
+        for (var output of outputs) {
+          lines.push(`${sanitize(node.id)} --> ${sanitize(output)}`);
+        }
       }
     }
 
@@ -217,6 +222,19 @@ export class MissionComponent implements OnInit {
 
     console.log(lines.join("\n"));
     return lines.join("\n");
+  }
+
+  private getoutputsNodes(node: Nodes): string[]{
+    var ret:string[] = [];
+    
+    for (var output of node.outputNodes){
+      if (!["Fork"].includes(output.type)){
+        ret.push(output.id);
+      } else {
+        ret = ret.concat(this.getoutputsNodes(output));
+      }
+    }
+    return ret;
   }
 
 }

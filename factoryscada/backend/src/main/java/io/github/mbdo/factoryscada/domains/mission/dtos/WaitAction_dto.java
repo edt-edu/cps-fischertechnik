@@ -9,6 +9,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class WaitAction_dto extends ActionNode_dto{
+    public WaitAction_dto(){
+        this.type = "WaitAction";
+    }
+
     public void accept(Visitor v){
         v.visit(this);
     }

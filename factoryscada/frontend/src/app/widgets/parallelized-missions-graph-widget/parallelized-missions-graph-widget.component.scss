@@ -3,3 +3,23 @@
 .status-detail-field-label {
     font-weight: $status-detail-field-label-font-weight;
 }
+
+:host {
+  display: block;
+  width: auto; // Match with TS height
+  border: 1px solid #ccc;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+#container {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

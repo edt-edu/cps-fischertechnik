@@ -9,6 +9,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class RawMachineCommand_dto extends ActionNode_dto{
+    public RawMachineCommand_dto(){
+        this.type = "RawMachineCommand";
+    }
+
     public void accept(Visitor v){
         v.visit(this);
     }

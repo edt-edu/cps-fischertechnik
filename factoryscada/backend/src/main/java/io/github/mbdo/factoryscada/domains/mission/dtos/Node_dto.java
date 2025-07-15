@@ -27,6 +27,8 @@ public abstract class Node_dto{
     @JsonProperty("id")
     private String id;
 
+    protected String type;
+
     @JsonProperty("description")
     private String description;
 
