@@ -302,6 +302,10 @@
 |<<incoming_factorymission-mission-configuration,/factoryMission/mission-configuration>>
 |<<outgoing_topic-mission-configuration,/topic/mission-configuration>>
 
+|MissionOrchestratorController.getFactoryActualMissions()
+|<<incoming_factorymission-actual-command-executing,/factoryMission/actual-command-executing>>
+|<<outgoing_topic-actual-command-executing,/topic/actual-command-executing>>
+
 |MissionOrchestratorController.getMissionStatus()
 |<<incoming_factorymission-status,/factoryMission/status>>
 |<<outgoing_topic-mission-status,/topic/mission-status>>
@@ -2223,6 +2227,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
               "type" : "object",
               "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
               "properties" : {
+                "type" : {
+                  "type" : "string"
+                },
                 "outputNodes" : {
                   "type" : "array",
                   "items" : {
@@ -2249,6 +2256,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       }
     }
   }
+}
+----
+
+[[incoming_factorymission-actual-command-executing]]
+===  Incoming Topic: `/factoryMission/actual-command-executing`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`
+
+*Send To:* `/topic/actual-command-executing`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
 }
 ----
 
@@ -2305,6 +2331,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
               "type" : "object",
               "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
               "properties" : {
+                "type" : {
+                  "type" : "string"
+                },
                 "outputNodes" : {
                   "type" : "array",
                   "items" : {
@@ -4789,6 +4818,9 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
               "type" : "object",
               "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
               "properties" : {
+                "type" : {
+                  "type" : "string"
+                },
                 "outputNodes" : {
                   "type" : "array",
                   "items" : {
@@ -4815,6 +4847,27 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       }
     }
   }
+}
+----
+
+[[outgoing_topic-actual-command-executing]]
+=== Outgoing Topic: `/topic/actual-command-executing`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/actual-command-executing")`
+
+*Send To:* `/topic/actual-command-executing`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
 }
 ----
 
@@ -4880,6 +4933,9 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
               "type" : "object",
               "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
               "properties" : {
+                "type" : {
+                  "type" : "string"
+                },
                 "outputNodes" : {
                   "type" : "array",
                   "items" : {

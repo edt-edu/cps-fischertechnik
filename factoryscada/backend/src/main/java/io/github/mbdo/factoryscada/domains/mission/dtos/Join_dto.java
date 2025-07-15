@@ -7,6 +7,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Join_dto extends ControlNode_dto{
+    public Join_dto(){
+        this.type = "Join";
+    }
+
     public void accept(Visitor v){
         v.visit(this);
     }

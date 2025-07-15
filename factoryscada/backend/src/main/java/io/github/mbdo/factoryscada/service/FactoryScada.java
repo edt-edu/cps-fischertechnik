@@ -90,7 +90,7 @@ public class FactoryScada {
                 node.accept(resolver);
             }
         }
-        this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto);
+        this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto, this.template);
 
         this.commandIdGenerator = new CommandIdGenerator();
     }

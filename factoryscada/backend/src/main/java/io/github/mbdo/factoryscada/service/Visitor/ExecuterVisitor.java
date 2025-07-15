@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -48,10 +50,13 @@ public class ExecuterVisitor extends Visitor {
     private Map<String, Integer> joinIdNumberInputs = new HashMap<>();
 
     private String actualMissionName;
+    
+    private final SimpMessagingTemplate template;
 
-    public ExecuterVisitor(FactoryScada factoryScada, FactoryMissionsParallelized_dto factoryMissions) {
+    public ExecuterVisitor(FactoryScada factoryScada, FactoryMissionsParallelized_dto factoryMissions, SimpMessagingTemplate template) {
         this.factoryScada = factoryScada;
         this.factoryMissions = factoryMissions;
+        this.template = template;
 
         // Store the entry node for each missions
         for (MissionParallelized_dto mission : factoryMissions.getMissions()) {
@@ -119,6 +124,7 @@ public class ExecuterVisitor extends Visitor {
                 }
                 isCurrentlyVisiting.remove(node);
             }
+            template.convertAndSend("/topic/actual-command-executing", isCurrentlyVisiting);
             return "Mission " + this.actualMissionName + " stopped";
         } else {
             return "";
@@ -155,6 +161,7 @@ public class ExecuterVisitor extends Visitor {
                     }
                 }
             }
+            template.convertAndSend("/topic/actual-command-executing", isCurrentlyVisiting);
         }
     }
 
@@ -186,17 +193,22 @@ public class ExecuterVisitor extends Visitor {
     public void visit(RawMachineCommand_dto node) {
         log.info("Visiting RMC : {}", node.getId());
         isCurrentlyVisiting.add(node);
+        template.convertAndSend("/topic/actual-command-executing", isCurrentlyVisiting);
         sendMissionCommand(node);
     }
 
     public void visit(WaitAction_dto node) {
         log.info("Visiting WA : {}", node.getId());
+        isCurrentlyVisiting.add(node);
+
         try {
             Thread.sleep(node.getTime() * 1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("Thread was interrupted during sleep.");
         }
+        
+        isCurrentlyVisiting.remove(node);
         node.getOutputNodes().get(0).accept(this);
     }
 

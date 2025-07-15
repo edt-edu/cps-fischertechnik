@@ -14,6 +14,7 @@ export interface MissionParallelized {
 // Interface of a command
 export interface Nodes {
   id: string;
+  type: string;
   description: string;
   outputs: string[];
   placeholder: string;

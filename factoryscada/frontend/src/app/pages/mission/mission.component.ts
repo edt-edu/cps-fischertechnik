@@ -24,6 +24,9 @@ import {
   CommandStatusWidgetComponent
 } from "../../widgets/command-status-widget/command-status-widget.component";
 import {
+  GraphMissionsView
+} from "../../widgets/parallelized-missions-graph-widget/parallelized-missions-graph-widget.component";
+import {
   getMissions,
   getMachinesInMission
 } from "../../utilities/utils";
@@ -46,13 +49,14 @@ declare var $: any;
     ReactiveFormsModule,
     ScrollPanelModule,
     MachineStatusWidgetComponent,
-    CommandStatusWidgetComponent
-],
+    CommandStatusWidgetComponent,
+    GraphMissionsView
+  ],
   templateUrl: './mission.component.html',
   styleUrls: ['./mission.component.scss']
 })
 export class MissionComponent implements OnInit {
-  @ViewChild('commandExecuteLog', {static: true}) commandExecuteLog!: ElementRef<HTMLDivElement>;
+  @ViewChild('commandExecuteLog', { static: true }) commandExecuteLog!: ElementRef<HTMLDivElement>;
 
   selectedMission?: MissionParallelized;
   selectedMachine?: string;
@@ -63,6 +67,8 @@ export class MissionComponent implements OnInit {
   missionConfiguration?: IFactoryParallelizedMissionsConfiguration;
   instance?: IFactoryInstance;
 
+  actualMissionsExecuted: Nodes[] = [];
+
   protected readonly getMissions = getMissions;
   protected readonly getMachinesInMission = getMachinesInMission;
 
@@ -71,6 +77,8 @@ export class MissionComponent implements OnInit {
   private readonly myRxStompService = inject(MyRxStompService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
+
+  missionsGraph = `flowchart LR\n  Empty[No mission selected]`;
 
   ngOnInit(): void {
     //this.initializeSemanticJS();
@@ -81,6 +89,7 @@ export class MissionComponent implements OnInit {
   onMissionSelected(): void {
     if (this.selectedMission) {
       this.missionDescription = this.selectedMission?.description;
+      this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
     }
   }
 
@@ -88,7 +97,7 @@ export class MissionComponent implements OnInit {
     if (this.selectedMission) {
       const destination = `/app/factoryMission/command/start/${encodeURIComponent(this.selectedMission.name)}`;
       const body = "";
-      let publishParams = {destination, body};
+      let publishParams = { destination, body };
       if (publishParams) {
         this.myRxStompService.publish(publishParams);
       } else {
@@ -103,7 +112,7 @@ export class MissionComponent implements OnInit {
     if (this.selectedMission) {
       const destination = `/app/factoryMission/command/stop`;
       const body = "";
-      let publishParams = {destination, body};
+      let publishParams = { destination, body };
       if (publishParams) {
         this.myRxStompService.publish(publishParams);
       } else {
@@ -123,8 +132,9 @@ export class MissionComponent implements OnInit {
 
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
-    this.myRxStompService.publish({destination: '/app/factory/instance'});
-    this.myRxStompService.publish({destination: '/app/factoryMission/mission-configuration'});
+    this.myRxStompService.publish({ destination: '/app/factory/instance' });
+    this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
+    this.myRxStompService.publish({ destination: '/app/factoryMission/actual-command-executing' });
   }
 
   private subscribeToTopics(): void {
@@ -136,8 +146,17 @@ export class MissionComponent implements OnInit {
     this.subscribeToTopic('/topic/factory-configuration', (message: Message) => {
       this.configuration = this.parseMessage(message);
     });
+
     this.subscribeToTopic('/topic/mission-configuration', (message: Message) => {
       this.missionConfiguration = this.parseMessage(message);
+    });
+
+    this.subscribeToTopic('/topic/actual-command-executing', (message: Message) => {
+      this.actualMissionsExecuted = this.parseMessage(message);
+
+      if (this.selectedMission != undefined) {
+        this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
+      }
     });
 
     this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
@@ -145,7 +164,7 @@ export class MissionComponent implements OnInit {
     });
   }
 
-  canStartMission():  boolean {
+  canStartMission(): boolean {
     return this.selectedMission != undefined;
   }
 
@@ -163,4 +182,63 @@ export class MissionComponent implements OnInit {
       return undefined;
     }
   }
+
+  private buildMermaidDiagramFromMission(mission: MissionParallelized): string {
+    /*
+    This function i used to build the mermaid graph for visualizing the mission currently running
+    It build a list of lines wich are the mermaid code and then concatenate them
+    */
+    const lines: string[] = [];
+    const sanitize = (id: string) => id.replace(/\s+/g, '_');
+
+    //For a flow graph from Left to Right
+    lines.push("flowchart LR");
+
+    //Add each nodes except the Forks (waste of space)
+    for (const node of mission.nodes) {
+      if (!["Fork"].includes(node.type)) {
+        lines.push(`${sanitize(node.id)}[${(node.description ?? node.id).trim().replace(/;/g, ":").replace(/[\[\]]/g, "")}]`);
+      }
+    }
+
+    //Include the transitions
+    for (const node of mission.nodes) {
+      if (!["Fork"].includes(node.type)) {
+        const outputs = this.getoutputsNodes(node);
+        for (var output of outputs) {
+          lines.push(`${sanitize(node.id)} --> ${sanitize(output)}`);
+        }
+      }
+    }
+
+    //Add the surveillance on currently visited nodes
+    lines.push(`classDef surveillance fill:#ffcccc,stroke:#ff0000,stroke-width:2px;`)
+    for (const node of this.actualMissionsExecuted) {
+      lines.push(`class ${node.id} surveillance`)
+    }
+
+    //Return the graph
+    console.log(lines.join("\n"));
+    return lines.join("\n");
+  }
+
+  private getoutputsNodes(node: Nodes): string[] {
+    /*
+    This function is used recursively to search for all the outputs of the node provided, excluding the forks
+    :return: A list of string, which contains all id of output nodes
+    */
+
+    var ret: string[] = [];
+
+    for (var output of node.outputNodes) {
+      if (!["Fork"].includes(output.type)) {
+        ret.push(output.id);
+      } else {
+        ret = ret.concat(this.getoutputsNodes(output));
+      }
+    }
+    return ret;
+  }
+
 }
+

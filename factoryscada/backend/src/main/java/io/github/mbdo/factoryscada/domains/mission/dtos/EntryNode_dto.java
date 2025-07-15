@@ -7,6 +7,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class EntryNode_dto extends Node_dto{
+    public EntryNode_dto(){
+        this.type = "EntryNode";
+    }
+
     public void accept(Visitor v){
         v.visit(this);
     }
