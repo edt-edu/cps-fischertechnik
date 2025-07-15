@@ -58,6 +58,11 @@ class SortingLine(Machine, TransitioningMachine):
         self.__sortingLineSensBlueLightBarrier = True
         self.__sortingLineSensRedLightBarrier = True
 
+        self.__sortingLineSensColorDetector = False
+        self.__sortingLineSensBlueDetector = False
+        self.__sortingLineSensRedDetector = False
+        self.__sortingLineSensWhiteDetector = False
+
         #outputs
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
@@ -173,11 +178,44 @@ class SortingLine(Machine, TransitioningMachine):
     def sortingLineActBlueEjector(self, value):
         self.__sortingLineActBlueEjector = value
 
+    @property
+    def sortingLineSensColorDetector(self):
+        return self.__sortingLineSensColorDetector
+
+    @sortingLineSensColorDetector.setter
+    def sortingLineSensColorDetector(self, value):
+        self.__sortingLineSensColorDetector = value
+
+    @property
+    def sortingLineSensRedDetector(self):
+        return self.__sortingLineSensRedDetector
+
+    @sortingLineSensRedDetector.setter
+    def sortingLineSensRedDetector(self, value):
+        self.__sortingLineSensRedDetector = value
+
+    @property
+    def sortingLineSensBlueDetector(self):
+        return self.__sortingLineSensBlueDetector
+
+    @sortingLineSensBlueDetector.setter
+    def sortingLineSensBlueDetector(self, value):
+        self.__sortingLineSensBlueDetector = value
+
+    @property
+    def sortingLineSensWhiteDetector(self):
+        return self.__sortingLineSensWhiteDetector
+
+    @sortingLineSensWhiteDetector.setter
+    def sortingLineSensWhiteDetector(self, value):
+        self.__sortingLineSensWhiteDetector = value
+
     def sensorStatusString(self) -> str:
         s = lambda bool: "T" if bool else "F"
 
         return f"ConvSens[{s(self.sortingLineSensInputLightBarrier)}, {s(self.sortingLineSensMiddleLightBarrier)}], " + \
                f"ColoSens[{s(self.sortingLineSensWhiteLightBarrier)}, {s(self.sortingLineSensBlueLightBarrier)}, {s(self.sortingLineSensRedLightBarrier)}], " + \
+               f"DeteColo[{s(self.sortingLineSensColorDetector)}, {s(self.sortingLineSensBlueDetector)}, {s(self.sortingLineSensRedDetector)}, {s(self.sortingLineSensWhiteDetector)}], " + \
                f"Counter[{self.sortingLineSensImpulseCounterRaw}]"
 
     def actuatorStatusString(self) -> str:
