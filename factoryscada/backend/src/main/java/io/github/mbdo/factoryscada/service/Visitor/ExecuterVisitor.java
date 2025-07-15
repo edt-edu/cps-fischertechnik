@@ -199,12 +199,16 @@ public class ExecuterVisitor extends Visitor {
 
     public void visit(WaitAction_dto node) {
         log.info("Visiting WA : {}", node.getId());
+        isCurrentlyVisiting.add(node);
+
         try {
             Thread.sleep(node.getTime() * 1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("Thread was interrupted during sleep.");
         }
+        
+        isCurrentlyVisiting.remove(node);
         node.getOutputNodes().get(0).accept(this);
     }
 
