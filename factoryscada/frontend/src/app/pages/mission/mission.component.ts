@@ -152,22 +152,11 @@ export class MissionComponent implements OnInit {
     });
 
     this.subscribeToTopic('/topic/actual-command-executing', (message: Message) => {
-      // Save scroll position
-      const el = this.commandExecuteLog.nativeElement;
-      const scrollPos = el.scrollTop;
-
-      // Update the data (replace or append)
       this.actualMissionsExecuted = this.parseMessage(message);
 
-      // Optionally update your DOM / graph as you do:
       if (this.selectedMission != undefined) {
         this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
       }
-
-      // Restore scroll position
-      setTimeout(() => {
-        el.scrollTop = scrollPos;
-      });
     });
 
     this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
@@ -195,17 +184,24 @@ export class MissionComponent implements OnInit {
   }
 
   private buildMermaidDiagramFromMission(mission: MissionParallelized): string {
+    /*
+    This function i used to build the mermaid graph for visualizing the mission currently running
+    It build a list of lines wich are the mermaid code and then concatenate them
+    */
     const lines: string[] = [];
     const sanitize = (id: string) => id.replace(/\s+/g, '_');
 
+    //For a flow graph from Left to Right
     lines.push("flowchart LR");
 
+    //Add each nodes except the Forks (waste of space)
     for (const node of mission.nodes) {
       if (!["Fork"].includes(node.type)) {
         lines.push(`${sanitize(node.id)}[${(node.description ?? node.id).trim().replace(/;/g, ":").replace(/[\[\]]/g, "")}]`);
       }
     }
 
+    //Include the transitions
     for (const node of mission.nodes) {
       if (!["Fork"].includes(node.type)) {
         const outputs = this.getoutputsNodes(node);
@@ -215,20 +211,27 @@ export class MissionComponent implements OnInit {
       }
     }
 
+    //Add the surveillance on currently visited nodes
     lines.push(`classDef surveillance fill:#ffcccc,stroke:#ff0000,stroke-width:2px;`)
     for (const node of this.actualMissionsExecuted) {
       lines.push(`class ${node.id} surveillance`)
     }
 
+    //Return the graph
     console.log(lines.join("\n"));
     return lines.join("\n");
   }
 
-  private getoutputsNodes(node: Nodes): string[]{
-    var ret:string[] = [];
-    
-    for (var output of node.outputNodes){
-      if (!["Fork"].includes(output.type)){
+  private getoutputsNodes(node: Nodes): string[] {
+    /*
+    This function is used recursively to search for all the outputs of the node provided, excluding the forks
+    :return: A list of string, which contains all id of output nodes
+    */
+
+    var ret: string[] = [];
+
+    for (var output of node.outputNodes) {
+      if (!["Fork"].includes(output.type)) {
         ret.push(output.id);
       } else {
         ret = ret.concat(this.getoutputsNodes(output));

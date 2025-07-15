@@ -36,58 +36,61 @@ export class GraphMissionsView implements AfterViewInit, OnChanges {
         }
     }
 
+
     private async renderMermaid(): Promise<void> {
-    if (!this.diagramSource || !this.containerRef) return;
+        /*
+        Renders the Mermaid diagram SVG and sets up zoom/pan functionality.
+        */
+        if (!this.diagramSource || !this.containerRef) return;
 
-    try {
-        const { svg } = await mermaid.render('graphDiv', this.diagramSource);
+        try {
+            // Render Mermaid diagram to SVG markup
+            const { svg } = await mermaid.render('graphDiv', this.diagramSource);
 
-        // Inject the SVG
-        this.containerRef.nativeElement.innerHTML = svg;
+            // Insert SVG into container
+            this.containerRef.nativeElement.innerHTML = svg;
 
-        // Wait for next frame so browser paints the SVG
-        requestAnimationFrame(() => {
-            const svgElement = this.containerRef.nativeElement.querySelector('svg');
-            if (!svgElement) return;
+            // Wait for DOM update before manipulating SVG
+            requestAnimationFrame(() => {
+                const svgElement = this.containerRef.nativeElement.querySelector('svg');
+                if (!svgElement) return;
 
-            // ❗ Get the actual bounding box of the SVG content
-            const bbox = svgElement.getBBox();
-            const viewBox = `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`;
+                // Calculate viewBox based on actual SVG content size
+                const bbox = svgElement.getBBox();
+                const viewBox = `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`;
 
-            // Apply responsive attributes
-            svgElement.removeAttribute('height');
-            svgElement.setAttribute('width', '100%');
-            svgElement.setAttribute('viewBox', viewBox);
-            svgElement.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+                // Set responsive SVG attributes and styles
+                svgElement.removeAttribute('height');
+                svgElement.setAttribute('width', '100%');
+                svgElement.setAttribute('viewBox', viewBox);
+                svgElement.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+                svgElement.style.width = '100%';
+                svgElement.style.minHeight = '300px';
+                svgElement.style.height = 'auto';
+                svgElement.style.aspectRatio = `${bbox.width} / ${bbox.height}`;
 
-            svgElement.style.width = '100%';
-            svgElement.style.minHeight = '300px';
-            svgElement.style.height = 'auto';
+                // Set container width to viewport width
+                const container = this.containerRef.nativeElement;
+                container.style.width = '100vw';
+                container.style.height = 'auto';
 
-            // Optional but good for modern browsers
-            svgElement.style.aspectRatio = `${bbox.width} / ${bbox.height}`;
+                // Initialize svg-pan-zoom with zoom and controls enabled
+                const panZoom = svgPanZoom(svgElement, {
+                    zoomEnabled: true,
+                    controlIconsEnabled: true,
+                    center: true,
+                });
 
-            const container = this.containerRef.nativeElement;
-            container.style.width = '100vw';
-            container.style.height = 'auto';
-
-            // ✅ Now init svg-pan-zoom and force proper layout
-            const panZoom = svgPanZoom(svgElement, {
-                zoomEnabled: true,
-                controlIconsEnabled: true,
-                center: true,
+                // Adjust zoom and position
+                panZoom.resize();
+                panZoom.fit();
+                panZoom.center();
             });
 
-            // Call these AFTER svg-pan-zoom is initialized
-            panZoom.resize();
-            panZoom.fit();
-            panZoom.center();
-        });
-
-    } catch (error) {
-        console.error('Error rendering Mermaid diagram:', error);
+        } catch (error) {
+            console.error('Error rendering Mermaid diagram:', error);
+        }
     }
-}
 
 
 
