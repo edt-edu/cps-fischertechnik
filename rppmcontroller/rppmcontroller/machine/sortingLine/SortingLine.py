@@ -391,8 +391,11 @@ class SortingLine(Machine, TransitioningMachine):
 
         This function is a cycleStep, it is call on each controller cycle, until its goal is reached
 
+        |!!!| This function is really imprecise due to steps miscalculation (cf references/precision_study) |!!!|
+
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
         """
+        # Reset counter if first pass
         if not self.ejectingPayload:
             self.ejectingPayload = True
             self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
@@ -403,6 +406,7 @@ class SortingLine(Machine, TransitioningMachine):
         redCounter = 14
         blueCounter = 24
 
+        # If counter attained the steps needed, eject 
         if (self.colorToEject == Color.BLUE and current > blueCounter) or \
            (self.colorToEject == Color.RED and current > redCounter) or  \
            (self.colorToEject == Color.WHITE and current > whiteCounter):
@@ -415,6 +419,7 @@ class SortingLine(Machine, TransitioningMachine):
             elif self.colorToEject == Color.WHITE:
                 self.__sortingLineActWhiteEjector = True
 
+            # Wait 5 steps more to retract the arm and end the command 
             if (self.colorToEject == Color.BLUE and current > blueCounter+5) or \
                (self.colorToEject == Color.RED and current > redCounter+5) or   \
                (self.colorToEject == Color.WHITE and current > whiteCounter+5):
@@ -490,10 +495,10 @@ class SortingLine(Machine, TransitioningMachine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
-        return lambda: self.stop_CycleStep()
+    def stop_Command(self) -> CycleStepResult:
+        return self.stop_CycleStep()
 
-    def setup_Command(self) -> Callable[[], CycleStepResult]:
+    def setup_Command(self) -> CycleStepResult:
         return self.stop_Command()
 
     def eject_Command(self, color: Color) -> Runner:
@@ -522,35 +527,5 @@ class SortingLine(Machine, TransitioningMachine):
         # Eject the payload in right output
         self.ejectingPayload = False
         runner.then_run(self.ejectPayloadByTime_CycleStep, info="Ejecting payload")
-
-        return runner.run()
-
-    def sort_Command(self, as_color: Optional[Color] = None) -> Runner:
-        """
-        Wait for a payload and sort it into the specified color, or let the
-        color sensor do the work
-        :param as_color: The color to sort the payload into, or None to let the color sensor work
-        :return: A Runner
-        """
-        runner = self.create_runner()
-
-        # wait for payload
-        config = SortingLineConfig()
-        runner.then_goto(config,
-                         until=lambda: not self.sortingLineSensInputLightBarrier)
-
-        # move payload through color sensor
-        config.conveyor_active = True
-        runner.then_goto(config, until=lambda: not self.sortingLineSensMiddleLightBarrier)
-
-        def get_color() -> Color:
-            if as_color is None:
-                # TODO get last color from color sensor here
-                logging.error(
-                    "color sensor is not implemented yet - ejecting as red")
-                return Color.RED
-            return as_color
-
-        runner.then_run_runner_from(lambda: self.eject_Command(get_color()))
 
         return runner.run()
