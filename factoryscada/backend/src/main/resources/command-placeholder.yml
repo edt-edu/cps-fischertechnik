@@ -365,19 +365,6 @@ commandPlaceholder:
                 ]
               }
             }
-        - name: "deteject"
-          placeholder: >
-            {
-              "topicName": "SortingLine01",
-              "timestamp": 1677144787.891,
-              "message": {
-                "jsonType": "COMMAND",
-                "type": "SORTING",
-                "outputId": 1,
-                "name": "DETEJECT",
-                "parameters": []
-              }
-            }
         - name: "stop"
           placeholder: >
             {

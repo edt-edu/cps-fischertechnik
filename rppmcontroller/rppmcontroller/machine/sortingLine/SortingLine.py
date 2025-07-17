@@ -14,6 +14,7 @@ from rppmcontroller.machine.sortingLine.SortingLineConfig import \
     SortingLineConfig
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
+from rppmcontroller.machine.Timer import Timer
 
 
 class SortingLine(Machine, TransitioningMachine):
@@ -87,6 +88,11 @@ class SortingLine(Machine, TransitioningMachine):
         self.__packageCountSteps = False
         self.once = True
         self.previous_isExecuting_log = None
+        self.colorToEject = Color.AUTO
+        self.ejectingPayload = False
+        self.waitOneCycle = False
+        self.timer = None
+        self.halfSecondTimer = Timer(0.5)
         # TODO(Hellwig): are the methods using the counter still used?
         self.__counter = ImpulseCounter()
 
@@ -222,7 +228,7 @@ class SortingLine(Machine, TransitioningMachine):
         s = lambda bool: "T" if bool else "F"
 
         return f"Conveyor[{s(self.sortingLineActMotorConveyor)}], " + \
-               f"CompValv[{s(self.sortingLineActCompressorOn)}, {s(self.sortingLineActWhiteEjector)}, {s(self.sortingLineActRedEjector)}, {s(self.sortingLineActRedEjector)}]"
+               f"CompValv[{s(self.sortingLineActCompressorOn)}, {s(self.sortingLineActWhiteEjector)}, {s(self.sortingLineActRedEjector)}, {s(self.sortingLineActBlueEjector)}]"
 
 
     def inputStatus(self) -> Dict[str, Any]:
@@ -348,76 +354,178 @@ class SortingLine(Machine, TransitioningMachine):
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                     f"eject_CycleStep",
                                     None)
+    
+    def detectColor_CycleStep(self) -> CycleStepResult:
+        """
+        Used to detect the color and store it in attribute colorToEject
+        If the detector does not work, it will send an error
+
+        This function is a cycleStep, it is call on each controller cycle, until its goal is reached
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """
+        # If a color is detected, we must set the attribute and finish the cyclestep
+        if self.sortingLineSensColorDetector:
+            if self.sortingLineSensRedDetector:
+                self.colorToEject = Color.RED
+                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+            if self.sortingLineSensBlueDetector:
+                self.colorToEject = Color.BLUE
+                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+            if self.sortingLineSensWhiteDetector:
+                self.colorToEject = Color.WHITE
+                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+            
+        # If the token has arrived to the middle sensor, the detector didn't work
+        if not self.sortingLineSensMiddleLightBarrier:
+            logging.error("The detector didn't send any signal, verify the analogic/digital converter")
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
+        
+        # Else, must continue
+        return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
+    
+    def ejectPayloadBySteps_CycleStep(self) -> CycleStepResult:
+        """
+        Used to eject a token,
+        it eject the token to the appropriate colored line, it ends with a token detected in the color line.
+
+        This function is a cycleStep, it is call on each controller cycle, until its goal is reached
+
+        |!!!| This function is really imprecise due to steps miscalculation (cf references/precision_study) |!!!|
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """
+        # Reset counter if first pass
+        if not self.ejectingPayload:
+            self.ejectingPayload = True
+            self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+            self.__counter.counter = 0
+
+        current = self.__counter.compute(self.__sortingLineSensImpulseCounterRaw, PlusMinusStop.PLUS)
+        whiteCounter = 4
+        redCounter = 14
+        blueCounter = 24
+
+        # If counter attained the steps needed, eject 
+        if (self.colorToEject == Color.BLUE and current > blueCounter) or \
+           (self.colorToEject == Color.RED and current > redCounter) or  \
+           (self.colorToEject == Color.WHITE and current > whiteCounter):
+            
+            self.__sortingLineActCompressorOn = True
+            if self.colorToEject == Color.RED:
+                self.__sortingLineActRedEjector = True
+            elif self.colorToEject == Color.BLUE:
+                self.__sortingLineActBlueEjector = True
+            elif self.colorToEject == Color.WHITE:
+                self.__sortingLineActWhiteEjector = True
+
+            # Wait 5 steps more to retract the arm and end the command 
+            if (self.colorToEject == Color.BLUE and current > blueCounter+5) or \
+               (self.colorToEject == Color.RED and current > redCounter+5) or   \
+               (self.colorToEject == Color.WHITE and current > whiteCounter+5):
+                
+                self.ejectingPayload = False
+                self.__sortingLineActMotorConveyor = False
+                self.__sortingLineActCompressorOn = False
+                self.__sortingLineActRedEjector = False
+                self.__sortingLineActBlueEjector = False
+                self.__sortingLineActWhiteEjector = False
+                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+
+        return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
+    
+    def ejectPayloadByTime_CycleStep(self) -> CycleStepResult:
+        """
+        Used to eject a token,
+        it eject the token to the appropriate colored line, it ends with a token detected in the color line.
+
+        This function is a cycleStep, it is call on each controller cycle, until its goal is reached
+
+        :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
+        """
+        regenerateTimer = False
+
+        # If first pass, make sure to regenerate the timer
+        if not self.ejectingPayload:
+            self.ejectingPayload = True
+            regenerateTimer = True
+        
+        # Regenerate the timer according to the color of the payload
+        if regenerateTimer or self.timer == None:
+            if self.colorToEject == Color.RED:
+                self.timer = Timer(1.55)
+            elif self.colorToEject == Color.BLUE:
+                self.timer = Timer(2.6)
+            elif self.colorToEject == Color.WHITE:
+                self.timer = Timer(0.5)
+            else:
+                logging.error("No color defined, command aborted")
+                return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
+        
+        # Start timer
+        if not self.timer.is_started():
+            self.timer.start()
+
+        # If timer is elapsed, activate the piston and relaunch the timer
+        if self.timer.is_started() and self.timer.elapsed() and not self.__sortingLineActCompressorOn:            
+            self.__sortingLineActCompressorOn = True
+            self.__sortingLineActMotorConveyor = False
+            if self.colorToEject == Color.RED:
+                self.__sortingLineActRedEjector = True
+            elif self.colorToEject == Color.BLUE:
+                self.__sortingLineActBlueEjector = True
+            elif self.colorToEject == Color.WHITE:
+                self.__sortingLineActWhiteEjector = True
+            
+            self.halfSecondTimer.reset(start=True)
+
+        # If timer is elapsed, finish the command
+        if self.halfSecondTimer.is_started() and self.halfSecondTimer.elapsed() and self.__sortingLineActCompressorOn: 
+            
+            self.ejectingPayload = False
+            self.__sortingLineActCompressorOn = False
+            self.__sortingLineActRedEjector = False
+            self.__sortingLineActBlueEjector = False
+            self.__sortingLineActWhiteEjector = False
+            self.timer = None
+            return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+
+        return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
 
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
-        return lambda: self.stop_CycleStep()
+    def stop_Command(self) -> CycleStepResult:
+        return self.stop_CycleStep()
 
-    def setup_Command(self) -> Callable[[], CycleStepResult]:
+    def setup_Command(self) -> CycleStepResult:
         return self.stop_Command()
 
     def eject_Command(self, color: Color) -> Runner:
+        """
+        Eject the payload on specified color. If the color is set to auto, detect the color before.
+        :param color: The color to sort the payload into
+        :return: A Runner
+        """
         runner = self.create_runner()
         config = SortingLineConfig()
 
         # start conveyor
         config.conveyor_active = True
-        runner.then_goto(config,
-                         until=lambda: not self.sortingLineSensMiddleLightBarrier)
+        runner.then_goto(config, info="Going to middle sensor")
+        
+        # if color defined, set the attribute to the color
+        if not color == Color.AUTO:
+            self.colorToEject = color
+        # if color set to auto, we need to detect the color before ejecting
+        else :
+            runner.then_run(self.detectColor_CycleStep, info="Detecting color")
 
-        # define eject config
-        eject_config = SortingLineConfig()
-        if color is Color.WHITE:
-            eject_config.white_ejector_active = True
-            delay = 0.5 + self.__delay_offsets[0]
-        elif color is Color.RED:
-            eject_config.red_ejector_active = True
-            delay = 1.55 + self.__delay_offsets[1]
-        elif color is Color.BLUE:
-            eject_config.blue_ejector_active = True
-            delay = 2.6 + self.__delay_offsets[2]
-        else:
-            raise ValueError(f"invalid color: {color}")
-
-        # keep conveyor running for specified delay
-        runner.then_goto(config, and_stay_for=delay)
-
-        # activate eject
-        runner.then_goto(eject_config, and_stay_for=0.5)
-
-        # stop everything
-        runner.then_goto(SortingLineConfig())
-
-        return runner.run()
-
-    def sort_Command(self, as_color: Optional[Color] = None) -> Runner:
-        """
-        Wait for a payload and sort it into the specified color, or let the
-        color sensor do the work
-        :param as_color: The color to sort the payload into, or None to let the color sensor work
-        :return: A Runner
-        """
-        runner = self.create_runner()
-
-        # wait for payload
-        config = SortingLineConfig()
-        runner.then_goto(config,
-                         until=lambda: not self.sortingLineSensInputLightBarrier)
-
-        # move payload through color sensor
-        config.conveyor_active = True
-        runner.then_goto(config, until=lambda: not self.sortingLineSensMiddleLightBarrier)
-
-        def get_color() -> Color:
-            if as_color is None:
-                # TODO get last color from color sensor here
-                logging.error(
-                    "color sensor is not implemented yet - ejecting as red")
-                return Color.RED
-            return as_color
-
-        runner.then_run_runner_from(lambda: self.eject_Command(get_color()))
+        # Forward to middle sensor
+        runner.then_goto(config, until=lambda: not self.sortingLineSensMiddleLightBarrier, info="Going to middle sensor")
+        
+        # Eject the payload in right output
+        self.ejectingPayload = False
+        runner.then_run(self.ejectPayloadByTime_CycleStep, info="Ejecting payload")
 
         return runner.run()

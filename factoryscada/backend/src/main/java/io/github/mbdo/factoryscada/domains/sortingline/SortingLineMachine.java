@@ -27,11 +27,6 @@ public class SortingLineMachine extends AbstractMachine {
         new EjectCommand(this, ejectDTO).execute();
     }
 
-    public void deteject(@Valid @NotNull final GenericMachineCommandDTO<SortingLineMachine> ejectDTO) {
-        log.info("Eject sortingLine {}", ejectDTO);
-        new EjectCommand(this, ejectDTO).execute();
-    }
-
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<SortingLineMachine> stopDTO) {
         log.info("Stop sortingLine {}", stopDTO);
         new StopCommand(this, stopDTO).execute();

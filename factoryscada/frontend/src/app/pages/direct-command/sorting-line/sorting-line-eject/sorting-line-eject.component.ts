@@ -32,7 +32,8 @@ export class SortingLineEjectComponent {
   colors: any[] = [
     {name: "Red", value: "RED"},
     {name: "White", value: "WHITE"},
-    {name: "Blue", value: "BLUE"}
+    {name: "Blue", value: "BLUE"},
+    {name: "Auto", value: "AUTO"}
   ];
 
   selectedColor : any = this.colors[0];
