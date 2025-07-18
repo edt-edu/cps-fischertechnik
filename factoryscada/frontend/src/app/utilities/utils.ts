@@ -186,7 +186,7 @@ export function getMissionCommandQualifiedNames(missionsConfig: IFactoryParallel
   var commandNames: string[] = [];
   for ( const mission of missionsConfig.missions) {
     for ( const command of mission.nodes) {
-      console.log(command.placeholder)
+      //console.log(command.placeholder)
       if (command.placeholder != undefined){
         const commandPlaceHolder = JSON.parse(command.placeholder)
         if (commandPlaceHolder.topicName == machineName) {

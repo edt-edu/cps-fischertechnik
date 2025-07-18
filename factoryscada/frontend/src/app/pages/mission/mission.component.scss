@@ -1,12 +1,10 @@
-
 @import '../../../styles/variables';
 
 .console-log {
-    font-family: $console-font-family;
-    font-size: $console-font-size;
+    font-family: monospace;
+    white-space: pre-wrap;
 }
 
 .debug-edit-zone {
     font-family: $edition-font-family;
 }
-
