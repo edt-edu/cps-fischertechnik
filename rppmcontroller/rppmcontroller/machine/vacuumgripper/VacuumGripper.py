@@ -273,7 +273,7 @@ class VacuumGripper(Machine, TransitioningMachine):
         }
 
     @override
-    def goto_config(self, config: Optional[VacuumGripperConfig] = VacuumGripperConfig()) -> CycleStepResult:
+    def goto_config(self, config: VacuumGripperConfig = VacuumGripperConfig()) -> CycleStepResult:
         res = CycleStepResult.done()
 
         # horizontal axis
@@ -333,14 +333,6 @@ class VacuumGripper(Machine, TransitioningMachine):
 
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
-
-    def grip_CycleStep(self) -> CycleStepResult:
-        self.__vacuumActCompressorOn = self.__vacuumActValve = True
-        return CycleStepResult(CycleStepResultEnum.DONE, "grip")
-
-    def release_CycleStep(self) -> CycleStepResult:
-        self.__vacuumActCompressorOn = self.__vacuumActValve = False
-        return CycleStepResult(CycleStepResultEnum.DONE, "release")
 
     @override
     def stop_CycleStep(self) -> CycleStepResult:
