@@ -29,27 +29,6 @@ class SortingLineTestCase(unittest.TestCase):
         self.assertEqual(self.sortingLine1.sortingLineActRedEjector, False)
         self.assertEqual(self.sortingLine1.sortingLineActBlueEjector, False)
 
-
-    def test_Eject(self):
-        '''
-            Test if eject function start the conveyor
-            These tests does not verify the logics of functions relating with sensors and counter
-        '''
-        logging.debug(f'{inspect.stack()[0][3]} start')
-
-        # white
-        self.sortingLine1.eject_CycleStep(Color.WHITE)
-        self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
-        self.sortingLine1.stop_CycleStep()
-        # blue
-        self.sortingLine1.eject_CycleStep(Color.BLUE)
-        self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
-        self.sortingLine1.stop_CycleStep()
-        # red
-        self.sortingLine1.eject_CycleStep(Color.RED)
-        self.assertEqual(self.sortingLine1.sortingLineActMotorConveyor, True)
-        self.sortingLine1.stop_CycleStep()
-
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
 

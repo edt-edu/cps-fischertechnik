@@ -22,6 +22,11 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
         self.controlledSortingLine.sortingLineSensInputLightBarrier = True
         self.controlledSortingLine.sortingLineSensMiddleLightBarrier = True
 
+        self.sortingLineSensColorDetector = False
+        self.sortingLineSensBlueDetector = False
+        self.sortingLineSensRedDetector = False
+        self.sortingLineSensWhiteDetector = False
+
         self.previous_simulatedReadLog = None
         self.previous_simulatedWriteLog = None
 
@@ -61,5 +66,13 @@ class SortingLineSimpleSimulator(MachineSimpleSimulator):
             self.controlledSortingLine.sortingLineSensBlueLightBarrier = value
         elif parameter == RequestedParameter.PULSECOUNTER:
             self.controlledSortingLine.sortingLineSensImpulseCounterRaw = value
+        elif parameter == RequestedParameter.SENSCOLORDETECTOR:
+            self.controlledSortingLine.sortingLineSensColorDetector = value
+        elif parameter == RequestedParameter.SENSBLUEDETECTOR:
+            self.controlledSortingLine.sortingLineSensBlueDetector = value
+        elif parameter == RequestedParameter.SENSREDDETECTOR:
+            self.controlledSortingLine.sortingLineSensRedDetector = value
+        elif parameter == RequestedParameter.SENSWHITEDETECTOR:
+            self.controlledSortingLine.sortingLineSensWhiteDetector = value
         else :
             logging.warning("Wrong parameter in fakeSensor function")

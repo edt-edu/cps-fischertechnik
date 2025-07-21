@@ -79,7 +79,11 @@ class SortingLine(Machine, TransitioningMachine):
                    RequestedParameter.COMPRESSOR: self.__sortingLineActCompressorOn,
                    RequestedParameter.VALVEFIRSTEJECTORWHITE: self.__sortingLineActWhiteEjector,
                    RequestedParameter.VALVESECONDEJECTORRED: self.__sortingLineActRedEjector,
-                   RequestedParameter.VALVETHIRDEJECTORBLUE: self.__sortingLineActBlueEjector}
+                   RequestedParameter.VALVETHIRDEJECTORBLUE: self.__sortingLineActBlueEjector,
+                   RequestedParameter.SENSCOLORDETECTOR: self.__sortingLineSensColorDetector,
+                   RequestedParameter.SENSBLUEDETECTOR: self.__sortingLineSensBlueDetector,
+                   RequestedParameter.SENSREDDETECTOR: self.__sortingLineSensRedDetector,
+                   RequestedParameter.SENSWHITEDETECTOR: self.__sortingLineSensWhiteDetector}
         super().__init__(id1, dictMap)
         TransitioningMachine.__init__(self)
 
