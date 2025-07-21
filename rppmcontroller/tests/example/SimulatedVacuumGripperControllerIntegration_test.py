@@ -9,6 +9,7 @@ import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
     SimulatedVacuumGripperController
 from rppmcontroller.machine.Position import Position
+from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 
@@ -70,7 +71,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # check current position via feedback and/or by reading machine IO
         self.checkVGRPosition(0,0,0)
-
 
 
     def test_twoSetupCommands(self):
@@ -152,7 +152,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
         # check current position via feedback and/or by reading machine IO
         self.checkVGRPosition(0,0,0)
-
 
 
     def test_moveCommand_with_internal_setup(self):
@@ -470,9 +469,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.checkVGRPosition(550 - 250,1050,1250) # 250 is the offset of the move command # TODO have a better management of this offset
 
 
-
-    def test_placeCommand(self):
-        """Ensure that the pick command is performed and and send feedback"""
+    def test_pickCommand(self):
+        """Ensure that the pick command is performed and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
 
@@ -486,8 +484,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a place command
-        message = MachineCommand("COMMAND", "VACUUM", 1, "PLACE", [
+        # send a pick command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "PICK", [
             Position("END", 500, 0, 1200)
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
@@ -507,14 +505,16 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.assertGreater(iterationDone, 40, "COMMAND_FEEDBACK reached in less than 40 iterations, it was probably not done" )
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
-                notification = ctHelper.readMachineFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
-                logging.debug(f"PLACE DONE reached in {iterationDone} iterations")
+                logging.debug(f"PICK DONE reached in {iterationDone} iterations")
+                vgr = self.controller.machines[0]
+                assert isinstance(vgr,VacuumGripper)
+                self.assertTrue(vgr.vacuumActValve)
+                self.assertTrue(vgr.vacuumActCompressorOn)
                 endCommandReached = True
-            self.assertLess(iterationDone, 200, "PLACE DONE not reached in less than 200 iterations" )
+            self.assertLess(iterationDone, 200, "PICK DONE not reached in less than 200 iterations" )
 
 
-    def test_placeCommand2(self):
+    def test_placeCommand(self):
         """Ensure that the pick command is performed and and send feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
@@ -609,6 +609,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         for _ in range(2):
             self.controller.mainLoopIteration()
             self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
 
     def test_grip_releaseCommand(self):
         """Ensure that the grip and release commands are performed and send feedback"""
@@ -717,7 +718,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"GO_TO_POSITION reached in {iterationDone} iterations")
                 endCommandReached = True
-                vgr: VacuumGripper = self.controller.machines[0]
+                vgr = self.controller.machines[0]
+                assert isinstance(vgr,VacuumGripper)
                 self.assertFalse(vgr.vacuumActValve, "valve value changed from GO_TO_POSITION!")
                 self.assertFalse(vgr.vacuumActCompressorOn, "compressor value changed from GO_TO_POSITION!")
 
@@ -742,7 +744,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # mock: valve and pump are active
-        vgr: VacuumGripper = self.controller.machines[0]
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
         vgr.vacuumActValve = True
         vgr.vacuumActCompressorOn = True
 
@@ -771,6 +774,320 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertTrue(vgr.vacuumActCompressorOn, "compressor value changed from GO_TO_POSITION!")
 
             self.assertLess(iterationDone, 30, "GO_TO_POSITION not reached in less than 30 iterations" )
+
+
+    def test_retracted_go_to_position_Command(self):
+        """
+            Ensure that the retracted-go-to position command is well-executed.
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos(100, 100, 100)
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a retracted go to position command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "RETRACTED_GO_TO_POSITION", [
+            Position("END", 500, 600, 500)
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            if vgr.vacuumSensArmEncoderCounter == 0:
+                vgr.vacuumSensArmEndIn = True
+
+            #if arm is not retracted while moving, return error
+            if not ((vgr.vacuumSensRotEncoderCounter == 100 and vgr.vacuumSensVerticalEncoderCounter == 100) or \
+                (vgr.vacuumSensRotEncoderCounter == 600 and vgr.vacuumSensVerticalEncoderCounter == 500)):
+                self.assertEqual(vgr.vacuumSensArmEncoderCounter, 0, "Arm is not retracted while moving")
+
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                logging.debug(f"RETRACTED_GO_TO_POSITION reached in {iterationDone} iterations")
+                endCommandReached = True
+                self.checkVGRPosition(500, 600, 500)
+
+            self.assertLess(iterationDone, 30, "RETRACTED_GO_TO_POSITION not reached in less than 30 iterations" )
+
+
+    def test_move_to_safetyCommand(self):
+        """
+            Ensure the move to safety command is working
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos()
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a move to safety command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "MOVE_TO_SAFE_POSITION", [])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                # in between, the machine should have been put into active state
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification,
+                                 r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+                logging.debug(f"MOVE TO SAFETY DONE reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 200, "MOVE TO SAFETY DONE not reached in less than 200 iterations" )
+
+        # check current position via vgr safe position
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+        self.checkVGRPosition(vgr.safeVertical if (vgr.safeVertical != None) else 0,
+                              vgr.safeRotation if (vgr.safeRotation != None) else 0,
+                              vgr.safeHorizontal if (vgr.safeHorizontal != None) else 0)
+
+
+    def test_retract_armCommand(self):
+        """
+            Ensure the retract arm command is working
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos(300, 500, 400)
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a retract arm command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "RETRACT_ARM", [])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            if vgr.vacuumSensArmEncoderCounter == 0:
+                vgr.vacuumSensArmEndIn = True
+            
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                # in between, the machine should have been put into active state
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification,
+                                 r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+                logging.debug(f"RETRACT ARM DONE reached in {iterationDone} iterations")
+                endCommandReached = True
+            self.assertLess(iterationDone, 200, "RETRACT ARM DONE not reached in less than 200 iterations" )
+
+        # check final position
+        self.checkVGRPosition(300, 500, 0)
+
+
+    def test_ordered_go_to_HorLastCommand(self):
+        """
+            Ensure that the ordered-go-to position command is well-executed.
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos(100, 100, 100)
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a ordered move to command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_MOVE_TO", [
+                  Position("START", 300, 300, 300),
+                  AxisBoolThreeD(True, True, False)])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            if vgr.vacuumSensArmEncoderCounter == 0:
+                vgr.vacuumSensArmEndIn = True
+
+            #if vert or rot has not finished and hor is moving, return error
+            if not (vgr.vacuumSensRotEncoderCounter == 300 and vgr.vacuumSensVerticalEncoderCounter == 300):
+                self.assertFalse(vgr.vacuumActArmIn, "Arm should not move")
+                self.assertFalse(vgr.vacuumActArmOut, "Arm should not move")
+
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                logging.debug(f"ORDERED_MOVE_TO reached in {iterationDone} iterations")
+                self.checkVGRPosition(300, 300, 300)
+                endCommandReached = True
+
+            self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
+
+
+    def test_ordered_go_to_VerLastCommand(self):
+        """
+            Ensure that the ordered-go-to position command is well-executed.
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos(100, 100, 100)
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a ordered move to command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_MOVE_TO", [
+                  Position("START", 300, 300, 300),
+                  AxisBoolThreeD(False, True, True)])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            if vgr.vacuumSensArmEncoderCounter == 0:
+                vgr.vacuumSensArmEndIn = True
+
+            #if vert or rot has not finished and hor is moving, return error
+            if not (vgr.vacuumSensRotEncoderCounter == 300 and vgr.vacuumSensArmEncoderCounter == 300):
+                self.assertFalse(vgr.vacuumActVerticalDown, "Vertical should not move")
+                self.assertFalse(vgr.vacuumActVerticalUp, "Vertical should not move")
+
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                logging.debug(f"ORDERED_MOVE_TO reached in {iterationDone} iterations")
+                self.checkVGRPosition(300, 300, 300)
+                endCommandReached = True
+
+            self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
+
+
+    def test_ordered_go_to_RotLastCommand(self):
+        """
+            Ensure that the ordered-go-to position command is well-executed.
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos(100, 100, 100)
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a ordered move to command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_MOVE_TO", [
+                  Position("START", 300, 300, 300),
+                  AxisBoolThreeD(True, False, True)])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+        
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            if vgr.vacuumSensArmEncoderCounter == 0:
+                vgr.vacuumSensArmEndIn = True
+
+            #if vert or rot has not finished and hor is moving, return error
+            if not (vgr.vacuumSensArmEncoderCounter == 300 and vgr.vacuumSensVerticalEncoderCounter == 300):
+                self.assertFalse(vgr.vacuumActRotLeft, "Rotation should not move")
+                self.assertFalse(vgr.vacuumActRotRight, "Rotation should not move")
+
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                logging.debug(f"ORDERED_MOVE_TO reached in {iterationDone} iterations")
+                self.checkVGRPosition(300, 300, 300)
+                endCommandReached = True
+
+            self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
 
 
     # TODO move to a test helper module
