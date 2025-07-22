@@ -15,11 +15,12 @@ class TurnTablePosition(Enum):
 
     @staticmethod
     def from_actuators(at_vacuum: bool, at_saw: bool, at_belt: bool) -> \
-    Optional[TurnTablePosition]:
+    TurnTablePosition:
         if at_vacuum:
             return TurnTablePosition.VACUUM
-        if at_saw:
+        elif at_saw:
             return TurnTablePosition.SAW
-        if at_belt:
+        elif at_belt:
             return TurnTablePosition.CONVEYOR
-        return None
+        else:
+             raise ValueError("TurnTablePosition could not be determined: no actuator is active.")
