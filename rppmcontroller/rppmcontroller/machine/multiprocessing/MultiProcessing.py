@@ -116,7 +116,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.__multiProcessingActLowerValve = False
         self.__multiProcessingValveOvenDoor = False
         self.__multiProcessingValveFeeder = False
-        dictMap = {RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM: self.__multiProcessingSensTurntablePosVacuum,
+        dictMap = {RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONVACUUM: self.__multiProcessingSensTurntablePosVacuum,
                    RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT: self.__multiProcessingSensTurntablePosBelt,
                    RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT: self.__multiProcessingSensEndConveyor,
                    RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW: self.__multiProcessingSensTurntablePosSaw,
@@ -687,9 +687,9 @@ class MultiProcessing(Machine, TransitioningMachine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def setup_Command(self) -> Callable[[], CycleStepResult]:
+    def setup_Command(self) -> CycleStepResult:
         """Reset the station and move some parts to the initial postion."""
-        return self.goto_config
+        return self.goto_config()
     
     def heat_in_oven_Command(self, time: int) -> Runner:
         """
@@ -905,7 +905,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         """ Stop the machine """
         return self.stop_CycleStep
     
-    def move_to_safe_position_Command(self) -> Callable[[], CycleStepResult]:
+    def move_to_safe_position_Command(self) -> CycleStepResult:
         """ Set the machine in a safe position """
         runner = self.create_runner()
         config = self.get_current_config()

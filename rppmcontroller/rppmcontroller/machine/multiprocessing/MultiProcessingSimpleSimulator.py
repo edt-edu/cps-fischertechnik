@@ -38,7 +38,7 @@ class MultiProcessingSimpleSimulator(MachineSimpleSimulator):
         pass
 
     def fakeSensor(self, parameter : RequestedParameter, value: bool):
-        if parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITOINVACUUM:
+        if parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONVACUUM:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosVacuum = value
         elif parameter == RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT:
             self.controlledMultiProcessing.multiProcessingSensTurntablePosBelt = value
