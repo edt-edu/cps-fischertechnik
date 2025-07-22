@@ -12,14 +12,16 @@ class TurnTablePosition(Enum):
     """At the saw with an active saw"""
     CONVEYOR = 2
     """At the conveyor belt with an active feeder"""
+    UNKOWN = 3
 
     @staticmethod
     def from_actuators(at_vacuum: bool, at_saw: bool, at_belt: bool) -> \
-    Optional[TurnTablePosition]:
+    TurnTablePosition:
         if at_vacuum:
             return TurnTablePosition.VACUUM
-        if at_saw:
+        elif at_saw:
             return TurnTablePosition.SAW
-        if at_belt:
+        elif at_belt:
             return TurnTablePosition.CONVEYOR
-        return None
+        else:
+            return TurnTablePosition.UNKOWN
