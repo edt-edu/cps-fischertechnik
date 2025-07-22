@@ -210,6 +210,10 @@
 |<<incoming_vacuumgripper-machinename-command-go-to-position,/vacuumGripper/{machineName}/command/go_to_position>>
 |  
 
+|LogsWebSocketController.requestFrontendLogs()
+|<<incoming_logs-request,/logs/request>>
+|  
+
 |HighBayWarehouseController.executeSetupCommand()
 |<<incoming_highbaywarehouse-machinename-command-setup,/highBayWarehouse/{machineName}/command/setup>>
 |  
@@ -286,13 +290,13 @@
 |<<incoming_factorymission-command-stop,/factoryMission/command/stop>>
 |  
 
-|MissionOrchestratorController.startMission()
-|<<incoming_factorymission-command-start-missionname,/factoryMission/command/start/{missionName}>>
-|  
-
 |MissionOrchestratorController.getMissionList()
 |<<incoming_factorymission-list,/factoryMission/list>>
 |<<outgoing_topic-mission-configuration,/topic/mission-configuration>>
+
+|MissionOrchestratorController.startMission()
+|<<incoming_factorymission-command-start-missionname,/factoryMission/command/start/{missionName}>>
+|  
 
 |MissionOrchestratorController.handleUnmappedMessage()
 |<<incoming_factorymission,/factoryMission**>>
@@ -343,6 +347,9 @@
 |WebSocketPublisher.sendCommandStatus()
 | 
 |/topic/{machineName}/command-status
+|WebSocketPublisher.sendFrontendLogs()
+| 
+|/topic/frontend-logs
 |WebSocketPublisher.sendControllerFeedback()
 | 
 |/topic/controller-feedbacks
@@ -2167,6 +2174,91 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_factorymission-status]]
+===  Incoming Topic: `/factoryMission/status`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+class java.lang.String
+
+[[incoming_factorymission-list]]
+===  Incoming Topic: `/factoryMission/list`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "nodes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "properties" : {
+                "type" : {
+                  "type" : "string"
+                },
+                "outputNodes" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                  }
+                },
+                "id" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "outputs" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
 [[incoming_factorymission-command-start-missionname]]
 ===  Incoming Topic: `/factoryMission/command/start/{missionName}`
 
@@ -2275,91 +2367,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "array"
-}
-----
-
-[[incoming_factorymission-status]]
-===  Incoming Topic: `/factoryMission/status`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
-
-*Send To:* `/topic/mission-status`
-
-==== Parameters
-
-
-==== Response Payload
-
-class java.lang.String
-
-[[incoming_factorymission-list]]
-===  Incoming Topic: `/factoryMission/list`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
-
-*Send To:* `/topic/mission-configuration`
-
-==== Parameters
-
-
-==== Response Payload
-
-[source,json]
-----
-{
-  "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
-  "properties" : {
-    "name" : {
-      "type" : "string"
-    },
-    "missions" : {
-      "type" : "array",
-      "items" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "nodes" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
-              "properties" : {
-                "type" : {
-                  "type" : "string"
-                },
-                "outputNodes" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
-                  }
-                },
-                "id" : {
-                  "type" : "string"
-                },
-                "description" : {
-                  "type" : "string"
-                },
-                "outputs" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
 }
 ----
 
@@ -4240,11 +4247,29 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_logs-request]]
+===  Incoming Topic: `/logs/request`
+
+Declared in `io.github.mbdo.factoryscada.frontend.WebSocketPublisher$LogsWebSocketController.requestFrontendLogs()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
 == Outgoing Topics
 
 
 === Outgoing Topic: `/topic/controller-feedbacks`
 _Broadcasts raw feedback from the controller_
+
+Payload: `String`
+{
+  "type" : "string"
+}
+
+=== Outgoing Topic: `/topic/frontend-logs`
+_All logs that should appear in the frontend_
 
 Payload: `String`
 {
@@ -4777,100 +4802,6 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 }
 ----
 
-[[outgoing_topic-mission-configuration]]
-=== Outgoing Topic: `/topic/mission-configuration`
-
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
-
-*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
-
-*Send To:* `/topic/mission-configuration`
-
-==== Parameters
-
-
-==== Response Payload
-
-[source,json]
-----
-{
-  "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
-  "properties" : {
-    "name" : {
-      "type" : "string"
-    },
-    "missions" : {
-      "type" : "array",
-      "items" : {
-        "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
-        "properties" : {
-          "name" : {
-            "type" : "string"
-          },
-          "description" : {
-            "type" : "string"
-          },
-          "nodes" : {
-            "type" : "array",
-            "items" : {
-              "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
-              "properties" : {
-                "type" : {
-                  "type" : "string"
-                },
-                "outputNodes" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
-                  }
-                },
-                "id" : {
-                  "type" : "string"
-                },
-                "description" : {
-                  "type" : "string"
-                },
-                "outputs" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-----
-
-[[outgoing_topic-actual-command-executing]]
-=== Outgoing Topic: `/topic/actual-command-executing`
-
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`
-
-*Request Mapping:* `@MessageMapping("/factoryMission/actual-command-executing")`
-
-*Send To:* `/topic/actual-command-executing`
-
-==== Parameters
-
-
-==== Response Payload
-
-[source,json]
-----
-{
-  "type" : "array"
-}
-----
-
 [[outgoing_topic-mission-status]]
 === Outgoing Topic: `/topic/mission-status`
 
@@ -4962,6 +4893,100 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       }
     }
   }
+}
+----
+
+[[outgoing_topic-mission-configuration]]
+=== Outgoing Topic: `/topic/mission-configuration`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
+
+*Send To:* `/topic/mission-configuration`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "properties" : {
+    "name" : {
+      "type" : "string"
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "nodes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "properties" : {
+                "type" : {
+                  "type" : "string"
+                },
+                "outputNodes" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "object",
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                  }
+                },
+                "id" : {
+                  "type" : "string"
+                },
+                "description" : {
+                  "type" : "string"
+                },
+                "outputs" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+[[outgoing_topic-actual-command-executing]]
+=== Outgoing Topic: `/topic/actual-command-executing`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/actual-command-executing")`
+
+*Send To:* `/topic/actual-command-executing`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
 }
 ----
 

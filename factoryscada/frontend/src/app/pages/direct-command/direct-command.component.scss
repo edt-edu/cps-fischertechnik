@@ -2,5 +2,6 @@
 @import '../../../styles/variables';
 
 .console-log {
-    font-family: $console-font-family;
+    font-family: monospace;
+    white-space: pre-wrap;
 }

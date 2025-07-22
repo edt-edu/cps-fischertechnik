@@ -121,6 +121,8 @@ export class DirectCommandComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
 
+  logs: any[] = [];
+
   ngOnInit(): void {
     this.subscribeToTopics();
     this.requestInitialData();
@@ -136,7 +138,7 @@ export class DirectCommandComponent implements OnInit {
       if (command !== undefined) {
         this.commandToSend = beautifyJson(command, 4);
         // clear the mission command selection
-        this.selectedMissionCommand =  undefined;
+        this.selectedMissionCommand = undefined;
         return
       }
     } catch (e) {
@@ -154,7 +156,7 @@ export class DirectCommandComponent implements OnInit {
       if (command !== undefined) {
         this.commandToSend = beautifyJson(command, 4);
         // clear the standard command selection
-        this.selectedCommand =  undefined;
+        this.selectedCommand = undefined;
         return
       }
     } catch (e) {
@@ -186,12 +188,21 @@ export class DirectCommandComponent implements OnInit {
     this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
       this.addExecutionLog(message.body);
     });
+
+    this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
+      this.logs = this.parseLogsMessage(message);
+
+      const logElement = document.querySelector('.console-log') as HTMLElement;
+      if (logElement) {
+        logElement.textContent = this.logs.join('\n');
+      }
+    });
   }
 
-  getRequestStatusParameters(machineType :  string) :{name: string, code: string}[] {
+  getRequestStatusParameters(machineType: string): { name: string, code: string }[] {
     switch (machineType) {
       case "vacuumGripper": {
-        return  [
+        return [
           { name: 'REFERENCESWITCHVERTICALAXIS', code: 'REFERENCESWITCHVERTICALAXIS' },
           { name: 'REFERENCESWITCHHORIZONTALAXIS', code: 'REFERENCESWITCHHORIZONTALAXIS' },
           { name: 'REFERENCESWITCHROTATE', code: 'REFERENCESWITCHROTATE' },
@@ -237,11 +248,32 @@ export class DirectCommandComponent implements OnInit {
     }
   }
 
+  private parseLogsMessage(message: Message): any {
+    const messages: any[] = [];
+
+    try {
+      console.log(message);
+      const rawBody = message.body;
+      const lines = rawBody.trim().split('\n');
+
+      for (const line of lines) {
+        if (line.trim()) {
+          messages.push(line);
+        }
+      }
+      return messages;
+    } catch (e) {
+      console.error('Failed to parse message', e);
+      return undefined;
+    }
+  }
+
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/placeholder' });
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
     this.myRxStompService.publish({ destination: '/app/factory/instance' });
-    this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration'});
+    this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
+    this.myRxStompService.publish({ destination: '/app/logs/request' });
   }
 
 

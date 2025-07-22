@@ -80,6 +80,8 @@ export class MissionComponent implements OnInit {
 
   missionsGraph = `flowchart LR\n  Empty[No mission selected]`;
 
+  logs: any[] = [];
+
   ngOnInit(): void {
     //this.initializeSemanticJS();
     this.subscribeToTopics();
@@ -135,6 +137,7 @@ export class MissionComponent implements OnInit {
     this.myRxStompService.publish({ destination: '/app/factory/instance' });
     this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
     this.myRxStompService.publish({ destination: '/app/factoryMission/actual-command-executing' });
+    this.myRxStompService.publish({ destination: '/app/logs/request' });
   }
 
   private subscribeToTopics(): void {
@@ -160,7 +163,16 @@ export class MissionComponent implements OnInit {
     });
 
     this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
-      this.addExecutionLog(message.body);
+      //this.addExecutionLog(message.body);
+    });
+
+    this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
+      this.logs = this.parseLogsMessage(message);
+
+      const logElement = document.querySelector('.console-log') as HTMLElement;
+      if (logElement) {
+        logElement.textContent = this.logs.join('\n');
+      }
     });
   }
 
@@ -179,6 +191,26 @@ export class MissionComponent implements OnInit {
       return JSON.parse(message.body);
     } catch (error) {
       console.error('Failed to parse message', error);
+      return undefined;
+    }
+  }
+
+  private parseLogsMessage(message: Message): any {
+    const messages: any[] = [];
+
+    try {
+      console.log(message);
+      const rawBody = message.body;
+      const lines = rawBody.trim().split('\n');
+
+      for (const line of lines) {
+        if (line.trim()) {
+          messages.push(line);
+        }
+      }
+      return messages;
+    } catch (e) {
+      console.error('Failed to parse message', e);
       return undefined;
     }
   }
@@ -218,7 +250,6 @@ export class MissionComponent implements OnInit {
     }
 
     //Return the graph
-    console.log(lines.join("\n"));
     return lines.join("\n");
   }
 

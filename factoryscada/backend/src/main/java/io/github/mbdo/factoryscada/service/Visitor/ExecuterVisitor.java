@@ -50,10 +50,11 @@ public class ExecuterVisitor extends Visitor {
     private Map<String, Integer> joinIdNumberInputs = new HashMap<>();
 
     private String actualMissionName;
-    
+
     private final SimpMessagingTemplate template;
 
-    public ExecuterVisitor(FactoryScada factoryScada, FactoryMissionsParallelized_dto factoryMissions, SimpMessagingTemplate template) {
+    public ExecuterVisitor(FactoryScada factoryScada, FactoryMissionsParallelized_dto factoryMissions,
+            SimpMessagingTemplate template) {
         this.factoryScada = factoryScada;
         this.factoryMissions = factoryMissions;
         this.template = template;
@@ -108,6 +109,10 @@ public class ExecuterVisitor extends Visitor {
                         String jsonString = mapper.writeValueAsString(commandDTO);
                         // send to plc socket
                         protocol.send(jsonString);
+
+                        // add the command to log list
+                        factoryScada.addLogsForFrontend(jsonString.replaceAll("\\[[^\\]]*\\]", "[]"));
+
                         // update storage in backend
                         CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap()
                                 .getOrDefault(machineName, new CommandStatus());
@@ -207,7 +212,7 @@ public class ExecuterVisitor extends Visitor {
             Thread.currentThread().interrupt();
             log.warn("Thread was interrupted during sleep.");
         }
-        
+
         isCurrentlyVisiting.remove(node);
         node.getOutputNodes().get(0).accept(this);
     }
@@ -281,6 +286,9 @@ public class ExecuterVisitor extends Visitor {
 
                     // send to plc socketthis.runningCommand
                     protocol.send(jsonString);
+
+                    // add the command to log list
+                    factoryScada.addLogsForFrontend(jsonString.replaceAll("\\[[^\\]]*\\]", "[]"));
 
                     // update storage in backend
                     CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName,

@@ -1,8 +1,15 @@
 package io.github.mbdo.factoryscada.frontend;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.github.mbdo.factoryscada.domain.CommandStatus;
 import io.github.mbdo.factoryscada.domain.MachineStatus;
@@ -10,55 +17,67 @@ import io.github.mbdo.factoryscada.frontend.dto.CommandStatusDTO;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
 import io.github.mbdo.factoryscada.frontend.mapper.MachineStatusMapper;
+import io.github.mbdo.factoryscada.service.FactoryScada;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class gathering all manually sent websocket messages
- * it helps generating the protocol documentation with WebsocketDocGenerator by avoiding direct call to convertAndSend
+ * it helps generating the protocol documentation with WebsocketDocGenerator by
+ * avoiding direct call to convertAndSend
  */
+@Slf4j
 @Component
 public class WebSocketPublisher {
 
     @Autowired
     private SimpMessagingTemplate template;
 
-    @WebSocketPublish(
-        value = "/topic/controller-feedbacks",
-        payload = String.class,
-        description = "Broadcasts raw feedback from the controller"
-    )
+    public FactoryScada factoryscada;
+
+    @WebSocketPublish(value = "/topic/controller-feedbacks", payload = String.class, description = "Broadcasts raw feedback from the controller")
     public void sendControllerFeedback(String message) {
         template.convertAndSend("/topic/controller-feedbacks", message);
     }
 
-    @WebSocketPublish(
-        value = "/topic/{controllerName}/plc-connection-status",
-        payload = PlcConnectionStatusDto.class,
-        description = "Broadcasts PLC connection status updates"
-    )
+    @WebSocketPublish(value = "/topic/frontend-logs", payload = String.class, description = "All logs that should appear in the frontend")
+    public void sendFrontendLogs(String message) {
+        template.convertAndSend("/topic/frontend-logs", message);
+    }
+
+    @WebSocketPublish(value = "/topic/{controllerName}/plc-connection-status", payload = PlcConnectionStatusDto.class, description = "Broadcasts PLC connection status updates")
     public void sendPlcStatus(String controllerName, boolean send, boolean recv) {
         PlcConnectionStatusDto dto = new PlcConnectionStatusDto(controllerName, send, recv);
         template.convertAndSend("/topic/" + controllerName + "/plc-connection-status", dto);
     }
 
-    @WebSocketPublish(
-        value = "/topic/{machineName}/command-status",
-        payload = CommandStatusDTO.class,
-        description = "Broadcasts Command status updates"
-    )
+    @WebSocketPublish(value = "/topic/{machineName}/command-status", payload = CommandStatusDTO.class, description = "Broadcasts Command status updates")
     public void sendCommandStatus(String machineName, CommandStatus commandStatus) {
-        template.convertAndSend("/topic/"+machineName+"/command-status", 
-                            CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(commandStatus));
+        template.convertAndSend("/topic/" + machineName + "/command-status",
+                CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(commandStatus));
     }
 
-    @WebSocketPublish(
-        value = "/topic/{machineName}/machine-status",
-        payload = CommandStatusDTO.class,
-        description = "Broadcasts Machine status updates"
-    )
+    @WebSocketPublish(value = "/topic/{machineName}/machine-status", payload = CommandStatusDTO.class, description = "Broadcasts Machine status updates")
     public void sendMachineStatus(String machineName, MachineStatus machineStatus) {
-                    template.convertAndSend("/topic/"+machineName+"/machine-status", 
-                            MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(machineStatus));
-                    
+        template.convertAndSend("/topic/" + machineName + "/machine-status",
+                MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(machineStatus));
+
+    }
+
+    // This is used for the loading of logs on scada pages
+    @Controller
+    public class LogsWebSocketController {
+
+        @Autowired
+        private SimpMessagingTemplate template;
+
+        @Autowired
+        private FactoryScada factoryscada;
+
+        @MessageMapping("/logs/request")
+        public void requestFrontendLogs() {
+            String logs = String.join("\n", factoryscada.getFrontendLogsList());
+            template.convertAndSend("/topic/frontend-logs", logs);
+        }
     }
 
 }

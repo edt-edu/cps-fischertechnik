@@ -47,7 +47,7 @@ declare var $: any;
   styleUrls: ['./debug-command.component.scss']
 })
 export class DebugCommandComponent implements OnInit {
-  @ViewChild('commandExecuteLog', {static: true}) commandExecuteLog!: ElementRef<HTMLDivElement>;
+  @ViewChild('commandExecuteLog', { static: true }) commandExecuteLog!: ElementRef<HTMLDivElement>;
 
   selectedMachine?: Machine;
   selectedCommand?: string;
@@ -66,6 +66,8 @@ export class DebugCommandComponent implements OnInit {
   private readonly myRxStompService = inject(MyRxStompService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
+
+  logs: any[] = [];
 
   ngOnInit(): void {
     //this.initializeSemanticJS();
@@ -86,10 +88,10 @@ export class DebugCommandComponent implements OnInit {
         this.selectedCommand
       );
       if (command) {
-        const {name, type} = this.selectedMachine || {};
+        const { name, type } = this.selectedMachine || {};
         // fill the command with updated values (timestamp, machine name)
         const updatedcommand = {
-          ...JSON.parse(command),  
+          ...JSON.parse(command),
           topicName: name,
           timestamp: Date.now()
         };
@@ -129,9 +131,10 @@ export class DebugCommandComponent implements OnInit {
 
 
   private requestInitialData(): void {
-    this.myRxStompService.publish({destination: '/app/factory/placeholder'});
-    this.myRxStompService.publish({destination: '/app/factory/configuration'});
-    this.myRxStompService.publish({destination: '/app/factory/instance'});
+    this.myRxStompService.publish({ destination: '/app/factory/placeholder' });
+    this.myRxStompService.publish({ destination: '/app/factory/configuration' });
+    this.myRxStompService.publish({ destination: '/app/factory/instance' });
+    this.myRxStompService.publish({ destination: '/app/logs/request' });
   }
 
   private subscribeToTopics(): void {
@@ -150,6 +153,15 @@ export class DebugCommandComponent implements OnInit {
     this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
       this.addExecutionLog(message.body);
     });
+
+    this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
+      this.logs = this.parseLogsMessage(message);
+
+      const logElement = document.querySelector('.console-log') as HTMLElement;
+      if (logElement) {
+        logElement.textContent = this.logs.join('\n');
+      }
+    });
   }
 
   private subscribeToTopic(destination: string, callback: (message: Message) => void): void {
@@ -163,6 +175,26 @@ export class DebugCommandComponent implements OnInit {
       return JSON.parse(message.body);
     } catch (error) {
       console.error('Failed to parse message', error);
+      return undefined;
+    }
+  }
+
+  private parseLogsMessage(message: Message): any {
+    const messages: any[] = [];
+
+    try {
+      console.log(message);
+      const rawBody = message.body;
+      const lines = rawBody.trim().split('\n');
+
+      for (const line of lines) {
+        if (line.trim()) {
+          messages.push(line);
+        }
+      }
+      return messages;
+    } catch (e) {
+      console.error('Failed to parse message', e);
       return undefined;
     }
   }
