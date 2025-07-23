@@ -1,34 +1,32 @@
+import warnings
 import inspect
-from typing import get_type_hints
+from typing import Callable, TypeVar
+#from collections.abc import Callable  # For Python 3.9+, else use typing.Callable
+
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 
+from rppmcontroller.machine.Machine import Machine
+
+F = TypeVar("F", bound=Callable[..., "CycleStepResult"])  # Function with any args returning CycleStepResult
+
+
 def protocol_command_function(description: str = ""):
     """
-    This annotation indicates that tha annotated function is mapped to a protocol command
-       
-    The annotated function must conforms to the following rules:
-    - must return a CycleStepResult (or a sub class such as Runner)
-    - function name must end with "_Command" for discovery by RevPiPyMachineController.processJson()  
-         (may be replaced later by annotation introspection instead)
+    This annotation indicates that the annotated function is intended to be used as a protocol command.
+
+    Requirements:
+    - Must return a CycleStepResult (or subclass like Runner)
+    - Function name must end with "_Command" (may be replaced by introspection later)
     """
-    def decorator(func):
+    def decorator(func: F) -> F:
         # === Signature enforcement ===
         sig = inspect.signature(func)
-        # params = list(sig.parameters.values())
-
-        # if len(params) not in (0, 1):
-        #     raise TypeError(f"{func.__name__} must have 0 or 1 parameters (found {len(params)}).")
-
-        # if len(params) == 1:
-        #     param = params[0]
-        #     if param.name != "runner":
-        #         raise TypeError(f"{func.__name__} must name its sole parameter 'runner'.")
         
         # enforce return annotation
         return_type = sig.return_annotation
         if return_type is inspect.Signature.empty:
-            print(f"⚠️ Warning: {func.__name__} has no return type annotation.")
+            warnings.warn(f"⚠️ {func.__name__} has no return type annotation.")
         else:
             # Handle ForwardRef or typing issues by resolving fully
             try:
@@ -44,8 +42,9 @@ def protocol_command_function(description: str = ""):
             except Exception as e:
                 raise TypeError(f"Could not verify return type for {func.__name__}: {e}")
 
+
         # === Attach metadata ===
-        func.is_protocol_command = True
-        func.protocol_command_description = description
+        func.is_protocol_command = True                         # type: ignore
+        func.protocol_command_description = description         # type: ignore
         return func
     return decorator
