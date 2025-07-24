@@ -12,6 +12,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.conveyorbelt.ConveyorBeltConfig import \
     ConveyorBeltConfig
+from rppmcontroller.protocol.function_decorators import protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
@@ -172,10 +173,12 @@ class ConveyorBelt(Machine, TransitioningMachine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def stop_Command(self) -> Optional[Callable[[], CycleStepResult]]:
+    @protocol_command_function()
+    def stop_Command(self) -> Callable[[], CycleStepResult]:
         """Stop the conveyor"""
-        return lambda: self.stop_CycleStep()
+        return self.stop_CycleStep
 
+    @protocol_command_function()
     def move_out_Command(self, direction: Direction) -> Runner:
         """Move the package to a given direction until it leaves the conveyor
             Args:
@@ -193,7 +196,8 @@ class ConveyorBelt(Machine, TransitioningMachine):
         runner.then_goto(ConveyorBeltConfig(), info="Conveyor stopped")
         return runner.run()
 
-    def move_nb_steps_Command(self, direction: Direction, steps: int) -> Optional[Callable[[], CycleStepResult]]:
+    @protocol_command_function()
+    def move_nb_steps_Command(self, direction: Direction, steps: int) -> Runner:
         """Move the conveyor belt to a given direction with a given number of steps
             Args:
                 direction (Direction) : the direction where to move the package
@@ -230,6 +234,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function()
     def move_to_sensor_Command(self, direction: Direction):
         """Move the package to a given direction until it is detected by the destination sensor
             Args:
