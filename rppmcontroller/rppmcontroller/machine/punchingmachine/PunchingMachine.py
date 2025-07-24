@@ -7,8 +7,8 @@ from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
-from rppmcontroller.machine.punchingmachine.PunchingMachineConfig import \
-    PunchingMachineConfig
+from rppmcontroller.machine.punchingmachine.PunchingMachineConfig import PunchingMachineConfig
+from rppmcontroller.protocol.function_decorators import protocol_command_function
 
 
 class PunchingMachine(Machine, TransitioningMachine):
@@ -203,6 +203,8 @@ class PunchingMachine(Machine, TransitioningMachine):
 
     # methods intended for orchestrator
 
+
+    @protocol_command_function()
     def punch_Command(self) -> Runner:
         runner = self.create_runner()
         config = PunchingMachineConfig()
@@ -227,5 +229,6 @@ class PunchingMachine(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         return self.stop_CycleStep
