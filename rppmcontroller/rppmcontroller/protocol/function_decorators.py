@@ -4,12 +4,11 @@ import inspect
 from typing import Callable, TypeVar, Union
 #from collections.abc import Callable  # For Python 3.9+, else use typing.Callable
 
-
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 
-from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.Runner import Runner
 
-F = TypeVar("F", bound=Callable[..., Union[CycleStepResult, Callable[[], CycleStepResult]]])  # Function with any args returning a function returning a CycleStepResult
+F = TypeVar("F", bound=Callable[..., Union[Runner, Callable[[], CycleStepResult]]])  # Function with any args returning  either a Runner or a function returning a CycleStepResult
 
 
 def protocol_command_function(description: str = ""):
@@ -47,7 +46,7 @@ def protocol_command_function(description: str = ""):
 
 
                 def is_valid_cycle_result_type(tp: object) -> bool:
-                    if inspect.isclass(tp) and issubclass(tp, CycleStepResult):
+                    if inspect.isclass(tp) and issubclass(tp, Runner):
                         return True
                     origin = getattr(tp, '__origin__', None)
                     args = getattr(tp, '__args__', ())
@@ -68,12 +67,12 @@ def protocol_command_function(description: str = ""):
                 if origin is Union:
                     if not all(is_valid_cycle_result_type(arg) for arg in getattr(resolved, '__args__', ())):
                         raise TypeError(
-                            f"{func.__name__} must return CycleStepResult or Callable[[], CycleStepResult], "
+                            f"{func.__name__} must return Runner or Callable[[], CycleStepResult], "
                             f"or a Union of those. Found: {resolved}"
                         )
                 elif not is_valid_cycle_result_type(resolved):
                     raise TypeError(
-                        f"{func.__name__} must return CycleStepResult or Callable[[], CycleStepResult] (got {return_type})"
+                        f"{func.__name__} must return Runner or Callable[[], CycleStepResult] (got {return_type})"
                     )
 
             except Exception as e:

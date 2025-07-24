@@ -26,6 +26,7 @@ class TransitioningMachine:
     def goto_config(self, config) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
+        
         :param config: A machine config for the specific machine
         :return: A CycleStepResult describing the progress
         """
@@ -34,6 +35,7 @@ class TransitioningMachine:
     def create_runner(self) -> Runner:
         """
         Creates a new Runner for this machine and set it as last_runner
+
         :return: A Runner
         """
         runner = Runner(self)
@@ -69,6 +71,7 @@ class Subroutine:
     def __call__(self, *args, **kwargs) -> CycleStepResult:
         """
         Call the underlying runnable
+
         :param args: ignored
         :param kwargs: ignored
         :return: A CycleStepResult
@@ -122,6 +125,7 @@ class Runner(CycleStepResult):
                   info: str = "") -> Runner:
         """
         Append a transition to the specified config to this routine.
+
         :param config: The config to transition to.
         :param until: If present, specifies whether the configuration has
         been reached.
@@ -154,6 +158,7 @@ class Runner(CycleStepResult):
         """
         Appends the specified runnable to this routine. It'll be called
         until it specifies that it is done.
+
         :param runnable: The runnable to execute. Must return a
         CycleStepResult or `True` in
         order to indicate that it is done.
@@ -237,6 +242,7 @@ class Runner(CycleStepResult):
         """
         Run the runner provided by the specified runner_supplier until it is
         done.
+
         :param runner_supplier: A callable returning a Runner
         :param until: When provided, the runner is called until this function
         indicates the desired state has been reached
@@ -274,6 +280,7 @@ class Runner(CycleStepResult):
         """
         Advance the current routine and update the CycleStepResult properties
         of this
+
         :return: self
         """
         self.__running = True
@@ -318,13 +325,15 @@ class Runner(CycleStepResult):
     def __bool__(self):
         """
         Checks whether this routine is finished
+
         :return: True if this is not running
         """
         return not self.running
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Runner:
         """
         Call the run function
+
         :param args: ignored
         :param kwargs: ignored
         :return: self
