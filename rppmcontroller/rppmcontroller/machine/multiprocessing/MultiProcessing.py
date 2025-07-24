@@ -56,6 +56,11 @@ class MultiProcessing(Machine, TransitioningMachine):
     @property
     def isInitialized(self) -> bool:
         return True # technically always initialized, since there are no encoder actuators
+    
+    @isInitialized.setter
+    def isInitialized(self, value):
+        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
+        raise AttributeError("isInitialized is a read-only property") 
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:

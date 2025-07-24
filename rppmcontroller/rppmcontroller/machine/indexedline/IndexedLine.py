@@ -87,6 +87,11 @@ class IndexedLine(Machine, TransitioningMachine):
     @property
     def isInitialized(self) -> bool:
         return True # no actuators, so we are always ready
+    
+    @isInitialized.setter
+    def isInitialized(self, value):
+        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
+        raise AttributeError("isInitialized is a read-only property") 
 
     # ---- Input Properties ----
     @property
