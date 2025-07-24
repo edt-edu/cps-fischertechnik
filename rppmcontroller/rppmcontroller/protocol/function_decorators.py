@@ -9,7 +9,7 @@ from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 
 from rppmcontroller.machine.Machine import Machine
 
-F = TypeVar("F", bound=Callable[..., Callable[..., CycleStepResult]])  # Function with any args returning a function returning a CycleStepResult
+F = TypeVar("F", bound=Callable[..., Union[CycleStepResult, Callable[[], CycleStepResult]]])  # Function with any args returning a function returning a CycleStepResult
 
 
 def protocol_command_function(description: str = ""):
@@ -45,39 +45,37 @@ def protocol_command_function(description: str = ""):
                 if isinstance(return_type, str):
                     resolved = eval(return_type, func.__globals__)
 
-                args = getattr(resolved, '__args__', ())
+
+                def is_valid_cycle_result_type(tp: object) -> bool:
+                    if inspect.isclass(tp) and issubclass(tp, CycleStepResult):
+                        return True
+                    origin = getattr(tp, '__origin__', None)
+                    args = getattr(tp, '__args__', ())
+                    if origin in (Callable, collections.abc.Callable):
+                        # Handle both ([], CycleStepResult) and just (CycleStepResult,) due to 3.7 issues
+                        if len(args) == 1:
+                            # Workaround for broken Python 3.7 case: Callable[[], T] sometimes becomes Callable[T]
+                            return inspect.isclass(args[0]) and issubclass(args[0], CycleStepResult)
+                        elif len(args) == 2:
+                            return (
+                                args[0] == [] and
+                                inspect.isclass(args[1]) and issubclass(args[1], CycleStepResult)
+                            )
+                    return False
+
+
                 origin = getattr(resolved, '__origin__', None)
-                if inspect.isclass(resolved) and issubclass(resolved, CycleStepResult):
-                    pass
-                elif origin in (Callable, collections.abc.Callable):
-                    if args and len(args) == 2:
-                        param_types, return_type_candidate = args
-                        if param_types == [] and inspect.isclass(return_type_candidate) and issubclass(return_type_candidate, CycleStepResult):
-                            pass  # ✅ Callable[[], CycleStepResult] — OK
-                        else:
-                            raise TypeError(
-                                f"{func.__name__} has Callable return type, but expected Callable[[], CycleStepResult] (got {args})"
-                            )
-                    # Workaround for broken Python 3.7 case: Callable[[], T] sometimes becomes Callable[T]
-                    elif len(args) == 1:
-                        callable_return_type = args[0]
-                        if inspect.isclass(callable_return_type) and issubclass(callable_return_type, CycleStepResult):
-                            pass  # ✅ Callable[[], CycleStepResult] — OK
-                        else:
-                            raise TypeError(
-                                f"{func.__name__} has Callable return type, but expected Callable[[], CycleStepResult] (got {args})"
-                            )
-                    else:
+                if origin is Union:
+                    if not all(is_valid_cycle_result_type(arg) for arg in getattr(resolved, '__args__', ())):
                         raise TypeError(
-                            f"{func.__name__} has malformed Callable return annotation (got args={args})"
+                            f"{func.__name__} must return CycleStepResult or Callable[[], CycleStepResult], "
+                            f"or a Union of those. Found: {resolved}"
                         )
-                else:
-                    warnings.warn(
-                        f"⚠️ {func.__name__} must return CycleStepResult or Callable[[], CycleStepResult] (got {return_type})"
-                    )
+                elif not is_valid_cycle_result_type(resolved):
                     raise TypeError(
                         f"{func.__name__} must return CycleStepResult or Callable[[], CycleStepResult] (got {return_type})"
                     )
+
             except Exception as e:
                 raise TypeError(f"Could not verify return type for {func.__name__}: {e}")
 
