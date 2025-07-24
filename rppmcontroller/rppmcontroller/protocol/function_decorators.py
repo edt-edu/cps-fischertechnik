@@ -21,6 +21,15 @@ def protocol_command_function(description: str = ""):
     - Function name must end with "_Command" (may be replaced by introspection later)
     """
     def decorator(func: F) -> F:
+        # === Name enforcement ===
+        suffix: str = "_Command"
+        func_name: str = func.__name__
+        if not func_name.endswith(suffix):
+            raise ValueError(f"Function name '{func_name}' must end with '{suffix}'.")
+
+        prefix: str = func_name[:-len(suffix)]
+        if not prefix.islower():
+            raise ValueError(f"Function name prefix '{prefix}' must be all lowercase before '{suffix}'.")
         # === Signature enforcement ===
         sig = inspect.signature(func)
         
