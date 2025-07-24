@@ -23,6 +23,11 @@ class SortingLine(Machine, TransitioningMachine):
     def isInitialized(self) -> bool:
         return True # no encoder actuators
 
+    @isInitialized.setter
+    def isInitialized(self, value):
+        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
+        raise AttributeError("isInitialized is a read-only property") 
+    
     #TODO self.once: implement reset possibility from execute
     
     @Machine.isExecuting.getter
