@@ -1,7 +1,7 @@
 import logging
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Union
 
-from typing_extensions import override
+from typing_extensions import deprecated, override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -11,10 +11,9 @@ from rppmcontroller.machine.MPSOutput import MPSOutput
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
-from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
-    MultiProcessingConfig
-from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
-    TurnTablePosition
+from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import MultiProcessingConfig
+from rppmcontroller.machine.multiprocessing.TurnTablePosition import TurnTablePosition
+from rppmcontroller.protocol.function_decorators import protocol_command_function
 
 
 class MultiProcessing(Machine, TransitioningMachine):
@@ -419,7 +418,7 @@ class MultiProcessing(Machine, TransitioningMachine):
     def goto_config(self, config: MultiProcessingConfig = MultiProcessingConfig()) -> CycleStepResult:
         """
         Transfer the machine into another configuration
-        :param config: The new configuration to transfer the machine to
+        :param config: The new configuration to transfer the machine to, the default config is the reference config (ie. setup)
         :return: A CycleStepResult
         """
 
@@ -687,13 +686,16 @@ class MultiProcessing(Machine, TransitioningMachine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def setup_Command(self) -> CycleStepResult:
+    @protocol_command_function(description="Move the engines to a reference point.")
+    def setup_Command(self) -> Callable[[], CycleStepResult]:
         """Reset the station and move some parts to the initial postion."""
-        return self.goto_config()
+        return self.goto_config
     
+    @protocol_command_function(description="Move payload into oven, heat for time secs, and then get the payload out.")
     def heat_in_oven_Command(self, time: int) -> Runner:
         """
         Move payload into oven, heat for time secs, and then get the payload out.
+
         :return: A Runner performing the heating
         """
         runner = self.create_runner()
@@ -703,9 +705,11 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         return runner.run()
     
+    @protocol_command_function(description="Saw for time secs.")
     def saw_on_turntable_Command(self, time: int) -> Runner:
         """
         Saw for time secs.
+
         :return: A Runner performing the sawing
         """
         runner = self.create_runner()
@@ -714,9 +718,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.saw_on_turntable_CycleStep(time, config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Move the vacuum arm in front of the oven.")
     def arm_to_oven_Command(self) -> Runner:
         """
-        Move the vacuum arm to oven
+        Move the vacuum arm in front of the oven.
+
         :return: A Runner moving the arm to the oven
         """
         runner = self.create_runner()
@@ -725,9 +731,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.arm_to_oven_CycleStep(config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Move the vacuum arm in front of the turntable.")
     def arm_to_turntable_Command(self) -> Runner:
         """
-        Move the vacuum arm to turntable
+        Move the vacuum arm in front of the turntable
+
         :return: A Runner moving the arm to the turntable
         """
         runner = self.create_runner()
@@ -737,9 +745,11 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         return runner.run()
     
+    @protocol_command_function(description="Make the vacuum arm pick the payload.")
     def pick_up_Command(self) -> Runner:
         """
         Make the vacuum arm pick the payload
+        
         :return: A Runner picking the payload
         """
         runner = self.create_runner()
@@ -748,9 +758,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.pick_up_CycleStep(config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Make the vacuum arm place the payload.")
     def place_Command(self) -> Runner:
         """
         Make the vacuum arm place the payload
+        
         :return: A Runner placing the payload
         """
         runner = self.create_runner()
@@ -759,9 +771,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.place_CycleStep(config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Move the turntable in front of the conveyor.")
     def go_to_conveyor_Command(self) -> Runner:
         """
         Move the turntable to the conveyor
+
         :return: A Runner moving the turntable to the conveyor
         """
         runner = self.create_runner()
@@ -770,9 +784,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.go_to_conveyor_CycleStep(config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Move the turntable in front of the vacuum arm.")
     def go_to_arm_Command(self) -> Runner:
         """
         Move the turntable to the vacuum arm
+        
         :return: A Runner moving the turntable to the vacuum arm
         """
         runner = self.create_runner()
@@ -782,9 +798,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.go_to_arm_CycleStep(config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Move the turntable in front of the saw.")
     def go_to_saw_Command(self) -> Runner:
         """
         Move the turntable to the saw
+        
         :return: A Runner moving the turntable to the saw
         """
         runner = self.create_runner()
@@ -793,9 +811,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.go_to_saw_CycleStep(config, runner)
         return runner.run()
 
+    @protocol_command_function(description="Eject the payload from the turntable on the conveyor.")
     def eject_from_turntable_Command(self) -> Runner:
         """
         Eject the payload from the turntable on the conveyor
+        
         :return: A Runner ejecting the payload
         """
         runner = self.create_runner()
@@ -804,9 +824,11 @@ class MultiProcessing(Machine, TransitioningMachine):
         self.eject_from_turntable_CycleStep(config, runner)
         return runner.run()
     
+    @protocol_command_function(description="Move payload from turntable to oven.")
     def move_to_oven_Command(self) -> Runner:
         """
         Move payload from turntable to oven
+        
         :return: A Runner moving the payload
         """
         runner = self.create_runner()
@@ -819,6 +841,8 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @deprecated("command not very clear, preferred command: process_Command  with arguments")
+    @protocol_command_function(description="")
     def process1_Command(self) -> Runner:
         """
         Execute process 1 : The package is on the feeder at setup and will be delivered at the conveyor end
@@ -901,11 +925,14 @@ class MultiProcessing(Machine, TransitioningMachine):
 
         return runner.run()
 
+    
+    @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         """ Stop the machine """
         return self.stop_CycleStep
     
-    def move_to_safe_position_Command(self) -> CycleStepResult:
+    @protocol_command_function(description="Command moving the machine parts in a safe place if defined or to the setup position.")
+    def move_to_safe_position_Command(self) -> Union[Runner, Callable[[], CycleStepResult]]:
         """ Set the machine in a safe position """
         runner = self.create_runner()
         config = self.get_current_config()
@@ -921,6 +948,8 @@ class MultiProcessing(Machine, TransitioningMachine):
         else :
             return self.setup_Command()
         
+    @protocol_command_function(description="Execute process according to oven_time (time in oven in sec), saw_time (time in saw in sec),\
+        and output the product on the specified output")
     def process_Command(self, oven_time: int, saw_time: int, output: MPSOutput) -> Runner:
         """
         Execute process according to oven_time (time in oven in sec), saw_time (time in saw in sec),
