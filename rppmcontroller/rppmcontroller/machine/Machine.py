@@ -2,6 +2,7 @@ import math
 from abc import abstractmethod
 from time import time
 from typing import Any, Callable, Dict, List, Optional
+from typing_extensions import deprecated
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
@@ -157,7 +158,7 @@ class Machine:
 
 
     
-
+    @deprecated("in favor of Runner class")
     def process_sequence_CycleStep(self, subCycleStepList: List[CycleStepCommand]) -> CycleStepResult:
         """
         perform each subCycleStep one after another as soon as the previous one ha indicated it had finished.
@@ -220,7 +221,8 @@ class Machine:
                                     f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
                                     f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
                                     (subCommand.displayName, res))
-
+    
+    @deprecated("in favor of Runner class")
     def isProcessingSequence(self) -> bool:
         """
         Indicates if process_sequence_CycleStep is currently processing a sequence

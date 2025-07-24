@@ -14,6 +14,7 @@ from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Timer import Timer
+from rppmcontroller.utils.callable_tool import describe_callable
 
 
 class TransitioningMachine:
@@ -25,6 +26,7 @@ class TransitioningMachine:
     def goto_config(self, config) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
+        
         :param config: A machine config for the specific machine
         :return: A CycleStepResult describing the progress
         """
@@ -33,6 +35,7 @@ class TransitioningMachine:
     def create_runner(self) -> Runner:
         """
         Creates a new Runner for this machine and set it as last_runner
+
         :return: A Runner
         """
         runner = Runner(self)
@@ -68,6 +71,7 @@ class Subroutine:
     def __call__(self, *args, **kwargs) -> CycleStepResult:
         """
         Call the underlying runnable
+
         :param args: ignored
         :param kwargs: ignored
         :return: A CycleStepResult
@@ -118,9 +122,10 @@ class Runner(CycleStepResult):
                   and_stay_for: float = 0.0,
                   or_timeout_after: float = 0.0,
                   clone_config: bool = True,
-                  info: str = "") -> typing.Self:
+                  info: str = "") -> Runner:
         """
         Append a transition to the specified config to this routine.
+
         :param config: The config to transition to.
         :param until: If present, specifies whether the configuration has
         been reached.
@@ -144,15 +149,16 @@ class Runner(CycleStepResult):
                              info=info)
 
     def then_run(self,
-                 runnable: Callable[[], Any],
+                 runnable: Callable[[], Union[None, bool, CycleStepResult]],
                  until: Optional[
                      Callable[[], Union[bool, CycleStepResult]]] = None,
                  and_stay_for: float = 0.0,
                  or_timeout_after: float = 0.0,
-                 info: str = "") -> typing.Self:
+                 info: str = "") -> Runner:
         """
         Appends the specified runnable to this routine. It'll be called
         until it specifies that it is done.
+
         :param runnable: The runnable to execute. Must return a
         CycleStepResult or `True` in
         order to indicate that it is done.
@@ -174,15 +180,24 @@ class Runner(CycleStepResult):
 
         def sub_routine_runnable() -> CycleStepResult:
             res = runnable()
-            if until is not None:
+            if res is None and until is None:
+
+                identity = describe_callable(runnable)
+                raise ValueError(
+                    f"If 'runnable' returns None, 'until' must be provided.\n"
+                    f"Offending runnable: {identity}"
+                )
+            
+            if until is not None:   # if until is provided, its results overides the one returned by the runnable
                 res = until()
 
-            if isinstance(res, bool):
+            assert res is not None
+            if isinstance(res, bool): # convert boolean result into CycleStepResult
                 if res:
                     res = CycleStepResult(CycleStepResultEnum.DONE)
                 else:
                     res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
-
+            
             if timeout_timer is not None:
                 if not timeout_timer.is_started():
                     timeout_timer.start()
@@ -223,10 +238,11 @@ class Runner(CycleStepResult):
                              until: Optional[Callable[
                                  [], Union[bool, CycleStepResult]]] = None,
                              or_timeout_after: float = 0.0,
-                             info: str = "") -> typing.Self:
+                             info: str = "") -> Runner:
         """
         Run the runner provided by the specified runner_supplier until it is
         done.
+
         :param runner_supplier: A callable returning a Runner
         :param until: When provided, the runner is called until this function
         indicates the desired state has been reached
@@ -260,10 +276,11 @@ class Runner(CycleStepResult):
         runner_pointer = RunnerPointer()
         return self.then_run(runner_pointer.run, until, or_timeout_after=or_timeout_after, info=info)
 
-    def run(self) -> typing.Self:
+    def run(self) -> Runner:
         """
         Advance the current routine and update the CycleStepResult properties
         of this
+
         :return: self
         """
         self.__running = True
@@ -308,13 +325,15 @@ class Runner(CycleStepResult):
     def __bool__(self):
         """
         Checks whether this routine is finished
+
         :return: True if this is not running
         """
         return not self.running
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> Runner:
         """
         Call the run function
+
         :param args: ignored
         :param kwargs: ignored
         :return: self

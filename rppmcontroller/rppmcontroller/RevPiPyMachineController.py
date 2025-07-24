@@ -280,7 +280,7 @@ class RevPiPyMachineController:
                                         logging.error("command not supported - params")
                                         # TODO activate:
                                         # raise JSONCommandNotSupportedOnThisMachineException()
-                            elif inputBufferItem.message.type == "WAREHOUSE":
+                            elif func is not None and inputBufferItem.message.type == "WAREHOUSE":
                                 box = inputBufferItem.message.parameters
                                 i = len(box)
                                 logging.debug(f"func: {func}, number of parameters: {i}")
@@ -424,7 +424,7 @@ class RevPiPyMachineController:
     def cast_to_callable(self, var: Any) -> Optional[Callable[[], CycleStepResult]]:
         """Casts a variable to Callable[[], CycleStepResult] if it's compatible, otherwise returns None."""
         if not callable(var):
-            logging.info(f'{var} is not callable')
+            logging.warning(f'{var} is not callable')
             return None
 
         return cast(Callable[[], CycleStepResult], var)

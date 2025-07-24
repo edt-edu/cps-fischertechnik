@@ -52,6 +52,20 @@ Refer to the [pip install documentation](https://pip.pypa.io/en/stable/reference
 
 At this point, you are ready to start modifying to template for your own needs.
 
+## Test
+
+Launch the test using
+
+```
+pytest
+```
+
+optionaly filter test using the `-k` filter
+
+ex:
+```
+pytest -k "ConveyorBelt"
+```
 
 # Informations about the machines
 
