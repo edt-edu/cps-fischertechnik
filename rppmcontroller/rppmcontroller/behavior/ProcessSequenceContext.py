@@ -1,9 +1,9 @@
-
 from typing import List
+from typing_extensions import deprecated
 
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 
-
+@deprecated("in favor of Runner class")
 class ProcessSequenceContext:
     """class holding the execution context of a process_sequence
     Attributes:
