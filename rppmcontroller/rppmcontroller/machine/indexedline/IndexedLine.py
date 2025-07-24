@@ -8,6 +8,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.indexedline.IndexedLineConfig import \
     IndexedLineConfig
+from rppmcontroller.protocol.function_decorators import protocol_command_function
 
 
 class IndexedLine(Machine, TransitioningMachine):
@@ -354,6 +355,7 @@ class IndexedLine(Machine, TransitioningMachine):
         return res
 
     # methods intended for orchestrator
+    @protocol_command_function()
     def move_to_mill_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
@@ -378,6 +380,7 @@ class IndexedLine(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function()
     def mill_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
@@ -389,6 +392,7 @@ class IndexedLine(Machine, TransitioningMachine):
         runner.then_goto(config, info="Stopping mill")
         return runner.run()
 
+    @protocol_command_function()
     def move_to_drill_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
@@ -404,6 +408,7 @@ class IndexedLine(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function()
     def drill_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
@@ -417,6 +422,7 @@ class IndexedLine(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function()
     def move_to_output_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
@@ -440,6 +446,7 @@ class IndexedLine(Machine, TransitioningMachine):
         runner.then_goto(config, info="stopping")
         return runner.run()
 
+    @protocol_command_function()
     def process1_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
@@ -467,5 +474,6 @@ class IndexedLine(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         return self.stop_CycleStep
