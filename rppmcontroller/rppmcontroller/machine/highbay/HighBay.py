@@ -165,6 +165,10 @@ class HighBay(Machine, TransitioningMachine):
     @property
     def isInitialized(self) -> bool:
         return self.__is_initialized
+    
+    @isInitialized.setter
+    def isInitialized(self, value):
+        self.__is_initialized = value
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
