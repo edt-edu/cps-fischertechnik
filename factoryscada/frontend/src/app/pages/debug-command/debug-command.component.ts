@@ -121,14 +121,6 @@ export class DebugCommandComponent implements OnInit {
     // <-- Implementation of command execution logic -->
   }
 
-  private addExecutionLog(message: string): void {
-    const div = this.renderer.createElement('div');
-    this.renderer.addClass(div, 'item');
-    const text = this.renderer.createText(`[${new Date().toLocaleString()}] > ${message}`);
-    this.renderer.appendChild(div, text);
-    this.renderer.appendChild(this.commandExecuteLog.nativeElement, div);
-  }
-
 
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/placeholder' });
@@ -148,10 +140,6 @@ export class DebugCommandComponent implements OnInit {
 
     this.subscribeToTopic('/topic/factory-instance', (message: Message) => {
       this.instance = this.parseMessage(message);
-    });
-
-    this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
-      this.addExecutionLog(message.body);
     });
 
     this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
