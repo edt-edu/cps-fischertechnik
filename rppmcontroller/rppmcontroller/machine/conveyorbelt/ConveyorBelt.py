@@ -22,6 +22,11 @@ class ConveyorBelt(Machine, TransitioningMachine):
     def isInitialized(self) -> bool:
         return True
 
+    @isInitialized.setter
+    def isInitialized(self, value):
+        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
+        raise AttributeError("isInitialized is a read-only property") 
+    
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         res = self.__conveyorActForward or self.__conveyorActBackward
