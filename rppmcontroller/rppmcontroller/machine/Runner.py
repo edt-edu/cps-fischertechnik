@@ -14,6 +14,7 @@ from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Timer import Timer
+from rppmcontroller.utils.callable_tool import describe_callable
 
 
 class TransitioningMachine:
@@ -175,12 +176,17 @@ class Runner(CycleStepResult):
         def sub_routine_runnable() -> CycleStepResult:
             res = runnable()
             if res is None and until is None:
-                raise ValueError("If 'runnable' returns None, 'until' must be provided.")
-            assert res is not None
+
+                identity = describe_callable(runnable)
+                raise ValueError(
+                    f"If 'runnable' returns None, 'until' must be provided.\n"
+                    f"Offending runnable: {identity}"
+                )
             
             if until is not None:   # if until is provided, its results overides the one returned by the runnable
                 res = until()
 
+            assert res is not None
             if isinstance(res, bool): # convert boolean result into CycleStepResult
                 if res:
                     res = CycleStepResult(CycleStepResultEnum.DONE)
