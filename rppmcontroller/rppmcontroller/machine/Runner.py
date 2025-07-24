@@ -118,7 +118,7 @@ class Runner(CycleStepResult):
                   and_stay_for: float = 0.0,
                   or_timeout_after: float = 0.0,
                   clone_config: bool = True,
-                  info: str = "") -> typing.Self:
+                  info: str = "") -> Runner:
         """
         Append a transition to the specified config to this routine.
         :param config: The config to transition to.
@@ -144,12 +144,12 @@ class Runner(CycleStepResult):
                              info=info)
 
     def then_run(self,
-                 runnable: Callable[[], Any],
+                 runnable: Callable[[], Union[None, bool, CycleStepResult]],
                  until: Optional[
                      Callable[[], Union[bool, CycleStepResult]]] = None,
                  and_stay_for: float = 0.0,
                  or_timeout_after: float = 0.0,
-                 info: str = "") -> typing.Self:
+                 info: str = "") -> Runner:
         """
         Appends the specified runnable to this routine. It'll be called
         until it specifies that it is done.
@@ -174,15 +174,19 @@ class Runner(CycleStepResult):
 
         def sub_routine_runnable() -> CycleStepResult:
             res = runnable()
-            if until is not None:
+            if res is None and until is None:
+                raise ValueError("If 'runnable' returns None, 'until' must be provided.")
+            assert res is not None
+            
+            if until is not None:   # if until is provided, its results overides the one returned by the runnable
                 res = until()
 
-            if isinstance(res, bool):
+            if isinstance(res, bool): # convert boolean result into CycleStepResult
                 if res:
                     res = CycleStepResult(CycleStepResultEnum.DONE)
                 else:
                     res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
-
+            
             if timeout_timer is not None:
                 if not timeout_timer.is_started():
                     timeout_timer.start()
@@ -223,7 +227,7 @@ class Runner(CycleStepResult):
                              until: Optional[Callable[
                                  [], Union[bool, CycleStepResult]]] = None,
                              or_timeout_after: float = 0.0,
-                             info: str = "") -> typing.Self:
+                             info: str = "") -> Runner:
         """
         Run the runner provided by the specified runner_supplier until it is
         done.
@@ -260,7 +264,7 @@ class Runner(CycleStepResult):
         runner_pointer = RunnerPointer()
         return self.then_run(runner_pointer.run, until, or_timeout_after=or_timeout_after, info=info)
 
-    def run(self) -> typing.Self:
+    def run(self) -> Runner:
         """
         Advance the current routine and update the CycleStepResult properties
         of this
