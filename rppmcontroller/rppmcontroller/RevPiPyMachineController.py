@@ -424,10 +424,8 @@ class RevPiPyMachineController:
     def cast_to_callable(self, var: Any) -> Optional[Callable[[], CycleStepResult]]:
         """Casts a variable to Callable[[], CycleStepResult] if it's compatible, otherwise returns None."""
         if not callable(var):
-            logging.info(f'{var} is not callable')
+            logging.warning(f'{var} is not callable')
             return None
-        else:
-            logging.info(f'❤️‍🔥 {var} is callable')
 
         return cast(Callable[[], CycleStepResult], var)
 
