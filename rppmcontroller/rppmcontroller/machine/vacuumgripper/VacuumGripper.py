@@ -14,9 +14,8 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import \
     VacuumGripperConfig
-from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
-
 from rppmcontroller.protocol.function_decorators import protocol_command_function
+from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 
 class VacuumGripper(Machine, TransitioningMachine):

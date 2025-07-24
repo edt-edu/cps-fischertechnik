@@ -10,11 +10,11 @@ from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
-from rppmcontroller.machine.sortingLine.SortingLineConfig import \
-    SortingLineConfig
+from rppmcontroller.machine.sortingLine.SortingLineConfig import SortingLineConfig
+from rppmcontroller.machine.Timer import Timer
+from rppmcontroller.protocol.function_decorators import protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.machine.Timer import Timer
 
 
 class SortingLine(Machine, TransitioningMachine):
@@ -431,12 +431,11 @@ class SortingLine(Machine, TransitioningMachine):
     ### ____________ Functions callable from orchestrator ________________
     #   function name must be lowercase and finish with '_Command' postfix (cf. RevPiPyMachineController)
 
-    def stop_Command(self) -> CycleStepResult:
-        return self.stop_CycleStep()
+    @protocol_command_function(description="Command stopping all engines (incl. compressor).")
+    def stop_Command(self) -> Callable[[], CycleStepResult]:
+        return self.stop_CycleStep
 
-    def setup_Command(self) -> CycleStepResult:
-        return self.stop_Command()
-
+    @protocol_command_function(description="Eject the payload on specified color. If the color is set to auto, detect the color before.")
     def eject_Command(self, color: Color) -> Runner:
         """
         Eject the payload on specified color. If the color is set to auto, detect the color before.
