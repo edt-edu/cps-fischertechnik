@@ -562,7 +562,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
 
-        self.fakeSetupDoneAndSetPos(100, -69, 1000)
+        self.fakeSetupDoneAndSetPos(100, -50, 1000)
 
         # initial feedback
         self.controller.mainLoopIteration()
