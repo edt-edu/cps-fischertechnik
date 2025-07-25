@@ -39,9 +39,9 @@ class VacuumGripper(Machine, TransitioningMachine):
         self.__vacuumSensRotEncoderCounter = 0
         self.__vacuumSensVerticalEncoderCounter = 0
         self.__vacuumSensArmEncoderCounter = 0
-        self.__axisArm = Axis(AxisType.Encoder, 20)
-        self.__axisVertical = Axis(AxisType.Encoder, 20)
-        self.__axisRot = Axis(AxisType.Encoder, 20)
+        self.__axisArm = Axis(AxisType.Encoder, 10)
+        self.__axisVertical = Axis(AxisType.Encoder, 10)
+        self.__axisRot = Axis(AxisType.Encoder, 10)
 
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,
