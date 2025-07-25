@@ -14,7 +14,7 @@ from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
-from rppmcontroller.protocol.function_decorators import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 
 PICKUP_DISTANCE = 150
 """how far up we need to move the arm, when picking up an item"""

@@ -13,7 +13,7 @@ from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
 from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import MultiProcessingConfig
 from rppmcontroller.machine.multiprocessing.TurnTablePosition import TurnTablePosition
-from rppmcontroller.protocol.function_decorators import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 
 
 class MultiProcessing(Machine, TransitioningMachine):

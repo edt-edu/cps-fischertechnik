@@ -12,7 +12,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.conveyorbelt.ConveyorBeltConfig import \
     ConveyorBeltConfig
-from rppmcontroller.protocol.function_decorators import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 

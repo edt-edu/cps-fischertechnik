@@ -8,7 +8,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.indexedline.IndexedLineConfig import \
     IndexedLineConfig
-from rppmcontroller.protocol.function_decorators import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 
 
 class IndexedLine(Machine, TransitioningMachine):
