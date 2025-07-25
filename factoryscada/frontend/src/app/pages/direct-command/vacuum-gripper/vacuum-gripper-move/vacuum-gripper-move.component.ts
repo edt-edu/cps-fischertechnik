@@ -36,7 +36,7 @@ export class VacuumGripperMoveComponent {
   }
 
   handleStartValuesChanged(values: { rotation: number, vertical: number, horizontal: number }) {
-    this.endPositionValues = values;
+    this.startPositionValues = values;
   }
   handleEndValuesChanged(values: { rotation: number, vertical: number, horizontal: number }) {
     this.endPositionValues = values;
