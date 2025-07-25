@@ -123,15 +123,6 @@ export class MissionComponent implements OnInit {
     }
   }
 
-  private addExecutionLog(message: string): void {
-    const div = this.renderer.createElement('div');
-    this.renderer.addClass(div, 'item');
-    const text = this.renderer.createText(`[${new Date().toLocaleString()}] > ${message}`);
-    this.renderer.appendChild(div, text);
-    this.renderer.appendChild(this.commandExecuteLog.nativeElement, div);
-  }
-
-
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
     this.myRxStompService.publish({ destination: '/app/factory/instance' });
@@ -160,10 +151,6 @@ export class MissionComponent implements OnInit {
       if (this.selectedMission != undefined) {
         this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
       }
-    });
-
-    this.subscribeToTopic('/topic/controller-feedbacks', (message: Message) => {
-      //this.addExecutionLog(message.body);
     });
 
     this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {

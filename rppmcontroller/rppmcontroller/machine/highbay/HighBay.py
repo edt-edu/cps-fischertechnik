@@ -14,6 +14,7 @@ from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
+from rppmcontroller.protocol.function_decorators import protocol_command_function
 
 PICKUP_DISTANCE = 150
 """how far up we need to move the arm, when picking up an item"""
@@ -164,6 +165,10 @@ class HighBay(Machine, TransitioningMachine):
     @property
     def isInitialized(self) -> bool:
         return self.__is_initialized
+    
+    @isInitialized.setter
+    def isInitialized(self, value):
+        self.__is_initialized = value
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
@@ -535,6 +540,7 @@ class HighBay(Machine, TransitioningMachine):
 
     # methods intended for orchestrator
 
+    @protocol_command_function()
     def setup_Command(self) -> Runner:
         """
         Set up the highbay and calibrate the counters.
@@ -549,26 +555,32 @@ class HighBay(Machine, TransitioningMachine):
         return self.create_runner().then_run(self.goto_config, info="goto_config_setup").then_run(
             mark_setup_finished, info="mark_setup_finished").run()
 
+    @protocol_command_function()
     def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
         return self.goto_next_config()
 
+    @protocol_command_function()
     def conveyor_backward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.BACKWARD
         return self.goto_next_config()
 
+    @protocol_command_function()
     def conveyor_stop_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().conveyor_state = ConveyorState.IDLE
         return self.goto_next_config()
 
+    @protocol_command_function()
     def cantilever_forward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().cantilever_extended = True
         return self.goto_next_config()
 
+    @protocol_command_function()
     def cantilever_backward_Command(self) -> Callable[[], CycleStepResult]:
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
+    @protocol_command_function()
     def horizontal_to_Command(self, counter_goal: int) -> Runner:
         runner = self.create_runner()
         self.run_setup_unless_initialized(runner)
@@ -576,6 +588,7 @@ class HighBay(Machine, TransitioningMachine):
         config.horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
         return runner.then_goto(config).run()
 
+    @protocol_command_function()
     def vertical_to_Command(self, counter_goal: int) -> Runner:
         runner = self.create_runner()
         self.run_setup_unless_initialized(runner)
@@ -583,6 +596,7 @@ class HighBay(Machine, TransitioningMachine):
         config.vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
         return runner.then_goto(config).run()
 
+    @protocol_command_function()
     def goto_column_Command(self, column: Union[Column, int]) -> Callable[
         [], CycleStepResult]:
         if isinstance(column, int):
@@ -590,6 +604,7 @@ class HighBay(Machine, TransitioningMachine):
 
         return self.horizontal_to_Command(column.to_counter_goal(self.column_offset))
 
+    @protocol_command_function()
     def goto_row_Command(self, row: Union[Row, int]) -> Callable[
         [], CycleStepResult]:
         if isinstance(row, int):
@@ -597,6 +612,7 @@ class HighBay(Machine, TransitioningMachine):
 
         return self.vertical_to_Command(row.to_counter_goal(self.row_offset))
 
+    @protocol_command_function()
     def store_to_Command(self,
                          row: Union[Row, int],
                          column: Union[Column, int]) -> Runner:
@@ -648,6 +664,7 @@ class HighBay(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function()
     def pickup_from_Command(self,
                             row: Union[Row, int],
                             column: Union[Column, int]) -> Runner:
@@ -694,9 +711,11 @@ class HighBay(Machine, TransitioningMachine):
 
         return runner.run()
 
+    @protocol_command_function()
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         return lambda: self.stop_CycleStep()
 
+    @protocol_command_function()
     def move_to_safe_position_Command(self) -> Runner:
         """
         Moves the Vacuum Gripper to the safe position if specified. Go to setup position else

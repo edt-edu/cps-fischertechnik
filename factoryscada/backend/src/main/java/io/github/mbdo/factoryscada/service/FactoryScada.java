@@ -12,12 +12,14 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,12 +76,15 @@ public class FactoryScada {
     private final CommandIdGenerator commandIdGenerator;
 
     private final ApplicationContext applicationContext;
+    private final int logLimit;
+    public Map<String, Integer> sessionLogLimits = new ConcurrentHashMap<>();
 
     private List<String> frontendLogsList = new LinkedList<String>();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
-            ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher) {
+            ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
+            @Value("${log.limit:500}") int logLimit) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -88,6 +93,7 @@ public class FactoryScada {
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
+        this.logLimit = logLimit;
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
@@ -341,7 +347,7 @@ public class FactoryScada {
      */
     public void addLogsForFrontend(String log) {
         this.getFrontendLogsList().addFirst(LocalDateTime.now().toString()+" : "+log);
-        if (this.getFrontendLogsList().size() > 100) {
+        if (this.getFrontendLogsList().size() > logLimit) {
             this.getFrontendLogsList().removeLast();
         }
         this.getWebSocketPublisher()
