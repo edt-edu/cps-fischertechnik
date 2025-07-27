@@ -3,6 +3,7 @@ from typing import Dict, Any, Callable
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -176,6 +177,7 @@ class PunchingMachine(Machine, TransitioningMachine):
             "isExecuting": self.isExecuting,
             }
 
+    @cycle_step_function()
     def goto_config(self,
                     config: PunchingMachineConfig = PunchingMachineConfig())\
         -> CycleStepResult:
@@ -201,6 +203,7 @@ class PunchingMachine(Machine, TransitioningMachine):
 
         return res
 
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.punchingMachineActUp = False
         self.punchingMachineActDown = False

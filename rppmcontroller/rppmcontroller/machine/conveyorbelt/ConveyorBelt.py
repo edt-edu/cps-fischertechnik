@@ -5,6 +5,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
@@ -155,6 +156,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
         return self.current
 
     @override
+    @cycle_step_function()
     def goto_config(self, config: ConveyorBeltConfig) -> CycleStepResult:
         self.conveyorActForward = config.state is ConveyorState.FORWARD
         self.conveyorActBackward = config.state is ConveyorState.BACKWARD
@@ -163,6 +165,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
     @override
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         """Stop the conveyor"""
         self.__conveyorActForward = False

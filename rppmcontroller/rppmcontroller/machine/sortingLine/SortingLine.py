@@ -6,6 +6,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -279,6 +280,7 @@ class SortingLine(Machine, TransitioningMachine):
         return CycleStepResult.done()
 
     @override
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.__sortingLineActMotorConveyor = False
         self.__sortingLineActCompressorOn = False
@@ -291,6 +293,7 @@ class SortingLine(Machine, TransitioningMachine):
                                     f"stop_CycleStep",
                                     None)
     
+    @cycle_step_function()
     def detectColor_CycleStep(self) -> CycleStepResult:
         """
         Used to detect the color and store it in attribute colorToEject
@@ -320,6 +323,7 @@ class SortingLine(Machine, TransitioningMachine):
         # Else, must continue
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
     
+    @cycle_step_function()
     def ejectPayloadBySteps_CycleStep(self) -> CycleStepResult:
         """
         Used to eject a token,
@@ -370,6 +374,7 @@ class SortingLine(Machine, TransitioningMachine):
 
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
     
+    @cycle_step_function()
     def ejectPayloadByTime_CycleStep(self) -> CycleStepResult:
         """
         Used to eject a token,

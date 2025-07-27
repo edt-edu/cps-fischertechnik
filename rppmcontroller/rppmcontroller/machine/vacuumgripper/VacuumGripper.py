@@ -5,6 +5,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.Machine import Machine
@@ -274,6 +275,7 @@ class VacuumGripper(Machine, TransitioningMachine):
         }
 
     @override
+    @cycle_step_function()
     def goto_config(self, config: VacuumGripperConfig = VacuumGripperConfig()) -> CycleStepResult:
         res = CycleStepResult.done()
 
@@ -336,6 +338,7 @@ class VacuumGripper(Machine, TransitioningMachine):
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
     @override
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.vacuumActArmOut = False
         self.vacuumActArmIn = False

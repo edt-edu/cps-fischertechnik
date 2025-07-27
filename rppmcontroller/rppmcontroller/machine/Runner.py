@@ -12,6 +12,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.utils.callable_tool import describe_callable
@@ -23,6 +24,7 @@ class TransitioningMachine:
         """A list containing all runners which this machine ever created"""
 
     @abstractmethod
+    @cycle_step_function()
     def goto_config(self, config) -> CycleStepResult:
         """
         Transition the machine into the specified configuration

@@ -3,6 +3,7 @@ from typing import Dict, Any, Callable
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
@@ -303,6 +304,7 @@ class IndexedLine(Machine, TransitioningMachine):
             "isExecuting": self.isExecuting,
             }
 
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.__indexedLineActSlider1Forward = False
         self.__indexedLineActSlider1Backward = False
@@ -316,6 +318,7 @@ class IndexedLine(Machine, TransitioningMachine):
         self.__indexedLineActDrilling = False
         return CycleStepResult.done()
 
+    @cycle_step_function()
     def goto_config(self, config: IndexedLineConfig = IndexedLineConfig()) -> CycleStepResult:
         res = CycleStepResult.done()
 

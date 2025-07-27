@@ -6,6 +6,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState, \
@@ -387,6 +388,7 @@ class HighBay(Machine, TransitioningMachine):
                                  self.highbayActConveyorBackward))
 
     @override
+    @cycle_step_function()
     def goto_config(self,
                     config: Optional[
                         HighBayConfig] = HighBayConfig()) -> CycleStepResult:
@@ -518,6 +520,7 @@ class HighBay(Machine, TransitioningMachine):
         return runnable
 
     @override
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.highbayActUp = False
         self.highbayActDown = False

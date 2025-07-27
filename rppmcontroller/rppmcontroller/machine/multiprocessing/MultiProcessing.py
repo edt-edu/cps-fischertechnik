@@ -5,6 +5,7 @@ from typing_extensions import deprecated, override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MPSOutput import MPSOutput
@@ -420,6 +421,7 @@ class MultiProcessing(Machine, TransitioningMachine):
         return status
 
     @override
+    @cycle_step_function()
     def goto_config(self, config: MultiProcessingConfig = MultiProcessingConfig()) -> CycleStepResult:
         """
         Transfer the machine into another configuration
@@ -501,6 +503,7 @@ class MultiProcessing(Machine, TransitioningMachine):
 
 
     ### __________ Other functions ______________
+    @cycle_step_function()
     def resetStation(self) -> CycleStepResult:
         """Set all valuables and the ovenReady flag to the starting values."""
         self.sawCount = 0
@@ -538,6 +541,7 @@ class MultiProcessing(Machine, TransitioningMachine):
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
     @override
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.processing = False
         self.__multiProcessingActRotClockwise = False
