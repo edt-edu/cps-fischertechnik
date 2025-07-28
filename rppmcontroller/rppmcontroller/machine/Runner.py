@@ -5,25 +5,26 @@ import typing
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any
-from typing import Callable, Union, List
-from typing import Optional
+from typing import Callable, Generic, List, Optional, TypeVar, Union
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.utils.callable_tool import describe_callable
 
+TConfig = TypeVar('TConfig', bound=MachineConfiguration)
 
-class TransitioningMachine:
+class TransitioningMachine(Generic[TConfig]):
     def __init__(self):
         self.__runners: List[Runner] = []
         """A list containing all runners which this machine ever created"""
 
     @abstractmethod
-    def goto_config(self, config) -> CycleStepResult:
+    @cycle_step_function()
+    def goto_config_CycleStep(self, config: TConfig) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
         
@@ -142,7 +143,7 @@ class Runner(CycleStepResult):
         """
         if clone_config:
             config = deepcopy(config)
-        return self.then_run(lambda: self.__machine.goto_config(config),
+        return self.then_run(lambda: self.__machine.goto_config_CycleStep(config),
                              until,
                              and_stay_for=and_stay_for,
                              or_timeout_after=or_timeout_after,

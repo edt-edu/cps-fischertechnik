@@ -6,6 +6,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, runner_augment_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState, \
@@ -86,7 +87,7 @@ class Row(Enum):
             raise TypeError("offset must be an int or a tuple of 4 ints")
 
 
-class HighBay(Machine, TransitioningMachine):
+class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
                  column_offset: Union[int, Tuple[int, int, int, int]] = 0, safetyPos : dict = {}):
         #  inputs
@@ -387,7 +388,8 @@ class HighBay(Machine, TransitioningMachine):
                                  self.highbayActConveyorBackward))
 
     @override
-    def goto_config(self,
+    @cycle_step_function()
+    def goto_config_CycleStep(self,
                     config: Optional[
                         HighBayConfig] = HighBayConfig()) -> CycleStepResult:
         """
@@ -513,11 +515,12 @@ class HighBay(Machine, TransitioningMachine):
         Goes to the next_config and returns a lambda going to that config
         :return:
         """
-        runnable = lambda: self.goto_config(self.next_config)
+        runnable = lambda: self.goto_config_CycleStep(self.next_config)
         runnable()
         return runnable
 
     @override
+    @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
         self.highbayActUp = False
         self.highbayActDown = False
@@ -529,9 +532,11 @@ class HighBay(Machine, TransitioningMachine):
         self.highbayActCantileverBackward = False
         return CycleStepResult(CycleStepResultEnum.DONE)
 
+    @runner_augment_function()
     def run_setup_unless_initialized(self, runner: Runner) -> None:
         """
         Appends a setup step to the provided runner, if this is not initialized
+
         :param runner: The Runner to append the setup step to
         :return: None
         """
@@ -552,7 +557,7 @@ class HighBay(Machine, TransitioningMachine):
             self.must_reset = True
             return CycleStepResult.done()
 
-        return self.create_runner().then_run(self.goto_config, info="goto_config_setup").then_run(
+        return self.create_runner().then_run(self.goto_config_CycleStep, info="goto_config_setup").then_run(
             mark_setup_finished, info="mark_setup_finished").run()
 
     @protocol_command_function()
