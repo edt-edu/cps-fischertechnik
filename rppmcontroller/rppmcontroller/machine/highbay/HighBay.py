@@ -6,7 +6,7 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, runner_augment_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState, \
@@ -532,9 +532,11 @@ class HighBay(Machine, TransitioningMachine):
         self.highbayActCantileverBackward = False
         return CycleStepResult(CycleStepResultEnum.DONE)
 
+    @runner_augment_function()
     def run_setup_unless_initialized(self, runner: Runner) -> None:
         """
         Appends a setup step to the provided runner, if this is not initialized
+
         :param runner: The Runner to append the setup step to
         :return: None
         """
