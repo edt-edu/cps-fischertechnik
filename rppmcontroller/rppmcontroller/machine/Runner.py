@@ -25,7 +25,7 @@ class TransitioningMachine:
 
     @abstractmethod
     @cycle_step_function()
-    def goto_config(self, config) -> CycleStepResult:
+    def goto_config_CycleStep(self, config) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
         
@@ -144,7 +144,7 @@ class Runner(CycleStepResult):
         """
         if clone_config:
             config = deepcopy(config)
-        return self.then_run(lambda: self.__machine.goto_config(config),
+        return self.then_run(lambda: self.__machine.goto_config_CycleStep(config),
                              until,
                              and_stay_for=and_stay_for,
                              or_timeout_after=or_timeout_after,

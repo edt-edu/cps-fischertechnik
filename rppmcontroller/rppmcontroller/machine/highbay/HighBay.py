@@ -389,7 +389,7 @@ class HighBay(Machine, TransitioningMachine):
 
     @override
     @cycle_step_function()
-    def goto_config(self,
+    def goto_config_CycleStep(self,
                     config: Optional[
                         HighBayConfig] = HighBayConfig()) -> CycleStepResult:
         """
@@ -515,7 +515,7 @@ class HighBay(Machine, TransitioningMachine):
         Goes to the next_config and returns a lambda going to that config
         :return:
         """
-        runnable = lambda: self.goto_config(self.next_config)
+        runnable = lambda: self.goto_config_CycleStep(self.next_config)
         runnable()
         return runnable
 
@@ -557,7 +557,7 @@ class HighBay(Machine, TransitioningMachine):
             self.must_reset = True
             return CycleStepResult.done()
 
-        return self.create_runner().then_run(self.goto_config, info="goto_config_setup").then_run(
+        return self.create_runner().then_run(self.goto_config_CycleStep, info="goto_config_setup").then_run(
             mark_setup_finished, info="mark_setup_finished").run()
 
     @protocol_command_function()

@@ -157,7 +157,7 @@ class ConveyorBelt(Machine, TransitioningMachine):
 
     @override
     @cycle_step_function()
-    def goto_config(self, config: ConveyorBeltConfig) -> CycleStepResult:
+    def goto_config_CycleStep(self, config: ConveyorBeltConfig) -> CycleStepResult:
         self.conveyorActForward = config.state is ConveyorState.FORWARD
         self.conveyorActBackward = config.state is ConveyorState.BACKWARD
         return CycleStepResult(CycleStepResultEnum.DONE, "target config reached")

@@ -422,7 +422,7 @@ class MultiProcessing(Machine, TransitioningMachine):
 
     @override
     @cycle_step_function()
-    def goto_config(self, config: MultiProcessingConfig = MultiProcessingConfig()) -> CycleStepResult:
+    def goto_config_CycleStep(self, config: MultiProcessingConfig = MultiProcessingConfig()) -> CycleStepResult:
         """
         Transfer the machine into another configuration
         :param config: The new configuration to transfer the machine to, the default config is the reference config (ie. setup)
@@ -712,7 +712,7 @@ class MultiProcessing(Machine, TransitioningMachine):
     @protocol_command_function(description="Move the engines to a reference point.")
     def setup_Command(self) -> Callable[[], CycleStepResult]:
         """Reset the station and move some parts to the initial postion."""
-        return self.goto_config
+        return self.goto_config_CycleStep
     
     @protocol_command_function(description="Move payload into oven, heat for time secs, and then get the payload out.")
     def heat_in_oven_Command(self, time: int) -> Runner:

@@ -319,7 +319,7 @@ class IndexedLine(Machine, TransitioningMachine):
         return CycleStepResult.done()
 
     @cycle_step_function()
-    def goto_config(self, config: IndexedLineConfig = IndexedLineConfig()) -> CycleStepResult:
+    def goto_config_CycleStep(self, config: IndexedLineConfig = IndexedLineConfig()) -> CycleStepResult:
         res = CycleStepResult.done()
 
         # Slider1

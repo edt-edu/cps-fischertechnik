@@ -178,7 +178,7 @@ class PunchingMachine(Machine, TransitioningMachine):
             }
 
     @cycle_step_function()
-    def goto_config(self,
+    def goto_config_CycleStep(self,
                     config: PunchingMachineConfig = PunchingMachineConfig())\
         -> CycleStepResult:
         res = CycleStepResult.done()

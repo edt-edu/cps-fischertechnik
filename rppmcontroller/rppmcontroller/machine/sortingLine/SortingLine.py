@@ -269,7 +269,7 @@ class SortingLine(Machine, TransitioningMachine):
         }
         return status
 
-    def goto_config(self, config: SortingLineConfig) -> CycleStepResult:
+    def goto_config_CycleStep(self, config: SortingLineConfig) -> CycleStepResult:
         self.sortingLineActMotorConveyor = config.conveyor_active
         self.sortingLineActWhiteEjector = config.white_ejector_active
         self.sortingLineActRedEjector = config.red_ejector_active

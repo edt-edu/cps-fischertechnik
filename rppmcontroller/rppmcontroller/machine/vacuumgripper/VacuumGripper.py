@@ -276,7 +276,7 @@ class VacuumGripper(Machine, TransitioningMachine):
 
     @override
     @cycle_step_function()
-    def goto_config(self, config: VacuumGripperConfig = VacuumGripperConfig()) -> CycleStepResult:
+    def goto_config_CycleStep(self, config: VacuumGripperConfig = VacuumGripperConfig()) -> CycleStepResult:
         res = CycleStepResult.done()
 
         # horizontal axis
