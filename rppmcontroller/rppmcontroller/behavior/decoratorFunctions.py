@@ -1,17 +1,13 @@
-import collections.abc
 import warnings
 import inspect
-from typing import Callable, TypeVar, Union
+from typing import Callable, TypeVar
 #from collections.abc import Callable  # For Python 3.9+, else use typing.Callable
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 
-from rppmcontroller.machine.Runner import Runner
-
 F = TypeVar("F", bound=Callable[...,CycleStepResult])  # Function with any args returning a CycleStepResult
 
-
-def cycle_step_function():
+def cycle_step_function(description: str = ""):
     """
     This annotation indicates that the annotated function is intended to be run in one cycle 
     and be repeatedly called until its result is not  MUST_CONTINUE
