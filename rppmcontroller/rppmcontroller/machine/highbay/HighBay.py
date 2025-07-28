@@ -87,7 +87,7 @@ class Row(Enum):
             raise TypeError("offset must be an int or a tuple of 4 ints")
 
 
-class HighBay(Machine, TransitioningMachine):
+class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
                  column_offset: Union[int, Tuple[int, int, int, int]] = 0, safetyPos : dict = {}):
         #  inputs

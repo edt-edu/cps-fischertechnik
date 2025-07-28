@@ -18,7 +18,7 @@ from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 
-class ConveyorBelt(Machine, TransitioningMachine):
+class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
 
     @property
     def isInitialized(self) -> bool:

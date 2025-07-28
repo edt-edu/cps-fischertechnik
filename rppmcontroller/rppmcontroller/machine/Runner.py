@@ -5,9 +5,7 @@ import typing
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any
-from typing import Callable, Union, List
-from typing import Optional
+from typing import Callable, Generic, List, Optional, TypeVar, Union
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
@@ -17,15 +15,16 @@ from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.utils.callable_tool import describe_callable
 
+TConfig = TypeVar('TConfig', bound=MachineConfiguration)
 
-class TransitioningMachine:
+class TransitioningMachine(Generic[TConfig]):
     def __init__(self):
         self.__runners: List[Runner] = []
         """A list containing all runners which this machine ever created"""
 
     @abstractmethod
     @cycle_step_function()
-    def goto_config_CycleStep(self, config) -> CycleStepResult:
+    def goto_config_CycleStep(self, config: TConfig) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
         

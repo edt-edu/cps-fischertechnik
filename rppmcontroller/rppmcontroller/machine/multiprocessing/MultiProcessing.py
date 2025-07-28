@@ -17,7 +17,7 @@ from rppmcontroller.machine.multiprocessing.TurnTablePosition import TurnTablePo
 from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 
 
-class MultiProcessing(Machine, TransitioningMachine):
+class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     """
     Class implementing the MultiProcessingStation Machine
 

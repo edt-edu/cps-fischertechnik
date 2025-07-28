@@ -19,7 +19,7 @@ from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 
-class VacuumGripper(Machine, TransitioningMachine):
+class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     def __init__(self, id1, safetyPos : dict = {}):
         # inputs

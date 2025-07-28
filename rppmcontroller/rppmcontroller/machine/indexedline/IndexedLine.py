@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, Callable
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -12,7 +13,7 @@ from rppmcontroller.machine.indexedline.IndexedLineConfig import \
 from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 
 
-class IndexedLine(Machine, TransitioningMachine):
+class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
     def __init__(self, id1):
         # inputs
         self.__indexedLineSensSlider1Front = False
@@ -318,6 +319,7 @@ class IndexedLine(Machine, TransitioningMachine):
         self.__indexedLineActDrilling = False
         return CycleStepResult.done()
 
+    @override
     @cycle_step_function()
     def goto_config_CycleStep(self, config: IndexedLineConfig = IndexedLineConfig()) -> CycleStepResult:
         res = CycleStepResult.done()

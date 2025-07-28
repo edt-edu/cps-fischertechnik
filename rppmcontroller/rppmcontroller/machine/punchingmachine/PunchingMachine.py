@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, Callable
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -12,7 +13,7 @@ from rppmcontroller.machine.punchingmachine.PunchingMachineConfig import Punchin
 from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 
 
-class PunchingMachine(Machine, TransitioningMachine):
+class PunchingMachine(Machine, TransitioningMachine[PunchingMachineConfig]):
     def __init__(self, id1):
         # inputs
         self.__punchingMachineSensGoods = True
@@ -177,6 +178,7 @@ class PunchingMachine(Machine, TransitioningMachine):
             "isExecuting": self.isExecuting,
             }
 
+    @override
     @cycle_step_function()
     def goto_config_CycleStep(self,
                     config: PunchingMachineConfig = PunchingMachineConfig())\

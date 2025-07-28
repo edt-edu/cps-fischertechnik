@@ -18,7 +18,7 @@ from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 
-class SortingLine(Machine, TransitioningMachine):
+class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
     @property
     def isInitialized(self) -> bool:
