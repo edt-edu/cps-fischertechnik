@@ -36,14 +36,17 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumActRotLeft = False
         self.__vacuumActCompressorOn = False
         self.__vacuumActValve = False
+        self.__pwmVertical = 100
+        self.__pwmHorizontal = 100
+        self.__pwmRotational = 100
 
         # encoders
         self.__vacuumSensRotEncoderCounter = 0
         self.__vacuumSensVerticalEncoderCounter = 0
         self.__vacuumSensArmEncoderCounter = 0
-        self.__axisArm = Axis(AxisType.Encoder, 10)
+        self.__axisArm = Axis(AxisType.Encoder, 5)
         self.__axisVertical = Axis(AxisType.Encoder, 10)
-        self.__axisRot = Axis(AxisType.Encoder, 10)
+        self.__axisRot = Axis(AxisType.Encoder, 5)
 
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,
@@ -59,7 +62,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
                    RequestedParameter.MOTORROTATECLOCKWISE: self.__vacuumActRotRight,
                    RequestedParameter.MOTORROTATECOUNTERCLOCKWISE: self.__vacuumActRotLeft,
                    RequestedParameter.COMPRESSOR: self.__vacuumActCompressorOn,
-                   RequestedParameter.VALVEVACUUM: self.__vacuumActValve}
+                   RequestedParameter.VALVEVACUUM: self.__vacuumActValve,
+                   RequestedParameter.VALVEVACUUM: self.__pwmVertical,
+                   RequestedParameter.VALVEVACUUM: self.__pwmHorizontal,
+                   RequestedParameter.VALVEVACUUM: self.__pwmRotational}
         super().__init__(id1, dictMap)
         TransitioningMachine.__init__(self)
 
@@ -70,6 +76,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.configGoal = None
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
+        self.__approachSpeed = 20
+        self.__standardSpeed = 100
+        self.__approachTol = 100
 
         # safety position
         self.safeHorizontal = safetyPos.get('horizontal', None)
@@ -126,6 +135,30 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumActValve.setter
     def vacuumActValve(self, value):
         self.__vacuumActValve = value
+
+    @property
+    def pwmVertical(self):
+        return self.__pwmVertical
+
+    @pwmVertical.setter
+    def pwmVertical(self, value):
+        self.__pwmVertical = value
+
+    @property
+    def pwmHorizontal(self):
+        return self.__pwmHorizontal
+
+    @pwmHorizontal.setter
+    def pwmHorizontal(self, value):
+        self.__pwmHorizontal = value
+
+    @property
+    def pwmRotational(self):
+        return self.__pwmRotational
+
+    @pwmRotational.setter
+    def pwmRotational(self, value):
+        self.__pwmRotational = value
 
     @property
     def vacuumSensVerticalEndUp(self) -> bool:
@@ -244,7 +277,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         return f"MoveVert[{s(self.vacuumActVerticalUp)}, {s(self.vacuumActVerticalDown)}], " + \
                f"MoveRot[{s(self.vacuumActRotRight)}, {s(self.vacuumActRotLeft)}], " + \
                f"MoveHor[{s(self.vacuumActArmOut)}, {s(self.vacuumActArmIn)}], " + \
-               f"CompValv[{s(self.vacuumActCompressorOn)}, {s(self.vacuumActValve)}]"
+               f"CompValv[{s(self.vacuumActCompressorOn)}, {s(self.vacuumActValve)}], " + \
+               f"PWM_VHR[{self.pwmVertical}, {self.pwmHorizontal}, {self.pwmRotational}]"
 
 
     def inputStatus(self) -> Dict[str, Any]:
@@ -267,6 +301,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             "vacuumActArmIn": self.__vacuumActArmIn,
             "vacuumActCompressorOn": self.__vacuumActCompressorOn,
             "vacuumActValve": self.__vacuumActValve,
+            "vacuumActValve": self.__pwmVertical,
+            "vacuumActValve": self.__pwmHorizontal,
+            "vacuumActValve": self.__pwmRotational,
         }
 
     def internalStatus(self) -> Dict[str, Any]:
@@ -286,6 +323,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisArm.gotoAxisConfig(config.horizontal_axis_config):
             self.vacuumActArmIn = self.__axisArm.outputminus
             self.vacuumActArmOut = self.__axisArm.outputplus
+            if self.__axisArm.isCloseFromEnd(config.horizontal_axis_config, self.__approachTol):
+                self.pwmHorizontal = self.__approachSpeed
+            else :
+                self.pwmHorizontal = self.__standardSpeed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "extending or retracting arm")
         if self.vacuumActArmIn and self.vacuumSensArmEndIn:
             self.stop_CycleStep()
@@ -298,6 +339,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
             self.vacuumActVerticalUp = self.__axisVertical.outputminus
             self.vacuumActVerticalDown = self.__axisVertical.outputplus
+            if self.__axisVertical.isCloseFromEnd(config.vertical_axis_config, self.__approachTol):
+                self.pwmVertical= self.__approachSpeed
+            else :
+                self.pwmVertical = self.__standardSpeed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "moving down or up")
         if self.vacuumActVerticalUp and self.vacuumSensVerticalEndUp:
             self.stop_CycleStep()
@@ -310,6 +355,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisRot.gotoAxisConfig(config.rotation_axis_config):
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
+            if self.__axisRot.isCloseFromEnd(config.rotation_axis_config, self.__approachTol):
+                self.pwmRotational = self.__approachSpeed
+            else :
+                self.pwmRotational = self.__standardSpeed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "rotating arm")
         if self.vacuumActRotRight and self.vacuumSensRotEnd:
             self.stop_CycleStep()

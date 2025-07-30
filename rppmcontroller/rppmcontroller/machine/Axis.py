@@ -30,9 +30,9 @@ class Axis:
         self.__outputplus = False
         self.__outputminus = False
         if typ == AxisType.Encoder:
-            self.play = 10
+            self.play = 0
         else:
-            self.play = 2
+            self.play = 0
         self.__endpos_is_at_low_counter_values = endpos_is_at_low_counter_values
 
     @property
@@ -150,3 +150,14 @@ class Axis:
         if isinstance(self.__counter, ImpulseCounter):
             return t, d
         return t
+
+    def isCloseFromEnd(self, axis_config: AxisConfig, approachTol: int) -> bool:
+        targetPos = axis_config.counter_goal
+        counterCurrent = self.__counter.counter
+
+        if targetPos - approachTol > counterCurrent:
+            return False
+        elif targetPos + approachTol < counterCurrent:
+            return False
+        else:
+            return True
