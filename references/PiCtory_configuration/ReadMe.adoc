@@ -1,0 +1,12 @@
+# PiCtory configuration
+
+This file is meant to be a guide in configuring pictory, especially to setup the PWM functionnality.
+
+
+In order to implement PWM, you first have to set the OutputPWMActive parameter. You have to put a number depending on which output will be used as a PWM output. If you want to set the outputs 1 and 2 to PWM, you have to put (0000 0011 in binary => 3 in decimal) 3. If you want to set the 9th an 10th outputs to PWM, you have to put (11 0000 0000 in binary => 768 in decimal) 768.
+Next, you have to set the OutputPWMFrequency parameter. A smaller frequency will allow the RevPi to make a cleaner signal and allow you to put more precise value in the PWM output. The step size is specified in function of the frequency.
+Finally, you are able to set a default value to the PWM output, by setting a value in the corresponding PWM outputs.
+
+
+
+For more detail, please refer to the doc, https://revolutionpi.com/en/docs/revpi-dio#_configuring_revpi_dio_in_pictory.
