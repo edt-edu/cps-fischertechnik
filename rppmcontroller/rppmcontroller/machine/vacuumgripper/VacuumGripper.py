@@ -21,7 +21,8 @@ from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
-    def __init__(self, id1, safetyPos : dict = {}):
+    def __init__(self, id1, safetyPos : dict = {}, pwmParameters: dict = {'stdSpeed' : 100, 'aprchSpeedVer' : 30,
+                                                                          'aprchSpeedHor' : 30, 'aprchSpeedRot' : 20, 'aprchTolerance' : 100}):
         # inputs
         self.__vacuumSensArmEndIn = False
         self.__vacuumSensVerticalEndUp = False
@@ -76,9 +77,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.configGoal = None
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
-        self.__approachSpeed = 20
-        self.__standardSpeed = 100
-        self.__approachTol = 100
+        self.__standardSpeed = pwmParameters.get('stdSpeed', 100)
+        self.__approachSpeedVer = pwmParameters.get('aprchSpeedVer', 30)
+        self.__approachSpeedHor = pwmParameters.get('aprchSpeedHor', 30)
+        self.__approachSpeedRot = pwmParameters.get('aprchSpeedRot', 20)
+        self.__approachTol = pwmParameters.get('aprchTolerance', 100)
 
         # safety position
         self.safeHorizontal = safetyPos.get('horizontal', None)
@@ -324,7 +327,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.vacuumActArmIn = self.__axisArm.outputminus
             self.vacuumActArmOut = self.__axisArm.outputplus
             if self.__axisArm.isCloseFromEnd(config.horizontal_axis_config, self.__approachTol):
-                self.pwmHorizontal = self.__approachSpeed
+                self.pwmHorizontal = self.__approachSpeedHor
             else :
                 self.pwmHorizontal = self.__standardSpeed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "extending or retracting arm")
@@ -340,7 +343,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.vacuumActVerticalUp = self.__axisVertical.outputminus
             self.vacuumActVerticalDown = self.__axisVertical.outputplus
             if self.__axisVertical.isCloseFromEnd(config.vertical_axis_config, self.__approachTol):
-                self.pwmVertical= self.__approachSpeed
+                self.pwmVertical= self.__approachSpeedVer
             else :
                 self.pwmVertical = self.__standardSpeed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "moving down or up")
@@ -356,7 +359,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
             if self.__axisRot.isCloseFromEnd(config.rotation_axis_config, self.__approachTol):
-                self.pwmRotational = self.__approachSpeed
+                self.pwmRotational = self.__approachSpeedRot
             else :
                 self.pwmRotational = self.__standardSpeed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "rotating arm")
