@@ -400,6 +400,15 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActRotLeft = False
         self.vacuumActCompressorOn = False
         self.vacuumActValve = False
+
+        self.__axisVertical.resetDirection()
+        self.__axisArm.resetDirection()
+        self.__axisRot.resetDirection()
+
+        self.pwmHorizontal = self.__standardSpeed
+        self.pwmRotational = self.__standardSpeed
+        self.pwmVertical = self.__standardSpeed
+
         return CycleStepResult.done()
 
     def get_current_config(self) -> VacuumGripperConfig:

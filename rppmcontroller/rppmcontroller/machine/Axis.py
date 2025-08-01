@@ -161,3 +161,7 @@ class Axis:
             return False
         else:
             return True
+        
+    def resetDirection(self) -> None:
+        self.__outputminus = False
+        self.__outputplus = False
