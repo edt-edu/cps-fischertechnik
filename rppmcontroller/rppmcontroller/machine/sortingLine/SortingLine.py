@@ -305,14 +305,14 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         """
         # If a color is detected, we must set the attribute and finish the cyclestep
         if self.sortingLineSensColorDetector:
+            if self.sortingLineSensWhiteDetector:
+                self.colorToEject = Color.WHITE
+                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
             if self.sortingLineSensRedDetector:
                 self.colorToEject = Color.RED
                 return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
             if self.sortingLineSensBlueDetector:
                 self.colorToEject = Color.BLUE
-                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
-            if self.sortingLineSensWhiteDetector:
-                self.colorToEject = Color.WHITE
                 return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
             
         # If the token has arrived to the middle sensor, the detector didn't work
@@ -347,22 +347,22 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         blueCounter = 24
 
         # If counter attained the steps needed, eject 
-        if (self.colorToEject == Color.BLUE and current > blueCounter) or \
+        if (self.colorToEject == Color.WHITE and current > whiteCounter) or \
            (self.colorToEject == Color.RED and current > redCounter) or  \
-           (self.colorToEject == Color.WHITE and current > whiteCounter):
+           (self.colorToEject == Color.BLUE and current > blueCounter):
             
             self.__sortingLineActCompressorOn = True
-            if self.colorToEject == Color.RED:
+            if self.colorToEject == Color.WHITE:
+                self.__sortingLineActWhiteEjector = True
+            elif self.colorToEject == Color.RED:
                 self.__sortingLineActRedEjector = True
             elif self.colorToEject == Color.BLUE:
                 self.__sortingLineActBlueEjector = True
-            elif self.colorToEject == Color.WHITE:
-                self.__sortingLineActWhiteEjector = True
 
             # Wait 5 steps more to retract the arm and end the command 
-            if (self.colorToEject == Color.BLUE and current > blueCounter+5) or \
+            if (self.colorToEject == Color.WHITE and current > whiteCounter+5) or \
                (self.colorToEject == Color.RED and current > redCounter+5) or   \
-               (self.colorToEject == Color.WHITE and current > whiteCounter+5):
+               (self.colorToEject == Color.BLUE and current > blueCounter+5):
                 
                 self.ejectingPayload = False
                 self.__sortingLineActMotorConveyor = False
@@ -393,12 +393,12 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         
         # Regenerate the timer according to the color of the payload
         if regenerateTimer or self.timer == None:
-            if self.colorToEject == Color.RED:
+            if self.colorToEject == Color.WHITE:
+                self.timer = Timer(0.5)
+            elif self.colorToEject == Color.RED:
                 self.timer = Timer(1.55)
             elif self.colorToEject == Color.BLUE:
                 self.timer = Timer(2.6)
-            elif self.colorToEject == Color.WHITE:
-                self.timer = Timer(0.5)
             else:
                 logging.error("No color defined, command aborted")
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
@@ -411,12 +411,12 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         if self.timer.is_started() and self.timer.elapsed() and not self.__sortingLineActCompressorOn:            
             self.__sortingLineActCompressorOn = True
             self.__sortingLineActMotorConveyor = False
-            if self.colorToEject == Color.RED:
+            if self.colorToEject == Color.WHITE:
+                self.__sortingLineActWhiteEjector = True
+            elif self.colorToEject == Color.RED:
                 self.__sortingLineActRedEjector = True
             elif self.colorToEject == Color.BLUE:
                 self.__sortingLineActBlueEjector = True
-            elif self.colorToEject == Color.WHITE:
-                self.__sortingLineActWhiteEjector = True
             
             self.halfSecondTimer.reset(start=True)
 
