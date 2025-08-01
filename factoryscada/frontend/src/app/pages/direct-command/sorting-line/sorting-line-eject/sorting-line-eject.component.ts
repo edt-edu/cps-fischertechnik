@@ -30,8 +30,8 @@ export class SortingLineEjectComponent {
   @Input() destinationSuffix: String = "/command/debug";  // by default use the debug route
 
   colors: any[] = [
-    {name: "Red", value: "RED"},
     {name: "White", value: "WHITE"},
+    {name: "Red", value: "RED"},
     {name: "Blue", value: "BLUE"},
     {name: "Auto", value: "AUTO"}
   ];
