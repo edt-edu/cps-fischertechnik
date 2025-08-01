@@ -530,6 +530,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.highbayActConveyorBackward = False
         self.highbayActCantileverForward = False
         self.highbayActCantileverBackward = False
+
+        self.__axisVertical.resetDirection()
+        self.__axisHorizontal.resetDirection()
+
         return CycleStepResult(CycleStepResultEnum.DONE)
 
     @runner_augment_function()

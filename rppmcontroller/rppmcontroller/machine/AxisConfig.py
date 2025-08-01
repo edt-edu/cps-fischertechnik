@@ -38,8 +38,8 @@ class AxisConfig:
         return self.__end_position
 
     @property
-    def counter_goal(self) -> Optional[int]:
-        return self.__counter_goal if not self.end_position else None
+    def counter_goal(self) -> int:
+        return self.__counter_goal if not self.end_position else 0
 
     @counter_goal.setter
     def counter_goal(self, value: int) -> None:

@@ -123,8 +123,8 @@ class VacuumGripperTestCase(unittest.TestCase):
 
         # simulate move
         # we suppose that it finishes to have its counters close to the target
-        self.robot1.vacuumSensArmEncoderCounter = 510
-        self.robot1.vacuumSensVerticalEncoderCounter = 490
+        self.robot1.vacuumSensArmEncoderCounter = 505
+        self.robot1.vacuumSensVerticalEncoderCounter = 495
         self.robot1.vacuumSensRotEncoderCounter = 505
 
         ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(500),AxisConfig.to_counter_goal(500),AxisConfig.to_counter_goal(500),False))
@@ -165,8 +165,8 @@ class VacuumGripperTestCase(unittest.TestCase):
 
         # simulate move
         # we suppose that it finishes to have its counters close to the target
-        self.robot1.vacuumSensArmEncoderCounter = 90
-        self.robot1.vacuumSensVerticalEncoderCounter = 110
+        self.robot1.vacuumSensArmEncoderCounter = 95
+        self.robot1.vacuumSensVerticalEncoderCounter = 105
         self.robot1.vacuumSensRotEncoderCounter = 95
 
         ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))

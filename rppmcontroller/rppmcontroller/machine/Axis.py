@@ -150,3 +150,18 @@ class Axis:
         if isinstance(self.__counter, ImpulseCounter):
             return t, d
         return t
+
+    def isCloseFromEnd(self, axis_config: AxisConfig, approachTol: int) -> bool:
+        targetPos = axis_config.counter_goal
+        counterCurrent = self.__counter.counter
+
+        if targetPos - approachTol > counterCurrent:
+            return False
+        elif targetPos + approachTol < counterCurrent:
+            return False
+        else:
+            return True
+        
+    def resetDirection(self) -> None:
+        self.__outputminus = False
+        self.__outputplus = False

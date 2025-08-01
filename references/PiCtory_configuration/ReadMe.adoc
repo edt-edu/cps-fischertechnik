@@ -10,3 +10,5 @@ Finally, you are able to set a default value to the PWM output, by setting a val
 
 
 For more detail, please refer to the doc, https://revolutionpi.com/en/docs/revpi-dio#_configuring_revpi_dio_in_pictory.
+
+Don't forget to move the appropriate jumper according to the doc : mbdo-impl/references/documentation/TrainingFactory/560840560841554868TrainingFactory40 24V.pdf
