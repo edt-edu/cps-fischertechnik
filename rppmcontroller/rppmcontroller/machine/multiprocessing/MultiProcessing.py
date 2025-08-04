@@ -147,16 +147,8 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         TransitioningMachine.__init__(self)
 
         # helper variables
-        self.sawCount = 0
-        self.ovenCount = 0
-        self.vacuumCount = 0
-        self.ejectorCount = 0
-        self.heated = False
-        self.delivered = False
         self.processing = False
-        self.turnTableDirection: Direction = Direction.NONE
         self.previous_isExecuting_log = None
-        self.__last_target_config = None
         self.__turn_table_direction = TurnTableDirection.NONE
 
         # safety position
@@ -503,18 +495,6 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
 
     ### __________ Other functions ______________
-    @cycle_step_function()
-    def resetStation(self) -> CycleStepResult:
-        """Set all valuables and the ovenReady flag to the starting values."""
-        self.sawCount = 0
-        self.ovenCount = 0
-        self.vacuumCount = 0
-        self.ejectorCount = 0
-        self.toVac = False
-        self.heated = False
-        self.delivered = False
-        return CycleStepResult(CycleStepResultEnum.DONE)
-    
     def get_current_config(self) -> MultiProcessingConfig:
         """
         Get the config describing the state in which the machine currently
