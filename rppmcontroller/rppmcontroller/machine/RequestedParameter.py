@@ -110,4 +110,8 @@ class RequestedParameter(Enum):
     MOTORGRIPARMFORWARD = 93
     MOTORGRIPARMBACKWARD = 94
 
-    ALL = 95
+    PWMVERTICAL = 95
+    PWMHORIZONTAL = 96
+    PWMROTATION = 97
+
+    ALL = 98

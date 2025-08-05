@@ -30,7 +30,7 @@ class Axis:
         self.__outputplus = False
         self.__outputminus = False
         if typ == AxisType.Encoder:
-            self.play = 10
+            self.play = 2
         else:
             self.play = 2
         self.__endpos_is_at_low_counter_values = endpos_is_at_low_counter_values

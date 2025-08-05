@@ -11,3 +11,4 @@ class HighBayConfig(MachineConfiguration):
     vertical_axis_config: AxisConfig = AxisConfig.to_end_position()
     cantilever_extended: bool = False
     conveyor_state: ConveyorState = ConveyorState.IDLE
+    verticalPWM: int = 100

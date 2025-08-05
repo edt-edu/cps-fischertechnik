@@ -89,7 +89,8 @@ class Row(Enum):
 
 class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
-                 column_offset: Union[int, Tuple[int, int, int, int]] = 0, safetyPos : dict = {}):
+                 column_offset: Union[int, Tuple[int, int, int, int]] = 0, safetyPos : dict = {},
+                 pwmParameters: dict = {'stdSpeed' : 100, 'reducedSpeed' : 50, 'approachTol' : 100}):
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
@@ -107,12 +108,14 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__highbayActUp = False
         self.__highbayActCantileverForward = False
         self.__highbayActCantileverBackward = False
+        self.__pwmVertical = 100
+        self.__pwmHorizontal = 100
 
         #  encoder
         self.__highbaySensHorizontalEncoderCounter = 0
         self.__highbaySensVerticalEncoderCounter = 0
-        self.__axisHorizontal = Axis(AxisType.Encoder, 20)
-        self.__axisVertical = Axis(AxisType.Encoder, 20)
+        self.__axisHorizontal = Axis(AxisType.Encoder, 5)
+        self.__axisVertical = Axis(AxisType.Encoder, 10)
 
         # offsets
         self.row_offset = row_offset
@@ -148,6 +151,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                 self.__highbayActCantileverForward,
             RequestedParameter.MOTORCANTILEVERBACKWARD:
                 self.__highbayActCantileverBackward,
+            RequestedParameter.PWMVERTICAL: self.__pwmVertical,
+            RequestedParameter.PWMHORIZONTAL: self.__pwmHorizontal
             }
         Machine.__init__(self, id1, dictMap)
         TransitioningMachine.__init__(self)
@@ -156,8 +161,11 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.previous_isExecuting_log = None
         self.__is_initialized = False
         self.must_reset = False
-        self.next_config = None
+        self.next_config = HighBayConfig()
         self.__state = None
+        self.stdSpeed = pwmParameters.get('stdSpeed', 100)
+        self.reducedSpeed = pwmParameters.get('reducedSpeed', 40)
+        self.approachTol = pwmParameters.get('approachTol', 100)
 
         # safety position
         self.safeHorizontal = safetyPos.get('horizontal', None)
@@ -312,6 +320,22 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def highbayActCantileverBackward(self, value: bool) -> None:
         self.__highbayActCantileverBackward = value
 
+    @property
+    def pwmHorizontal(self) -> int:
+        return self.__pwmHorizontal
+
+    @pwmHorizontal.setter
+    def pwmHorizontal(self, value: int) -> None:
+        self.__pwmHorizontal = value
+
+    @property
+    def pwmVertical(self) -> int:
+        return self.__pwmVertical
+
+    @pwmVertical.setter
+    def pwmVertical(self, value: int) -> None:
+        self.__pwmVertical = value
+
     # ------------------ Encoder Properties ------------------
 
     @property
@@ -342,7 +366,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         return (f"Vertical: [{s(self.highbayActUp)}, {s(self.highbayActDown)}], "
                 f"Horizont: [{s(self.highbayActHorizontalToRack)}, {s(self.highbayActHorizontalToConveyor)}], "
                 f"Cantilev: [{s(self.highbayActCantileverBackward)}, {s(self.highbayActCantileverForward)}], "
-                f"Conveyor: [{s(self.highbayActConveyorBackward)}, {s(self.highbayActConveyorForward)}]")
+                f"Conveyor: [{s(self.highbayActConveyorBackward)}, {s(self.highbayActConveyorForward)}], "
+                f"PWM_VHR[{self.pwmVertical}, {self.pwmHorizontal}]")
 
     def inputStatus(self) -> Dict[str, Any]:
         return {  # TODO better adjust the names, I just made them up
@@ -370,6 +395,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                 self.__highbayActHorizontalToConveyor,
             "highbayActDown": self.__highbayActDown,
             "highbayActUp": self.__highbayActUp,
+            "vacuumActValve": self.__pwmVertical,
+            "vacuumActValve": self.__pwmHorizontal
             }
 
     def get_current_config(self) -> HighBayConfig:
@@ -390,8 +417,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @override
     @cycle_step_function()
     def goto_config_CycleStep(self,
-                    config: Optional[
-                        HighBayConfig] = HighBayConfig()) -> CycleStepResult:
+                    config: HighBayConfig = HighBayConfig()) -> CycleStepResult:
         """
         Transfer the machine into another configuration
         :param config: The new configuration to transfer the machine to
@@ -399,6 +425,9 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         otherwise false
         """
         # logging.debug(f"going to {config}")
+
+        # update pwm speed
+        self.pwmVertical = config.verticalPWM
 
         # update conveyor belt state
         if config.conveyor_state == ConveyorState.IDLE:
@@ -440,9 +469,12 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # horizontal axis
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
-        if not self.__axisHorizontal.gotoAxisConfig(
-                config.horizontal_axis_config):
+        if not self.__axisHorizontal.gotoAxisConfig(config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
+            if self.__axisHorizontal.isCloseFromEnd(config.horizontal_axis_config, self.approachTol):
+                self.pwmHorizontal = self.reducedSpeed
+            else :
+                self.pwmHorizontal = self.stdSpeed
 
         # logging.debug(f"arm_movement: {arm_movement}")
         if (
@@ -556,6 +588,9 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         :return: A Runner performing the setup
         """
 
+        self.pwmHorizontal = self.stdSpeed
+        self.pwmVertical = self.stdSpeed
+
         def mark_setup_finished():
             self.__is_initialized = True
             self.must_reset = True
@@ -652,6 +687,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # pickup item and stop conveyor
         config.conveyor_state = ConveyorState.IDLE
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+        config.verticalPWM = self.reducedSpeed
         runner.then_goto(config, info="pickup item and stop conveyor")
 
         # move to rack
@@ -699,9 +735,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
         runner.then_goto(config, info="pickup item")
 
-        # perform a setup because we need precise encoders now
-        runner.then_run_runner_from(self.setup_Command, info="recalibrate encoders")
-
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
             Column.CONVEYOR.to_counter_goal(self.column_offset))
@@ -711,6 +744,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                                vertical_axis_config,
                                True,
                                ConveyorState.FORWARD)
+        config.verticalPWM = self.reducedSpeed
         runner.then_goto(config,
                          until=lambda: not self.highbaySensOutside,
                          info="move to conveyor")

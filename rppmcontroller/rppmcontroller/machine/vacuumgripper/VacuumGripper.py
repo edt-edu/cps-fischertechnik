@@ -64,9 +64,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
                    RequestedParameter.MOTORROTATECOUNTERCLOCKWISE: self.__vacuumActRotLeft,
                    RequestedParameter.COMPRESSOR: self.__vacuumActCompressorOn,
                    RequestedParameter.VALVEVACUUM: self.__vacuumActValve,
-                   RequestedParameter.VALVEVACUUM: self.__pwmVertical,
-                   RequestedParameter.VALVEVACUUM: self.__pwmHorizontal,
-                   RequestedParameter.VALVEVACUUM: self.__pwmRotational}
+                   RequestedParameter.PWMVERTICAL: self.__pwmVertical,
+                   RequestedParameter.PWMHORIZONTAL: self.__pwmHorizontal,
+                   RequestedParameter.PWMROTATION: self.__pwmRotational}
         super().__init__(id1, dictMap)
         TransitioningMachine.__init__(self)
 
