@@ -7,6 +7,11 @@ void setup() {
   pinMode(12, OUTPUT); //Red LED pin
   pinMode(11, OUTPUT); //Blue LED pin
   pinMode(10, OUTPUT); //White LED pin
+
+  pinMode(9, OUTPUT); //Green LED pin for for different colors
+  pinMode(8, OUTPUT); //Red LED pin
+  pinMode(7, OUTPUT); //Blue LED pin
+  pinMode(6, OUTPUT); //White LED pin
 }
 
 void loop() {
@@ -36,10 +41,11 @@ void loop() {
   while (digitalValue > 810 || digitalValue < 780) { // Check if the sensor is not detecting any color
     digitalValue = analogRead(sensorPin); // read the digital value from the sensor
     printf("green");  
-    digitalWrite(13, HIGH); // Green LED on and every other leds off
-    digitalWrite(12, LOW);
-    digitalWrite(11, LOW);
-    digitalWrite(10, LOW);
+    digitalWrite(9, HIGH); // Green LED on and every other leds off
+    digitalWrite(8, LOW);
+    digitalWrite(7, LOW);
+    digitalWrite(6, LOW);
+    digitalWrite(13, HIGH);
     if (digitalValue >= 720 && digitalValue <= 757) { // check if the value of the sensor is in the blue span for more than sensTime milliseconds
       if (!conditionMet) {
         conditionStartTime = millis();
@@ -47,9 +53,10 @@ void loop() {
       } else if (millis() - conditionStartTime >= sensTime) {
         printf("temps Blue = ", millis() - conditionStartTime);
         // Condition met for at least sensTime * milliseconds
-        digitalWrite(12, LOW);
-        digitalWrite(11, HIGH); // Blue LED on and every other leds off
-        digitalWrite(10, LOW);
+        digitalWrite(8, LOW);
+        digitalWrite(7, LOW); // Blue LED on and every other leds off
+        digitalWrite(6, HIGH);
+        digitalWrite(10, HIGH);
         delay(onTime); // delay for the LED to stay on
       }
     } else if (digitalValue >= 650 && digitalValue <= 710) { // check if the value of the sensor is in the red span for more than sensTime milliseconds
@@ -59,9 +66,10 @@ void loop() {
       } else if (millis() - conditionStartTime >= sensTime) {
         printf("temps Red = ", millis() - conditionStartTime);
         // Condition met for at least sensTime * milliseconds
-        digitalWrite(12, HIGH); // Red LED on and every other leds off
-        digitalWrite(11, LOW);
-        digitalWrite(10, LOW);
+        digitalWrite(8, LOW); // Red LED on and every other leds off
+        digitalWrite(7, HIGH);
+        digitalWrite(6, LOW);
+        digitalWrite(11, HIGH);
         delay(onTime); // delay for the LED to stay on
       }
     } else if (digitalValue >= 295 && digitalValue <= 420) { // check if the value of the sensor is in the white span for more than sensTime milliseconds
@@ -71,9 +79,10 @@ void loop() {
       } else if (millis() - conditionStartTime >= sensTime) {
         printf("temps White = ", millis() - conditionStartTime);
         // Condition met for at least sensTime * milliseconds
-        digitalWrite(12, LOW);
-        digitalWrite(11, LOW);
-        digitalWrite(10, HIGH); // White LED on and every other leds off
+        digitalWrite(8, HIGH);
+        digitalWrite(7, LOW);
+        digitalWrite(6, LOW); // White LED on and every other leds off
+        digitalWrite(12, HIGH);
         delay(onTime); // delay for the LED to stay on
       }
     } else { // another color is detected
@@ -84,4 +93,9 @@ void loop() {
   digitalWrite(12, LOW);
   digitalWrite(11, LOW);
   digitalWrite(10, LOW);
+
+  digitalWrite(9, LOW);
+  digitalWrite(8, LOW);
+  digitalWrite(7, LOW);
+  digitalWrite(6, LOW);
 }
