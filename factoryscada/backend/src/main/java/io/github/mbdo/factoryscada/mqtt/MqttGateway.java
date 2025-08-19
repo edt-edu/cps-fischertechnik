@@ -1,11 +1,10 @@
 package io.github.mbdo.factoryscada.mqtt;
 
 import org.springframework.integration.annotation.MessagingGateway;
-import org.springframework.integration.annotation.Gateway;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
 
 @MessagingGateway(defaultRequestChannel = "mqttOutboundChannel")
 public interface MqttGateway {
-
-    @Gateway
-    void sendToMqtt(String data);
+    void sendToMqtt(@Payload String payload, @Header("mqtt_topic") String topic);
 }

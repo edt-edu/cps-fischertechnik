@@ -21,10 +21,10 @@ public class MqttConfig {
     @Bean
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MqttPahoMessageHandler mqttOutbound() {
-        MqttPahoMessageHandler handler =
-            new MqttPahoMessageHandler("clientId", mqttClientFactory());
+        MqttPahoMessageHandler handler = new MqttPahoMessageHandler("clientId", mqttClientFactory());
         handler.setAsync(true);
-        handler.setDefaultTopic("factoryScada/default");
+        handler.setDefaultQos(1);
+        handler.setDefaultRetained(false);
         return handler;
     }
 
