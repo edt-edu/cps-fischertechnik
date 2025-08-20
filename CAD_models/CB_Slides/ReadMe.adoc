@@ -1,0 +1,1 @@
+In this folder, you will find the 3D models designed for the Rennes setup. You will find the .FCStd files in the corresponding folder, which you can open with the software Freecad. In the stl folder, you will find files for 3D print the pieces.
