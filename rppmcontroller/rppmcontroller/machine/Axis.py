@@ -65,7 +65,13 @@ class Axis:
     def tolerance(self) -> int:
         return self.__tolerance + self.play
 
-    def update(self, endpos: bool, counterinput: int):
+    def update(self, endpos: bool, counterinput: int) -> None:
+        """
+        Informs this Axis about the current values
+        :param endpos: Whether the Axis has reached its end-switch
+        :param counterinput: The current counter value
+        :return: None
+        """
         self.__endpos = endpos
         self.__counterinput = counterinput
 
