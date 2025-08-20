@@ -370,7 +370,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         runner.then_goto(config, until=lambda: not self.indexedLineSensSlider1 or not self.indexedLineSensMilling, info="moving payload onto slider1")
 
         # keep moving payload onto slider, since light-barrier is way in front of that
-        runner.then_goto(config, and_stay_for=0.5, info="moving payload onto slider1")
+        runner.then_goto(config, and_stay_for=1.0, info="moving payload onto slider1")
 
         # move payload to milling machine
         config.feed_conveyor = False
