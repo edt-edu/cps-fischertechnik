@@ -90,11 +90,11 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
     @property
     def isInitialized(self) -> bool:
         return True # no actuators, so we are always ready
-    
+
     @isInitialized.setter
     def isInitialized(self, value):
         logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property") 
+        raise AttributeError("isInitialized is a read-only property")
 
     # ---- Input Properties ----
     @property
@@ -402,6 +402,9 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         runner = self.create_runner()
         config = IndexedLineConfig()
 
+        # make sure payload is at milling machine
+        runner.then_run_runner_from(self.move_to_mill_Command, until=lambda mill_runner: mill_runner.is_done() or not self.indexedLineSensDrilling, info="ensure payload at milling machine")
+
         # move payload to drilling machine
         config.milling_conveyor = True
         config.drilling_conveyor = True
@@ -431,6 +434,9 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
     def move_to_output_Command(self) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
+
+        # make sure payload it at drilling machine
+        runner.then_run_runner_from(self.move_to_drill_Command, until=lambda drill_runner: drill_runner.is_done() or not self.indexedLineSensSwap, info="ensure payload at drilling machine")
 
          # move payload onto slider2
         config.drilling_conveyor = True
