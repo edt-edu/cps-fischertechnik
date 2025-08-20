@@ -34,6 +34,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParalleli
 import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
+import io.github.mbdo.factoryscada.mqtt.MqttGateway;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -81,10 +82,13 @@ public class FactoryScada {
 
     private List<String> frontendLogsList = new LinkedList<String>();
 
+    //MQTT messages
+    private final MqttGateway mqttGateway;
+
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
             ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
-            @Value("${log.limit:500}") int logLimit) {
+            @Value("${log.limit:500}") int logLimit, MqttGateway mqttGateway) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -94,6 +98,7 @@ public class FactoryScada {
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
+        this.mqttGateway = mqttGateway;
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
@@ -162,11 +167,24 @@ public class FactoryScada {
                     (sendChannelConnected, receivedChannelConnected) -> {
                         webSocketPublisher.sendPlcStatus(controllerConfiguration.name(), sendChannelConnected,
                                 receivedChannelConnected);
+
+                        // send connection state to MQTT
+                        String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name() + "/status";
+
+                        if (sendChannelConnected && receivedChannelConnected) {
+                            mqttGateway.sendToMqtt("connected", topic);
+                        } else {
+                            mqttGateway.sendToMqtt("disconnected", topic);
+                        }
                     });
             try {
                 controllerInstance.start();
             } catch (ProtocolException e) {
                 log.error("Failed to start controller protocol", e);
+                
+                // send connection failure to MQTT
+                String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name() + "/status";
+                mqttGateway.sendToMqtt("unreachable", topic);
             }
             controllers.put(controllerConfiguration.name(), controllerInstance);
 
@@ -346,7 +364,7 @@ public class FactoryScada {
      * @return Nothing
      */
     public void addLogsForFrontend(String log) {
-        this.getFrontendLogsList().addFirst(LocalDateTime.now().toString()+" : "+log);
+        this.getFrontendLogsList().addFirst(LocalDateTime.now().toString() + " : " + log);
         if (this.getFrontendLogsList().size() > logLimit) {
             this.getFrontendLogsList().removeLast();
         }
