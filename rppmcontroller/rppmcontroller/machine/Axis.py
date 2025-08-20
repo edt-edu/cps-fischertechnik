@@ -69,17 +69,17 @@ class Axis:
 
     def howtoCounterPos(self, counterGoal, counterCurrent, tolerance):
         """method to determine which way the axis needs to rotate"""
-        #TODO probably set a different play for impulse counters(vllt 2) vs encoder counters (vllt 10)
+        #TODO probably set a different play for impulse counters(maybe 2) vs encoder counters (maybe 10)
         #"handle" overflow
         #assume overflow if counter greater 4 millions
         if counterGoal < 0:
             counterGoal = 0
         if counterGoal > counterCurrent + tolerance:
             return PlusMinusStop.PLUS
-        elif counterGoal < counterCurrent - tolerance - self.play and counterCurrent > 4000000:
+        elif counterGoal < counterCurrent - tolerance and counterCurrent > 4000000:
             logging.debug('handeled overflow')
             return PlusMinusStop.PLUS
-        elif counterGoal < counterCurrent - tolerance - self.play:
+        elif counterGoal < counterCurrent - tolerance:
             return PlusMinusStop.MINUS
         else:
             return PlusMinusStop.STOP
@@ -133,8 +133,8 @@ class Axis:
 
             else:
                 self.__counter.counter = self.__counterinput
-            counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.__tolerance)
-            # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.__tolerance})={counterPos}')
+            counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.tolerance)
+            # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
             if counterPos == PlusMinusStop.PLUS:
                 self.__outputminus = False
                 self.__outputplus = True
@@ -161,7 +161,7 @@ class Axis:
             return False
         else:
             return True
-        
+
     def resetDirection(self) -> None:
         self.__outputminus = False
         self.__outputplus = False
