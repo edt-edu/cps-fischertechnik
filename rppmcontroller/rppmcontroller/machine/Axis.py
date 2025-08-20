@@ -1,3 +1,5 @@
+from typing import Union, Tuple, Optional
+
 import logging
 from enum import Enum
 
@@ -93,10 +95,18 @@ class Axis:
         """
         return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
 
-    def gotoConfig(self, endpos: bool, counterGoal: int):
-        """method to set outputs to reach the wanted config goal for that axis"""
-        t = False
-        d = None
+    def gotoConfig(self, endpos: bool, counterGoal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
+        """
+        method to set outputs to reach the wanted config goal for that axis
+        :param endpos: Whether to move to the end-position of the axis
+        :param counterGoal: The counter position to move to. Will be ignored
+        if endpos is True
+        :return: True if the target has been reached. If the internal counter
+        is an ImpulseCounter, the direction of the movement is returned as
+        second parameter
+        """
+        target_reached = False
+        direction = None
         #if you want to use the limit switch always set up counterGoal
         if endpos:
             if not self.__endpos:
@@ -107,11 +117,11 @@ class Axis:
                 if isinstance(self.__counter, ImpulseCounter):
                     self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
-                d = PlusMinusStop.MINUS
+                direction = PlusMinusStop.MINUS
             else:
                 self.__outputminus = False
                 self.__outputplus = False
-                t = True
+                target_reached = True
         else:
             #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
             if isinstance(self.__counter, ImpulseCounter):
@@ -138,18 +148,18 @@ class Axis:
             if counterPos == PlusMinusStop.PLUS:
                 self.__outputminus = False
                 self.__outputplus = True
-                d = PlusMinusStop.PLUS
+                direction = PlusMinusStop.PLUS
             elif counterPos == PlusMinusStop.MINUS:
                 self.__outputminus = True
                 self.__outputplus = False
-                d = PlusMinusStop.MINUS
+                direction = PlusMinusStop.MINUS
             elif counterPos == PlusMinusStop.STOP:
                 self.__outputminus = False
                 self.__outputplus = False
-                t = True
+                target_reached = True
         if isinstance(self.__counter, ImpulseCounter):
-            return t, d
-        return t
+            return target_reached, direction
+        return target_reached
 
     def isCloseFromEnd(self, axis_config: AxisConfig, approachTol: int) -> bool:
         targetPos = axis_config.counter_goal
