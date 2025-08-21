@@ -13,6 +13,9 @@ import org.springframework.messaging.MessageChannel;
 @Configuration
 public class MqttConfig {
 
+    @Value("${mqttHost:tcp://mbdo-server.local:1883}")
+    String mqttHost;
+
     @Bean
     public MessageChannel mqttOutboundChannel() {
         return new DirectChannel();
@@ -32,7 +35,7 @@ public class MqttConfig {
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
-        options.setServerURIs(new String[] { "tcp://mbdo-server.local:1883" });
+        options.setServerURIs(new String[] { mqttHost });
         factory.setConnectionOptions(options);
         return factory;
     }
