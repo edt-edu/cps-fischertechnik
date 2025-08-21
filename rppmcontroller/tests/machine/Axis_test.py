@@ -5,7 +5,11 @@ from rppmcontroller.machine.Axis import Axis, AxisType
 
 class AxisTestCase(unittest.TestCase):
     def setUp(self):
-        self.axis = Axis(AxisType.Counter, 10)
+        counterTypePlay = Axis(AxisType.Counter, 0).play
+        if counterTypePlay > 10:
+            self.fail("Test is not made for such large play values!")
+        tolerance = 10 - counterTypePlay
+        self.axis = Axis(AxisType.Counter, tolerance)
 
     def testUpdate(self):
         """tests, that setter for counterinput works"""
@@ -35,7 +39,7 @@ class AxisTestCase(unittest.TestCase):
 
         self.axis.update(False, 100)
         t = self.axis.gotoConfig(False, 100)
-        self.assertEqual(t[0], False) # TODO find out why this assertion currently fails
+        self.assertEqual(t[0], False)
         self.assertEqual(self.axis.counterValueCurrent, 89)
         self.assertEqual(self.axis.outputplus, True)
         self.assertEqual(self.axis.outputminus, False)
