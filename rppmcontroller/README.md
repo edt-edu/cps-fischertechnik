@@ -72,6 +72,12 @@ pytest -k "ConveyorBelt"
 ## Vacuum Gripper Robot (VGR)
 
 Once setup: maximum physical observed values are:
-- -12 <= vacuumSensVerticalEncoderCounter <= 1779
-- -1 <= vacuumSensArmEncoderCounter <= 2017
-- -1 <= vacuumSensRotEncoderCounter <= 3053
+- 0 <= vacuumSensVerticalEncoderCounter <= 1750
+- 0 <= vacuumSensArmEncoderCounter <= 1970
+- 0 <= vacuumSensRotEncoderCounter <= 3040
+
+## HighBay Warehouse (HBW)
+
+Once setup: maximum physical observed values are:
+- 0 <= vacuumSensVerticalEncoderCounter <= 1750
+- 0 <= vacuumSensHorizontalEncoderCounter <= 4000
