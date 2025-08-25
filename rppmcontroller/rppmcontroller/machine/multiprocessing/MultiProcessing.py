@@ -9,6 +9,8 @@ from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, runn
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MPSOutput import MPSOutput
+from rppmcontroller.machine.enum.ArmDestination import ArmDestination
+from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
@@ -541,7 +543,59 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         return CycleStepResult(CycleStepResultEnum.DONE)
     
     @runner_augment_function()
-    def heat_in_oven_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
+    def oven_load_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+        """
+        Augment the runner to perfom the following: Move payload into oven.
+
+        :param config: start configuration on which the action will apply
+        :param runner: the runner to be augmented
+        """
+        config.oven_door_open = True
+        runner.then_goto(config, and_stay_for=0.2, info="open oven door")
+
+        config.oven_feeder_expanded = False
+        runner.then_goto(config, info="move payload into oven")
+
+        config.oven_door_open = False
+        runner.then_goto(config, and_stay_for=0.2, info="close oven door")
+    
+    @runner_augment_function()
+    def oven_unload_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+        """
+        Augment the runner to perfom the following: Get the payload out of oven.
+
+        :param time: heating duration
+        :param config: start configuration on which the action will apply
+        :param runner: the runner to be augmented
+        """
+        config.oven_door_open = True
+        runner.then_goto(config, and_stay_for=0.2, info="open oven door")
+
+        config.oven_feeder_expanded = True
+        runner.then_goto(config, info="move payload out of oven")
+
+        config.oven_door_open = False
+        runner.then_goto(config, and_stay_for=0.2, info="close oven door")
+    
+    @runner_augment_function()
+    def oven_heat_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
+        """
+        Augment the runner to perfom the following: Heat for time secs the payload.
+
+        :param time: heating duration
+        :param config: start configuration on which the action will apply
+        :param runner: the runner to be augmented
+        """
+
+        config.oven_lamp_on = True
+        runner.then_goto(config, and_stay_for=time, info="heat payload")
+
+        config.oven_lamp_on = False
+        runner.then_goto(config, info="heating ended")
+
+    
+    @runner_augment_function()
+    def oven_process_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Move payload into oven, heat for time secs, and then get the payload out.
 
@@ -563,47 +617,24 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         config.oven_feeder_expanded = True
         runner.then_goto(config, info="move out of oven")
         
-    
     @runner_augment_function()
-    def saw_on_turntable_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
+    def arm_move_Augment(self, destination:ArmDestination, config: MultiProcessingConfig, runner: Runner) -> None:
         """
-        Augment the runner to perfom the following: Saw for time secs.
-
-        :param time: sawing duration
+        Augment the runner to perfom the following: Move the vacuum arm
+        
+        :param destination: arm destination
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
-        config.saw_active = True
-        runner.then_goto(config, and_stay_for=time, info="saw payload")
-
-        config.saw_active = False
-        runner.then_goto(config, info="sSawing finished")
-        
-    
-    @runner_augment_function()
-    def arm_to_oven_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
-        """
-        Augment the runner to perfom the following: Move the vacuum arm to oven
-        
-        :param config: start configuration on which the action will apply
-        :param runner: the runner to be augmented
-        """
-        config.vacuum_arm_at_oven = True
-        runner.then_goto(config, info="go to oven")
-    
-    @runner_augment_function()
-    def arm_to_turntable_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
-        """
-        Augment the runner to perfom the following: Move the vacuum arm to turntable
-        
-        :param config: start configuration on which the action will apply
-        :param runner: the runner to be augmented
-        """
-        config.vacuum_arm_at_oven = False
-        runner.then_goto(config, info="go to turntable")
+        if destination == ArmDestination.OVEN:
+            config.vacuum_arm_at_oven = True
+            runner.then_goto(config, info="go to oven")
+        elif destination == ArmDestination.TURNTABLE:
+            config.vacuum_arm_at_oven = False
+            runner.then_goto(config, info="go to turntable")
 
     @runner_augment_function()
-    def pick_up_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+    def arm_pick_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Make the vacuum arm pick the payload
         
@@ -620,7 +651,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner.then_goto(config, and_stay_for=0.5, info="raise arm")
     
     @runner_augment_function()
-    def place_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+    def arm_place_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Make the vacuum arm place the payload
         
@@ -635,42 +666,43 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         config.vacuum_arm_lowered = False
         runner.then_goto(config, and_stay_for=0.5, info="raise arm")
-    
+
     @runner_augment_function()
-    def go_to_conveyor_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+    def turntable_rotate_Augment(self, position: MPSTurntablePosition, config: MultiProcessingConfig, runner: Runner) -> None:
         """
-        Augment the runner to perfom the following: Move the turntable to the conveyor
+        Augment the runner to perfom the following: Move the turntable
         
+        :param position: conveyor position destination
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
-        config.turn_table_position = TurnTablePosition.CONVEYOR
-        runner.then_goto(config, info="turn to conveyor")
+        if position == MPSTurntablePosition.CONVEYOR:
+            config.turn_table_position = TurnTablePosition.CONVEYOR
+            runner.then_goto(config, info="turn to conveyor")
+        elif position == MPSTurntablePosition.ARM:
+            config.turn_table_position = TurnTablePosition.VACUUM
+            runner.then_goto(config, info="turn to vacuum arm")
+        elif position == MPSTurntablePosition.SAW:
+            config.turn_table_position = TurnTablePosition.SAW
+            runner.then_goto(config, info="turn to saw")
     
     @runner_augment_function()
-    def go_to_arm_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+    def saw_cut_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
         """
-        Augment the runner to perfom the following: Move the turntable to the vacuum arm
-        
+        Augment the runner to perfom the following: Saw for time secs.
+
+        :param time: sawing duration
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
-        config.turn_table_position = TurnTablePosition.VACUUM
-        runner.then_goto(config, info="turn to vacuum arm")
+        config.saw_active = True
+        runner.then_goto(config, and_stay_for=time, info="saw payload")
+
+        config.saw_active = False
+        runner.then_goto(config, info="sSawing finished")
     
     @runner_augment_function()
-    def go_to_saw_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
-        """
-        Augment the runner to perfom the following: Move the turntable to the saw
-        
-        :param config: start configuration on which the action will apply
-        :param runner: the runner to be augmented
-        """
-        config.turn_table_position = TurnTablePosition.SAW
-        runner.then_goto(config, info="turn to saw")
-    
-    @runner_augment_function()
-    def eject_from_turntable_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
+    def turntable_eject_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Eject the payload from the turntable on the conveyor
         
@@ -694,8 +726,51 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         """Reset the station and move some parts to the initial postion."""
         return self.goto_config_CycleStep
     
+    @protocol_command_function(description="Move payload into oven")
+    def oven_load_Command(self) -> Runner:
+        """
+        Move payload into oven.
+
+        :return: A Runner performing the movement
+        """
+        runner = self.create_runner()
+        config = self.get_current_config()
+
+        self.oven_load_Augment(config, runner)
+
+        return runner.run()
+
+    @protocol_command_function(description="Move the payload out.")
+    def oven_unload_Command(self) -> Runner:
+        """
+        Get the payload out of oven.
+
+        :return: A Runner performing the movement
+        """
+        runner = self.create_runner()
+        config = self.get_current_config()
+
+        self.oven_unload_Augment(config, runner)
+
+        return runner.run()
+
+    @protocol_command_function(description="heat for time secs")
+    def oven_heat_Command(self, time: int) -> Runner:
+        """
+        Heat for time secs the payload.
+
+        :return: A Runner performing the heating
+        """
+        runner = self.create_runner()
+        config = self.get_current_config()
+
+        self.oven_heat_Augment(time, config, runner)
+
+        return runner.run()
+
+
     @protocol_command_function(description="Move payload into oven, heat for time secs, and then get the payload out.")
-    def heat_in_oven_Command(self, time: int) -> Runner:
+    def oven_process_Command(self, time: int) -> Runner:
         """
         Move payload into oven, heat for time secs, and then get the payload out.
 
@@ -704,52 +779,26 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner = self.create_runner()
         config = self.get_current_config()
 
-        self.heat_in_oven_Augment(time, config, runner)
+        self.oven_process_Augment(time, config, runner)
 
         return runner.run()
     
-    @protocol_command_function(description="Saw for time secs.")
-    def saw_on_turntable_Command(self, time: int) -> Runner:
+    @protocol_command_function(description="Move the vacuum arm to the specified position.")
+    def arm_move_Command(self, destination:ArmDestination) -> Runner:
         """
-        Saw for time secs.
+        Move the vacuum arm.
 
-        :return: A Runner performing the sawing
+        :return: A Runner moving the arm
         """
         runner = self.create_runner()
         config = self.get_current_config()
         
-        self.saw_on_turntable_Augment(time, config, runner)
-        return runner.run()
-    
-    @protocol_command_function(description="Move the vacuum arm in front of the oven.")
-    def arm_to_oven_Command(self) -> Runner:
-        """
-        Move the vacuum arm in front of the oven.
-
-        :return: A Runner moving the arm to the oven
-        """
-        runner = self.create_runner()
-        config = self.get_current_config()
-        
-        self.arm_to_oven_Augment(config, runner)
-        return runner.run()
-    
-    @protocol_command_function(description="Move the vacuum arm in front of the turntable.")
-    def arm_to_turntable_Command(self) -> Runner:
-        """
-        Move the vacuum arm in front of the turntable
-
-        :return: A Runner moving the arm to the turntable
-        """
-        runner = self.create_runner()
-        config = self.get_current_config()
-        
-        self.arm_to_turntable_Augment(config, runner)
+        self.arm_move_Augment(destination, config, runner)
 
         return runner.run()
-    
-    @protocol_command_function(description="Make the vacuum arm pick the payload.")
-    def pick_up_Command(self) -> Runner:
+
+    @protocol_command_function(description="Pick up the payload with the vacuum arm.")
+    def arm_pick_Command(self) -> Runner:
         """
         Make the vacuum arm pick the payload
         
@@ -758,11 +807,11 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner = self.create_runner()
         config = self.get_current_config()
         
-        self.pick_up_Augment(config, runner)
+        self.arm_pick_Augment(config, runner)
         return runner.run()
-    
-    @protocol_command_function(description="Make the vacuum arm place the payload.")
-    def place_Command(self) -> Runner:
+
+    @protocol_command_function(description="Place the payload with the vacuum arm.")
+    def arm_place_Command(self) -> Runner:
         """
         Make the vacuum arm place the payload
         
@@ -771,51 +820,24 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner = self.create_runner()
         config = self.get_current_config()
         
-        self.place_Augment(config, runner)
+        self.arm_place_Augment(config, runner)
         return runner.run()
-    
-    @protocol_command_function(description="Move the turntable in front of the conveyor.")
-    def go_to_conveyor_Command(self) -> Runner:
+
+    @protocol_command_function(description="Rotate the turntable to the specified position.")
+    def turntable_rotate_Command(self, position: MPSTurntablePosition) -> Runner:
         """
-        Move the turntable to the conveyor
+        Move the turntable
 
         :return: A Runner moving the turntable to the conveyor
         """
         runner = self.create_runner()
         config = self.get_current_config()
         
-        self.go_to_conveyor_Augment(config, runner)
-        return runner.run()
-    
-    @protocol_command_function(description="Move the turntable in front of the vacuum arm.")
-    def go_to_arm_Command(self) -> Runner:
-        """
-        Move the turntable to the vacuum arm
-        
-        :return: A Runner moving the turntable to the vacuum arm
-        """
-        runner = self.create_runner()
-        config = self.get_current_config()
-        
-        
-        self.go_to_arm_Augment(config, runner)
-        return runner.run()
-    
-    @protocol_command_function(description="Move the turntable in front of the saw.")
-    def go_to_saw_Command(self) -> Runner:
-        """
-        Move the turntable to the saw
-        
-        :return: A Runner moving the turntable to the saw
-        """
-        runner = self.create_runner()
-        config = self.get_current_config()
-        
-        self.go_to_saw_Augment(config, runner)
+        self.turntable_rotate_Augment(position, config, runner)
         return runner.run()
 
-    @protocol_command_function(description="Eject the payload from the turntable on the conveyor.")
-    def eject_from_turntable_Command(self) -> Runner:
+    @protocol_command_function(description="Eject the payload from the turntable onto the conveyor.")
+    def turntable_eject_Command(self) -> Runner:
         """
         Eject the payload from the turntable on the conveyor
         
@@ -824,7 +846,65 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner = self.create_runner()
         config = self.get_current_config()
         
-        self.eject_from_turntable_Augment(config, runner)
+        self.turntable_eject_Augment(config, runner)
+        return runner.run()
+
+    @protocol_command_function(description="Move the payload until it reaches the light sensor")
+    def conveyor_move_to_sensor_Command(self) -> Runner:
+        """
+        Move the payload until it is detected by the destination sensor
+        
+        :return: A Runner moving the payload
+        """
+        runner = self.create_runner()
+        config = self.get_current_config()
+
+        sensor_reached = lambda: not self.multiProcessingSensEndConveyor
+
+        config.conveyor_active = True
+
+        runner.then_goto(config, until=sensor_reached, and_stay_for=0.07, info="Move to sensor")
+
+        #stop the belt
+        config.conveyor_active = False
+        runner.then_goto(config, info="Conveyor stopped")
+
+        return runner.run()
+
+    @protocol_command_function(description="Move the payload until it goes beyond the light sensor and out")
+    def conveyor_move_out_Command(self) -> Runner:
+        """
+        Move the payload until it leaves the conveyor
+        
+        :return: A Runner moving the payload
+        """
+        runner = self.create_runner()
+        config = self.get_current_config()
+
+        sensor_reached = lambda: not self.multiProcessingSensEndConveyor
+
+        config.conveyor_active = True
+
+        runner.then_goto(config, until=sensor_reached, and_stay_for=1, info="Move to sensor")
+
+        #stop the belt
+        config.conveyor_active = False
+        runner.then_goto(config, info="Conveyor stopped")
+
+        return runner.run()
+
+
+    @protocol_command_function(description="Saw for time secs.")
+    def saw_cut_Command(self, time: int) -> Runner:
+        """
+        Saw for time secs.
+
+        :return: A Runner performing the sawing
+        """
+        runner = self.create_runner()
+        config = self.get_current_config()
+        
+        self.saw_cut_Augment(time, config, runner)
         return runner.run()
     
     @protocol_command_function(description="Move payload from turntable to oven.")
@@ -837,10 +917,10 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner = self.create_runner()
         config = self.get_current_config()
 
-        self.arm_to_turntable_Augment(config, runner)
-        self.pick_up_Augment(config, runner)
-        self.arm_to_oven_Augment(config, runner)
-        self.place_Augment(config, runner)
+        self.arm_move_Augment(ArmDestination.TURNTABLE, config, runner)
+        self.arm_pick_Augment(config, runner)
+        self.arm_move_Augment(ArmDestination.OVEN, config, runner)
+        self.arm_place_Augment(config, runner)
 
         return runner.run()
 
@@ -970,42 +1050,42 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         
         #Oven process
         if (oven_time > 0):
-            self.heat_in_oven_Augment(oven_time, config, runner)
+            self.oven_process_Augment(oven_time, config, runner)
 
             #End the process if no sawing time and output at oven
             if (saw_time == 0 and output == MPSOutput.OVEN):
                 return runner.run()
         
-        self.arm_to_oven_Augment(config, runner)
+        self.arm_move_Augment(ArmDestination.OVEN, config, runner)
 
-        self.pick_up_Augment(config, runner)
+        self.arm_pick_Augment(config, runner)
 
-        self.arm_to_turntable_Augment(config, runner)
+        self.arm_move_Augment(ArmDestination.TURNTABLE, config, runner)
 
-        self.place_Augment(config, runner)
+        self.arm_place_Augment(config, runner)
         
         #Sawing process
         if (saw_time > 0):
-            self.go_to_saw_Augment(config, runner)
+            self.turntable_rotate_Augment(MPSTurntablePosition.SAW, config, runner)
 
-            self.saw_on_turntable_Augment(saw_time, config, runner)
+            self.saw_cut_Augment(saw_time, config, runner)
 
         #If output on conveyor, move payload to conveyor
         if (output == MPSOutput.CONVEYOR):
-            self.go_to_conveyor_Augment(config, runner)
+            self.turntable_rotate_Augment(MPSTurntablePosition.CONVEYOR, config, runner)
 
-            self.eject_from_turntable_Augment(config, runner)
+            self.turntable_eject_Augment(config, runner)
 
             return runner.run()
         
-        self.go_to_arm_Augment(config, runner)
+        self.turntable_rotate_Augment(MPSTurntablePosition.ARM, config, runner)
 
-        self.pick_up_Augment(config, runner)
+        self.arm_pick_Augment(config, runner)
     
-        self.arm_to_oven_Augment(config, runner)
+        self.arm_move_Augment(ArmDestination.OVEN, config, runner)
 
-        self.place_Augment(config, runner)
+        self.arm_place_Augment(config, runner)
 
-        self.arm_to_turntable_Augment(config, runner)
+        self.arm_move_Augment(ArmDestination.TURNTABLE, config, runner)
 
         return runner.run()
