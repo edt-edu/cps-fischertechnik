@@ -9,6 +9,8 @@ from rppmcontroller.example.SimulatedMultiProcessingController import SimulatedM
 from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.MPSOutput import MPSOutput
+from rppmcontroller.machine.enum.ArmDestination import ArmDestination
+from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 
@@ -380,7 +382,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_heatInOven(self):
         '''
-            Test the heat_in_oven command
+            Test the oven_process command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -393,7 +395,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "HEAT_IN_OVEN", [0.5])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "OVEN_PROCESS", [0.5])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -437,7 +439,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_sawOnTurntable(self):
         '''
-            Test the saw_on_turntable command
+            Test the saw_cut command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -450,7 +452,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "SAW_ON_TURNTABLE", [0.5])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "SAW_CUT", [0.5])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -486,7 +488,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_armToOven(self):
         '''
-            Test the arm_to_oven command
+            Test the arm_move command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -499,7 +501,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_TO_OVEN", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_MOVE", [
+            ArmDestination.OVEN
+        ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -539,7 +543,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_armToTurntable(self):
         '''
-            Test the arm_to_oven command
+            Test the arm_move command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -552,7 +556,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_TO_TURNTABLE", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_MOVE", [
+            ArmDestination.TURNTABLE
+        ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -592,7 +598,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_pickUp(self):
         '''
-            Test the pick_up command
+            Test the arm_pick command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -605,7 +611,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "PICK_UP", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_PICK", [])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -640,7 +646,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_place(self):
         '''
-            Test the place command
+            Test the arm_place command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -653,7 +659,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "PLACE", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_PLACE", [])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -689,7 +695,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_turntableToArm(self):
         '''
-            Test the go_to_arm command
+            Test the turntable_rotate command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -702,7 +708,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "GO_TO_ARM", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_ROTATE", [
+            MPSTurntablePosition.ARM
+        ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -742,7 +750,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_turntableToSaw(self):
         '''
-            Test the go_to_saw command
+            Test the turntable_rotate command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -755,7 +763,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "GO_TO_SAW", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_ROTATE", [
+            MPSTurntablePosition.SAW
+        ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -795,7 +805,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_turntableToConveyor(self):
         '''
-            Test the go_to_conveyor command
+            Test the turntable_rotate command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -808,7 +818,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "GO_TO_CONVEYOR", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_ROTATE", [
+            MPSTurntablePosition.CONVEYOR
+        ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
@@ -848,7 +860,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     def test_ejectFromTurntable(self):
         '''
-            Test the eject_from_turntable command
+            Test the turntable_eject command
         '''
         logging.debug(f'{inspect.stack()[0][3]} start')
 
@@ -861,7 +873,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
         # send a move command
-        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "EJECT_FROM_TURNTABLE", [])
+        message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_EJECT", [])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
         self.controller.mainLoopIteration()
