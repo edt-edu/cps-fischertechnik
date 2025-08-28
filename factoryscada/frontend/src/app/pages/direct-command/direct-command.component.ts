@@ -10,6 +10,8 @@ import { VacuumGripperPlaceComponent } from "./vacuum-gripper/vacuum-gripper-pla
 import { VacuumGripperOrderedMoveToComponent } from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
 
 import { MultiProcessingProcessComponent } from './multiprocessing/multiprocessing-process/multiprocessing-process.component';
+import { MultiProcessingArmPositionComponent } from './multiprocessing/multiprocessing-arm-position/multiprocessing-arm-position.component';
+import { MultiProcessingTurntablePositionComponent } from './multiprocessing/multiprocessing-turntable-position/multiprocessing-turntable-position.component';
 
 import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
 import { HighBayWarehouseRetrieveComponent } from "./highbay-warehouse/highbay-warehouse-retrieve/highbay-warehouse-retrieve.component";
@@ -49,6 +51,7 @@ import { GenericDirectionCommandComponent } from "./generic/direction-command/ge
 import { GenericDirectionNbStepsCommandComponent } from "./generic/direction-nb-steps-command/generic-direction-nb-steps-command.component";
 import { GenericNoParamCommandComponent } from "./generic/no-param-command/generic-no-param-command.component";
 import { GenericStatusCommandComponent } from "./generic/status-command/status-command.component";
+import { GenericIntegerCommandComponent } from "./generic/generic-integer-command/generic-integer-command.component";
 import { VacuumGripperStatusComponent } from "./vacuum-gripper/vacuum-gripper-status/vacuum-gripper-status.component";
 import { MachineStatusWidgetComponent } from "../../widgets/machine-status-widget/machine-status-widget.component";
 import { CommandStatusWidgetComponent } from "../../widgets/command-status-widget/command-status-widget.component";
@@ -80,6 +83,8 @@ declare var $: any;
     SortingLineEjectComponent,
     VacuumGripperStatusComponent,
     MultiProcessingProcessComponent,
+    MultiProcessingArmPositionComponent,
+    MultiProcessingTurntablePositionComponent,
     HighBayWarehouseStoreComponent,
     HighBayWarehouseRetrieveComponent,
     GenericNoParamCommandComponent,
@@ -89,6 +94,7 @@ declare var $: any;
     HighBayWarehouseGoToRowComponent,
     GenericDirectionCommandComponent,
     GenericDirectionNbStepsCommandComponent,
+    GenericIntegerCommandComponent,
     CardModule,
     MachineStatusWidgetComponent,
     CommandStatusWidgetComponent

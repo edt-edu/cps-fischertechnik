@@ -306,6 +306,88 @@
                                           [description]="'Move the multiprocessing unit to safe position'"
                                           [destinationSuffix]="'/command/move_to_safe_position'"></app-generic-no-param-command>
           }
+          @case ("oven_load") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'OVEN_LOAD'"
+                                          [description]="'Load the oven.'"
+                                          [destinationSuffix]="'/command/oven_load'"></app-generic-no-param-command>
+          }
+          @case ("oven_unload") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'OVEN_UNLOAD'"
+                                          [description]="'Unload the oven.'"
+                                          [destinationSuffix]="'/command/oven_unload'"></app-generic-no-param-command>
+          }
+          @case ("oven_heat") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'OVEN_HEAT'"
+                                         [description]="'Heat the oven for x seconds.'"
+                                         [destinationSuffix]="'/command/oven_heat'"></app-generic-integer-command>
+          }
+          @case ("oven_process") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'OVEN_PROCESS'"
+                                         [description]="'Process payload in oven for x seconds.'"
+                                         [destinationSuffix]="'/command/oven_process'"></app-generic-integer-command>
+          }
+          @case ("arm_move") {
+            <app-mps-arm-position [machine]="selectedMachine"
+                                  [placeholder]="commandToSend"
+                                  [title]="'ARM_MOVE'"
+                                  [destinationSuffix]="'/command/arm_move'"></app-mps-arm-position>
+          }
+          @case ("arm_pick") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'ARM_PICK'"
+                                          [description]="'Pick the payload with the arm.'"
+                                          [destinationSuffix]="'/command/arm_pick'"></app-generic-no-param-command>
+          }
+          @case ("arm_place") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'ARM_PLACE'"
+                                          [description]="'Place the payload with the arm.'"
+                                          [destinationSuffix]="'/command/arm_place'"></app-generic-no-param-command>
+          }
+          @case ("turntable_rotate") {
+            <app-mps-turntable-position [machine]="selectedMachine"
+                                  [placeholder]="commandToSend"
+                                  [title]="'TURNTABLE_ROTATE'"
+                                  [destinationSuffix]="'/command/turntable_rotate'"></app-mps-turntable-position>
+          }
+          @case ("turntable_eject") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'TURNTABLE_EJECT'"
+                                          [description]="'Eject payload from turntable.'"
+                                          [destinationSuffix]="'/command/turntable_eject'"></app-generic-no-param-command>
+          }
+          @case ("conveyor_move_to_sensor") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'CONVEYOR_MOVE_TO_SENSOR'"
+                                          [description]="'Move the payload on conveyor to sensors.'"
+                                          [destinationSuffix]="'/command/conveyor_move_to_sensor'"></app-generic-no-param-command>
+          }
+          @case ("conveyor_move_out") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'CONVEYOR_MOVE_OUT'"
+                                          [description]="'Move the payload out of the conveyor.'"
+                                          [destinationSuffix]="'/command/conveyor_move_out'"></app-generic-no-param-command>
+          }
+          @case ("saw_cut") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'SAW_CUT'"
+                                         [description]="'Cut with the saw for x seconds.'"
+                                         [destinationSuffix]="'/command/saw_cut'"></app-generic-integer-command>
+          }
           @default {
             @if (!selectedMissionCommand) {
 

@@ -9,6 +9,8 @@ from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.MPSOutput import MPSOutput
+from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
+from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
 from rppmcontroller.protocol.RequestedParameter import RequestedParameter
 
 
@@ -53,6 +55,14 @@ def customDecoder(idict):
                     passable = param['passable']
                     output = passable['output']
                     parameterList.append(MPSOutput[output])
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'MPSARMPOSITION':
+                    passable = param['passable']
+                    destination = passable['destination']
+                    parameterList.append(MPSArmPosition[destination])
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'MPSTURNTABLEPOSITION':
+                    passable = param['passable']
+                    destination = passable['destination']
+                    parameterList.append(MPSTurntablePosition[destination])
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'BOXNUMBER':
                     passable = param['passable']
                     parameterList.append(BoxNumber[passable])

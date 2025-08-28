@@ -1,6 +1,6 @@
-<p-fieldset legend="{{ machine?.name }} - Vertical to">
+<p-fieldset legend="{{ machine?.name }} - {{ title }}">
 
-  <p style="margin-bottom: 2em;">Move vertically to a position</p>
+  <p>{{ description }}</p>
 
   <app-single-int-widget (onValuesChanged)="handleValuesChanged($event)"/>
 

@@ -9,7 +9,7 @@ from rppmcontroller.example.SimulatedMultiProcessingController import SimulatedM
 from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.MPSOutput import MPSOutput
-from rppmcontroller.machine.enum.ArmDestination import ArmDestination
+from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
 from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.protocol.MachineCommand import MachineCommand
@@ -502,7 +502,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_MOVE", [
-            ArmDestination.OVEN
+            MPSArmPosition.OVEN
         ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
@@ -557,7 +557,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "ARM_MOVE", [
-            ArmDestination.TURNTABLE
+            MPSArmPosition.TURNTABLE
         ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
