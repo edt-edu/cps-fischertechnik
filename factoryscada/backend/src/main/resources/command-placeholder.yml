@@ -467,6 +467,190 @@ commandPlaceholder:
                 "parameters": []
               }
             }
+        - name: "oven_load"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "OVEN_LOAD",
+                "parameters": []
+              }
+            }
+        - name: "oven_unload"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "OVEN_UNLOAD",
+                "parameters": []
+              }
+            }
+        - name: "oven_heat"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "OVEN_HEAT",
+                "parameters": [
+                {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 0
+                          }
+                      }]
+              }
+            }
+        - name: "oven_process"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "OVEN_PROCESS",
+                "parameters": [
+                {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 0
+                          }
+                      }]
+              }
+            }
+        - name: "arm_move"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "ARM_MOVE",
+                "parameters": [{
+                          "passableType": "MPSARMPOSITION",
+                          "passable": {
+                              "destination": "TURNTABLE"
+                          }
+                      }]
+              }
+            }
+        - name: "arm_pick"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "ARM_PICK",
+                "parameters": []
+              }
+            }
+        - name: "arm_place"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "ARM_PLACE",
+                "parameters": []
+              }
+            }
+        - name: "turntable_rotate"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "TURNTABLE_ROTATE",
+                "parameters": [{
+                          "passableType": "MPSTURNTABLEPOSITION",
+                          "passable": {
+                              "destination": "ARM"
+                          }
+                      }]
+              }
+            }
+        - name: "turntable_eject"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "TURNTABLE_EJECT",
+                "parameters": []
+              }
+            }
+        - name: "conveyor_move_to_sensor"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "CONVEYOR_MOVE_TO_SENSOR",
+                "parameters": []
+              }
+            }
+        - name: "conveyor_move_out"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "CONVEYOR_MOVE_OUT",
+                "parameters": []
+              }
+            }
+        - name: "saw_cut"
+          placeholder: >
+            {
+              "topicName": "MultiProcessing01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "MULTIPROCESSING",
+                "outputId": 1,
+                "name": "SAW_CUT",
+                "parameters": [
+                {
+                          "passableType": "NUMBERNATURAL",
+                          "passable": {
+                              "number": 0
+                          }
+                      }]
+              }
+            }
 
 
     # HighBayWarehouse command placeholders ___

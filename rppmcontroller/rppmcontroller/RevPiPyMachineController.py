@@ -301,10 +301,11 @@ class RevPiPyMachineController:
                                     ret = func(m, color[0])
                             elif func is not None and inputBufferItem.message.type == "MULTIPROCESSING":
                                 parameters = inputBufferItem.message.parameters
+                                logging.debug(inputBufferItem.message)
                                 i = len(parameters)
                                 if i == 0:
                                     ret = func(m)
-                                if i == 1:
+                                elif i == 1:
                                     ret = func(m, parameters[0])
                                 elif i == 3:
                                     ret = func(m, parameters[0], parameters[1], parameters[2])

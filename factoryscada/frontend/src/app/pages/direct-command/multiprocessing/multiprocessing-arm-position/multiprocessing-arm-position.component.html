@@ -1,0 +1,19 @@
+<p-fieldset legend="{{ machine?.name }} - Move arm.">
+
+  <p>Move the arm to the specified position.</p>
+
+  <!-- Parameters -->
+  <div class="form-group flex-grow-1">
+    <label>Position</label>
+    <p-dropdown
+      [options]="positions"
+      optionLabel="name"
+      [placeholder]="'Select the position'"
+      [(ngModel)]="selectedPosition"/>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+</p-fieldset>

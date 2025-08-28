@@ -5,9 +5,9 @@ import io.github.mbdo.factoryscada.core.Passable;
 import lombok.Data;
 
 @Data
-public class MPSOutput implements Passable {
+public class MPSTurntablePosition implements Passable {
 
-    @JsonProperty("output")
-    private io.github.mbdo.factoryscada.core.enums.MPSOutput output;
+    @JsonProperty("destination")
+    private io.github.mbdo.factoryscada.core.enums.MPSTurntablePosition destination;
 
 }
