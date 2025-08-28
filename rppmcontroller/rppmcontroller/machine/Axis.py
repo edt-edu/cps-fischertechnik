@@ -32,9 +32,9 @@ class Axis:
         self.__outputplus = False
         self.__outputminus = False
         if typ == AxisType.Encoder:
-            self.play = 8
+            self.play = 0
         else:
-            self.play = 2
+            self.play = 0
         self.__endpos_is_at_low_counter_values = endpos_is_at_low_counter_values
 
     @property
