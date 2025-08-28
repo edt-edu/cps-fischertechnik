@@ -8,6 +8,7 @@ import java.util.List;
  */
 public record FactoryScadaConfiguration(
         String name,
+        String mqttHost,
         List<ControllerConfiguration> controllers
 ) implements Serializable {
     public record ControllerConfiguration(
