@@ -1,28 +1,36 @@
+from typing_extensions import override
+
 import logging
 from typing import Any, Callable, Dict, Optional
-
-from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
+from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
-from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import \
     VacuumGripperConfig
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
 
 
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
-    def __init__(self, id1, safetyPos : dict = {}, pwmParameters: dict = {'stdSpeed' : 100, 'aprchSpeedVer' : 30,
-                                                                          'aprchSpeedHor' : 30, 'aprchSpeedRot' : 20, 'aprchTolerance' : 100}):
+    def __init__(self, id1, safetyPos: Optional[dict] = None,
+                 pwmParameters: Optional[dict] = None):
+        if safetyPos is None:
+            safetyPos = {}
+        if pwmParameters is None:
+            pwmParameters = {'stdSpeed': 100, 'aprchSpeedVer': 30,
+                             'aprchSpeedHor': 30, 'aprchSpeedRot': 20,
+                             'aprchTolerance': 100}
+
         # inputs
         self.__vacuumSensArmEndIn = False
         self.__vacuumSensVerticalEndUp = False
@@ -98,6 +106,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
+        # noinspection PyDeprecation
         res = (self.isProcessingSequence() or
                self.__vacuumActVerticalUp or
                self.__vacuumActVerticalDown or
@@ -109,12 +118,12 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
                self.__vacuumActValve or
                self.nbMinimumRequiredExecutionCycles != 0 or
                self.is_executing_runner)
-        
-        if (self.executing_runner == None):
+
+        if self.executing_runner is None:
             routine = "None"
         else:
             routine = str(self.executing_runner)
-        
+
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
@@ -269,14 +278,14 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumActRotLeft = value
 
     def sensorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"CountVRH[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}], " + \
                f"SensVRH[{s(self.vacuumSensVerticalEndUp)}, {s(self.vacuumSensRotEnd)}, {s(self.vacuumSensArmEndIn)}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
-        
+        s = lambda b: "T" if b else "F"
+
         return f"MoveVert[{s(self.vacuumActVerticalUp)}, {s(self.vacuumActVerticalDown)}], " + \
                f"MoveRot[{s(self.vacuumActRotRight)}, {s(self.vacuumActRotLeft)}], " + \
                f"MoveHor[{s(self.vacuumActArmOut)}, {s(self.vacuumActArmIn)}], " + \
@@ -304,9 +313,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             "vacuumActArmIn": self.__vacuumActArmIn,
             "vacuumActCompressorOn": self.__vacuumActCompressorOn,
             "vacuumActValve": self.__vacuumActValve,
-            "vacuumActValve": self.__pwmVertical,
-            "vacuumActValve": self.__pwmHorizontal,
-            "vacuumActValve": self.__pwmRotational,
+            "pwmVertical": self.__pwmVertical,
+            "pwmHorizontal": self.__pwmHorizontal,
+            "pwmRotational": self.__pwmRotational,
         }
 
     def internalStatus(self) -> Dict[str, Any]:
@@ -444,7 +453,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @protocol_command_function(description="Used to move the engines to a reference point.")
     def setup_Command(self) -> Runner:
         """
-        Command to triggering a setup. Used to move the engines to a reference point (ie. a point with a reference switch) so we can reset the counters or encoders
+        Command to triggering a setup. Used to move the engines to a reference point (i.e. a point with a reference switch) so we can reset the counters or encoders
 
         :return: A Runner performing the setup
         """
@@ -473,7 +482,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         """
         Command triggering a go_to_position action. I.e. it moves the gripper to the position without changing the valve or compressor status.
         It may trigger a setup first if the machine is not initialized
-        
+
         :return: A Runner performing the command
         """
         runner = self.create_runner()
@@ -491,7 +500,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         """
         Moves the arm to the specified position, but retracts the arm before
         moving and extends it afterward if needed
-        
+
         :param target_position: Where to go
         :return: A Runner performing the move
         """
@@ -505,7 +514,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     def move_Command(self, startPos: Position, endPos: Position) -> Runner:
         """
         Command triggering a move token action. I.e. it picks a token on the startPos and drop it on the endPos
-        
+
         :return: A Runner performing the command
         """
         runner = self.create_runner()
@@ -518,7 +527,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # place token
         runner.then_run_runner_from(lambda: self.place_Command(endPos), info="place")
 
-        return runner.run()        
+        return runner.run()
 
 
     @protocol_command_function(description="Command triggering a pick token action. I.e. it moves the arm to the startPos and grips a token on that position")
@@ -559,7 +568,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         pressure_pos = Position(endPos.meaning, endPos.vertical + 250, endPos.rot, endPos.horizontal)
 
         # hover over end pos
-        runner.then_run_runner_from(lambda: self.retracted_go_to_position_Command(hover_pos), info="hover over drop-off posistion")
+        runner.then_run_runner_from(lambda: self.retracted_go_to_position_Command(hover_pos), info="hover over drop-off position")
 
         # move down
         runner.then_run_runner_from(lambda: self.go_to_position_Command(pressure_pos), info="preparing drop-off")
@@ -600,19 +609,19 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         return self.stop_CycleStep
 
-    @protocol_command_function(description="Moves the Vacuum Gripper to the safe position if specified. Go to setup position othewise.")
+    @protocol_command_function(description="Moves the Vacuum Gripper to the safe position if specified. Go to setup position otherwise.")
     def move_to_safe_position_Command(self) -> Runner:
         """
-        Moves the Vacuum Gripper to the safe position if specified. Go to setup position othewise
+        Moves the Vacuum Gripper to the safe position if specified. Go to setup position otherwise
 
         :return: A Runner performing the command
         """
-        if (self.safeVertical != None and self.safeRotation != None and self.safeHorizontal != None):
+        if self.safeVertical is not None and self.safeRotation is not None and self.safeHorizontal is not None:
             position = Position("END", self.safeVertical, self.safeRotation, self.safeHorizontal)
             return self.go_to_position_Command(position)
         else:
             return self.setup_Command()
-        
+
     @protocol_command_function(description="Retract the arm of the vacuum gripper.")
     def retract_arm_Command(self) -> Runner:
         """
@@ -623,13 +632,13 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         config = self.get_current_config()
         config.horizontal_axis_config = AxisConfig.to_end_position()
         return self.create_runner().then_goto(config, info="retracting arm").run()
-    
+
 
     @protocol_command_function(description="Move the arm to position. Moving first the specified axis and then the others.")
     def ordered_move_to_Command(self, dest_pos: Position, prioritized_dir: AxisBoolThreeD) -> Runner:
         """
         Move the arm to position. Moving first the specified axis and then the others.
-        
+
         :return: A Runner performing the command
         """
         config = self.get_current_config()

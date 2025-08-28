@@ -825,6 +825,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
     "name" : {
       "type" : "string"
     },
+    "mqttHost" : {
+      "type" : "string"
+    },
     "controllers" : {
       "type" : "array",
       "items" : {
@@ -5349,6 +5352,9 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration",
   "properties" : {
     "name" : {
+      "type" : "string"
+    },
+    "mqttHost" : {
       "type" : "string"
     },
     "controllers" : {

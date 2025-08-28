@@ -1,6 +1,7 @@
-package io.github.mbdo.factoryscada.mqtt.MqttConfig;
+package io.github.mbdo.factoryscada.mqtt;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
@@ -12,6 +13,9 @@ import org.springframework.messaging.MessageChannel;
 
 @Configuration
 public class MqttConfig {
+
+    @Value("${configuration.mqttHost:tcp://mbdo-server.local:1883}")
+    String mqttHost;
 
     @Bean
     public MessageChannel mqttOutboundChannel() {
@@ -32,7 +36,7 @@ public class MqttConfig {
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
-        options.setServerURIs(new String[] { "tcp://mbdo-server.local:1883" });
+        options.setServerURIs(new String[] { mqttHost });
         factory.setConnectionOptions(options);
         return factory;
     }
