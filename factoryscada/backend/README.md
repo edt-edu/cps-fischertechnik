@@ -48,7 +48,8 @@ The default configuration files are located in `src/main/resources`.
 - `configuration.yml` defines the factory specific informations. List of PLC, connected machines, with their data (name, connection info, ...)
 
 
-In production, `configuration.yml` can be replaced by your own using the following argument when calling the application `--configuration.path=/app/config/configuration.yml`
+In production, `configuration.yml` can be replaced by your own using the following argument when calling the application `--configuration.path=/app/config/configuration.yml`.
+You may also adjust spring configuration values by passing `--spring.config.additional-location=file:/app/config/configuration.yml` to the application. 
 
 ## Starting the Application
 
