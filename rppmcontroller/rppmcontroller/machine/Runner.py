@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import inspect
+
 import logging
 import typing
 from abc import abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
+from inspect import signature
 from typing import Callable, Generic, List, Optional, TypeVar, Union
 from typing_extensions import override
 
@@ -27,7 +30,7 @@ class TransitioningMachine(Generic[TConfig]):
     def goto_config_CycleStep(self, config: TConfig) -> CycleStepResult:
         """
         Transition the machine into the specified configuration
-        
+
         :param config: A machine config for the specific machine
         :return: A CycleStepResult describing the progress
         """
@@ -46,7 +49,7 @@ class TransitioningMachine(Generic[TConfig]):
     @property
     def is_executing_runner(self) -> bool:
         return any(runner.running for runner in self.__runners)
-    
+
     @property
     def executing_runner(self) -> Optional[Subroutine]:
         for runner in self.__runners:
@@ -188,7 +191,7 @@ class Runner(CycleStepResult):
                     f"If 'runnable' returns None, 'until' must be provided.\n"
                     f"Offending runnable: {identity}"
                 )
-            
+
             if until is not None:   # if until is provided, its results overides the one returned by the runnable
                 res = until()
 
@@ -198,7 +201,7 @@ class Runner(CycleStepResult):
                     res = CycleStepResult(CycleStepResultEnum.DONE)
                 else:
                     res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
-            
+
             if timeout_timer is not None:
                 if not timeout_timer.is_started():
                     timeout_timer.start()
@@ -236,8 +239,10 @@ class Runner(CycleStepResult):
 
     def then_run_runner_from(self,
                              runner_supplier: Callable[[], Runner],
-                             until: Optional[Callable[
-                                 [], Union[bool, CycleStepResult]]] = None,
+                             until: Optional[Union[Callable[
+                                 [], Union[bool, CycleStepResult]]],
+                             Callable[[Runner], Union[
+                                 bool, CycleStepResult]]] = None,
                              or_timeout_after: float = 0.0,
                              info: str = "") -> Runner:
         """
@@ -246,7 +251,8 @@ class Runner(CycleStepResult):
 
         :param runner_supplier: A callable returning a Runner
         :param until: When provided, the runner is called until this function
-        indicates the desired state has been reached
+        indicates the desired state has been reached. May optionally take the
+        Runner provided by the runner_supplier as first argument.
         :param or_timeout_after: The number of seconds after which the runner
         is considered finished. Values smaller or equal to zero imply infinite
         time.
@@ -275,7 +281,16 @@ class Runner(CycleStepResult):
                 return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
 
         runner_pointer = RunnerPointer()
-        return self.then_run(runner_pointer.run, until, or_timeout_after=or_timeout_after, info=info)
+
+        # resolve runner parameter in until function
+        no_param_until = until
+        if until is not None:
+            sig = inspect.signature(until)
+            if len(sig.parameters) == 1:
+                no_param_until = lambda: until(runner_pointer.runner)
+
+
+        return self.then_run(runner_pointer.run, no_param_until, or_timeout_after=or_timeout_after, info=info)
 
     def run(self) -> Runner:
         """
@@ -343,6 +358,6 @@ class Runner(CycleStepResult):
 
     def __str__(self):
         return f"Runner(state={self.result}, info={self.info})"
-    
+
     def actual_routine(self) -> Subroutine:
         return self.__routine[self.__routine_index]
