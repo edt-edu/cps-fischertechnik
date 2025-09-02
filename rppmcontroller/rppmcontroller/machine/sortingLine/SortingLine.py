@@ -4,6 +4,8 @@ from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import override
 
+import random
+
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
@@ -53,7 +55,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
         return res
 
-    def __init__(self, id1: str, delay_offsets = (0.0, 0.0, 0.0)):
+    def __init__(self, id1: str, delay_offsets = (0.0, 0.0, 0.0), mockAnalogSensor=False):
         # configuration
         self.__delay_offsets = delay_offsets # offset for the delay while ejecting white, red, blue tokens
 
@@ -105,6 +107,9 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.halfSecondTimer = Timer(0.5)
         # TODO(Hellwig): are the methods using the counter still used?
         self.__counter = ImpulseCounter()
+        # Not every setup has analog input needed,
+        # thus this toggles the mocking by randomly picking one of the colors
+        self._mockAnalogSensor = mockAnalogSensor
 
     @property
     def sortingLineSensImpulseCounterRaw(self):
@@ -266,7 +271,9 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
     def internalStatus(self) -> Dict[str, Any]:
         status = {
             "isExecuting": self.isExecuting,
+            "colorToEject": self.colorToEject.name
         }
+
         return status
 
     def goto_config_CycleStep(self, config: SortingLineConfig) -> CycleStepResult:
@@ -317,8 +324,32 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             
         # If the token has arrived to the middle sensor, the detector didn't work
         if not self.sortingLineSensMiddleLightBarrier:
-            logging.error("The detector didn't send any signal, verify the analogic/digital converter")
-            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
+            if not self._mockAnalogSensor:
+                # Default case: adc is not working and mocking is not enabled
+                logging.error("The detector didn't send any signal, verify the analogic/digital converter")
+                return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
+            else:
+                # Fallback: No adc is connected but sorting line is instructed to mock the color sensor
+                mockedChoice = random.choice(["red", "blue", "white"])
+                logging.warning("Mocking color sensor to return " + mockedChoice)
+                if mockedChoice == "red":
+                    self.sortingLineSensRedDetector = True
+                    self.sortingLineSensBlueDetector = False
+                    self.sortingLineSensWhiteDetector = False
+                    self.colorToEject = Color.RED
+                    return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+                elif mockedChoice == "blue":
+                    self.sortingLineSensRedDetector = False
+                    self.sortingLineSensBlueDetector = True
+                    self.sortingLineSensWhiteDetector = False
+                    self.colorToEject = Color.BLUE
+                    return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+                else:
+                    self.sortingLineSensRedDetector = False
+                    self.sortingLineSensBlueDetector = False
+                    self.sortingLineSensWhiteDetector = True
+                    self.colorToEject = Color.WHITE
+                    return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
         
         # Else, must continue
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
