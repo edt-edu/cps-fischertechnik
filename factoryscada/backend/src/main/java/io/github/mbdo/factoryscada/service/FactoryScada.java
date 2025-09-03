@@ -13,13 +13,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +47,7 @@ import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.AppEnvironment;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -82,8 +88,9 @@ public class FactoryScada {
 
     private List<String> frontendLogsList = new LinkedList<String>();
 
-    //MQTT messages
+    // MQTT messages
     private final MqttGateway mqttGateway;
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
@@ -111,6 +118,11 @@ public class FactoryScada {
         this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto, this.template);
 
         this.commandIdGenerator = new CommandIdGenerator();
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void initAfterStartup() {
+
     }
 
     /**
@@ -169,21 +181,22 @@ public class FactoryScada {
                                 receivedChannelConnected);
 
                         // send connection state to MQTT
-                        String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name() + "/status";
-
+                        String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name()
+                                + "/status";
                         if (sendChannelConnected && receivedChannelConnected) {
-                            mqttGateway.sendToMqtt("connected", topic);
+                            sendWithRetry("connected", topic);
                         } else {
-                            mqttGateway.sendToMqtt("disconnected", topic);
+                            sendWithRetry("disconnected", topic);
                         }
                     });
             try {
                 controllerInstance.start();
             } catch (ProtocolException e) {
                 log.error("Failed to start controller protocol", e);
-                
+
                 // send connection failure to MQTT
-                String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name() + "/status";
+                String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name()
+                        + "/status";
                 mqttGateway.sendToMqtt("unreachable", topic);
             }
             controllers.put(controllerConfiguration.name(), controllerInstance);
@@ -370,5 +383,14 @@ public class FactoryScada {
         }
         this.getWebSocketPublisher()
                 .sendFrontendLogs(String.join("\n", this.getFrontendLogsList()));
+    }
+
+    private void sendWithRetry(String payload, String topic) {
+        try {
+            mqttGateway.sendToMqtt(payload, topic);
+        } catch (Exception e) {
+            log.warn("MQTT not ready, retrying in 1s for topic {}", topic);
+            scheduler.schedule(() -> sendWithRetry(payload, topic), 1, TimeUnit.SECONDS);
+        }
     }
 }
