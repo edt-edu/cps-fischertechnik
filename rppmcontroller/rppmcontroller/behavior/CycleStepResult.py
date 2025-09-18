@@ -1,6 +1,7 @@
 from __future__ import annotations  # place at the very top of the file. fixes pylance type hinting and forward references
 
-from typing import Any, Optional, Tuple
+import logging
+from typing import Any, Optional, Tuple, Union
 
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 
@@ -70,12 +71,12 @@ class CycleStepResult:
         """
         return self._result is CycleStepResultEnum.DONE
 
-    def __eq__(self, other: Any) -> bool:
+    def is_equivalent_result(self, other: Union[CycleStepResult, None]) -> bool:
         """
         Compares two CycleStepResult objects for equivalence.
-
+        Method that checks only CycleStepResult attributes even if extended classes have more attributes
         Args:
-            other (Any): The object to compare with.
+            other (CycleStepResult|None): The object to compare with.
 
         Returns:
             bool: True if the objects are equivalent, False otherwise.
@@ -87,9 +88,9 @@ class CycleStepResult:
             sub_cycle_step_result_equal = True
         elif self._subCycleStepResult is not None and other._subCycleStepResult is not None:
             sub_cycle_step_result_equal = (
-                self._subCycleStepResult[0] is other._subCycleStepResult[0] and
-                self._subCycleStepResult[1] == other._subCycleStepResult[1]
-            )
+                self._subCycleStepResult[0] == other._subCycleStepResult[0] and
+                self._subCycleStepResult[1].is_equivalent_result(other._subCycleStepResult[1])
+            )        
         else:
             sub_cycle_step_result_equal = False
 
@@ -98,3 +99,16 @@ class CycleStepResult:
             self._info == other._info and
             sub_cycle_step_result_equal
         )
+    
+    def __eq__(self, other: Any) -> bool:
+        """
+        Compares two CycleStepResult objects for equivalence.
+
+        Args:
+            other (Any): The object to compare with.
+
+        Returns:
+            bool: True if the objects are equivalent, False otherwise.
+        """
+        
+        return self.is_equivalent_result(other)

@@ -1,3 +1,4 @@
+import copy
 import inspect
 import json as json
 import logging
@@ -454,18 +455,14 @@ class RevPiPyMachineController:
                 self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
     def sendCommandFeedbackOnChange(self, machine: Machine, lastResult: CycleStepResult) -> None:
+        """Whenever the result of the last executed command changes, feedback is created
+        """
+        # a change is detected if the result is different from the previous one
         cached_result = self.commandFeedback[machine] if machine in self.commandFeedback else None
-        # normal case: a new cycle step result was returned
-        result_changed = cached_result != lastResult
+        # use is_equivalent_result to consider only changes related to the result and info in case of Runner
+        result_changed = not lastResult.is_equivalent_result(cached_result)
 
-        # special case: a runner is returned, which aggregates multiple steps into a single object
-        runner_advanced = (isinstance(cached_result, Runner) and not cached_result.status_published)
-
-        if result_changed or runner_advanced:
-            if runner_advanced:
-                cached_result.status_published = True
-
-            # logging.debug(f'new CycleStepResult for machine {machine.id} {self.currentlyExecuting[machine]}')
+        if result_changed : 
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
                 jsonid = cycleStepCommand.commandId
@@ -482,7 +479,8 @@ class RevPiPyMachineController:
 
         # else:
         #     logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
-        self.commandFeedback[machine] = lastResult
+        # store a copy of the last result so that original Runner may continue to evolve
+        self.commandFeedback[machine] = copy.deepcopy(lastResult)
 
     def publishMQTTMeasurementStatus(self) -> None:
         """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
