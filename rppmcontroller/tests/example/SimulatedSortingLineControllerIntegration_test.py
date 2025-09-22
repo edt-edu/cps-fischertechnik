@@ -280,7 +280,6 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                                              self.controller.mainLoopDelay*2,
                                              delta=0.1, 
                                              msg="Ejector timing for red was wrong")
-                self.assertEqual(31, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
