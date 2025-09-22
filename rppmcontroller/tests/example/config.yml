@@ -13,7 +13,7 @@ connection:
   connectionListening: "controller"
 
 controller:
-  mainLoopDelay: 1.0
+  mainLoopDelay: 0.25
 
 mqtt:
   # empty server in order to not send any MQTT message, useful to decrease error message in test suites
