@@ -22,6 +22,12 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
+    WHITE_EJECTOR_DELAY = 0.5
+    RED_EJECTOR_DELAY = 1.55
+    BLUE_EJECTOR_DELAY = 2.6
+    EJECTOR_ACTIVATION_TIME = 0.5 # time the ejector stays activated
+
+
     @property
     def isInitialized(self) -> bool:
         return True # no encoder actuators
@@ -104,7 +110,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.ejectingPayload = False
         self.waitOneCycle = False
         self.timer = None
-        self.halfSecondTimer = Timer(0.5)
+        self.ejectorActivationTimer = Timer(self.EJECTOR_ACTIVATION_TIME)
         # TODO(Hellwig): are the methods using the counter still used?
         self.__counter = ImpulseCounter()
         # Not every setup has analog input needed,
@@ -409,8 +415,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
     def ejectPayloadByTime_CycleStep(self) -> CycleStepResult:
         """
         Used to eject a token,
-        it eject the token to the appropriate colored line, it ends with a token detected in the color line.
-
+        it ejects the token to the appropriate colored line, it ends after 0.5s of ejector activation
         This function is a cycleStep, it is call on each controller cycle, until its goal is reached
 
         :return: as a CycleStep, this function must return True when it is finished so it can be removed from the currentlyExecuting map
@@ -425,11 +430,11 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         # Regenerate the timer according to the color of the payload
         if regenerateTimer or self.timer == None:
             if self.colorToEject == Color.WHITE:
-                self.timer = Timer(0.5)
+                self.timer = Timer(self.WHITE_EJECTOR_DELAY)
             elif self.colorToEject == Color.RED:
-                self.timer = Timer(1.55)
+                self.timer = Timer(self.RED_EJECTOR_DELAY)
             elif self.colorToEject == Color.BLUE:
-                self.timer = Timer(2.6)
+                self.timer = Timer(self.BLUE_EJECTOR_DELAY)
             else:
                 logging.error("No color defined, command aborted")
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
@@ -438,7 +443,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         if not self.timer.is_started():
             self.timer.start()
 
-        # If timer is elapsed, activate the piston and relaunch the timer
+        # If timer is elapsed, activate the piston and relaunch a timer
         if self.timer.is_started() and self.timer.elapsed() and not self.__sortingLineActCompressorOn:            
             self.__sortingLineActCompressorOn = True
             self.__sortingLineActMotorConveyor = False
@@ -449,10 +454,10 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             elif self.colorToEject == Color.BLUE:
                 self.__sortingLineActBlueEjector = True
             
-            self.halfSecondTimer.reset(start=True)
+            self.ejectorActivationTimer.reset(start=True)
 
         # If timer is elapsed, finish the command
-        if self.halfSecondTimer.is_started() and self.halfSecondTimer.elapsed() and self.__sortingLineActCompressorOn: 
+        if self.ejectorActivationTimer.is_started() and self.ejectorActivationTimer.elapsed() and self.__sortingLineActCompressorOn: 
             
             self.ejectingPayload = False
             self.__sortingLineActCompressorOn = False

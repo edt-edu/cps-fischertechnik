@@ -2,6 +2,7 @@ import inspect
 import logging
 import os
 import re
+import time
 import unittest
 from unittest.mock import patch, Mock
 
@@ -54,6 +55,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         endCommandReached = False
         iterationDone = 0
+        start_time = None
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
@@ -66,6 +68,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,True)
             elif iterationDone == 6:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
+                start_time = time.time()
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
             logging.debug(f"{iterationDone} iterations")
@@ -74,11 +77,18 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(16, iterationDone, "Timing of ejector for white was wrong")  # I'm not sure this test can be accurate 
+                if start_time is not None:
+                    elapsed_seconds = time.time() - start_time
+                    logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
+                    self.assertAlmostEqual  (elapsed_seconds, 
+                                             self.controller.sortingLineMachine.WHITE_EJECTOR_DELAY + 
+                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.mainLoopDelay*2,
+                                             delta=0.1, 
+                                             msg="Ejector timing for white was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
-                logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERWHITE,True)
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
@@ -110,6 +120,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         endCommandReached = False
         iterationDone = 0
+        start_time = None
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
@@ -120,15 +131,23 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,True)
             elif iterationDone == 6:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
+                start_time = time.time()
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(27, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
+                if start_time is not None:
+                    elapsed_seconds = time.time() - start_time
+                    logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
+                    self.assertAlmostEqual  (elapsed_seconds, 
+                                             self.controller.sortingLineMachine.RED_EJECTOR_DELAY + 
+                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.mainLoopDelay*2,
+                                             delta=0.1, 
+                                             msg="Ejector timing for red was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -164,6 +183,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         endCommandReached = False
         iterationDone = 0
+        start_time = None
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
@@ -174,15 +194,23 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,True)
             elif iterationDone == 6:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
+                start_time = time.time()
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(37, iterationDone, "Timing of ejector for blue was wrong")  # I'm not sure this test can be accurate 
+                if start_time is not None:
+                    elapsed_seconds = time.time() - start_time
+                    logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
+                    self.assertAlmostEqual  (elapsed_seconds, 
+                                             self.controller.sortingLineMachine.BLUE_EJECTOR_DELAY + 
+                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.mainLoopDelay*2,
+                                             delta=0.1, 
+                                             msg="Ejector timing for blue was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -218,6 +246,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         endCommandReached = False
         iterationDone = 0
+        start_time  = None
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
@@ -234,14 +263,23 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.SENSREDDETECTOR,False)
             elif iterationDone == 10:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
+                start_time = time.time()
             elif iterationDone == 12:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
+                if start_time is not None:
+                    elapsed_seconds = time.time() - start_time
+                    logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
+                    self.assertAlmostEqual  (elapsed_seconds, 
+                                             self.controller.sortingLineMachine.RED_EJECTOR_DELAY + 
+                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.mainLoopDelay*2,
+                                             delta=0.1, 
+                                             msg="Ejector timing for red was wrong")
                 self.assertEqual(31, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
@@ -278,6 +316,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         endCommandReached = False
         iterationDone = 0
+        start_time = None
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
@@ -288,14 +327,21 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,True)
             elif iterationDone == 6:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,False)
+                start_time = time.time()
             elif iterationDone == 8:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBEHINDCOLORSENSOR,True)
-
             if (notification == "") :
                 iterationDone += 1
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
+                if start_time is not None:
+                    elapsed_seconds = time.time() - start_time
+                    logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
+                    self.assertAlmostEqual  (elapsed_seconds, 
+                                             self.controller.mainLoopDelay,
+                                             delta=0.1, 
+                                             msg="Ejector timing for blue was wrong")
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 ABORTED_ERROR")
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "Goal not reached in less than 30 iterations" )
