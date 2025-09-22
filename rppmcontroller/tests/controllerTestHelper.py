@@ -1,4 +1,5 @@
 
+import inspect
 import logging
 import time
 from typing import Callable, Optional, List
@@ -38,7 +39,15 @@ def readNotification(controller: RevPiPyMachineController, notification_filter: 
             logging.info(f"notification is conform: {notification_sent}")
             return notification_sent
 
-        logging.debug(f"adding non-conform message to pending: {notification_sent}")
+        if notification_filter is not None:
+            try:
+                logging.debug(f"adding non-conform message to pending: {notification_sent} (was expecting {inspect.getsource(notification_filter)})")
+            except OSError:
+                logging.debug(f"adding non-conform message to pending: {notification_sent} (was expecting [Source not available (maybe defined in REPL or compiled)]")
+                print("Source not available (maybe defined in REPL or compiled).")
+        
+        else:
+            logging.debug(f"adding non-conform message to pending: {notification_sent}")
         pending_non_conform_notifications.append(notification_sent)
 
     logging.debug("no notification sent")

@@ -10,6 +10,7 @@ import socket
 import sys
 import time
 from abc import abstractmethod
+from dataclasses import dataclass
 from multiprocessing import Process
 from multiprocessing import Queue
 from queue import Empty
@@ -46,6 +47,12 @@ from rppmcontroller.protocol.MachineStatusRequestAnswer import \
     MachineStatusRequestAnswer
 
 
+@dataclass(frozen=True)
+class CommandResult:
+    """Class representing the result of a command"""
+    command: CycleStepCommand
+    result: CycleStepResult
+
 # commandServer will be on PORT_BASE+1
 # notificationServer will be on PORT_BASE+11
 
@@ -74,7 +81,7 @@ class RevPiPyMachineController:
         #dict, which keys are the machines, machine_feedback as the values
         self.machineFeedback : Dict [Machine, Optional[MachineStatus]] = {}
         #dict, which keys are the machines, command_feedback as the values
-        self.commandFeedback : Dict[Machine, Optional[CycleStepResult]]= {}
+        self.commandFeedback : Dict[Machine, Optional[CommandResult]]= {}
 
 
         self.previousInputStatus : Dict[str, Any]= {}
@@ -332,11 +339,13 @@ class RevPiPyMachineController:
                             cycleStepFunction = self.cast_to_callable(ret)
                             if cycleStepFunction is not None:
                                 # logging.debug(f'cycleStepFunction is not None')
-                                if m in self.currentlyExecuting and self.currentlyExecuting[m] is not None:
-                                    logging.debug(f'self.currentlyExecuting[m] is not None')
-                                    # send interruption feedback for the previously running command on the machine
-                                    self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
-                                    m.processSequenceContext = None
+                                if m in self.currentlyExecuting :
+                                    command = self.currentlyExecuting[m]
+                                    if command is not None:
+                                        logging.debug(f'self.currentlyExecuting[m] is not None')
+                                        # send interruption feedback for the previously running command on the machine
+                                        self.sendCommandFeedbackOnChange(m, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                        m.processSequenceContext = None
                                 # logging.debug("survived execution check")
                                 message_name = inputBufferItem.message.name
                                 # logging.debug(f"message_name: {message_name}")
@@ -355,12 +364,12 @@ class RevPiPyMachineController:
                                                                               command_id)
                                 # logging.debug("survived execution update")
                             else:
-                                self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                self.sendCommandFeedbackOnChange(m, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                                 # an invalid command doesn't interrupt currentlyRunning command
                             break
                         except AttributeError as e:
                             logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
-                            self.sendCommandFeedbackOnChange(m, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                            self.sendCommandFeedbackOnChange(m, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
                             break
                     else:
                         self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
@@ -409,14 +418,14 @@ class RevPiPyMachineController:
                 # removes currentlyExecuting function once it indicates it is finished
                 # logging.debug(f"{ret}")
                 if ret.is_done():
-                    self.sendCommandFeedbackOnChange(key, ret)
+                    self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
                     self.currentlyExecuting[key] = None
                     logging.debug(f'isExecuting = {key.isExecuting}')
                 else:
                     # continue
                     # maybe the res is different from previous, so it should be published
-                    self.sendCommandFeedbackOnChange(key, ret)
+                    self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
             # logging.debug("after command evaluation")
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
             if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and cycleStepCommand is not None:
@@ -454,14 +463,21 @@ class RevPiPyMachineController:
                 self.outputBuffer.put(j, block=False)
                 self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
-    def sendCommandFeedbackOnChange(self, machine: Machine, lastResult: CycleStepResult) -> None:
-        """Whenever the result of the last executed command changes, feedback is created
+    def sendCommandFeedbackOnChange(self, machine: Machine, lastCommand: Optional[CycleStepCommand], lastResult: CycleStepResult) -> None:
+        """
+        Whenever the result of the last executed command changes, feedback is created
+        If lastCommand is None, it means that no command was running on the machine or that the command was invalid and must be sent
         """
         # a change is detected if the result is different from the previous one
         cached_result = self.commandFeedback[machine] if machine in self.commandFeedback else None
-        # use is_equivalent_result to consider only changes related to the result and info in case of Runner
-        result_changed = not lastResult.is_equivalent_result(cached_result)
-
+        if cached_result is None or lastCommand is None:
+            # first time
+            result_changed = True
+        else:
+            # use is_equivalent_result to consider only changes related to the result and info in case of Runner
+            result_changed = not lastResult.is_equivalent_result(cached_result.result) or lastCommand.commandId != cached_result.command.commandId
+            logging.debug(f'lastResult.is_equivalent_result(cached_result.result) {lastResult.is_equivalent_result(cached_result.result)}')
+            logging.debug(f'lastCommand.commandId {lastCommand.commandId} != cached_result.command.commandId {cached_result.command.commandId}')
         if result_changed : 
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
@@ -477,10 +493,11 @@ class RevPiPyMachineController:
                 self.outputBuffer.put(j, block=False)
                 self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
 
-        # else:
-        #     logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
-        # store a copy of the last result so that original Runner may continue to evolve
-        self.commandFeedback[machine] = copy.deepcopy(lastResult)
+        else:
+            logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
+        if lastCommand is not None:
+            self.commandFeedback[machine] = CommandResult(copy.deepcopy(lastCommand), copy.deepcopy(lastResult))
+            logging.debug(f'stored CommandResult for machine {machine.id} {self.commandFeedback[machine].command} {self.commandFeedback[machine].result}')
 
     def publishMQTTMeasurementStatus(self) -> None:
         """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set

@@ -123,7 +123,10 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         message = MachineCommand("COMMAND", "VACUUM", 2, "SETUP", [])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
 
-        self.controller.mainLoopIteration()
+        # self.controller.mainLoopIteration()
+        # notification = ctHelper.readCommandFeedbackNotification(self.controller)
+        
+        self.controller.mainLoopIteration()        
         # already on the sensor, so we get an immediate SUCCESS
         self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
 
