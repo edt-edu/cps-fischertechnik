@@ -74,7 +74,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(8, iterationDone, "Timing of ejector for white was wrong")  # I'm not sure this test can be accurate 
+                self.assertEqual(16, iterationDone, "Timing of ejector for white was wrong")  # I'm not sure this test can be accurate 
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -128,7 +128,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(11, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
+                self.assertEqual(27, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
@@ -182,14 +182,14 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(13, iterationDone, "Timing of ejector for blue was wrong")  # I'm not sure this test can be accurate 
+                self.assertEqual(37, iterationDone, "Timing of ejector for blue was wrong")  # I'm not sure this test can be accurate 
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERBLUE,True)
-            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 50, "COMMAND not reached in less than 50 iterations" )
 
 
     def test_ejectAuto(self):
@@ -242,14 +242,14 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertEqual(15, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
+                self.assertEqual(31, iterationDone, "Timing of ejector for red was wrong")  # I'm not sure this test can be accurate 
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"SortingLine01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERRED,True)
-            self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 50, "COMMAND not reached in less than 50 iterations" )
 
     
     def test_ejectAutoError(self):

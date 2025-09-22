@@ -28,7 +28,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         logging.debug("setup called")
         self.controller = SimulatedMultiProcessingController(config_path)
-        self.controller.mainLoopDelay = 0.1
+        self.controller.mainLoopDelay = 0.4
 
 
     ### ________ PROCESS 1 ___________
