@@ -24,7 +24,7 @@ class SimulatedHighBayControllerIntegrationTestCase(unittest.TestCase):
 
         logging.debug("setup called")
         self.controller = SimulatedHighBayController(config_path)
-        self.controller.mainLoopDelay = 0.4
+        self.controller.mainLoopDelay = 0.1
 
 
     ### ________ SETUP ___________

@@ -25,7 +25,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
 
         logging.debug("setup called")
         self.controller = SimulatedSortingLineController(config_path)
-        self.controller.mainLoopDelay = 0.5
+        self.controller.mainLoopDelay = 0.1
 
     ### ________ EJECT ___________
     def test_ejectWhite(self):
