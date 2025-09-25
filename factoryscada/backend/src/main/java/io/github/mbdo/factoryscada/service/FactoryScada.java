@@ -377,9 +377,9 @@ public class FactoryScada {
      * @return Nothing
      */
     public void addLogsForFrontend(String log) {
-        this.getFrontendLogsList().addFirst(LocalDateTime.now().toString() + " : " + log);
+        this.getFrontendLogsList().add(LocalDateTime.now().toString() + " : " + log);
         if (this.getFrontendLogsList().size() > logLimit) {
-            this.getFrontendLogsList().removeLast();
+            this.getFrontendLogsList().removeFirst();
         }
         this.getWebSocketPublisher()
                 .sendFrontendLogs(String.join("\n", this.getFrontendLogsList()));
