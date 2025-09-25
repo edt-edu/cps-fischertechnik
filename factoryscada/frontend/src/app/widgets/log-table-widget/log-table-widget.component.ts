@@ -114,5 +114,15 @@ export class LogTableWidgetComponent implements AfterViewInit {
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/logs/request' });
   }
+
+  messageTypeIcons: Record<string, { icon: string; color: string }> = {
+    MACHINE_FEEDBACK: { icon: 'pi pi-cog', color: 'text-blue-500' },
+    COMMAND_FEEDBACK: { icon: 'pi pi-reply', color: 'text-green-500' },
+    COMMAND: { icon: 'pi pi-send', color: 'text-purple-500' },
+  };
+
+  getMessageTypeIcon(type: string): { icon: string; color: string } {
+    return this.messageTypeIcons[type] || { icon: 'pi pi-question-circle', color: 'text-gray-500' };
+  }
 }
 
