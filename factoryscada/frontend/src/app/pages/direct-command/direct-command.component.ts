@@ -131,7 +131,6 @@ export class DirectCommandComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
 
-  logs: any[] = [];
 
   ngOnInit(): void {
     this.subscribeToTopics();
@@ -195,14 +194,6 @@ export class DirectCommandComponent implements OnInit {
       this.instance = this.parseMessage(message);
     });
 
-    this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
-      this.logs = this.parseLogsMessage(message);
-
-      const logElement = document.querySelector('.console-log') as HTMLElement;
-      if (logElement) {
-        logElement.textContent = this.logs.join('\n');
-      }
-    });
   }
 
   getRequestStatusParameters(machineType: string): { name: string, code: string }[] {
@@ -247,32 +238,11 @@ export class DirectCommandComponent implements OnInit {
     }
   }
 
-  private parseLogsMessage(message: Message): any {
-    const messages: any[] = [];
-
-    try {
-      console.log(message);
-      const rawBody = message.body;
-      const lines = rawBody.trim().split('\n');
-
-      for (const line of lines) {
-        if (line.trim()) {
-          messages.push(line);
-        }
-      }
-      return messages;
-    } catch (e) {
-      console.error('Failed to parse message', e);
-      return undefined;
-    }
-  }
-
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/placeholder' });
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
     this.myRxStompService.publish({ destination: '/app/factory/instance' });
     this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
-    this.myRxStompService.publish({ destination: '/app/logs/request' });
   }
 
 
