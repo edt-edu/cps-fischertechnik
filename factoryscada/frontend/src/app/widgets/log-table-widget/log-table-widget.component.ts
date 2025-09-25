@@ -82,9 +82,9 @@ export class LogTableWidgetComponent implements AfterViewInit {
                   timestamp: date,
                   messageType: parsed.message.jsonType,
                   machine: parsed.topicName,
-                  command: parsed.message.commandId,
+                  command: parsed.message.commandId ?? parsed.message.outputId ?? '',
                   status: parsed.message.status,
-                  info: parsed.message.info,
+                  info: parsed.message.info ?? parsed.message.name + ' - ' + (parsed.message.parameters ? JSON.stringify(parsed.message.parameters) : ''),
                   rawJson: jsonStr
                 };
              messages.push(log);

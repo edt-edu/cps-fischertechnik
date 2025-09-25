@@ -288,7 +288,7 @@ public class ExecuterVisitor extends Visitor {
                     protocol.send(jsonString);
 
                     // add the command to log list
-                    factoryScada.addLogsForFrontend(jsonString.replaceAll("\\[[^\\]]*\\]", "[]"));
+                    factoryScada.addLogsForFrontend(jsonString);
 
                     // update storage in backend
                     CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName,
