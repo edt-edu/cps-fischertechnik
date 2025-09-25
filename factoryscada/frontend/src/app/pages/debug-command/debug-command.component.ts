@@ -2,11 +2,11 @@ import { Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, ViewChild
 import { MyRxStompService } from "../../services/my-rx-stomp.service";
 import { Message } from "@stomp/stompjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { JsonPipe } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { IFactoryInstance } from "../../models/i-factory-instance";
 import { IConfiguration, Machine } from "../../models/i-factory-configuration";
 import { ICommandPlaceholder } from "../../models/i-command-placeholder";
+import { LogTableWidgetComponent } from "../../widgets/log-table-widget/log-table-widget.component";
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
@@ -37,7 +37,7 @@ declare var $: any;
     FieldsetModule,
     FormsModule,
     InputTextModule,
-    JsonPipe,
+    LogTableWidgetComponent,
     OverlayPanelModule,
     PanelModule,
     ReactiveFormsModule,
@@ -66,8 +66,6 @@ export class DebugCommandComponent implements OnInit {
   private readonly myRxStompService = inject(MyRxStompService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
-
-  logs: any[] = [];
 
   ngOnInit(): void {
     //this.initializeSemanticJS();
@@ -141,15 +139,6 @@ export class DebugCommandComponent implements OnInit {
     this.subscribeToTopic('/topic/factory-instance', (message: Message) => {
       this.instance = this.parseMessage(message);
     });
-
-    this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
-      this.logs = this.parseLogsMessage(message);
-
-      const logElement = document.querySelector('.console-log') as HTMLElement;
-      if (logElement) {
-        logElement.textContent = this.logs.join('\n');
-      }
-    });
   }
 
   private subscribeToTopic(destination: string, callback: (message: Message) => void): void {
@@ -163,26 +152,6 @@ export class DebugCommandComponent implements OnInit {
       return JSON.parse(message.body);
     } catch (error) {
       console.error('Failed to parse message', error);
-      return undefined;
-    }
-  }
-
-  private parseLogsMessage(message: Message): any {
-    const messages: any[] = [];
-
-    try {
-      console.log(message);
-      const rawBody = message.body;
-      const lines = rawBody.trim().split('\n');
-
-      for (const line of lines) {
-        if (line.trim()) {
-          messages.push(line);
-        }
-      }
-      return messages;
-    } catch (e) {
-      console.error('Failed to parse message', e);
       return undefined;
     }
   }

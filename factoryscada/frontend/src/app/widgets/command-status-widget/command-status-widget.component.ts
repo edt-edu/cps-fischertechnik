@@ -120,7 +120,7 @@ export class CommandStatusWidgetComponent implements OnInit, OnDestroy, OnChange
   protected getButtonSeverity(): "success" | "info" | "warning" | "danger" | "help" | "primary" | "secondary" | "contrast" | null | undefined {
     if (this.machineCommandStatus?.commandFeedbackStatus == "DONE") {
       return 'secondary';
-    } else if (this.machineCommandStatus?.commandFeedbackStatus == "MUST_CONTINE") {
+    } else if (this.machineCommandStatus?.commandFeedbackStatus == "MUST_CONTINUE") {
       return 'primary';
     } else if (this.machineCommandStatus?.commandFeedbackStatus == "INTERRUPTED") {
       return 'warning';
@@ -138,7 +138,7 @@ export class CommandStatusWidgetComponent implements OnInit, OnDestroy, OnChange
   protected getIcon(): string {
     if (this.machineCommandStatus?.commandFeedbackStatus == "DONE") {
       return 'pi pi-moon';
-    } else if (this.machineCommandStatus?.commandFeedbackStatus == "MUST_CONTINE") {
+    } else if (this.machineCommandStatus?.commandFeedbackStatus == "MUST_CONTINUE") {
       return 'pi pi-spin pi-refresh';
     } else if (this.machineCommandStatus?.commandFeedbackStatus == "INTERRUPTED") {
       return 'pi pi-stop-circle';

@@ -5,19 +5,19 @@ import {
   VacuumGripperGoToPositionComponent
 } from "./vacuum-gripper/vacuum-gripper-gotoposition/vacuum-gripper-gotoposition.component";
 import { VacuumGripperMoveComponent } from "./vacuum-gripper/vacuum-gripper-move/vacuum-gripper-move.component";
+import { VacuumGripperOrderedMoveToComponent } from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
 import { VacuumGripperPickComponent } from "./vacuum-gripper/vacuum-gripper-pick/vacuum-gripper-pick.component";
 import { VacuumGripperPlaceComponent } from "./vacuum-gripper/vacuum-gripper-place/vacuum-gripper-place.component";
-import { VacuumGripperOrderedMoveToComponent } from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
 
-import { MultiProcessingProcessComponent } from './multiprocessing/multiprocessing-process/multiprocessing-process.component';
 import { MultiProcessingArmPositionComponent } from './multiprocessing/multiprocessing-arm-position/multiprocessing-arm-position.component';
+import { MultiProcessingProcessComponent } from './multiprocessing/multiprocessing-process/multiprocessing-process.component';
 import { MultiProcessingTurntablePositionComponent } from './multiprocessing/multiprocessing-turntable-position/multiprocessing-turntable-position.component';
 
-import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
-import { HighBayWarehouseRetrieveComponent } from "./highbay-warehouse/highbay-warehouse-retrieve/highbay-warehouse-retrieve.component";
 import { HighBayWarehouseGoToColumnComponent } from "./highbay-warehouse/highbay-warehouse-gotocolumn/highbay-warehouse-gotocolumn.component";
 import { HighBayWarehouseGoToRowComponent } from "./highbay-warehouse/highbay-warehouse-gotorow/highbay-warehouse-gotorow.component";
 import { HighBayWarehouseHorizontalToComponent } from "./highbay-warehouse/highbay-warehouse-horizontalto/highbay-warehouse-horizontalto.component";
+import { HighBayWarehouseRetrieveComponent } from "./highbay-warehouse/highbay-warehouse-retrieve/highbay-warehouse-retrieve.component";
+import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
 import { HighBayWarehouseVerticalToComponent } from "./highbay-warehouse/highbay-warehouse-verticalto/highbay-warehouse-verticalto.component";
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -27,35 +27,39 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { FieldsetModule } from 'primeng/fieldset';
-import { InputTextModule } from 'primeng/inputtext';
 import { MessagesModule } from 'primeng/messages';
+
+import { InputTextModule } from 'primeng/inputtext';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { PanelModule } from 'primeng/panel';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { ICommandPlaceholder } from "../../models/i-command-placeholder";
 import { IConfiguration, Machine } from "../../models/i-factory-configuration";
 import { IFactoryInstance } from "../../models/i-factory-instance";
+import { IFactoryParallelizedMissionsConfiguration } from "../../models/i-factory-paralelized_missions";
 import { MyRxStompService } from "../../services/my-rx-stomp.service";
+
 import {
   beautifyJson,
-  getDestinationSuffixFromJSONPlaceholder,
   getCommandNames,
   getCommandPlaceholder,
+  getDestinationSuffixFromJSONPlaceholder,
   getMachines,
   getMissionCommandDescription,
   getMissionCommandPlaceholder,
   getMissionCommandQualifiedNames,
   humanizeCommandName
 } from "../../utilities/utils";
+
+
+import { CommandStatusWidgetComponent } from "../../widgets/command-status-widget/command-status-widget.component";
+import { LogTableWidgetComponent } from "../../widgets/log-table-widget/log-table-widget.component";
+import { MachineStatusWidgetComponent } from "../../widgets/machine-status-widget/machine-status-widget.component";
 import { GenericDirectionCommandComponent } from "./generic/direction-command/generic-direction-command.component";
 import { GenericDirectionNbStepsCommandComponent } from "./generic/direction-nb-steps-command/generic-direction-nb-steps-command.component";
+import { GenericIntegerCommandComponent } from "./generic/generic-integer-command/generic-integer-command.component";
 import { GenericNoParamCommandComponent } from "./generic/no-param-command/generic-no-param-command.component";
 import { GenericStatusCommandComponent } from "./generic/status-command/status-command.component";
-import { GenericIntegerCommandComponent } from "./generic/generic-integer-command/generic-integer-command.component";
-import { VacuumGripperStatusComponent } from "./vacuum-gripper/vacuum-gripper-status/vacuum-gripper-status.component";
-import { MachineStatusWidgetComponent } from "../../widgets/machine-status-widget/machine-status-widget.component";
-import { CommandStatusWidgetComponent } from "../../widgets/command-status-widget/command-status-widget.component";
-import { IFactoryParallelizedMissionsConfiguration, MissionParallelized, Nodes } from "../../models/i-factory-paralelized_missions";
 
 declare var $: any;
 
@@ -81,7 +85,6 @@ declare var $: any;
     VacuumGripperGoToPositionComponent,
     VacuumGripperOrderedMoveToComponent,
     SortingLineEjectComponent,
-    VacuumGripperStatusComponent,
     MultiProcessingProcessComponent,
     MultiProcessingArmPositionComponent,
     MultiProcessingTurntablePositionComponent,
@@ -97,7 +100,8 @@ declare var $: any;
     GenericIntegerCommandComponent,
     CardModule,
     MachineStatusWidgetComponent,
-    CommandStatusWidgetComponent
+    CommandStatusWidgetComponent,
+    LogTableWidgetComponent
   ],
   templateUrl: './direct-command.component.html',
   styleUrl: './direct-command.component.scss'
@@ -127,7 +131,6 @@ export class DirectCommandComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly renderer = inject(Renderer2);
 
-  logs: any[] = [];
 
   ngOnInit(): void {
     this.subscribeToTopics();
@@ -191,14 +194,6 @@ export class DirectCommandComponent implements OnInit {
       this.instance = this.parseMessage(message);
     });
 
-    this.subscribeToTopic('/topic/frontend-logs', (message: Message) => {
-      this.logs = this.parseLogsMessage(message);
-
-      const logElement = document.querySelector('.console-log') as HTMLElement;
-      if (logElement) {
-        logElement.textContent = this.logs.join('\n');
-      }
-    });
   }
 
   getRequestStatusParameters(machineType: string): { name: string, code: string }[] {
@@ -243,32 +238,11 @@ export class DirectCommandComponent implements OnInit {
     }
   }
 
-  private parseLogsMessage(message: Message): any {
-    const messages: any[] = [];
-
-    try {
-      console.log(message);
-      const rawBody = message.body;
-      const lines = rawBody.trim().split('\n');
-
-      for (const line of lines) {
-        if (line.trim()) {
-          messages.push(line);
-        }
-      }
-      return messages;
-    } catch (e) {
-      console.error('Failed to parse message', e);
-      return undefined;
-    }
-  }
-
   private requestInitialData(): void {
     this.myRxStompService.publish({ destination: '/app/factory/placeholder' });
     this.myRxStompService.publish({ destination: '/app/factory/configuration' });
     this.myRxStompService.publish({ destination: '/app/factory/instance' });
     this.myRxStompService.publish({ destination: '/app/factoryMission/mission-configuration' });
-    this.myRxStompService.publish({ destination: '/app/logs/request' });
   }
 
 

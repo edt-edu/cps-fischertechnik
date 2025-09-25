@@ -45,7 +45,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
             Protocol protocol = machine.getProtocol();
             try {
                 protocol.send(message);
-                log.info("Message sent to controller");
+                log.info("Message sent to controller "+ message);
                 CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName, new CommandStatus());
                 // update storage
                 ObjectMapper mapper = JsonMapper.builder().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).build();
@@ -59,7 +59,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 // publish to frontend
                 this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
     					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
-                
+                factoryScada.addLogsForFrontend(message);
                 
             } catch (ProtocolException e) {
                 log.error("Communication error with controller {}", e.getMessage());
@@ -92,7 +92,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 // publish to frontend
                 this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
     					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
-                
+                factoryScada.addLogsForFrontend(mapper.writeValueAsString(commandDTO));
             } else {
                 log.warn("Machine '{}' not found", machineName);
                 return "Machine not found";
