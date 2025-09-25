@@ -1,6 +1,10 @@
 .log-container {
-  height: 320px; /* a bit larger than table scrollHeight */
-  overflow-y: auto;
+  min-height: 150px;     /* prevent collapsing */
+  max-height: 90vh;      /* prevent overflowing screen */
+  height: 320px;         /* initial size */
+  overflow-y: auto;      /* still scrolls inside */
+  resize: vertical;      /* enable vertical resize */
+  border: 1px solid #ccc; /* visual handle for resizing */
 }
 ::ng-deep .p-datatable table {
   font-size: 0.85rem;           /* smaller text */
