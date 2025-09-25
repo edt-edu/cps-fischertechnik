@@ -1,0 +1,38 @@
+<div #scrollContainer class="log-container">
+  <p-table #dt [value]="logs" >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Time</th>
+        <th>Message Type</th>
+        <th>Machine</th>
+        <th>Cmd</th>
+        <th>Status</th>
+        <th>Info</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-log>
+      <tr  
+        [pTooltip]="tpl" 
+        tooltipPosition="right"
+        tooltipStyleClass="log-tooltip"
+        [showDelay]="1000"
+      >
+        <td><span class="log-message">{{ log.timestamp | date:'HH:mm:ss.SSS' }}</span></td>
+        <td><span class="log-message">{{ log.messageType }}</span></td>
+        <td><span class="log-message">{{ log.machine }}</span></td>
+        <td><span class="log-message">{{ log.command }}</span></td>
+        <td>
+          <span [ngClass]="log.status" class="log-status">{{ log.status }}</span>
+        </td>
+        <td><span class="log-message">{{ log.info }}</span></td>
+      </tr>
+      <ng-template #tpl>
+        <div class="p-2">
+          <strong>Timestamp:</strong> {{ log.timestamp | date:'yyyy-MM-dd HH:mm:ss.SSS' }}<br>
+          <strong>Json:</strong> <span [innerHTML]="log.rawJson | jsonPrettyHtml"></span>
+        </div>
+      </ng-template>
+    </ng-template>
+    
+  </p-table>
+</div>

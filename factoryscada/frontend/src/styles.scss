@@ -29,3 +29,12 @@
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
 }
+
+.log-tooltip {
+  min-width: 800px;          // desired tooltip width
+  max-width: 400px;          // desired tooltip width
+  white-space: pre-wrap;     // preserve line breaks and wrap text
+  word-wrap: break-word;     // wrap long words
+  font-size: 0.875rem;       // adjust size
+  font-family: monospace;
+}

@@ -1,0 +1,52 @@
+.log-container {
+  height: 320px; /* a bit larger than table scrollHeight */
+  overflow-y: auto;
+}
+::ng-deep .p-datatable table {
+  font-size: 0.85rem;           /* smaller text */
+}
+
+::ng-deep .p-datatable-tbody > tr > td,
+::ng-deep .p-datatable-thead > tr > th {
+  padding: 0.25rem 0.5rem;      /* reduce cell padding */
+  line-height: 1.2;             /* tighter rows */
+}
+
+::ng-deep .p-datatable-tbody > tr {
+  height: auto !important;      /* let row size shrink naturally */
+}
+
+.log-status {
+  font-family: monospace;
+  font-size: 0.875rem;  
+}
+.log-status.DONE { 
+  font-weight: bold;
+}
+.log-status.MUST_CONTINUE {
+  color: #1976d2; /* blue */
+}
+.log-status.UNINITIALIZED_ACTIVE {
+  color: #1976d2; /* blue */
+}
+.log-status.INITIALIZED_ACTIVE {
+  color: #1976d2; /* blue */
+}
+.log-status.INTERRUPTED {
+  color: #fbc02d; /* yellow */
+}
+.log-status.ABORTED_TIMEOUT {
+  color: #d32f2f; /* red */
+}
+.log-status.ABORTED_ERROR {
+  color: #d32f2f; /* red */
+}
+
+.log-message {
+  font-family: monospace;
+  white-space: pre-wrap; /* preserve line breaks */
+  word-wrap: break-word; /* wrap long words */
+  font-size: 0.875rem;   /* adjust size */
+}
+
+

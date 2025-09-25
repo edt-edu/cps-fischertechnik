@@ -26,6 +26,7 @@ import {
 import {
   GraphMissionsView
 } from "../../widgets/parallelized-missions-graph-widget/parallelized-missions-graph-widget.component";
+import { LogTableWidgetComponent } from "../../widgets/log-table-widget/log-table-widget.component";
 import {
   getMissions,
   getMachinesInMission
@@ -44,6 +45,7 @@ declare var $: any;
     FormsModule,
     InputTextModule,
     JsonPipe,
+    LogTableWidgetComponent,
     OverlayPanelModule,
     PanelModule,
     ReactiveFormsModule,

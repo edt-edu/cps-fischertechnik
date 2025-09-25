@@ -2,11 +2,11 @@ import { Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, ViewChild
 import { MyRxStompService } from "../../services/my-rx-stomp.service";
 import { Message } from "@stomp/stompjs";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { JsonPipe } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { IFactoryInstance } from "../../models/i-factory-instance";
 import { IConfiguration, Machine } from "../../models/i-factory-configuration";
 import { ICommandPlaceholder } from "../../models/i-command-placeholder";
+import { LogTableWidgetComponent } from "../../widgets/log-table-widget/log-table-widget.component";
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
@@ -37,7 +37,7 @@ declare var $: any;
     FieldsetModule,
     FormsModule,
     InputTextModule,
-    JsonPipe,
+    LogTableWidgetComponent,
     OverlayPanelModule,
     PanelModule,
     ReactiveFormsModule,
