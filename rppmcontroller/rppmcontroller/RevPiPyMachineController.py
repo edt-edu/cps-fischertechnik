@@ -4,6 +4,7 @@ import json as json
 import logging
 import multiprocessing
 import os
+import pkg_resources
 import select
 import signal
 import socket
@@ -66,7 +67,7 @@ class RevPiPyMachineController:
         Init method of this class, prepares the configuration
         """
 
-        logging.debug('init started')
+        logging.info('rppmcontroller version: ' + pkg_resources.get_distribution("rppmcontroller").version)
 
         # init a buffer to store all incoming/outgoing messages, received in a different thread than the one executing the revpi functions
         # stored as python objects, so parse/deserialize before putting into buffer
