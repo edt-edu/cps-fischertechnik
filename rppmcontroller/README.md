@@ -69,13 +69,21 @@ pytest -k "ConveyorBelt"
 
 ## Build documentation
 
-Generate API doc from code:
+
+Install sphinx dependencies
+```
+pip install .[docs]
+```
+
+Generate API doc from code: (currently we do not edit it manually)
 ```
 sphinx-apidoc -o docs/source rppmcontroller
 ```
 
 Generate html documentation
-
+```
+sphinx-build -b html docs docs/source docs/_build/html
+```
 
 # Informations about the machines
 
