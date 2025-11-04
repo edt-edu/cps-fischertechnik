@@ -13,3 +13,7 @@ pytest.log
 report.xml
 coverage.xml
 
+# Sphinx doc
+docs/_build/
+docs/source/
+

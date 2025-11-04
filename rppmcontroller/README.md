@@ -67,6 +67,16 @@ ex:
 pytest -k "ConveyorBelt"
 ```
 
+## Build documentation
+
+Generate API doc from code:
+```
+sphinx-apidoc -o docs/source rppmcontroller
+```
+
+Generate html documentation
+
+
 # Informations about the machines
 
 ## Vacuum Gripper Robot (VGR)

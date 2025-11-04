@@ -2,6 +2,43 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "rppmcontroller"
+dynamic = ["version"]
+description = "RevPiPyMachineController (rppmcontroller) framework. Provides controller code running on RevPi for Fishertechnik factory machines"
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    # cf. https://pypi.org/classifiers/
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  # "License :: OSI Approved :: MIT License"
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "rppmcontroller.__version__"}
+
+
+[project.urls]
+Homepage = "https://git.rwth-aachen.de/mbdo/mbdo-impl/-/tree/master/rppmcontroller"
+Repository = "https://git.rwth-aachen.de/mbdo/mbdo-impl/-/tree/master/rppmcontroller"
+Issues = "https://git.rwth-aachen.de/mbdo/mbdo-impl/-/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rppmcontroller*"]
+
+[project.optional-dependencies]
+docs = [
+  "sphinx",
+  "furo",                # nice modern theme
+  "sphinx-autodoc-typehints",
+  "sphinx-rtd-theme",    # optional alternative theme
+]
+
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "WARNING"
