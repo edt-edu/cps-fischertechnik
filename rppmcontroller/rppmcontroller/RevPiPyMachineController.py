@@ -4,7 +4,6 @@ import json as json
 import logging
 import multiprocessing
 import os
-import pkg_resources
 import select
 import signal
 import socket
@@ -19,6 +18,7 @@ from typing import Any, Dict, List, Optional, Callable, cast
 
 import yaml
 
+from rppmcontroller import __version__
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -66,8 +66,7 @@ class RevPiPyMachineController:
         """
         Init method of this class, prepares the configuration
         """
-
-        logging.info('rppmcontroller version: ' + pkg_resources.get_distribution("rppmcontroller").version)
+        logging.info('rppmcontroller version: ' + __version__)
 
         # init a buffer to store all incoming/outgoing messages, received in a different thread than the one executing the revpi functions
         # stored as python objects, so parse/deserialize before putting into buffer
