@@ -75,6 +75,8 @@ class Axis:
         self.__endpos = endpos
         self.__counterinput = counterinput
 
+    # we might want to make this method non-static in the future
+    # noinspection PyMethodMayBeStatic
     def howtoCounterPos(self, counterGoal, counterCurrent, tolerance):
         """method to determine which way the axis needs to rotate"""
         #TODO probably set a different play for impulse counters(maybe 2) vs encoder counters (maybe 10)
@@ -118,8 +120,10 @@ class Axis:
             if not self.__endpos:
                 if self.__endpos_is_at_low_counter_values:
                     self.__outputminus = True
+                    self.__outputplus = False
                 else:
                     self.__outputplus = True
+                    self.__outputminus = False
                 if isinstance(self.__counter, ImpulseCounter):
                     self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
@@ -149,6 +153,7 @@ class Axis:
 
             else:
                 self.__counter.counter = self.__counterinput
+
             counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.tolerance)
             # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
             if counterPos == PlusMinusStop.PLUS:
@@ -163,6 +168,21 @@ class Axis:
                 self.__outputminus = False
                 self.__outputplus = False
                 target_reached = True
+                direction = PlusMinusStop.STOP
+
+            # extra check to make sure we are not telling the hardware to
+            # move beyond a ref-switch
+            ref_switch_reached = self.__endpos
+            if self.__endpos_is_at_low_counter_values:
+                movToRefSwitch = self.outputminus
+            else:
+                movToRefSwitch = self.outputplus
+            if ref_switch_reached and movToRefSwitch:
+                self.__outputminus = False
+                self.__outputplus = False
+                direction = PlusMinusStop.STOP
+                target_reached = True
+
         if isinstance(self.__counter, ImpulseCounter):
             return target_reached, direction
         return target_reached
