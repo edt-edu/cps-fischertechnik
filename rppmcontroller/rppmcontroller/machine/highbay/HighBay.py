@@ -1,21 +1,22 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional, Union, Callable, Tuple
+from typing import Dict, Any, Union, Callable, Tuple, Optional
 
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, runner_augment_function
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, \
+    runner_augment_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
-from rppmcontroller.machine.ConveyorState import ConveyorState, \
-    conveyor_state_from_movements
+from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 
 PICKUP_DISTANCE = 150
 """how far up we need to move the arm, when picking up an item"""
@@ -89,8 +90,15 @@ class Row(Enum):
 
 class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
-                 column_offset: Union[int, Tuple[int, int, int, int]] = 0, safetyPos : dict = {},
-                 pwmParameters: dict = {'stdSpeed' : 100, 'reducedSpeed' : 50, 'approachTol' : 100}):
+                 column_offset: Union[int, Tuple[int, int, int, int]] = 0,
+                 safetyPos: Optional[dict[str, int]] = None,
+                 pwmParameters: Optional[dict[str, int]] = None):
+        if safetyPos is None:
+            safetyPos = {}
+        if pwmParameters is None:
+            pwmParameters = {'stdSpeed': 100, 'reducedSpeed': 50,
+                             'approachTol': 100}
+
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True
@@ -174,7 +182,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @property
     def isInitialized(self) -> bool:
         return self.__is_initialized
-    
+
     @isInitialized.setter
     def isInitialized(self, value):
         self.__is_initialized = value
@@ -190,12 +198,12 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                self.__highbayActCantileverForward or
                self.__highbayActCantileverBackward or
                self.is_executing_runner)
-        
-        if (self.executing_runner == None):
+
+        if self.executing_runner is None:
             routine = "None"
         else:
             routine = str(self.executing_runner)
-        
+
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
@@ -355,14 +363,14 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__highbaySensVerticalEncoderCounter = value
 
     def sensorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
         return (f"Counter: [{self.highbaySensHorizontalEncoderCounter}, {self.highbaySensVerticalEncoderCounter}], "
                 f"Cantilev: [{s(self.highbaySensCantileverBack)}, {s(self.highbaySensCantileverFront)}], "
                 f"SensorHV: [{s(self.highbaySensHorizontal)}, {s(self.highbaySensVertical)}], "
                 f"SensConv: [{s(self.highbaySensInside)}, {s(self.highbaySensOutside)}]")
 
     def actuatorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
         return (f"Vertical: [{s(self.highbayActUp)}, {s(self.highbayActDown)}], "
                 f"Horizont: [{s(self.highbayActHorizontalToRack)}, {s(self.highbayActHorizontalToConveyor)}], "
                 f"Cantilev: [{s(self.highbayActCantileverBackward)}, {s(self.highbayActCantileverForward)}], "
@@ -395,9 +403,9 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                 self.__highbayActHorizontalToConveyor,
             "highbayActDown": self.__highbayActDown,
             "highbayActUp": self.__highbayActUp,
-            "vacuumActValve": self.__pwmVertical,
-            "vacuumActValve": self.__pwmHorizontal
-            }
+            "pwmVertical": self.__pwmVertical,
+            "pwmHorizontal": self.__pwmHorizontal
+        }
 
     def get_current_config(self) -> HighBayConfig:
         """
@@ -410,7 +418,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                              AxisConfig(self.highbaySensVertical,
                                         self.highbaySensVerticalEncoderCounter),
                              not self.highbaySensCantileverBack,
-                             conveyor_state_from_movements(
+                             ConveyorState.from_actuators(
                                  self.highbayActConveyorForward,
                                  self.highbayActConveyorBackward))
 
@@ -764,14 +772,14 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Moves the Vacuum Gripper to the safe position if specified. Go to setup position else
         :return: A Runner performing the command
         """
-        if (self.safeVertical != None and self.safeHorizontal != None):
+        if self.safeVertical is not None and self.safeHorizontal is not None:
             runner = self.create_runner()
             self.run_setup_unless_initialized(runner)
             config = self.get_current_config()
             config.horizontal_axis_config = AxisConfig.to_counter_goal(self.safeHorizontal)
             config.vertical_axis_config = AxisConfig.to_counter_goal(self.safeVertical)
             return runner.then_goto(config).run()
-            
+
             # runner = self.create_runner()
             # runner.then_run(self.vertical_to_Command(self.safeVertical), info="Moving vertically to safe pos")
             # runner.then_run(self.horizontal_to_Command(self.safeHorizontal), info="Moving horizontally to safe pos")
