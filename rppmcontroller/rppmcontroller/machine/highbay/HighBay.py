@@ -91,8 +91,8 @@ class Row(Enum):
 class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
                  column_offset: Union[int, Tuple[int, int, int, int]] = 0,
-                 safetyPos: Optional[dict[str, int]] = None,
-                 pwmParameters: Optional[dict[str, int]] = None):
+                 safetyPos: Optional[Dict[str, int]] = None,
+                 pwmParameters: Optional[Dict[str, int]] = None):
         if safetyPos is None:
             safetyPos = {}
         if pwmParameters is None:
