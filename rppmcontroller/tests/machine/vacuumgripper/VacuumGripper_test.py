@@ -179,8 +179,8 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertFalse(self.robot1.vacuumActVerticalDown)
         self.assertFalse(self.robot1.vacuumActVerticalUp)
 
-    def testGotoconfigShouldNotRetractIfTouchingSensor(self):
-        """Test that even if the counter say its possible to retract but the sensor is reached, do not activate engine toward the sensor"""
+    def testGotoConfigShouldNotRetractIfTouchingSensor(self):
+        """Test that even if the counter say it's possible to retract but the sensor is reached, do not activate engine toward the sensor"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = True
@@ -196,17 +196,17 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensRotEncoderCounter = 500
 
         ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
-        self.assertEqual(ret.result, CycleStepResultEnum.ABORTED_ERROR)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
         self.assertFalse(self.robot1.vacuumActArmOut)
         self.assertFalse(self.robot1.vacuumActRotLeft)
-        self.assertFalse(self.robot1.vacuumActRotRight)
+        self.assertTrue(self.robot1.vacuumActRotRight)
         self.assertFalse(self.robot1.vacuumActVerticalDown)
-        self.assertFalse(self.robot1.vacuumActVerticalUp)
+        self.assertTrue(self.robot1.vacuumActVerticalUp)
 
-    def testGotoconfigShouldNotTurnRightIfTouchingSensor(self):
-        """Test that even if the counter say its possible to turn right but the sensor is reached, do not activate engine toward the sensor"""
+    def testGotoConfigShouldNotTurnRightIfTouchingSensor(self):
+        """Test that even if the counter say it's possible to turn right but the sensor is reached, do not activate engine toward the sensor"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = True
         self.robot1.vacuumSensArmEndIn = False
@@ -222,18 +222,18 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensRotEncoderCounter = 500
 
         ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
-        self.assertEqual(ret.result, CycleStepResultEnum.ABORTED_ERROR)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
-        self.assertFalse(self.robot1.vacuumActArmIn)
+        self.assertTrue(self.robot1.vacuumActArmIn)
         self.assertFalse(self.robot1.vacuumActArmOut)
         self.assertFalse(self.robot1.vacuumActRotLeft)
         self.assertFalse(self.robot1.vacuumActRotRight)
         self.assertFalse(self.robot1.vacuumActVerticalDown)
-        self.assertFalse(self.robot1.vacuumActVerticalUp)
+        self.assertTrue(self.robot1.vacuumActVerticalUp)
 
 
-    def testGotoconfigShouldNotGoupIfTouchingSensor(self):
-        """Test that even if the counter say its possible to go up but the sensor is reached, do not activate engine toward the sensor"""
+    def testGotoConfigShouldNotGoUpIfTouchingSensor(self):
+        """Test that even if the counter say it's possible to go up but the sensor is reached, do not activate engine toward the sensor"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = False
@@ -249,12 +249,12 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensRotEncoderCounter = 500
 
         ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
-        self.assertEqual(ret.result, CycleStepResultEnum.ABORTED_ERROR)
+        self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
-        self.assertFalse(self.robot1.vacuumActArmIn)
+        self.assertTrue(self.robot1.vacuumActArmIn)
         self.assertFalse(self.robot1.vacuumActArmOut)
         self.assertFalse(self.robot1.vacuumActRotLeft)
-        self.assertFalse(self.robot1.vacuumActRotRight)
+        self.assertTrue(self.robot1.vacuumActRotRight)
         self.assertFalse(self.robot1.vacuumActVerticalDown)
         self.assertFalse(self.robot1.vacuumActVerticalUp)
 
