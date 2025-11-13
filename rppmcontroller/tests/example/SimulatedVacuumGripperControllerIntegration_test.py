@@ -125,8 +125,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # self.controller.mainLoopIteration()
         # notification = ctHelper.readCommandFeedbackNotification(self.controller)
-        
-        self.controller.mainLoopIteration()        
+
+        self.controller.mainLoopIteration()
         # already on the sensor, so we get an immediate SUCCESS
         self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
 
@@ -801,7 +801,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             Position("END", 500, 600, 500)
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -876,10 +876,12 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # check current position via vgr safe position
         vgr = self.controller.machines[0]
-        assert isinstance(vgr,VacuumGripper)
-        self.checkVGRPosition(vgr.safeVertical if (vgr.safeVertical != None) else 0,
-                              vgr.safeRotation if (vgr.safeRotation != None) else 0,
-                              vgr.safeHorizontal if (vgr.safeHorizontal != None) else 0)
+        self.assertIsInstance(vgr, VacuumGripper)
+        self.checkVGRPosition(
+            vgr.safeVertical if vgr.safeVertical is not None else 0,
+            vgr.safeRotation if vgr.safeRotation is not None else 0,
+            vgr.safeHorizontal if vgr.safeHorizontal is not None else 0
+        )
 
 
     def test_retract_armCommand(self):
@@ -911,7 +913,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             if vgr.vacuumSensArmEncoderCounter == 0:
                 vgr.vacuumSensArmEndIn = True
-            
+
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
@@ -956,7 +958,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, True, False)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1009,7 +1011,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(False, True, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1062,7 +1064,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, False, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
