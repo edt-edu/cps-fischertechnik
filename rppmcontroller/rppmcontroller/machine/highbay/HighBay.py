@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Dict, Any, Union, Callable, Tuple, Optional
+from typing import Dict, Any, Union, Callable, Tuple, Optional, List
 
 from typing_extensions import override
 
@@ -13,6 +13,7 @@ from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.ResetHelper import ResetHelper
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 from rppmcontroller.protocol.decoratorFunctions import \
@@ -124,6 +125,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__highbaySensVerticalEncoderCounter = 0
         self.__axisHorizontal = Axis(AxisType.Encoder, 5)
         self.__axisVertical = Axis(AxisType.Encoder, 10)
+        self.__horizontal_reset_helper = ResetHelper()
+        self.__vertical_reset_helper = ResetHelper()
 
         # offsets
         self.row_offset = row_offset
@@ -168,7 +171,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # helper variables
         self.previous_isExecuting_log = None
         self.__is_initialized = False
-        self.must_reset = False
         self.next_config = HighBayConfig()
         self.__state = None
         self.stdSpeed = pwmParameters.get('stdSpeed', 100)
@@ -178,6 +180,23 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # safety position
         self.safeHorizontal = safetyPos.get('horizontal', None)
         self.safeVertical = safetyPos.get('vertical', None)
+
+    @property
+    def __reset_helpers(self) -> List[ResetHelper]:
+        return [self.vertical_reset_helper, self.horizontal_reset_helper]
+
+    @property
+    def must_reset(self) -> bool:
+        return all((helper.is_marked_for_reset for helper in self.__reset_helpers))
+
+    @must_reset.setter
+    def must_reset(self, value: bool) -> None:
+        if value:
+            for helper in self.__reset_helpers:
+                helper.mark_for_reset()
+        else:
+            for helper in self.__reset_helpers:
+                helper.reset()
 
     @property
     def isInitialized(self) -> bool:
@@ -221,6 +240,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @highbaySensHorizontal.setter
     def highbaySensHorizontal(self, value: bool) -> None:
         self.__highbaySensHorizontal = value
+        self.horizontal_reset_helper.mark_for_reset_if(value)
 
     @property
     def highbaySensInside(self) -> bool:
@@ -245,6 +265,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @highbaySensVertical.setter
     def highbaySensVertical(self, value: bool) -> None:
         self.__highbaySensVertical = value
+        self.vertical_reset_helper.mark_for_reset_if(value)
 
     @property
     def highbaySensCantileverFront(self) -> bool:
@@ -361,6 +382,14 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @highbaySensVerticalEncoderCounter.setter
     def highbaySensVerticalEncoderCounter(self, value: int) -> None:
         self.__highbaySensVerticalEncoderCounter = value
+
+    @property
+    def horizontal_reset_helper(self) -> ResetHelper:
+        return self.__horizontal_reset_helper
+
+    @property
+    def vertical_reset_helper(self) -> ResetHelper:
+        return self.__vertical_reset_helper
 
     def sensorStatusString(self) -> str:
         s = lambda b: "T" if b else "F"
@@ -601,7 +630,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
         def mark_setup_finished():
             self.__is_initialized = True
-            self.must_reset = True
             return CycleStepResult.done()
 
         return self.create_runner().then_run(self.goto_config_CycleStep, info="goto_config_setup").then_run(
