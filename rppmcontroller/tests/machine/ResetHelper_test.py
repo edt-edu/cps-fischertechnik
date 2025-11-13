@@ -18,6 +18,18 @@ class ResetHelperTestCase(unittest.TestCase):
         self.assertEqual(False, reset_helper.reset(),
                          "Value should not go back to True")
 
+    def test_mark_for_reset_if(self):
+        reset_helper = ResetHelper()
+
+        reset_helper.mark_for_reset_if(False)
+        self.assertFalse(reset_helper.is_marked_for_reset, "helper should not have been marked for reset")
+
+        reset_helper.mark_for_reset_if(True)
+        self.assertTrue(reset_helper.is_marked_for_reset, "helper should have been marked for reset")
+
+        reset_helper.mark_for_reset_if(False)
+        self.assertTrue(reset_helper.is_marked_for_reset, "mark should not have been removed")
+
 
 if __name__ == '__main__':
     unittest.main()

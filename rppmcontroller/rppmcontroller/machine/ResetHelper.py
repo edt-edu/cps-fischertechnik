@@ -18,6 +18,16 @@ class ResetHelper:
         """
         self.__marked_for_reset = True
 
+    def mark_for_reset_if(self, condition: bool) -> bool:
+        """
+        Marks this for reset if the condition evaluates to `True`
+        :param condition: An evaluated condition
+        :return: The value of condition
+        """
+        if condition:
+            self.mark_for_reset()
+        return condition
+
     @property
     def is_marked_for_reset(self) -> bool:
         """
