@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, List
 
 from typing_extensions import override
 
@@ -98,6 +98,24 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.safeHorizontal = safetyPos.get('horizontal', None)
         self.safeVertical = safetyPos.get('vertical', None)
         self.safeRotation = safetyPos.get('rotation', None)
+
+    @property
+    def __reset_helpers(self) -> List[ResetHelper]:
+        return [self.vertical_reset_helper, self.rot_reset_helper, self.arm_reset_helper]
+
+    @property
+    def mustReset(self) -> bool:
+        return all(
+            (helper.is_marked_for_reset for helper in self.__reset_helpers))
+
+    @mustReset.setter
+    def mustReset(self, value: bool) -> None:
+        if value:
+            for helper in self.__reset_helpers:
+                helper.mark_for_reset()
+        else:
+            for helper in self.__reset_helpers:
+                helper.reset()
 
     @property
     def isInitialized(self) -> bool:
@@ -404,13 +422,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     def resetHelper(self) -> bool:
         """ Returns whether the counters must be reset
-        will return true only one time per request
-        :return bool: True if all reset helpers are marked for reset
+        will return true only one time per mustReset request
+        :return bool: True if self.mustReset
         """
-        helpers = [self.rot_reset_helper, self.vertical_reset_helper, self.arm_reset_helper]
-        if all((helper.is_marked_for_reset for helper in helpers)):
-            for helper in helpers:
-                helper.reset()
+        if self.mustReset:
+            self.mustReset = False
             return True
         else:
             return False
