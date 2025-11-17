@@ -867,7 +867,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification,
                                  r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE") #TODO failure here
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"MOVE TO SAFETY DONE reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 200, "MOVE TO SAFETY DONE not reached in less than 200 iterations" )
@@ -1118,6 +1118,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         vgr.vacuumSensArmEndIn = vacuumSensArmEndIn
         vgr.vacuumSensRotEnd = vacuumSensRotEnd
         vgr.vacuumSensVerticalEndUp = vacuumSensVerticalEndUp
+
+        vgr.resetHelper()  # make sure that reset helper is reset
 
 
 if __name__ == '__main__':
