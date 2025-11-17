@@ -860,16 +860,14 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
-            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
-                pass
-            else:
+            elif not re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 # in between, the machine should have been put into active state
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification,
                                  r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
-                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE") #TODO failure here
                 logging.debug(f"MOVE TO SAFETY DONE reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 200, "MOVE TO SAFETY DONE not reached in less than 200 iterations" )
@@ -1105,17 +1103,20 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertAlmostEqual(vgr.vacuumSensRotEncoderCounter, expectedRotEncoder, delta=delta)
         self.assertAlmostEqual(vgr.vacuumSensArmEncoderCounter, expectedArmEncoder, delta=delta)
 
-
-    def fakeSetupDoneAndSetPos(self, vacuumSensVerticalEncoderCounter: int = 0 , vacuumSensRotEncoderCounter : int = 0, vacuumSensArmEncoderCounter :int = 0,
-                            vacuumSensArmEndIn : bool = True, vacuumSensRotEnd : bool = True , vacuumSensVerticalEndUp : bool = True) -> None:
+    def fakeSetupDoneAndSetPos(self, vacuumSensVerticalEncoderCounter: int = 0,
+                               vacuumSensRotEncoderCounter: int = 0,
+                               vacuumSensArmEncoderCounter: int = 0,
+                               vacuumSensArmEndIn: bool = True,
+                               vacuumSensRotEnd: bool = True,
+                               vacuumSensVerticalEndUp: bool = True) -> None:
         vgr = self.controller.machines[0]
-        assert isinstance(vgr,VacuumGripper)
+        self.assertIsInstance(vgr, VacuumGripper)
         vgr.isInitialized = True
         vgr.vacuumSensVerticalEncoderCounter = vacuumSensVerticalEncoderCounter
         vgr.vacuumSensRotEncoderCounter = vacuumSensRotEncoderCounter
-        vgr.vacuumSensArmEncoderCounter =  vacuumSensArmEncoderCounter
+        vgr.vacuumSensArmEncoderCounter = vacuumSensArmEncoderCounter
         vgr.vacuumSensArmEndIn = vacuumSensArmEndIn
-        vgr.vacuumSensRotEnd= vacuumSensRotEnd
+        vgr.vacuumSensRotEnd = vacuumSensRotEnd
         vgr.vacuumSensVerticalEndUp = vacuumSensVerticalEndUp
 
 
