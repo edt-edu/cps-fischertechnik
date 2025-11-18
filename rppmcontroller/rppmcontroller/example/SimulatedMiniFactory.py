@@ -22,14 +22,14 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         """
 
         super().__init__( configurationFile=configurationFile)
-        
-        
+
+
         self.conveyorBeltMachine = ConveyorBelt("ConveyorBelt01")
         self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.multiProcessingMachine = MultiProcessing("MultiProcessing01")
         self.sortingLineMachine = SortingLine("SortingLine01")
         self.highBayMachine = HighBay("HighBay01")
-        
+
         #the list of all machines that are connected to this core
         self.machines = [self.conveyorBeltMachine,
                          self.vacuumGripperMachine,
@@ -37,8 +37,8 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
                          self.sortingLineMachine,
                          self.highBayMachine
         ]
-        
-        #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])        
+
+        #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {
             self.conveyorBeltMachine: None,
             self.vacuumGripperMachine: None,
@@ -90,19 +90,22 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
         self.multiProcessingSimulator.simulatedWrite()
         self.sortingLineSimulator.simulatedWrite()
         self.highBaySimulator.simulatedWrite()
-   
+
     def reset(self) -> None:
-        vg = self.vacuumGripperMachine.resetHelper()
-        if vg:
-            self.vaccumGripperSimulator.simulatedReset()
+        if self.vacuumGripperMachine.arm_reset_helper.reset():
+            self.vaccumGripperSimulator.simulatedArmReset()
+        if self.vacuumGripperMachine.rot_reset_helper.reset():
+            self.vaccumGripperSimulator.simulatedRotationReset()
+        if self.vacuumGripperMachine.vertical_reset_helper.reset():
+            self.vaccumGripperSimulator.simulatedVerticalReset()
 
-
-        if self.highBayMachine.must_reset:
-            self.highBaySimulator.simulatedReset()
-            self.highBayMachine.must_reset = False
+        if self.highBayMachine.horizontal_reset_helper.reset():
+            self.highBaySimulator.simulatedHorizontalReset()
+        if self.highBayMachine.vertical_reset_helper.reset():
+            self.highBaySimulator.simulatedVerticalReset()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s',
                         level=logging.DEBUG,
                         datefmt='%Y-%m-%d %H:%M:%S')
     handler = logging.FileHandler("logfile.log")
@@ -111,6 +114,6 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(handler)
     # init controller
     root = SimulatedMiniFactoryController("config.yml")
-    
+
     # start communication threads and main control loop
     root.start()
