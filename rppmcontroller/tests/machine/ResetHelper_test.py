@@ -30,6 +30,18 @@ class ResetHelperTestCase(unittest.TestCase):
         reset_helper.mark_for_reset_if(False)
         self.assertTrue(reset_helper.is_marked_for_reset, "mark should not have been removed")
 
+    def test_temper_tolerance(self):
+        reset_helper = ResetHelper(temper_tolerance=100)
+
+        reset_helper.mark_for_reset_if(True, 800)
+        self.assertFalse(reset_helper.reset(), "800 is outside of temper tolerance")
+
+        reset_helper.mark_for_reset_if(True, 10)
+        self.assertTrue(reset_helper.reset(), "10 is within temper tolerance")
+
+        reset_helper.mark_for_reset_if(True, -800)
+        self.assertTrue(reset_helper.reset(), "negative counter values shouldn't be checked by temper tolerance")
+
 
 if __name__ == '__main__':
     unittest.main()
