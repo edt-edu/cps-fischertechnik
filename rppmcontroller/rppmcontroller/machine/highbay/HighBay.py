@@ -240,7 +240,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @highbaySensHorizontal.setter
     def highbaySensHorizontal(self, value: bool) -> None:
         self.__highbaySensHorizontal = value
-        self.horizontal_reset_helper.mark_for_reset_if(value)
+        self.horizontal_reset_helper.mark_for_reset_if(value, self.highbaySensHorizontalEncoderCounter)
 
     @property
     def highbaySensInside(self) -> bool:
@@ -265,7 +265,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @highbaySensVertical.setter
     def highbaySensVertical(self, value: bool) -> None:
         self.__highbaySensVertical = value
-        self.vertical_reset_helper.mark_for_reset_if(value)
+        self.vertical_reset_helper.mark_for_reset_if(value, self.highbaySensVerticalEncoderCounter)
 
     @property
     def highbaySensCantileverFront(self) -> bool:
