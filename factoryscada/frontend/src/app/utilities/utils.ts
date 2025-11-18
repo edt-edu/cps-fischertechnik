@@ -132,13 +132,13 @@ export function getMissionCommandDescription(missionsConfiguration: IFactoryPara
   commandQualifierName: string | undefined): string {
   // Check if parameters are defined
   if (missionsConfiguration === undefined || commandQualifierName === undefined) {
-    return '';
+    return ''+missionsConfiguration+''+commandQualifierName;
   }
   const qname = commandQualifierName.split('::');
   const mission = missionsConfiguration.missions.find(mission => mission.name === qname[0])
-  const command = mission?.nodes.find(command => command.description === qname[1] )
-  // Return the command placeholder if the machine and command exist
-  return command ? command.description : '';
+  const command = mission?.nodes.find(command => command.id === qname[1] )
+  // Return the command dezscription if the machine and command exist
+  return command ? command.description : 'invalid:'+command+' '+missionsConfiguration+' '+commandQualifierName;
 }
 
 /**
