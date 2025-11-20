@@ -1,7 +1,32 @@
 <p-fieldset legend="{{ machine?.name }} - Store">
 
-  <p style="margin-bottom: 2em;">Store a box at row, column</p>
-
+  <p >Stores an item from the conveyor to the specified row and column in the rack
+        then performs a setup to recalibrate the encoders.</p>
+  <p>Possible values are:</p>
+  <table>
+    <tr>
+      <th>Row</th>
+      <th>Column</th>
+    </tr>
+    <tr>
+      <td>
+        <ul>
+          <li>Row.CONVEYOR or 0: Load/Unload position at the conveyor belt</li>
+          <li>Row.BOTTOM or 1: Bottom storage row</li>
+          <li>Row.MIDDLE or 2: Middle storage row</li>
+          <li>Row.TOP or 3: Top storage row</li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Column.CONVEYOR or 0: Load/Unload position at the conveyor belt</li>
+          <li>Column.RIGHT or 1: First storage column</li>
+          <li>Column.MIDDLE or 2: Middle storage column</li>
+          <li>Column.LEFT or 3: Last storage column</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
   <app-highbay-warehouse-position-widget (onValuesChanged)="handleValuesChanged($event)"/>
 
   <!-- Action Buttons -->

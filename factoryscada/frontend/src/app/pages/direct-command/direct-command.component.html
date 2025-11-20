@@ -414,28 +414,28 @@
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'Cantilever backward'"
-                                          [description]="'Move the cantilever to the rear.'"
+                                          [description]="'Retracts the Telescopic Fork (cantilever or Load Handling Device (LHD)).'"
                                           [destinationSuffix]="'/command/cantilever_backward'"></app-generic-no-param-command>
           }
           @case ("cantilever_forward") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'Cantilever forward'"
-                                          [description]="'Move the cantilever forward.'"
+                                          [description]="'Extends the Telescopic Fork (cantilever or Load Handling Device (LHD)) toward the storage racks or the conveyor.'"
                                           [destinationSuffix]="'/command/cantilever_forward'"></app-generic-no-param-command>
           }
           @case ("conveyor_backward") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'Conveyor backward'"
-                                          [description]="'Move the conveyor to the rear.'"
+                                          [description]="'Starts the conveyor belt moving backward (ie. towards the telescopic fork of the stacker crane).'"
                                           [destinationSuffix]="'/command/conveyor_backward'"></app-generic-no-param-command>
           }
           @case ("conveyor_forward") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'Conveyor forward'"
-                                          [description]="'Move the conveyor forward.'"
+                                          [description]="'Starts the conveyor belt moving forward (ie. towards the exit).'"
                                           [destinationSuffix]="'/command/conveyor_forward'"></app-generic-no-param-command>
           }
           @case ("conveyor_stop") {
