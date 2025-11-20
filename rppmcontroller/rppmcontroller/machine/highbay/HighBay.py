@@ -637,7 +637,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @protocol_command_function()
     def cantilever_forward_Command(self) -> Callable[[], CycleStepResult]:
         """
-        Extends the Telescopic Fork (cantilever or Load Handling Device (LHD)) toward the storage racks
+        Extends the Telescopic Fork (cantilever or Load Handling Device (LHD)) toward the storage racks or the conveyor
         :return: A Runner performing the action
         """
         self.create_next_config().cantilever_extended = True
@@ -658,10 +658,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Moves the stacker crane horizontally to the specified counter goal
 
         approximative encoder values for key horizontal places are: 
-            - Conveyor column = 70 (Load/Unload position)
-            - first rack column = 1550
-            - second rack column = 2700
-            - third rack column = 3900
+            - Conveyor column: 70 (Load/Unload position)
+            - first rack column: 1550
+            - second rack column: 2700
+            - third rack column: 3900
 
         :param counter_goal: The target counter goal for the horizontal axis (traveling axis),
         :return: A Runner performing the action
