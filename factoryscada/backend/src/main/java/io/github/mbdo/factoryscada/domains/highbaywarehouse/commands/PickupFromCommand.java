@@ -6,9 +6,9 @@ import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMach
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RetrieveCommand extends AbstractCommand<HighBayWarehouseMachine> {
+public class PickupFromCommand extends AbstractCommand<HighBayWarehouseMachine> {
 
-    public RetrieveCommand(HighBayWarehouseMachine machine, GenericMachineCommandDTO<HighBayWarehouseMachine> retrieveDTO) {
+    public PickupFromCommand(HighBayWarehouseMachine machine, GenericMachineCommandDTO<HighBayWarehouseMachine> retrieveDTO) {
         super(machine, retrieveDTO);
     }
 

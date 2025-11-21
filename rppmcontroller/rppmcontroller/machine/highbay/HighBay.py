@@ -609,31 +609,63 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
     @protocol_command_function()
     def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
+        """
+        Starts the conveyor belt moving forward (ie. towards the exit)
+        :return: A Runner performing the action
+        """
         self.create_next_config().conveyor_state = ConveyorState.FORWARD
         return self.goto_next_config()
 
     @protocol_command_function()
     def conveyor_backward_Command(self) -> Callable[[], CycleStepResult]:
+        """
+        Starts the conveyor belt moving backward (ie. towards the telescopic fork of the stacker crane)
+        :return: A Runner performing the action
+        """
         self.create_next_config().conveyor_state = ConveyorState.BACKWARD
         return self.goto_next_config()
 
     @protocol_command_function()
     def conveyor_stop_Command(self) -> Callable[[], CycleStepResult]:
+        """
+        Stops the conveyor belt
+        :return: A Runner performing the action
+        """
         self.create_next_config().conveyor_state = ConveyorState.IDLE
         return self.goto_next_config()
 
     @protocol_command_function()
     def cantilever_forward_Command(self) -> Callable[[], CycleStepResult]:
+        """
+        Extends the Telescopic Fork (cantilever or Load Handling Device (LHD)) toward the storage racks or the conveyor
+        :return: A Runner performing the action
+        """
         self.create_next_config().cantilever_extended = True
         return self.goto_next_config()
 
     @protocol_command_function()
     def cantilever_backward_Command(self) -> Callable[[], CycleStepResult]:
+        """
+        Retracts the Telescopic Fork (cantilever or Load Handling Device (LHD))
+        :return: A Runner performing the action
+        """
         self.create_next_config().cantilever_extended = False
         return self.goto_next_config()
 
     @protocol_command_function()
     def horizontal_to_Command(self, counter_goal: int) -> Runner:
+        """
+        Moves the stacker crane horizontally to the specified counter goal
+
+        approximative encoder values for key horizontal places are: 
+            - Conveyor column: 70 (Load/Unload position)
+            - first rack column: 1550
+            - second rack column: 2700
+            - third rack column: 3900
+
+        :param counter_goal: The target counter goal for the horizontal axis (traveling axis),
+        :return: A Runner performing the action
+        """
         runner = self.create_runner()
         self.run_setup_unless_initialized(runner)
         config = self.get_current_config()
@@ -642,6 +674,18 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
     @protocol_command_function()
     def vertical_to_Command(self, counter_goal: int) -> Runner:
+        """
+        Moves the stacker crane vertically to the specified counter goal
+
+        approximate encoder values for key vertical rows are: 
+            - TOP row: 200 (Highest position)
+            - MIDDLE row: 900
+            - BOTTOM row: 1700
+            - CONVEYOR row: 1450 (Load/Unload position)
+
+        :param counter_goal: The target counter goal for the vertical axis (lifting axis),
+        :return: A Runner performing the action
+        """
         runner = self.create_runner()
         self.run_setup_unless_initialized(runner)
         config = self.get_current_config()
@@ -651,6 +695,19 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @protocol_command_function()
     def goto_column_Command(self, column: Union[Column, int]) -> Callable[
         [], CycleStepResult]:
+        """
+        Moves the stacker crane horizontally to the specified column
+
+        Possible values are:
+            - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
+            - Column.RIGHT or 1: First storage rack column
+            - Column.MIDDLE or 2: Middle storage rack column
+            - Column.LEFT or 3: Last storage rack column
+            
+        :param column: The target column to move to
+
+        :return: A Callable performing the action
+        """
         if isinstance(column, int):
             column = Column(column)
 
@@ -659,6 +716,18 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @protocol_command_function()
     def goto_row_Command(self, row: Union[Row, int]) -> Callable[
         [], CycleStepResult]:
+        """
+        Moves the stacker crane vertically to the specified row
+
+        Possible values are:
+            - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
+            - Row.BOTTOM or 1: Bottom storage row
+            - Row.MIDDLE or 2: Middle storage row
+            - Row.TOP or 3: Top storage row
+
+        :param row: The target row to move to
+        :return: A Callable performing the action
+        """
         if isinstance(row, int):
             row = Row(row)
 
@@ -668,6 +737,25 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def store_to_Command(self,
                          row: Union[Row, int],
                          column: Union[Column, int]) -> Runner:
+        """
+        Stores an item from the conveyor to the specified row and column in the rack
+        then performs a setup to recalibrate the encoders.
+        
+        Row possible values are:
+            - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
+            - Row.BOTTOM or 1: Bottom storage row
+            - Row.MIDDLE or 2: Middle storage row
+            - Row.TOP or 3: Top storage row
+        Column possible values are:
+            - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
+            - Column.RIGHT or 1: First storage rack column
+            - Column.MIDDLE or 2: Middle storage rack column    
+            - Column.LEFT or 3: Last storage rack column
+
+        :param row: The target row to store the item to
+        :param column: The target column to store the item to
+        :return: A Runner performing the command
+        """
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
@@ -721,6 +809,27 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     def pickup_from_Command(self,
                             row: Union[Row, int],
                             column: Union[Column, int]) -> Runner:
+        """
+        Picks up an item from the specified row and column in the rack and
+        moves it to the conveyor belt, then performs a setup to recalibrate
+        the encoders.
+        
+        Row possible values are:
+            - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
+            - Row.BOTTOM or 1: Bottom storage row
+            - Row.MIDDLE or 2: Middle storage row
+            - Row.TOP or 3: Top storage row
+        Column possible values are:
+            - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
+            - Column.RIGHT or 1: First storage rack column
+            - Column.MIDDLE or 2: Middle storage rack column    
+            - Column.LEFT or 3: Last storage rack column
+
+        :param row: The source row to pick the item from
+        :param column: The source column to pick the item from
+        :return: A Runner performing the command
+        """
+
         if isinstance(row, int):
             row = Row(row)
         if isinstance(column, int):
@@ -764,6 +873,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
     @protocol_command_function()
     def stop_Command(self) -> Callable[[], CycleStepResult]:
+        """
+        Stops all movements of the highbay
+        :return: A callable performing the command
+        """
         return lambda: self.stop_CycleStep()
 
     @protocol_command_function()
