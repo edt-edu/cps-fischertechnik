@@ -468,9 +468,9 @@
             <app-highbay-warehouse-pickupfrom [machine]="selectedMachine"
                                             [placeholder]="commandToSend"></app-highbay-warehouse-pickupfrom>
           }
-          @case ("store") {
-            <app-highbay-warehouse-store [machine]="selectedMachine"
-                                         [placeholder]="commandToSend"></app-highbay-warehouse-store>
+          @case ("store_to") {
+            <app-highbay-warehouse-storeto [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"></app-highbay-warehouse-storeto>
           }
           @case ("stop") {
             <app-generic-no-param-command [machine]="selectedMachine"

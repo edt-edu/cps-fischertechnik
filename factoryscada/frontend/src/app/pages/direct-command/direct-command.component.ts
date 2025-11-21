@@ -17,7 +17,7 @@ import { HighBayWarehouseGoToColumnComponent } from "./highbay-warehouse/highbay
 import { HighBayWarehouseGoToRowComponent } from "./highbay-warehouse/highbay-warehouse-gotorow/highbay-warehouse-gotorow.component";
 import { HighBayWarehouseHorizontalToComponent } from "./highbay-warehouse/highbay-warehouse-horizontalto/highbay-warehouse-horizontalto.component";
 import { HighBayWarehousePickupFromComponent } from "./highbay-warehouse/highbay-warehouse-pickupfrom/highbay-warehouse-pickupfrom.component";
-import { HighBayWarehouseStoreComponent } from "./highbay-warehouse/highbay-warehouse-store/highbay-warehouse-store.component";
+import { HighBayWarehouseStoreToComponent } from "./highbay-warehouse/highbay-warehouse-storeto/highbay-warehouse-storeto.component";
 import { HighBayWarehouseVerticalToComponent } from "./highbay-warehouse/highbay-warehouse-verticalto/highbay-warehouse-verticalto.component";
 
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
@@ -88,7 +88,7 @@ declare var $: any;
     MultiProcessingProcessComponent,
     MultiProcessingArmPositionComponent,
     MultiProcessingTurntablePositionComponent,
-    HighBayWarehouseStoreComponent,
+    HighBayWarehouseStoreToComponent,
     HighBayWarehousePickupFromComponent,
     GenericNoParamCommandComponent,
     HighBayWarehouseGoToColumnComponent,

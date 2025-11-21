@@ -9,7 +9,7 @@ import {FieldsetModule} from "primeng/fieldset";
 import {Button} from "primeng/button";
 
 @Component({
-  selector: 'app-highbay-warehouse-store',
+  selector: 'app-highbay-warehouse-storeto',
   standalone: true,
   imports: [
     ReactiveFormsModule,
@@ -17,10 +17,10 @@ import {Button} from "primeng/button";
     FieldsetModule,
     Button
   ],
-  templateUrl: './highbay-warehouse-store.component.html',
-  styleUrl: './highbay-warehouse-store.component.scss'
+  templateUrl: './highbay-warehouse-storeto.component.html',
+  styleUrl: './highbay-warehouse-storeto.component.scss'
 })
-export class HighBayWarehouseStoreComponent {
+export class HighBayWarehouseStoreToComponent {
 
   myRxStompService = inject(MyRxStompService);
 
@@ -62,7 +62,7 @@ export class HighBayWarehouseStoreComponent {
     };
 
     this.myRxStompService.publish({
-      destination: `/app/${type}/${name}/command/store`,
+      destination: `/app/${type}/${name}/command/store_to`,
       body: JSON.stringify(payload) // Directly stringify the object
     });
   }

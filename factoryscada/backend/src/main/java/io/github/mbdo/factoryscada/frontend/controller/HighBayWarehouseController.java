@@ -87,7 +87,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
     }
 
     @MessageMapping("/{machineName}/command/pickup_from")
-    public String executeRetrieveCommand(
+    public String executePickupFromCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> pickup_fromDTO) {
         log.info("Received request on /{}/command/pickup_from", machineName);
@@ -110,12 +110,12 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
         return executeCommand(machineName, "stop", stopDTO);
     }
 
-    @MessageMapping("/{machineName}/command/store")
-    public String executeStoreCommand(
+    @MessageMapping("/{machineName}/command/store_to")
+    public String executeStoreToCommand(
             @DestinationVariable("machineName") String machineName,
-            @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> storeDTO) {
-        log.info("Received request on /{}/command/store", machineName);
-        return executeCommand(machineName, "store", storeDTO);
+            @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+        log.info("Received request on /{}/command/store_to", machineName);
+        return executeCommand(machineName, "store_to", dto);
     }
 
     @MessageMapping("/{machineName}/command/vertical_to")
