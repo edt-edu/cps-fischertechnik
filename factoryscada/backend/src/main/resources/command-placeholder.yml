@@ -782,11 +782,11 @@ commandPlaceholder:
                 ]
               }
             }
-        - name: "retrieve"
+        - name: "pickup_from"
           placeholder: >
             {
               "topicName": "HighBay01",
-              "timestamp": 1673975631.125,
+              "timestamp": 0,
               "message": {
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",

@@ -299,7 +299,7 @@
 |  
 
 |HighBayWarehouseController.executeRetrieveCommand()
-|<<incoming_highbaywarehouse-machinename-command-retrieve,/highBayWarehouse/{machineName}/command/retrieve>>
+|<<incoming_highbaywarehouse-machinename-command-pickup-from,/highBayWarehouse/{machineName}/command/pickup_from>>
 |  
 
 |HighBayWarehouseController.executeStopCommand()
@@ -1473,15 +1473,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_highbaywarehouse-machinename-command-retrieve]]
-===  Incoming Topic: `/highBayWarehouse/{machineName}/command/retrieve`
+[[incoming_highbaywarehouse-machinename-command-pickup-from]]
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/pickup_from`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeRetrieveCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `retrieveDTO` (GenericMachineCommandDTO)
+- `pickup_fromDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 

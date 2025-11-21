@@ -86,12 +86,12 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
         return executeCommand(machineName, "horizontal_to", horizontal_toDTO);
     }
 
-    @MessageMapping("/{machineName}/command/retrieve")
+    @MessageMapping("/{machineName}/command/pickup_from")
     public String executeRetrieveCommand(
             @DestinationVariable("machineName") String machineName,
-            @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> retrieveDTO) {
-        log.info("Received request on /{}/command/retrieve", machineName);
-        return executeCommand(machineName, "retrieve", retrieveDTO);
+            @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> pickup_fromDTO) {
+        log.info("Received request on /{}/command/pickup_from", machineName);
+        return executeCommand(machineName, "pickup_from", pickup_fromDTO);
     }
 
     @MessageMapping("/{machineName}/command/setup")

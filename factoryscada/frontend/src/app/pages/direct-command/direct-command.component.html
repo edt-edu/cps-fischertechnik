@@ -464,9 +464,9 @@
                                           [description]="'Perform a setup by placing the station elements on their reference positions.'"
                                           [destinationSuffix]="'/command/setup'"></app-generic-no-param-command>
           }
-          @case ("retrieve") {
-            <app-highbay-warehouse-retrieve [machine]="selectedMachine"
-                                            [placeholder]="commandToSend"></app-highbay-warehouse-retrieve>
+          @case ("pickup_from") {
+            <app-highbay-warehouse-pickupfrom [machine]="selectedMachine"
+                                            [placeholder]="commandToSend"></app-highbay-warehouse-pickupfrom>
           }
           @case ("store") {
             <app-highbay-warehouse-store [machine]="selectedMachine"
