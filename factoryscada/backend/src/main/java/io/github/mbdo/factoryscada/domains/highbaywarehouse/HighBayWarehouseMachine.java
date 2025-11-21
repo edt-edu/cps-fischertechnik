@@ -13,10 +13,10 @@ import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.GoToColumnC
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.GoToRowCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.HorizontalToCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.MoveToSafePositionCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.RetrieveCommand;
+import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.PickupFromCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.SetupCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.StopCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.StoreCommand;
+import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.StoreToCommand;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.VerticalToCommand;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
@@ -74,9 +74,9 @@ public class HighBayWarehouseMachine extends AbstractMachine {
         new HorizontalToCommand(this, dto).execute();
     }
 
-    public void retrieve(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
-        log.info("Retrieve HighBayWarehouse {}", dto);
-        new RetrieveCommand(this, dto).execute();
+    public void pickup_from(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+        log.info("pickup_from HighBayWarehouse {}", dto);
+        new PickupFromCommand(this, dto).execute();
     }
 
     public void setup(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
@@ -89,9 +89,9 @@ public class HighBayWarehouseMachine extends AbstractMachine {
         new StopCommand(this, dto).execute();
     }
 
-    public void store(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
-        log.info("Store HighBayWarehouse {}", dto);
-        new StoreCommand(this, dto).execute();
+    public void store_to(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+        log.info("Store_to HighBayWarehouse {}", dto);
+        new StoreToCommand(this, dto).execute();
     }
 
     public void vertical_to(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {

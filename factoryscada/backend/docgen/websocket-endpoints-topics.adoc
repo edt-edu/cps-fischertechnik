@@ -274,6 +274,10 @@
 |<<incoming_highbaywarehouse-machinename-command-conveyor-backward,/highBayWarehouse/{machineName}/command/conveyor_backward>>
 |  
 
+|HighBayWarehouseController.executePickupFromCommand()
+|<<incoming_highbaywarehouse-machinename-command-pickup-from,/highBayWarehouse/{machineName}/command/pickup_from>>
+|  
+
 |HighBayWarehouseController.executeMoveToSafePositionCommand()
 |<<incoming_highbaywarehouse-machinename-command-move-to-safe-position,/highBayWarehouse/{machineName}/command/move_to_safe_position>>
 |  
@@ -298,10 +302,6 @@
 |<<incoming_highbaywarehouse-machinename-command-cantilever-backward,/highBayWarehouse/{machineName}/command/cantilever_backward>>
 |  
 
-|HighBayWarehouseController.executeRetrieveCommand()
-|<<incoming_highbaywarehouse-machinename-command-retrieve,/highBayWarehouse/{machineName}/command/retrieve>>
-|  
-
 |HighBayWarehouseController.executeStopCommand()
 |<<incoming_highbaywarehouse-machinename-command-stop,/highBayWarehouse/{machineName}/command/stop>>
 |  
@@ -318,6 +318,10 @@
 |<<incoming_highbaywarehouse-machinename-command-conveyor-stop,/highBayWarehouse/{machineName}/command/conveyor_stop>>
 |  
 
+|HighBayWarehouseController.executeStoreToCommand()
+|<<incoming_highbaywarehouse-machinename-command-store-to,/highBayWarehouse/{machineName}/command/store_to>>
+|  
+
 |HighBayWarehouseController.executeCantileverFrontendCommand()
 |<<incoming_highbaywarehouse-machinename-command-cantilever-forward,/highBayWarehouse/{machineName}/command/cantilever_forward>>
 |  
@@ -328,10 +332,6 @@
 
 |HighBayWarehouseController.executeVerticalToCommand()
 |<<incoming_highbaywarehouse-machinename-command-vertical-to,/highBayWarehouse/{machineName}/command/vertical_to>>
-|  
-
-|HighBayWarehouseController.executeStoreCommand()
-|<<incoming_highbaywarehouse-machinename-command-store,/highBayWarehouse/{machineName}/command/store>>
 |  
 
 |MissionOrchestratorController.stopMission()
@@ -1473,15 +1473,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_highbaywarehouse-machinename-command-retrieve]]
-===  Incoming Topic: `/highBayWarehouse/{machineName}/command/retrieve`
+[[incoming_highbaywarehouse-machinename-command-pickup-from]]
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/pickup_from`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeRetrieveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executePickupFromCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `retrieveDTO` (GenericMachineCommandDTO)
+- `pickup_fromDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -1671,15 +1671,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_highbaywarehouse-machinename-command-store]]
-===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store`
+[[incoming_highbaywarehouse-machinename-command-store-to]]
+===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStoreCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStoreToCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `storeDTO` (GenericMachineCommandDTO)
+- `dto` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
