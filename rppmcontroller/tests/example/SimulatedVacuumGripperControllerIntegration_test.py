@@ -1092,6 +1092,28 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
 
 
+    def test_rotation_reset(self):
+        """
+        Introduces an offset in the rotation and ensures that it is removed
+        when the corresponding ref-switch is hit
+        """
+        vgr = self.controller.machines[0]
+        simulator = self.controller.vaccumGripperSimulator
+
+        # make sure not all ref switches are hit
+        self.fakeSetupDoneAndSetPos(vacuumSensVerticalEncoderCounter=300)
+        simulator.rotational_encoder_value = 1  # introduce a minor offset
+
+        # make sure the offset is persistent
+        self.controller.mainLoopIteration()
+        self.assertEqual(1, simulator.rotational_encoder_value)
+
+        # ensure the offset gets corrected
+        vgr.vacuumSensRotEnd = True  # simulate a press of the ref-switch
+        self.controller.mainLoopIteration()
+        self.assertEqual(0, simulator.rotational_encoder_value)
+
+
     # TODO move to a test helper module
     def checkVGRPosition(self, expectedVerticalEncoder : int , expectedRotEncoder : int, expectedArmEncoder :int) -> None:
         """verifies that the Vacuum Gripper encoder values are close enought to the expected values taking into account the simulation increment"""
@@ -1121,6 +1143,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         simulator.hasBeenCalibratedVertically = True
 
         simulator.simulatedRead()  # apply values to vgr
+        self.controller.reset()  # make sure reset helpers are not set
         vgr.isInitialized = True  # mark vgr as initialized
 
 
