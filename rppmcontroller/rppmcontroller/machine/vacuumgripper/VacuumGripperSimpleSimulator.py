@@ -39,12 +39,19 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         """Indicates whether a vertical reset has happened at least once, i.e. via simulatedVerticalReset()"""
 
         # All encoder values start at zero, even if that doesn't represent their "physical" location
-        self.verticalEncoderValue = 0
+        self.vertical_encoder_value = 0
         """The value of the vertical encoder counter, as seen by the RevPi"""
-        self.horizontalEncoderValue = 0
+        self.horizontal_encoder_value = 0
         """The value of the horizontal encoder counter, as seen by the RevPi"""
-        self.rotationalEncoderValue = 0
+        self.rotational_encoder_value = 0
         """The value of the rotational encoder counter, as seen by the RevPi"""
+
+        self.__next_horizontal_encoder_increment = 0
+        """The increment of the horizontal encoder counter in the next read"""
+        self.__next_vertical_encoder_increment = 0
+        """The increment of the vertical encoder counter in the next read"""
+        self.__next_rotational_encoder_increment = 0
+        """The increment of the rotational encoder counter in the next read"""
 
         self.previous_simulatedReadLog = None
         self.previous_simulatedWriteLog = None
@@ -59,14 +66,23 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         return self.__controlledVacuumGripper
 
     def simulatedRead(self) -> None:
-        # update vgr values
-        self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter = self.verticalEncoderValue
-        self.controlledVacuumGripper.vacuumSensArmEncoderCounter = self.horizontalEncoderValue
-        self.controlledVacuumGripper.vacuumSensRotEncoderCounter = self.rotationalEncoderValue
+        # update internal values
+        self.vertical_encoder_value += self.__next_vertical_encoder_increment
+        self.__next_vertical_encoder_increment = 0
+        self.horizontal_encoder_value += self.__next_horizontal_encoder_increment
+        self.__next_horizontal_encoder_increment = 0
+        self.rotational_encoder_value += self.__next_rotational_encoder_increment
+        self.__next_rotational_encoder_increment = 0
 
-        self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.verticalEncoderValue <= (0 if self.hasBeenCalibratedVertically else -self.initialVerticalDistToSensor)
-        self.controlledVacuumGripper.vacuumSensArmEndIn = self.horizontalEncoderValue <= (0 if self.hasBeenCalibratedOnArm else -self.initialHorizontalDistToSensor)
-        self.controlledVacuumGripper.vacuumSensRotEnd = self.rotationalEncoderValue <= (0 if self.hasBeenCalibratedRotational else -self.initialRotationDistToSensor)
+        # update vgr encoders
+        self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter = self.vertical_encoder_value
+        self.controlledVacuumGripper.vacuumSensArmEncoderCounter = self.horizontal_encoder_value
+        self.controlledVacuumGripper.vacuumSensRotEncoderCounter = self.rotational_encoder_value
+
+        # simulate sensors
+        self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.vertical_encoder_value <= (0 if self.hasBeenCalibratedVertically else -self.initialVerticalDistToSensor)
+        self.controlledVacuumGripper.vacuumSensArmEndIn = self.horizontal_encoder_value <= (0 if self.hasBeenCalibratedOnArm else -self.initialHorizontalDistToSensor)
+        self.controlledVacuumGripper.vacuumSensRotEnd = self.rotational_encoder_value <= (0 if self.hasBeenCalibratedRotational else -self.initialRotationDistToSensor)
 
         # no need to simulate compressor and valve
 
@@ -78,19 +94,19 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
 
     def simulatedWrite(self) -> None:
         if self.controlledVacuumGripper.vacuumActArmIn:
-            self.horizontalEncoderValue -= self.encoderIncrement
+            self.__next_horizontal_encoder_increment -= self.encoderIncrement
         if self.controlledVacuumGripper.vacuumActArmOut:
-            self.horizontalEncoderValue += self.encoderIncrement
+            self.__next_horizontal_encoder_increment += self.encoderIncrement
 
         if self.controlledVacuumGripper.vacuumActVerticalDown:
-            self.verticalEncoderValue += self.encoderIncrement
+            self.__next_vertical_encoder_increment += self.encoderIncrement
         if self.controlledVacuumGripper.vacuumActVerticalUp:
-            self.verticalEncoderValue -= self.encoderIncrement
+            self.__next_vertical_encoder_increment -= self.encoderIncrement
 
         if self.controlledVacuumGripper.vacuumActRotLeft:
-            self.rotationalEncoderValue += self.encoderIncrement
+            self.__next_rotational_encoder_increment += self.encoderIncrement
         if self.controlledVacuumGripper.vacuumActRotRight:
-            self.rotationalEncoderValue -= self.encoderIncrement
+            self.__next_rotational_encoder_increment -= self.encoderIncrement
 
         # compressor and valve are not simulated
 
@@ -107,14 +123,14 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
     def simulatedArmReset(self) -> None:
         self.hasBeenCalibratedOnArm = True
         # 0 means the arm is retracted, higher values means it's going outward
-        self.horizontalEncoderValue = 0
+        self.horizontal_encoder_value = 0
 
     def simulatedRotationReset(self) -> None:
         self.hasBeenCalibratedRotational = True
         # 0 means the arm is at maximum clockwise position, higher values means it's going counter-clockwise from this position
-        self.rotationalEncoderValue = 0
+        self.rotational_encoder_value = 0
 
     def simulatedVerticalReset(self) -> None:
         self.hasBeenCalibratedVertically = True
         # 0 means the axis is in the uppermost position, higher values means it s going down
-        self.verticalEncoderValue = 0
+        self.vertical_encoder_value = 0
