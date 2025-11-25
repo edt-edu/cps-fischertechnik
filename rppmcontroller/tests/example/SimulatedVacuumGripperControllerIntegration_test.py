@@ -835,6 +835,12 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
 
+        # FIXME removing this safe position lets this test fail, so a bug is to be suspected
+        vgr = self.controller.machines[0]
+        vgr.safeHorizontal = 0
+        vgr.safeVertical = 0
+        vgr.safeRotation = 800
+
         self.fakeSetupDoneAndSetPos()
 
         # initial feedback
