@@ -75,7 +75,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_twoSetupCommands(self):
-        """Ensure that the setup command is performed and and send feedback"""
+        """Ensure that the setup command is performed and sends feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
 
@@ -1113,15 +1113,22 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         vgr = self.controller.machines[0]
         self.assertIsInstance(vgr, VacuumGripper)
+
+        # perform manual setup
+        vgr.vacuumSensArmEndIn = True
+        vgr.vacuumSensVerticalEndUp = True
+        vgr.vacuumSensRotEnd = True
+        self.controller.reset()
+
         vgr.isInitialized = True
+
+        # set preferred values
         vgr.vacuumSensVerticalEncoderCounter = vacuumSensVerticalEncoderCounter
         vgr.vacuumSensRotEncoderCounter = vacuumSensRotEncoderCounter
         vgr.vacuumSensArmEncoderCounter = vacuumSensArmEncoderCounter
         vgr.vacuumSensArmEndIn = vacuumSensArmEndIn
         vgr.vacuumSensRotEnd = vacuumSensRotEnd
         vgr.vacuumSensVerticalEndUp = vacuumSensVerticalEndUp
-
-        self.controller.reset()
 
 
 if __name__ == '__main__':

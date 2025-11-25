@@ -11,10 +11,11 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
     Engines are supposed to be configured as using Encoder (ie. increment and decrement depending on the engine direction)
     """
 
-
-    def __init__(self, controlledVacuumGripper : VacuumGripper,
-                 initialVerticalDistToSensor : int = 250 , initialHorizontalDistToSensor : int = 250, initialRotationDistToSensor : int = 250,
-                 encoderIncrement : int = 50):
+    def __init__(self, controlledVacuumGripper: VacuumGripper,
+                 initialVerticalDistToSensor: int = 250,
+                 initialHorizontalDistToSensor: int = 250,
+                 initialRotationDistToSensor: int = 250,
+                 encoderIncrement: int = 50):
         """Initialize a simulator connected to a VacuumGripper Machine
 
         Parameters:
@@ -37,6 +38,13 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.hasBeenCalibratedVertically: bool = False
         """Indicates whether a vertical reset has happened at least once, i.e. via simulatedVerticalReset()"""
 
+        self.verticalEncoderValue = initialVerticalDistToSensor
+        """The value of the vertical encoder counter, as seen by the RevPi"""
+        self.horizontalEncoderValue = initialHorizontalDistToSensor
+        """The value of the horizontal encoder counter, as seen by the RevPi"""
+        self.rotationalEncoderValue = initialRotationDistToSensor
+        """The value of the rotational encoder counter, as seen by the RevPi"""
+
         self.previous_simulatedReadLog = None
         self.previous_simulatedWriteLog = None
 
@@ -50,53 +58,43 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         return self.__controlledVacuumGripper
 
     def simulatedRead(self) -> None:
+        # update vgr values
+        self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter = self.verticalEncoderValue
+        self.controlledVacuumGripper.vacuumSensArmEncoderCounter = self.horizontalEncoderValue
+        self.controlledVacuumGripper.vacuumSensRotEncoderCounter = self.rotationalEncoderValue
+
+        self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.verticalEncoderValue <= (0 if self.hasBeenCalibratedVertically else -self.initialVerticalDistToSensor)
+        self.controlledVacuumGripper.vacuumSensArmEndIn = self.horizontalEncoderValue <= (0 if self.hasBeenCalibratedOnArm else -self.initialHorizontalDistToSensor)
+        self.controlledVacuumGripper.vacuumSensRotEnd = self.rotationalEncoderValue <= (0 if self.hasBeenCalibratedRotational else -self.initialRotationDistToSensor)
+
+        # no need to simulate compressor and valve
+
+        # log new values
         simulatedReadLog = f"simulatedRead  {self.controlledVacuumGripper.sensorStatusString()} "
-        if simulatedReadLog != self.previous_simulatedReadLog :
+        if simulatedReadLog != self.previous_simulatedReadLog:
             logging.debug(simulatedReadLog)
             self.previous_simulatedReadLog = simulatedReadLog
 
     def simulatedWrite(self) -> None:
-        if not (self.controlledVacuumGripper.vacuumActArmIn and self.controlledVacuumGripper.vacuumActArmOut):
-            # if both vacuumActArmIn and vacuumActArmOut are True -> they cancel each other (no move)
-            if self.controlledVacuumGripper.vacuumActArmOut:
-                self.controlledVacuumGripper.vacuumSensArmEncoderCounter += self.encoderIncrement
-            if self.controlledVacuumGripper.vacuumActArmIn:
-                self.controlledVacuumGripper.vacuumSensArmEncoderCounter -= self.encoderIncrement
+        if self.controlledVacuumGripper.vacuumActArmIn:
+            self.horizontalEncoderValue -= self.encoderIncrement
+        if self.controlledVacuumGripper.vacuumActArmOut:
+            self.horizontalEncoderValue += self.encoderIncrement
 
-        if not (self.controlledVacuumGripper.vacuumActVerticalUp and self.controlledVacuumGripper.vacuumActVerticalDown):
-            # if both vacuumActVerticalUp and vacuumActVerticalDown are True -> they cancel each other (no move)
-            if self.controlledVacuumGripper.vacuumActVerticalDown:
-                self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter += self.encoderIncrement
-            if self.controlledVacuumGripper.vacuumActVerticalUp:
-                self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter -= self.encoderIncrement
+        if self.controlledVacuumGripper.vacuumActVerticalDown:
+            self.verticalEncoderValue += self.encoderIncrement
+        if self.controlledVacuumGripper.vacuumActVerticalUp:
+            self.verticalEncoderValue -= self.encoderIncrement
 
-        if not (self.controlledVacuumGripper.vacuumActRotRight and self.controlledVacuumGripper.vacuumActRotLeft):
-            # if both vacuumActRotRight and vacuumActRotLeft are True -> they cancel each other (no move)
-            if self.controlledVacuumGripper.vacuumActRotLeft:
-                self.controlledVacuumGripper.vacuumSensRotEncoderCounter += self.encoderIncrement
-            if self.controlledVacuumGripper.vacuumActRotRight:
-                self.controlledVacuumGripper.vacuumSensRotEncoderCounter -= self.encoderIncrement
+        if self.controlledVacuumGripper.vacuumActRotLeft:
+            self.rotationalEncoderValue += self.encoderIncrement
+        if self.controlledVacuumGripper.vacuumActRotRight:
+            self.rotationalEncoderValue -= self.encoderIncrement
 
-        # simulate sensors
-        if self.hasBeenCalibratedOnArm:
-            self.controlledVacuumGripper.vacuumSensArmEndIn = self.controlledVacuumGripper.vacuumSensArmEncoderCounter <= 0
-        else:
-            self.controlledVacuumGripper.vacuumSensArmEndIn = self.controlledVacuumGripper.vacuumSensArmEncoderCounter <= -self.initialHorizontalDistToSensor
-
-        if self.hasBeenCalibratedRotational:
-            self.controlledVacuumGripper.vacuumSensRotEnd = self.controlledVacuumGripper.vacuumSensRotEncoderCounter <= 0
-        else:
-            self.controlledVacuumGripper.vacuumSensRotEnd = self.controlledVacuumGripper.vacuumSensRotEncoderCounter <= -self.initialRotationDistToSensor
-
-        if self.hasBeenCalibratedVertically:
-            self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter <= 0
-        else:
-            self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter <= -self.initialVerticalDistToSensor
-
-        # nothing special to do to simulate compressor and valve as there are no observable IO for them
+        # compressor and valve are not simulated
 
         simulatedWriteLog = f"simulatedWrite  {self.controlledVacuumGripper.sensorStatusString()} "
-        if simulatedWriteLog != self.previous_simulatedWriteLog :
+        if simulatedWriteLog != self.previous_simulatedWriteLog:
             logging.debug(simulatedWriteLog)
             self.previous_simulatedWriteLog = simulatedWriteLog
 
