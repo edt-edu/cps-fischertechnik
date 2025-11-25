@@ -38,11 +38,12 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.hasBeenCalibratedVertically: bool = False
         """Indicates whether a vertical reset has happened at least once, i.e. via simulatedVerticalReset()"""
 
-        self.verticalEncoderValue = initialVerticalDistToSensor
+        # All encoder values start at zero, even if that doesn't represent their "physical" location
+        self.verticalEncoderValue = 0
         """The value of the vertical encoder counter, as seen by the RevPi"""
-        self.horizontalEncoderValue = initialHorizontalDistToSensor
+        self.horizontalEncoderValue = 0
         """The value of the horizontal encoder counter, as seen by the RevPi"""
-        self.rotationalEncoderValue = initialRotationDistToSensor
+        self.rotationalEncoderValue = 0
         """The value of the rotational encoder counter, as seen by the RevPi"""
 
         self.previous_simulatedReadLog = None
@@ -106,14 +107,14 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
     def simulatedArmReset(self) -> None:
         self.hasBeenCalibratedOnArm = True
         # 0 means the arm is retracted, higher values means it's going outward
-        self.controlledVacuumGripper.vacuumSensArmEncoderCounter = 0
+        self.horizontalEncoderValue = 0
 
     def simulatedRotationReset(self) -> None:
         self.hasBeenCalibratedRotational = True
         # 0 means the arm is at maximum clockwise position, higher values means it's going counter-clockwise from this position
-        self.controlledVacuumGripper.vacuumSensRotEncoderCounter = 0
+        self.rotationalEncoderValue = 0
 
     def simulatedVerticalReset(self) -> None:
         self.hasBeenCalibratedVertically = True
         # 0 means the axis is in the uppermost position, higher values means it s going down
-        self.controlledVacuumGripper.vacuumSensVerticalEncoderCounter = 0
+        self.verticalEncoderValue = 0

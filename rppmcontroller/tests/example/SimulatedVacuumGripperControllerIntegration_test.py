@@ -109,6 +109,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
+                self.controller.mainLoopIteration() # make sure gripper reads the values
             self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
         # check current position via feedback and/or by reading machine IO
@@ -123,9 +124,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         # send a second setup command
         message = MachineCommand("COMMAND", "VACUUM", 2, "SETUP", [])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-
-        # self.controller.mainLoopIteration()
-        # notification = ctHelper.readCommandFeedbackNotification(self.controller)
 
         self.controller.mainLoopIteration()
         # already on the sensor, so we get an immediate SUCCESS
@@ -145,6 +143,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
+                self.controller.mainLoopIteration()  # make sure gripper reads the values
             self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
 
