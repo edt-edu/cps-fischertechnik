@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import unittest
+from typing import Optional
 
 import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
@@ -808,11 +809,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
-            if vgr.vacuumSensArmEncoderCounter == 0:
-                vgr.vacuumSensArmEndIn = True
-
             #if arm is not retracted while moving, return error
-            if not ((vgr.vacuumSensRotEncoderCounter == 100 and vgr.vacuumSensVerticalEncoderCounter == 100) or \
+            if not ((vgr.vacuumSensRotEncoderCounter == 100 and vgr.vacuumSensVerticalEncoderCounter == 100) or
                 (vgr.vacuumSensRotEncoderCounter == 600 and vgr.vacuumSensVerticalEncoderCounter == 500)):
                 self.assertEqual(vgr.vacuumSensArmEncoderCounter, 0, "Arm is not retracted while moving")
 
@@ -1106,9 +1104,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
     def fakeSetupDoneAndSetPos(self, vacuumSensVerticalEncoderCounter: int = 0,
                                vacuumSensRotEncoderCounter: int = 0,
                                vacuumSensArmEncoderCounter: int = 0,
-                               vacuumSensArmEndIn: bool = True,
-                               vacuumSensRotEnd: bool = True,
-                               vacuumSensVerticalEndUp: bool = True) -> None:
+                               vacuumSensArmEndIn: Optional[bool] = None,
+                               vacuumSensRotEnd: Optional[bool] = None,
+                               vacuumSensVerticalEndUp: Optional[bool] = None) -> None:
+        vacuumSensArmEndIn = vacuumSensArmEndIn if vacuumSensArmEndIn is not None else vacuumSensArmEncoderCounter <= 0
+        vacuumSensRotEnd = vacuumSensRotEnd if vacuumSensRotEnd is not None else vacuumSensRotEncoderCounter <= 0
+        vacuumSensVerticalEndUp = vacuumSensVerticalEndUp if vacuumSensVerticalEndUp is not None else vacuumSensRotEncoderCounter <= 0
+
         vgr = self.controller.machines[0]
         self.assertIsInstance(vgr, VacuumGripper)
         vgr.isInitialized = True
@@ -1119,7 +1121,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         vgr.vacuumSensRotEnd = vacuumSensRotEnd
         vgr.vacuumSensVerticalEndUp = vacuumSensVerticalEndUp
 
-        vgr.resetHelper()  # make sure that reset helper is reset
+        self.controller.reset()
 
 
 if __name__ == '__main__':
