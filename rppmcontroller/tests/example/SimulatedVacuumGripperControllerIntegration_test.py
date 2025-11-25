@@ -4,13 +4,12 @@ import logging
 import os
 import re
 import unittest
-from typing import Optional
 
 import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
     SimulatedVacuumGripperController
-from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
+from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 
@@ -906,9 +905,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
-            if vgr.vacuumSensArmEncoderCounter == 0:
-                vgr.vacuumSensArmEndIn = True
-
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
@@ -1100,34 +1096,26 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertAlmostEqual(vgr.vacuumSensRotEncoderCounter, expectedRotEncoder, delta=delta)
         self.assertAlmostEqual(vgr.vacuumSensArmEncoderCounter, expectedArmEncoder, delta=delta)
 
-    def fakeSetupDoneAndSetPos(self, vacuumSensVerticalEncoderCounter: int = 0,
+    def fakeSetupDoneAndSetPos(self,
+                               vacuumSensVerticalEncoderCounter: int = 0,
                                vacuumSensRotEncoderCounter: int = 0,
-                               vacuumSensArmEncoderCounter: int = 0,
-                               vacuumSensArmEndIn: Optional[bool] = None,
-                               vacuumSensRotEnd: Optional[bool] = None,
-                               vacuumSensVerticalEndUp: Optional[bool] = None) -> None:
-        vacuumSensArmEndIn = vacuumSensArmEndIn if vacuumSensArmEndIn is not None else vacuumSensArmEncoderCounter <= 0
-        vacuumSensRotEnd = vacuumSensRotEnd if vacuumSensRotEnd is not None else vacuumSensRotEncoderCounter <= 0
-        vacuumSensVerticalEndUp = vacuumSensVerticalEndUp if vacuumSensVerticalEndUp is not None else vacuumSensRotEncoderCounter <= 0
-
+                               vacuumSensArmEncoderCounter: int = 0) -> None:
         vgr = self.controller.machines[0]
         self.assertIsInstance(vgr, VacuumGripper)
+        simulator = self.controller.vaccumGripperSimulator
 
-        # perform manual setup
-        vgr.vacuumSensArmEndIn = True
-        vgr.vacuumSensVerticalEndUp = True
-        vgr.vacuumSensRotEnd = True
-        self.controller.reset()
+        # apply values to simulator
+        simulator.horizontal_encoder_value = vacuumSensArmEncoderCounter
+        simulator.rotational_encoder_value = vacuumSensRotEncoderCounter
+        simulator.vertical_encoder_value = vacuumSensVerticalEncoderCounter
 
-        vgr.isInitialized = True
+        # mark simulator as calibrated
+        simulator.hasBeenCalibratedOnArm = True
+        simulator.hasBeenCalibratedRotational = True
+        simulator.hasBeenCalibratedVertically = True
 
-        # set preferred values
-        vgr.vacuumSensVerticalEncoderCounter = vacuumSensVerticalEncoderCounter
-        vgr.vacuumSensRotEncoderCounter = vacuumSensRotEncoderCounter
-        vgr.vacuumSensArmEncoderCounter = vacuumSensArmEncoderCounter
-        vgr.vacuumSensArmEndIn = vacuumSensArmEndIn
-        vgr.vacuumSensRotEnd = vacuumSensRotEnd
-        vgr.vacuumSensVerticalEndUp = vacuumSensVerticalEndUp
+        simulator.simulatedRead()  # apply values to vgr
+        vgr.isInitialized = True  # mark vgr as initialized
 
 
 if __name__ == '__main__':
