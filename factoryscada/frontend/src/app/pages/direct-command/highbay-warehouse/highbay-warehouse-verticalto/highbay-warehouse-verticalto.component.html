@@ -1,6 +1,14 @@
 <p-fieldset legend="{{ machine?.name }} - Vertical to">
 
-  <p style="margin-bottom: 2em;">Move vertically to a position</p>
+  <p >Moves the stacker crane vertically to the specified counter goal.</p>
+  <p>Approximative encoder values for key vertical rows are: 
+  </p>
+  <ul>
+    <li>TOP row: 200 (Highest position)</li>
+    <li>MIDDLE row: 900</li>
+    <li>BOTTOM row: 1700</li>
+    <li>CONVEYOR row: 1450 (Load/Unload position)</li>
+  </ul>
 
   <app-single-int-widget (onValuesChanged)="handleValuesChanged($event)"/>
 

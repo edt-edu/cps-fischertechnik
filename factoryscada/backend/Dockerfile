@@ -17,7 +17,7 @@ RUN gradle assemble --no-daemon
 ##################################
 # Stage 2: Package the application
 ##################################
-FROM openjdk:21 AS runner
+FROM eclipse-temurin:21-jre AS runner
 
 # Set the working directory
 WORKDIR /app

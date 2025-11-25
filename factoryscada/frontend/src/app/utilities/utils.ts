@@ -136,7 +136,7 @@ export function getMissionCommandDescription(missionsConfiguration: IFactoryPara
   }
   const qname = commandQualifierName.split('::');
   const mission = missionsConfiguration.missions.find(mission => mission.name === qname[0])
-  const command = mission?.nodes.find(command => command.description === qname[1] )
+  const command = mission?.nodes.find(command => command.id === qname[1] )
   // Return the command placeholder if the machine and command exist
   return command ? command.description : '';
 }

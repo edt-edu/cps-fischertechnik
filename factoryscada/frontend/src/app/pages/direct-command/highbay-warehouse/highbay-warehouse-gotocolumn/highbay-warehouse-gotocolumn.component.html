@@ -1,6 +1,13 @@
 <p-fieldset legend="{{ machine?.name }} - Go to column">
 
-  <p style="margin-bottom: 2em;">Move to a column</p>
+  <p >Moves the stacker crane horizontally to the specified column.</p>
+  <p>Possible values are:</p>
+  <ul>
+    <li>Column.CONVEYOR or 0: Load/Unload position at the conveyor belt</li>
+    <li>Column.RIGHT or 1: First storage rack column</li>
+    <li>Column.MIDDLE or 2: Middle storage rack column</li>
+    <li>Column.LEFT or 3: Last storage rack column</li>
+  </ul>
 
   <app-single-int-widget (onValuesChanged)="handleValuesChanged($event)"/>
 

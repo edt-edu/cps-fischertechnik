@@ -1,6 +1,14 @@
 <p-fieldset legend="{{ machine?.name }} - Horizontal to">
 
-  <p style="margin-bottom: 2em;">Move horizontally to a position</p>
+  <p >Moves the stacker crane horizontally to the specified counter goal.</p>
+  <p>Approximative encoder values for key horizontal places are: 
+  </p>
+  <ul>
+    <li>Conveyor column: 70 (Load/Unload position)</li>
+    <li>first rack column: 1550</li>
+    <li>second rack column: 2700</li>
+    <li>third rack column: 3900</li>
+  </ul>
 
   <app-single-int-widget (onValuesChanged)="handleValuesChanged($event)"/>
 
