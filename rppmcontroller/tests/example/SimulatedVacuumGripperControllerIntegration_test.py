@@ -1113,6 +1113,22 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(0, simulator.rotational_encoder_value)
 
+    def test_temper_protection(self):
+        """
+        Ensure that the robot does not reset its counter if somebody presses
+        the ref switch by hand
+        """
+        vgr = self.controller.machines[0]
+        simulator = self.controller.vaccumGripperSimulator
+
+        # set up the robot very far from the ref-switch
+        self.fakeSetupDoneAndSetPos(vacuumSensRotEncoderCounter=800)
+
+        # somebody presses the ref switch, even if the robot is far from the switch
+        vgr.vacuumSensRotEnd = True
+        self.controller.mainLoopIteration()
+        self.assertEqual(800, simulator.rotational_encoder_value)
+
 
     # TODO move to a test helper module
     def checkVGRPosition(self, expectedVerticalEncoder : int , expectedRotEncoder : int, expectedArmEncoder :int) -> None:
