@@ -132,7 +132,7 @@ export function getMissionCommandDescription(missionsConfiguration: IFactoryPara
   commandQualifierName: string | undefined): string {
   // Check if parameters are defined
   if (missionsConfiguration === undefined || commandQualifierName === undefined) {
-    return '';
+    return ''+missionsConfiguration+''+commandQualifierName;
   }
   const qname = commandQualifierName.split('::');
   const mission = missionsConfiguration.missions.find(mission => mission.name === qname[0])

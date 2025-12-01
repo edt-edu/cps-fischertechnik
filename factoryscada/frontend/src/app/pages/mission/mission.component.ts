@@ -150,6 +150,7 @@ export class MissionComponent implements OnInit {
 
       if (this.selectedMission != undefined) {
         this.missionsGraph = this.buildMermaidDiagramFromMission(this.selectedMission);
+        console.warn("Updated missions graph:", this.missionsGraph);
       }
     });
   }
@@ -175,8 +176,8 @@ export class MissionComponent implements OnInit {
 
   private buildMermaidDiagramFromMission(mission: MissionParallelized): string {
     /*
-    This function i used to build the mermaid graph for visualizing the mission currently running
-    It build a list of lines wich are the mermaid code and then concatenate them
+    Function used to build the mermaid graph for visualizing the mission currently running
+    It builds a list of lines wich are the mermaid code and then concatenate them
     */
     const lines: string[] = [];
     const sanitize = (id: string) => id.replace(/\s+/g, '_');
@@ -187,7 +188,28 @@ export class MissionComponent implements OnInit {
     //Add each nodes except the Forks (waste of space)
     for (const node of mission.nodes) {
       if (!["Fork"].includes(node.type)) {
-        lines.push(`${sanitize(node.id)}[${(node.description ?? node.id).trim().replace(/;/g, ":").replace(/[\[\]]/g, "")}]`);
+        let nodeText = sanitize(node.id)
+        if (node.description !== undefined) {
+          nodeText = node.description.trim().replace(/"/g, '#quot;');
+        }
+        switch (node.type) {
+          case "EntryNode":
+            lines.push(`${sanitize(node.id)}(["<span title='${nodeText}'>${node.id}</span>"])`);
+            break;
+          case "Join":
+            if ( node.outputs === undefined || node.outputs.length === 0 ) {
+              lines.push(`${sanitize(node.id)}((("<span title='${nodeText}'>${node.id}</span>")))`);
+            } else {
+              lines.push(`${sanitize(node.id)}{{"<span title='${nodeText}'>${node.id}</span>"}}`);
+            }
+            break;
+          default:
+            if ( node.outputs === undefined || node.outputs.length === 0 ) {
+              lines.push(`${sanitize(node.id)}((("<span title='${nodeText}'>${node.id}</span>")))`);
+            } else {
+              lines.push(`${sanitize(node.id)}["<span title='${node.id}'>${nodeText}</span>"]`);
+            }
+        }
       }
     }
 
@@ -207,6 +229,7 @@ export class MissionComponent implements OnInit {
       lines.push(`class ${node.id} surveillance`)
     }
 
+    console.warn("buildMermaidDiagramFromMission:", lines.join("\n"));
     //Return the graph
     return lines.join("\n");
   }

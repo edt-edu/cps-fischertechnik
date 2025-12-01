@@ -372,7 +372,7 @@ public class FactoryScada {
     }
 
     /**
-     * This function is used to ad logs in the list containing all fronbtend logs
+     * This function is used to add logs in the list containing all frontend logs
      * 
      * @return Nothing
      */
