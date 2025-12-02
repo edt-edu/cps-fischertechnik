@@ -196,7 +196,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                 helper.mark_for_reset()
         else:
             for helper in self.__reset_helpers:
-                helper.reset()
+                helper.must_reset()
 
     @property
     def isInitialized(self) -> bool:
@@ -685,7 +685,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         """
         Moves the stacker crane horizontally to the specified counter goal
 
-        approximative encoder values for key horizontal places are: 
+        approximative encoder values for key horizontal places are:
             - Conveyor column: 70 (Load/Unload position)
             - first rack column: 1550
             - second rack column: 2700
@@ -705,7 +705,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         """
         Moves the stacker crane vertically to the specified counter goal
 
-        approximate encoder values for key vertical rows are: 
+        approximate encoder values for key vertical rows are:
             - TOP row: 200 (Highest position)
             - MIDDLE row: 900
             - BOTTOM row: 1700
@@ -731,7 +731,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             - Column.RIGHT or 1: First storage rack column
             - Column.MIDDLE or 2: Middle storage rack column
             - Column.LEFT or 3: Last storage rack column
-            
+
         :param column: The target column to move to
 
         :return: A Callable performing the action
@@ -768,7 +768,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         """
         Stores an item from the conveyor to the specified row and column in the rack
         then performs a setup to recalibrate the encoders.
-        
+
         Row possible values are:
             - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Row.BOTTOM or 1: Bottom storage row
@@ -777,7 +777,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Column possible values are:
             - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Column.RIGHT or 1: First storage rack column
-            - Column.MIDDLE or 2: Middle storage rack column    
+            - Column.MIDDLE or 2: Middle storage rack column
             - Column.LEFT or 3: Last storage rack column
 
         :param row: The target row to store the item to
@@ -841,7 +841,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Picks up an item from the specified row and column in the rack and
         moves it to the conveyor belt, then performs a setup to recalibrate
         the encoders.
-        
+
         Row possible values are:
             - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Row.BOTTOM or 1: Bottom storage row
@@ -850,7 +850,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Column possible values are:
             - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Column.RIGHT or 1: First storage rack column
-            - Column.MIDDLE or 2: Middle storage rack column    
+            - Column.MIDDLE or 2: Middle storage rack column
             - Column.LEFT or 3: Last storage rack column
 
         :param row: The source row to pick the item from

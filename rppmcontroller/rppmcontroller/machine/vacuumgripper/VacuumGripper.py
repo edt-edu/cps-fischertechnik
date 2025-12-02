@@ -115,7 +115,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
                 helper.mark_for_reset()
         else:
             for helper in self.__reset_helpers:
-                helper.reset()
+                helper.must_reset()
 
     @property
     def isInitialized(self) -> bool:

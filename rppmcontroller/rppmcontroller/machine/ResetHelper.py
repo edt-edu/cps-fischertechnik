@@ -64,7 +64,7 @@ class ResetHelper:
         """
         return self.__marked_for_reset
 
-    def reset(self) -> bool:
+    def must_reset(self) -> bool:
         """
         Retrieves whether this is marked for reset and removes that mark.
 

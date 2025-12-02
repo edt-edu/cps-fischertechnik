@@ -43,9 +43,9 @@ class SimulatedHighBayController(RevPiPyMachineController):
         self.highBaySimulator.simulatedWrite()
 
     def reset(self) -> None:
-        if self.highBayMachine.horizontal_reset_helper.reset():
+        if self.highBayMachine.horizontal_reset_helper.must_reset():
             self.highBaySimulator.simulatedHorizontalReset()
-        if self.highBayMachine.vertical_reset_helper.reset():
+        if self.highBayMachine.vertical_reset_helper.must_reset():
             self.highBaySimulator.simulatedVerticalReset()
 
 if __name__ == "__main__":

@@ -95,11 +95,11 @@ class VacuumGripperController(RevPiPyMachineController):
 
     def reset(self) -> None:
         assert self.rpi.io is not None
-        if self.vacuumGripperMachine.vertical_reset_helper.reset():
+        if self.vacuumGripperMachine.vertical_reset_helper.must_reset():
             self.rpi.io.dio1_Counter_5.reset()
-        if self.vacuumGripperMachine.arm_reset_helper.reset():
+        if self.vacuumGripperMachine.arm_reset_helper.must_reset():
             self.rpi.io.dio1_Counter_7.reset()
-        if self.vacuumGripperMachine.rot_reset_helper.reset():
+        if self.vacuumGripperMachine.rot_reset_helper.must_reset():
             self.rpi.io.dio1_Counter_9.reset()
 
 if __name__ == "__main__":
