@@ -835,12 +835,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
 
-        # FIXME removing this safe position lets this test fail, so a bug is to be suspected
-        vgr = self.controller.machines[0]
-        vgr.safeHorizontal = 0
-        vgr.safeVertical = 0
-        vgr.safeRotation = 800
-
         self.fakeSetupDoneAndSetPos()
 
         # initial feedback
@@ -868,6 +862,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification,
                                  r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
+                # if the robot already resided in its safe-position, at least another mainLoopIteration is needed to update the feedback
+                if iterationDone == 0:
+                    self.controller.mainLoopIteration()
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"MOVE TO SAFETY DONE reached in {iterationDone} iterations")
