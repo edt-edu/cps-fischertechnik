@@ -29,4 +29,4 @@ COPY --from=builder /app/build/libs/*.jar app.jar
 EXPOSE 9000
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "/app/app.jar", "--configuration.path=/app/config/configuration.yml", "--missions.configuration.path=/app/config/missions-configuration.yml", "--missions.parallelized.configuration.path=missions-parallelized-configuration.yml"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar", "--configuration.path=/app/config/configuration.yml", "--missions.configuration.path=/app/config/missions-configuration.yml", "--missions.parallelized.configuration.path=/app/config/missions-parallelized-configuration.yml"]
