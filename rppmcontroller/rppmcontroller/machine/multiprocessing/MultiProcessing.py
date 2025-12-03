@@ -98,10 +98,11 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         return res
 
-    def __init__(self, id1, safetyPos: Optional[Dict[str, bool]]=None):
-        #  inputs
+    def __init__(self, id1, safetyPos: Optional[Dict[str, bool]] = None):
         if safetyPos is None:
             safetyPos = {}
+
+        #  inputs
         self.__multiProcessingSensTurntablePosVacuum = False
         self.__multiProcessingSensTurntablePosBelt = False
         self.__multiProcessingSensTurntablePosSaw = False
