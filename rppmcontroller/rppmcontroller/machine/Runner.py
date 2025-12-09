@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 import inspect
-
-import logging
-import typing
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from copy import deepcopy
 from dataclasses import dataclass
-from inspect import signature
 from typing import Callable, Generic, List, Optional, TypeVar, Union
+
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
@@ -20,10 +17,16 @@ from rppmcontroller.utils.callable_tool import describe_callable
 
 TConfig = TypeVar('TConfig', bound=MachineConfiguration)
 
-class TransitioningMachine(Generic[TConfig]):
+class TransitioningMachine(Generic[TConfig], ABC):
     def __init__(self):
         self.__runners: List[Runner] = []
         """A list containing all runners which this machine ever created"""
+
+    @property
+    def runners(self) -> List[Runner]:
+        runners = [runner for runner in self.__runners if runner.must_continue()]
+        self.__runners = runners
+        return runners
 
     @abstractmethod
     @cycle_step_function()
@@ -48,13 +51,11 @@ class TransitioningMachine(Generic[TConfig]):
 
     @property
     def is_executing_runner(self) -> bool:
-        return any(runner.running for runner in self.__runners)
+        return any(runner.running for runner in self.runners)
 
     @property
     def executing_runner(self) -> Optional[Subroutine]:
-        for runner in self.__runners:
-            if runner.running:
-                return runner.actual_routine()
+        return next((runner.actual_routine() for runner in self.runners if runner.running), None)
 
 
 class Subroutine:
@@ -299,6 +300,9 @@ class Runner(CycleStepResult):
 
         :return: self
         """
+        if not self.must_continue():
+            raise RuntimeError(f"runner shouldn't be used anymore: {self}")
+
         self.__running = True
         self.result = CycleStepResultEnum.MUST_CONTINUE
         sub_routine = self.__routine[self.__routine_index]
@@ -314,14 +318,12 @@ class Runner(CycleStepResult):
         self.subCycleStepResult = (sub_routine_info, res)
 
         if res.is_terminated():
-            self.__routine_index = 0
             self.__running = False
             self.info = "routine aborted"
             self.result = res.result
         elif not res.must_continue():
             self.__routine_index += 1
             if self.__routine_index >= len(self.__routine):
-                self.__routine_index = 0  # we are done
                 self.__running = False
                 self.result = CycleStepResultEnum.DONE
                 self.info = "routine finished"
