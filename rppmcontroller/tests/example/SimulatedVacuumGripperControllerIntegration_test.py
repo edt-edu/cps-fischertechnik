@@ -125,8 +125,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # self.controller.mainLoopIteration()
         # notification = ctHelper.readCommandFeedbackNotification(self.controller)
-        
-        self.controller.mainLoopIteration()        
+
+        self.controller.mainLoopIteration()
         # already on the sensor, so we get an immediate SUCCESS
         self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
 
@@ -801,7 +801,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             Position("END", 500, 600, 500)
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -911,7 +911,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             if vgr.vacuumSensArmEncoderCounter == 0:
                 vgr.vacuumSensArmEndIn = True
-            
+
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
@@ -956,7 +956,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, True, False)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1009,7 +1009,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(False, True, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1062,7 +1062,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, False, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1091,6 +1091,51 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
 
             self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
+
+
+    def test_runner_list_cleanup(self):
+        """
+        Ensure that the runners list gets cleaned up
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        vgr = self.controller.machines[0]
+        assert isinstance(vgr,VacuumGripper)
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK UNINITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a setup command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "SETUP", [])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK UNINITIALIZED_ACTIVE")
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+
+            notification = ctHelper.readMachineFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                endCommandReached = True
+            self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
+            if not endCommandReached:
+                self.assertTrue(len(vgr.runners) > 0, "a runner should be active")
+        self.assertLess(iterationDone, 100, "setup timed out")
+
+        self.assertEqual(0, len(vgr.runners), "runner list was not cleaned up")
 
 
     # TODO move to a test helper module
