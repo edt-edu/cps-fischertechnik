@@ -605,7 +605,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             return CycleStepResult.done()
 
         return self.create_runner().then_run(self.goto_config_CycleStep, info="goto_config_setup").then_run(
-            mark_setup_finished, info="mark_setup_finished").run()
+            mark_setup_finished, info="mark_setup_finished")
 
     @protocol_command_function()
     def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
@@ -657,7 +657,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         """
         Moves the stacker crane horizontally to the specified counter goal
 
-        approximative encoder values for key horizontal places are: 
+        approximative encoder values for key horizontal places are:
             - Conveyor column: 70 (Load/Unload position)
             - first rack column: 1550
             - second rack column: 2700
@@ -670,14 +670,14 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.run_setup_unless_initialized(runner)
         config = self.get_current_config()
         config.horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
-        return runner.then_goto(config).run()
+        return runner.then_goto(config)
 
     @protocol_command_function()
     def vertical_to_Command(self, counter_goal: int) -> Runner:
         """
         Moves the stacker crane vertically to the specified counter goal
 
-        approximate encoder values for key vertical rows are: 
+        approximate encoder values for key vertical rows are:
             - TOP row: 200 (Highest position)
             - MIDDLE row: 900
             - BOTTOM row: 1700
@@ -690,7 +690,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.run_setup_unless_initialized(runner)
         config = self.get_current_config()
         config.vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
-        return runner.then_goto(config).run()
+        return runner.then_goto(config)
 
     @protocol_command_function()
     def goto_column_Command(self, column: Union[Column, int]) -> Callable[
@@ -703,7 +703,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             - Column.RIGHT or 1: First storage rack column
             - Column.MIDDLE or 2: Middle storage rack column
             - Column.LEFT or 3: Last storage rack column
-            
+
         :param column: The target column to move to
 
         :return: A Callable performing the action
@@ -740,7 +740,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         """
         Stores an item from the conveyor to the specified row and column in the rack
         then performs a setup to recalibrate the encoders.
-        
+
         Row possible values are:
             - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Row.BOTTOM or 1: Bottom storage row
@@ -749,7 +749,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Column possible values are:
             - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Column.RIGHT or 1: First storage rack column
-            - Column.MIDDLE or 2: Middle storage rack column    
+            - Column.MIDDLE or 2: Middle storage rack column
             - Column.LEFT or 3: Last storage rack column
 
         :param row: The target row to store the item to
@@ -803,7 +803,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # perform a setup to recalibrate the encoders
         runner.then_run_runner_from(self.setup_Command, info="setup")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def pickup_from_Command(self,
@@ -813,7 +813,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Picks up an item from the specified row and column in the rack and
         moves it to the conveyor belt, then performs a setup to recalibrate
         the encoders.
-        
+
         Row possible values are:
             - Row.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Row.BOTTOM or 1: Bottom storage row
@@ -822,7 +822,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Column possible values are:
             - Column.CONVEYOR or 0: Load/Unload position at the conveyor belt
             - Column.RIGHT or 1: First storage rack column
-            - Column.MIDDLE or 2: Middle storage rack column    
+            - Column.MIDDLE or 2: Middle storage rack column
             - Column.LEFT or 3: Last storage rack column
 
         :param row: The source row to pick the item from
@@ -869,7 +869,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # perform another setup
         runner.then_run_runner_from(self.setup_Command, info="setup")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def stop_Command(self) -> Callable[[], CycleStepResult]:
@@ -891,11 +891,11 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             config = self.get_current_config()
             config.horizontal_axis_config = AxisConfig.to_counter_goal(self.safeHorizontal)
             config.vertical_axis_config = AxisConfig.to_counter_goal(self.safeVertical)
-            return runner.then_goto(config).run()
+            return runner.then_goto(config)
 
             # runner = self.create_runner()
             # runner.then_run(self.vertical_to_Command(self.safeVertical), info="Moving vertically to safe pos")
             # runner.then_run(self.horizontal_to_Command(self.safeHorizontal), info="Moving horizontally to safe pos")
-            # return runner.run()
+            # return runner
         else:
             return self.setup_Command()
