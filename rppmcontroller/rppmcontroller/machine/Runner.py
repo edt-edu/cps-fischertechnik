@@ -20,10 +20,20 @@ TConfig = TypeVar('TConfig', bound=MachineConfiguration)
 class TransitioningMachine(Generic[TConfig], ABC):
     def __init__(self):
         self.__runners: List[Runner] = []
-        """A list containing all runners which this machine ever created"""
+        """
+        A list containing runners which have been created by this machine.
 
-    @property
-    def runners(self) -> List[Runner]:
+        Runners which have finished their execution will be removed from this
+        list when get_runners() is called.
+        """
+
+    def get_runners(self) -> List[Runner]:
+        """
+        Gets a list containing all runners which were created by this machine
+        whose execution must be continued
+
+        :return: All active runners of this machine
+        """
         runners = [runner for runner in self.__runners if runner.must_continue()]
         self.__runners = runners
         return runners
@@ -51,11 +61,11 @@ class TransitioningMachine(Generic[TConfig], ABC):
 
     @property
     def is_executing_runner(self) -> bool:
-        return any(runner.running for runner in self.runners)
+        return any(runner.running for runner in self.get_runners())
 
     @property
     def executing_runner(self) -> Optional[Subroutine]:
-        return next((runner.actual_routine() for runner in self.runners if runner.running), None)
+        return next((runner.actual_routine() for runner in self.get_runners() if runner.running), None)
 
 
 class Subroutine:
