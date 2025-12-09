@@ -1167,10 +1167,10 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
             self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
             if not endCommandReached:
-                self.assertTrue(len(vgr.runners) > 0, "a runner should be active")
+                self.assertTrue(len(vgr.get_runners) > 0, "a runner should be active")
         self.assertLess(iterationDone, 100, "setup timed out")
 
-        self.assertEqual(0, len(vgr.runners), "runner list was not cleaned up")
+        self.assertEqual(0, len(vgr.get_runners), "runner list was not cleaned up")
 
 
     # TODO move to a test helper module
