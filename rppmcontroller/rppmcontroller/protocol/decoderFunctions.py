@@ -1,17 +1,17 @@
 import logging
 
+from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
+from rppmcontroller.machine.BoxNumber import BoxNumber
+from rppmcontroller.machine.Color import Color
+from rppmcontroller.machine.Direction import Direction
+from rppmcontroller.machine.MPSOutput import MPSOutput
+from rppmcontroller.machine.Position import Position
+from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
+from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
+    TurnTablePosition
+from rppmcontroller.protocol.JSONOutput import JSONOutput
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 from rppmcontroller.protocol.MachineStatusRequest import MachineStatusRequest
-from rppmcontroller.protocol.JSONOutput import JSONOutput
-from rppmcontroller.machine.Position import Position
-from rppmcontroller.machine.BoxNumber import BoxNumber
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
-from rppmcontroller.machine.Color import Color
-from rppmcontroller.machine.MPSOutput import MPSOutput
-from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
-from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
-from rppmcontroller.protocol.RequestedParameter import RequestedParameter
 
 
 def customDecoder(idict):
@@ -62,7 +62,12 @@ def customDecoder(idict):
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'MPSTURNTABLEPOSITION':
                     passable = param['passable']
                     destination = passable['destination']
-                    parameterList.append(MPSTurntablePosition[destination])
+                    if destination == "ARM" or destination == "VACUUM":
+                        parameterList.append(TurnTablePosition.VACUUM)
+                    elif destination == "SAW":
+                        parameterList.append(TurnTablePosition.SAW)
+                    elif destination == "CONVEYOR":
+                        parameterList.append(TurnTablePosition.CONVEYOR)
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'BOXNUMBER':
                     passable = param['passable']
                     parameterList.append(BoxNumber[passable])

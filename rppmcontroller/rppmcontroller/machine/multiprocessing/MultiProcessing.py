@@ -1,22 +1,24 @@
 import logging
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Dict, Union, Optional
 
 from typing_extensions import deprecated, override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, runner_augment_function
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, \
+    runner_augment_function
 from rppmcontroller.machine.MPSOutput import MPSOutput
-from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
-from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
+from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
-from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import MultiProcessingConfig
-from rppmcontroller.machine.multiprocessing.TurnTablePosition import TurnTablePosition
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
+from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
+    MultiProcessingConfig
+from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
+    TurnTablePosition
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 
 
 class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
@@ -59,11 +61,11 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     @property
     def isInitialized(self) -> bool:
         return True # technically always initialized, since there are no encoder actuators
-    
+
     @isInitialized.setter
     def isInitialized(self, value):
         logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property") 
+        raise AttributeError("isInitialized is a read-only property")
 
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
@@ -82,12 +84,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
                self.__multiProcessingActLowerValve or
                self.__multiProcessingValveFeeder or
                self.is_executing_runner)
-        
-        if (self.executing_runner == None):
+
+        if self.executing_runner is None:
             routine = "None"
         else:
             routine = str(self.executing_runner)
-        
+
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
@@ -96,7 +98,10 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         return res
 
-    def __init__(self, id1, safetyPos : dict = {}):
+    def __init__(self, id1, safetyPos: Optional[Dict[str, bool]] = None):
+        if safetyPos is None:
+            safetyPos = {}
+
         #  inputs
         self.__multiProcessingSensTurntablePosVacuum = False
         self.__multiProcessingSensTurntablePosBelt = False
@@ -358,7 +363,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
             self.multiProcessingActRotCounterclockwise = True
 
     def sensorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"TurnTab[{s(self.multiProcessingSensTurntablePosVacuum)}, {s(self.multiProcessingSensTurntablePosBelt)}, {s(self.multiProcessingSensTurntablePosSaw)}], " + \
                f"Sensors[{s(self.multiProcessingSensEndConveyor)}, {s(self.multiProcessingSensOven)}], " + \
@@ -366,7 +371,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
                f"OvenFeed[{s(self.multiProcessingSensOvenFeederIn)}, {s(self.multiProcessingSensOvenFeederOut)}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"TurnTab[{s(self.multiProcessingActRotClockwise)}, {s(self.multiProcessingActRotCounterclockwise)}], " + \
                f"ConvSaw[{s(self.multiProcessingActConveyorForward)}, {s(self.multiProcessingActSaw)}], " + \
@@ -541,7 +546,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         self.__multiProcessingValveOvenDoor = False
         self.__multiProcessingValveFeeder = False
         return CycleStepResult(CycleStepResultEnum.DONE)
-    
+
     @runner_augment_function()
     def oven_load_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
@@ -558,13 +563,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         config.oven_door_open = False
         runner.then_goto(config, and_stay_for=0.2, info="close oven door")
-    
+
     @runner_augment_function()
     def oven_unload_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Get the payload out of oven.
 
-        :param time: heating duration
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
@@ -576,7 +580,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         config.oven_door_open = False
         runner.then_goto(config, and_stay_for=0.2, info="close oven door")
-    
+
     @runner_augment_function()
     def oven_heat_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
         """
@@ -593,7 +597,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         config.oven_lamp_on = False
         runner.then_goto(config, info="heating ended")
 
-    
+
     @runner_augment_function()
     def oven_process_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
         """
@@ -616,12 +620,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         config.oven_lamp_on = False
         config.oven_feeder_expanded = True
         runner.then_goto(config, info="move out of oven")
-        
+
     @runner_augment_function()
     def arm_move_Augment(self, destination:MPSArmPosition, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Move the vacuum arm
-        
+
         :param destination: arm destination
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
@@ -637,7 +641,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def arm_pick_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Make the vacuum arm pick the payload
-        
+
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
@@ -649,12 +653,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         config.vacuum_arm_lowered = False
         runner.then_goto(config, and_stay_for=0.5, info="raise arm")
-    
+
     @runner_augment_function()
     def arm_place_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Make the vacuum arm place the payload
-        
+
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
@@ -668,24 +672,17 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner.then_goto(config, and_stay_for=0.5, info="raise arm")
 
     @runner_augment_function()
-    def turntable_rotate_Augment(self, position: MPSTurntablePosition, config: MultiProcessingConfig, runner: Runner) -> None:
+    def turntable_rotate_Augment(self, position: TurnTablePosition, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Move the turntable
-        
+
         :param position: conveyor position destination
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
-        if position == MPSTurntablePosition.CONVEYOR:
-            config.turn_table_position = TurnTablePosition.CONVEYOR
-            runner.then_goto(config, info="turn to conveyor")
-        elif position == MPSTurntablePosition.ARM:
-            config.turn_table_position = TurnTablePosition.VACUUM
-            runner.then_goto(config, info="turn to vacuum arm")
-        elif position == MPSTurntablePosition.SAW:
-            config.turn_table_position = TurnTablePosition.SAW
-            runner.then_goto(config, info="turn to saw")
-    
+        config.turn_table_position = position
+        runner.then_goto(config, info=f"turn to {str(position).lower()}")
+
     @runner_augment_function()
     def saw_cut_Augment(self, time: int, config: MultiProcessingConfig, runner: Runner) -> None:
         """
@@ -700,12 +697,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         config.saw_active = False
         runner.then_goto(config, info="sSawing finished")
-    
+
     @runner_augment_function()
     def turntable_eject_Augment(self, config: MultiProcessingConfig, runner: Runner) -> None:
         """
         Augment the runner to perfom the following: Eject the payload from the turntable on the conveyor
-        
+
         :param config: start configuration on which the action will apply
         :param runner: the runner to be augmented
         """
@@ -725,7 +722,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def setup_Command(self) -> Callable[[], CycleStepResult]:
         """Reset the station and move some parts to the initial postion."""
         return self.goto_config_CycleStep
-    
+
     @protocol_command_function(description="Move payload into oven")
     def oven_load_Command(self) -> Runner:
         """
@@ -782,7 +779,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         self.oven_process_Augment(time, config, runner)
 
         return runner.run()
-    
+
     @protocol_command_function(description="Move the vacuum arm to the specified position.")
     def arm_move_Command(self, destination:MPSArmPosition) -> Runner:
         """
@@ -792,7 +789,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         """
         runner = self.create_runner()
         config = self.get_current_config()
-        
+
         self.arm_move_Augment(destination, config, runner)
 
         return runner.run()
@@ -801,12 +798,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def arm_pick_Command(self) -> Runner:
         """
         Make the vacuum arm pick the payload
-        
+
         :return: A Runner picking the payload
         """
         runner = self.create_runner()
         config = self.get_current_config()
-        
+
         self.arm_pick_Augment(config, runner)
         return runner.run()
 
@@ -814,17 +811,17 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def arm_place_Command(self) -> Runner:
         """
         Make the vacuum arm place the payload
-        
+
         :return: A Runner placing the payload
         """
         runner = self.create_runner()
         config = self.get_current_config()
-        
+
         self.arm_place_Augment(config, runner)
         return runner.run()
 
     @protocol_command_function(description="Rotate the turntable to the specified position.")
-    def turntable_rotate_Command(self, destination: MPSTurntablePosition) -> Runner:
+    def turntable_rotate_Command(self, destination: TurnTablePosition) -> Runner:
         """
         Move the turntable
 
@@ -832,7 +829,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         """
         runner = self.create_runner()
         config = self.get_current_config()
-        
+
         self.turntable_rotate_Augment(destination, config, runner)
         return runner.run()
 
@@ -840,12 +837,12 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def turntable_eject_Command(self) -> Runner:
         """
         Eject the payload from the turntable on the conveyor
-        
+
         :return: A Runner ejecting the payload
         """
         runner = self.create_runner()
         config = self.get_current_config()
-        
+
         self.turntable_eject_Augment(config, runner)
         return runner.run()
 
@@ -853,7 +850,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def conveyor_move_to_sensor_Command(self) -> Runner:
         """
         Move the payload until it is detected by the destination sensor
-        
+
         :return: A Runner moving the payload
         """
         runner = self.create_runner()
@@ -875,7 +872,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     def conveyor_move_out_Command(self) -> Runner:
         """
         Move the payload until it leaves the conveyor
-        
+
         :return: A Runner moving the payload
         """
         runner = self.create_runner()
@@ -905,15 +902,15 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         """
         runner = self.create_runner()
         config = self.get_current_config()
-        
+
         self.saw_cut_Augment(time, config, runner)
         return runner.run()
-    
+
     @protocol_command_function(description="Move payload from turntable to oven.")
     def move_to_oven_Command(self) -> Runner:
         """
         Move payload from turntable to oven
-        
+
         :return: A Runner moving the payload
         """
         runner = self.create_runner()
@@ -1010,19 +1007,19 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         return runner.run()
 
-    
+
     @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         """ Stop the machine """
         return self.stop_CycleStep
-    
+
     @protocol_command_function(description="Command moving the machine parts in a safe place if defined or to the setup position.")
     def move_to_safe_position_Command(self) -> Union[Runner, Callable[[], CycleStepResult]]:
         """ Set the machine in a safe position """
         runner = self.create_runner()
         config = self.get_current_config()
-        
-        if self.safeToOven != None:
+
+        if self.safeToOven is not None:
             if self.safeToOven:
                 config.vacuum_arm_at_oven = True
                 runner.then_goto(config, info="go to oven")
@@ -1032,7 +1029,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
             return runner.run()
         else :
             return self.setup_Command()
-        
+
     @protocol_command_function(description="Execute process according to oven_time (time in oven in sec), saw_time (time in saw in sec),\
         and output the product on the specified output")
     def process_Command(self, oven_time: int, saw_time: int, output: MPSOutput) -> Runner:
@@ -1046,18 +1043,18 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         runner.then_goto(config, info="initializing")
 
-        if (oven_time == 0 and saw_time == 0 and output == MPSOutput.OVEN):
+        if oven_time == 0 and saw_time == 0 and output == MPSOutput.OVEN:
             return runner.run()
 
-        
+
         #Oven process
-        if (oven_time > 0):
+        if oven_time > 0:
             self.oven_process_Augment(oven_time, config, runner)
 
             #End the process if no sawing time and output at oven
-            if (saw_time == 0 and output == MPSOutput.OVEN):
+            if saw_time == 0 and output == MPSOutput.OVEN:
                 return runner.run()
-        
+
         self.arm_move_Augment(MPSArmPosition.OVEN, config, runner)
 
         self.arm_pick_Augment(config, runner)
@@ -1065,25 +1062,25 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         self.arm_move_Augment(MPSArmPosition.TURNTABLE, config, runner)
 
         self.arm_place_Augment(config, runner)
-        
+
         #Sawing process
-        if (saw_time > 0):
-            self.turntable_rotate_Augment(MPSTurntablePosition.SAW, config, runner)
+        if saw_time > 0:
+            self.turntable_rotate_Augment(TurnTablePosition.SAW, config, runner)
 
             self.saw_cut_Augment(saw_time, config, runner)
 
         #If output on conveyor, move payload to conveyor
-        if (output == MPSOutput.CONVEYOR):
-            self.turntable_rotate_Augment(MPSTurntablePosition.CONVEYOR, config, runner)
+        if output == MPSOutput.CONVEYOR:
+            self.turntable_rotate_Augment(TurnTablePosition.CONVEYOR, config, runner)
 
             self.turntable_eject_Augment(config, runner)
 
             return runner.run()
-        
-        self.turntable_rotate_Augment(MPSTurntablePosition.ARM, config, runner)
+
+        self.turntable_rotate_Augment(TurnTablePosition.VACUUM, config, runner)
 
         self.arm_pick_Augment(config, runner)
-    
+
         self.arm_move_Augment(MPSArmPosition.OVEN, config, runner)
 
         self.arm_place_Augment(config, runner)

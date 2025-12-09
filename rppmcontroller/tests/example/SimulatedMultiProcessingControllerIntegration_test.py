@@ -3,18 +3,18 @@ import logging
 import os
 import re
 import unittest
-from unittest.mock import patch, Mock
-
-from rppmcontroller.example.SimulatedMultiProcessingController import SimulatedMultiProcessingController
-from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.MPSOutput import MPSOutput
-from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
-from rppmcontroller.machine.enum.MPSTurntablePosition import MPSTurntablePosition
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 import tests.controllerTestHelper as ctHelper
+from rppmcontroller.example.SimulatedMultiProcessingController import \
+    SimulatedMultiProcessingController
+from rppmcontroller.machine.MPSOutput import MPSOutput
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
+from rppmcontroller.machine.multiprocessing.MultiProcessing import \
+    MultiProcessing
+from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
+    TurnTablePosition
+from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 
 class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
@@ -141,7 +141,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -193,7 +193,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -260,7 +260,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -336,7 +336,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -408,7 +408,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -422,7 +422,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
                 #Simulate payload out of oven
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDERINSIDE, False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE, True)
-            
+
             if notification == "" :
                 iterationDone += 1
                 logging.debug("Next iteration is " + str(iterationDone))
@@ -465,13 +465,13 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE,True)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW,True)
-            
+
             if notification == "" :
                 iterationDone += 1
                 logging.debug("Next iteration is " + str(iterationDone))
@@ -516,7 +516,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -571,7 +571,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -624,7 +624,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -672,7 +672,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -709,7 +709,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_ROTATE", [
-            MPSTurntablePosition.ARM
+            TurnTablePosition.VACUUM
         ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
@@ -723,7 +723,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -764,7 +764,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_ROTATE", [
-            MPSTurntablePosition.SAW
+            TurnTablePosition.SAW
         ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
@@ -778,7 +778,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -819,7 +819,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
         # send a move command
         message = MachineCommand("COMMAND", "MULTIPROCESSING", 1, "TURNTABLE_ROTATE", [
-            MPSTurntablePosition.CONVEYOR
+            TurnTablePosition.CONVEYOR
         ])
         ctHelper.sendMessage(self.controller, "MultiProcessing01", message)
 
@@ -833,7 +833,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -886,7 +886,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            
+
             if iterationDone == 2:
                 #Simulate the setup
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHOVENFEEDEROUTSIDE,True)
@@ -953,7 +953,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
             if iterationDone == 2:
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONOVEN,True)
-            
+
             if notification == "" :
                 iterationDone += 1
                 logging.debug("Next iteration is " + str(iterationDone))
@@ -967,7 +967,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
             self.assertLess(iterationDone, 10, "COMMAND not reached in less than 10 iterations" )
 
-        
+
     def test_moveToSafetyTurntable(self):
         '''
             Test the move_to_safe_position command
@@ -1007,7 +1007,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
             if iterationDone == 2:
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHVACUUMPOSITIONTURNTABLE,True)
-            
+
             if notification == "" :
                 iterationDone += 1
                 logging.debug("Next iteration is " + str(iterationDone))
