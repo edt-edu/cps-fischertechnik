@@ -53,7 +53,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 0
         self.robot1.vacuumSensRotEncoderCounter = 0
 
-        ret = self.robot1.setup_Command()
+        ret = self.robot1.setup_Command().run()
 
         # at first it should retract the arm
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
@@ -69,7 +69,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensArmEndIn = True
         self.robot1.vacuumSensVerticalEndUp = False
 
-        ret = self.robot1.setup_Command()
+        ret = self.robot1.setup_Command().run()
 
         # now rot and vertical should move
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
@@ -86,7 +86,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensArmEndIn = True
         self.robot1.vacuumSensVerticalEndUp = True
 
-        ret = self.robot1.setup_Command()
+        ret = self.robot1.setup_Command().run()
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
