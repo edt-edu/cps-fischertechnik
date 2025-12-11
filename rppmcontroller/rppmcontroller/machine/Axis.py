@@ -106,7 +106,10 @@ class Axis:
 
     def gotoConfig(self, end_pos: bool, counter_goal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
         """
-        Set outputs to reach the wanted counter goal for that axis
+        Set outputs to reach the wanted counter goal for that axis.
+
+        Note: If you set counter goal to `0` this method will behave exactly
+        as when `end_pos` is `True`.
 
         :param end_pos: Whether to move to the end-position of the axis
         :param counter_goal: The counter position to move to. Will be ignored
@@ -115,6 +118,13 @@ class Axis:
         is an ImpulseCounter, the direction of the movement is returned as
         second parameter
         """
+        # In order to improve precision, consider a move to 0 as a move to
+        # ref-switch
+        # -> there are checks in place which prevent moving beyond a
+        #   ref-switch
+        if end_pos <= 0:
+            end_pos = True
+
         target_reached = False
         direction = None
         #if you want to use the limit switch always set up counterGoal
