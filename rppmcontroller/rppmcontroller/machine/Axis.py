@@ -87,7 +87,7 @@ class Axis:
         if counterGoal > counterCurrent + tolerance:
             return PlusMinusStop.PLUS
         elif counterGoal < counterCurrent - tolerance and counterCurrent > 4000000:
-            logging.debug('handeled overflow')
+            logging.debug('handled overflow')
             return PlusMinusStop.PLUS
         elif counterGoal < counterCurrent - tolerance:
             return PlusMinusStop.MINUS
