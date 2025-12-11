@@ -27,8 +27,8 @@ class Axis:
         self.__tolerance = tolerance
         self.__first = True
         #variables need to be manually updated/written
-        self.__endpos: bool = False
-        self.__counterinput: int = 0
+        self.__end_pos: bool = False
+        self.__counter_input: int = 0
         self.__outputplus = False
         self.__outputminus = False
         if axis_type == AxisType.Encoder:
@@ -46,11 +46,11 @@ class Axis:
 
     @property
     def endpos(self):
-        return self.__endpos
+        return self.__end_pos
 
     @property
     def counterinput(self):
-        return self.__counterinput
+        return self.__counter_input
 
     @property
     def outputplus(self):
@@ -64,15 +64,16 @@ class Axis:
     def tolerance(self) -> int:
         return self.__tolerance + self.play
 
-    def update(self, endpos: bool, counterinput: int) -> None:
+    def update(self, end_pos: bool, counter_input: int) -> None:
         """
         Informs this Axis about the current values
-        :param endpos: Whether the Axis has reached its end-switch
-        :param counterinput: The current counter value
+
+        :param end_pos: Whether the Axis has reached its end-switch
+        :param counter_input: The current counter value
         :return: None
         """
-        self.__endpos = endpos
-        self.__counterinput = counterinput
+        self.__end_pos = end_pos
+        self.__counter_input = counter_input
 
     # we might want to make this method non-static in the future
     # noinspection PyMethodMayBeStatic
@@ -116,11 +117,11 @@ class Axis:
         direction = None
         #if you want to use the limit switch always set up counterGoal
         if endpos:
-            if not self.__endpos:
+            if not self.__end_pos:
                 self.__outputminus = True
                 self.__outputplus = False
                 if isinstance(self.__counter, ImpulseCounter):
-                    self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
+                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
                 direction = PlusMinusStop.MINUS
             else:
@@ -131,7 +132,7 @@ class Axis:
             #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
             if isinstance(self.__counter, ImpulseCounter):
                 if self.outputplus:
-                    self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.PLUS)
+                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.PLUS)
                     logging.debug(self.__counter.counter)
                     #print("compute counter")
                     if self.__first or self.endpos:
@@ -139,7 +140,7 @@ class Axis:
                         logging.debug("Reset arm counter here here here here here here")
                         self.__counter.counter = 0
                 elif self.outputminus:
-                    self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
+                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.MINUS)
                     print(self.__counter.counter)
                     if self.__first or self.endpos:
                         self.__first = False
@@ -147,7 +148,7 @@ class Axis:
                         self.__counter.counter = 0
 
             else:
-                self.__counter.counter = self.__counterinput
+                self.__counter.counter = self.__counter_input
 
             counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.tolerance)
             # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
@@ -167,7 +168,7 @@ class Axis:
 
             # extra check to make sure we are not telling the hardware to
             # move beyond a ref-switch
-            ref_switch_reached = self.__endpos
+            ref_switch_reached = self.__end_pos
             movToRefSwitch = self.outputminus
             if ref_switch_reached and movToRefSwitch:
                 self.__outputminus = False
