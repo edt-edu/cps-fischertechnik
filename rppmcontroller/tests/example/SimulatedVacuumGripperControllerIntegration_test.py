@@ -8,8 +8,8 @@ import unittest
 import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
     SimulatedVacuumGripperController
-from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
+from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 
@@ -74,7 +74,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_twoSetupCommands(self):
-        """Ensure that the setup command is performed and and send feedback"""
+        """Ensure that the setup command is performed and sends feedback"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
 
@@ -108,6 +108,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
+                self.controller.mainLoopIteration() # make sure gripper reads the values
             self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
         # check current position via feedback and/or by reading machine IO
@@ -123,10 +124,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         message = MachineCommand("COMMAND", "VACUUM", 2, "SETUP", [])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
 
-        # self.controller.mainLoopIteration()
-        # notification = ctHelper.readCommandFeedbackNotification(self.controller)
-        
-        self.controller.mainLoopIteration()        
+        self.controller.mainLoopIteration()
         # already on the sensor, so we get an immediate SUCCESS
         self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
 
@@ -144,6 +142,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"Setup DONE reached in {iterationDone} iterations")
                 endCommandReached = True
+                self.controller.mainLoopIteration()  # make sure gripper reads the values
             self.assertLess(iterationDone, 20, "Setup DONE not reached in less than 20 iterations" )
 
 
@@ -801,18 +800,15 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             Position("END", 500, 600, 500)
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
-            if vgr.vacuumSensArmEncoderCounter == 0:
-                vgr.vacuumSensArmEndIn = True
-
             #if arm is not retracted while moving, return error
-            if not ((vgr.vacuumSensRotEncoderCounter == 100 and vgr.vacuumSensVerticalEncoderCounter == 100) or \
+            if not ((vgr.vacuumSensRotEncoderCounter == 100 and vgr.vacuumSensVerticalEncoderCounter == 100) or
                 (vgr.vacuumSensRotEncoderCounter == 600 and vgr.vacuumSensVerticalEncoderCounter == 500)):
                 self.assertEqual(vgr.vacuumSensArmEncoderCounter, 0, "Arm is not retracted while moving")
 
@@ -860,14 +856,15 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
                 iterationDone += 1
-            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
-                pass
-            else:
+            elif not re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 # in between, the machine should have been put into active state
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification,
                                  r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
+                # if the robot already resided in its safe-position, at least another mainLoopIteration is needed to update the feedback
+                if iterationDone == 0:
+                    self.controller.mainLoopIteration()
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"MOVE TO SAFETY DONE reached in {iterationDone} iterations")
@@ -876,10 +873,12 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
         # check current position via vgr safe position
         vgr = self.controller.machines[0]
-        assert isinstance(vgr,VacuumGripper)
-        self.checkVGRPosition(vgr.safeVertical if (vgr.safeVertical != None) else 0,
-                              vgr.safeRotation if (vgr.safeRotation != None) else 0,
-                              vgr.safeHorizontal if (vgr.safeHorizontal != None) else 0)
+        self.assertIsInstance(vgr, VacuumGripper)
+        self.checkVGRPosition(
+            vgr.safeVertical if vgr.safeVertical is not None else 0,
+            vgr.safeRotation if vgr.safeRotation is not None else 0,
+            vgr.safeHorizontal if vgr.safeHorizontal is not None else 0
+        )
 
 
     def test_retract_armCommand(self):
@@ -909,9 +908,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
-            if vgr.vacuumSensArmEncoderCounter == 0:
-                vgr.vacuumSensArmEndIn = True
-            
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
             if notification == "":
@@ -956,7 +952,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, True, False)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1009,7 +1005,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(False, True, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1062,7 +1058,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, False, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
-        
+
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
 
@@ -1093,6 +1089,44 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
 
 
+    def test_rotation_reset(self):
+        """
+        Introduces an offset in the rotation and ensures that it is removed
+        when the corresponding ref-switch is hit
+        """
+        vgr = self.controller.machines[0]
+        simulator = self.controller.vaccumGripperSimulator
+
+        # make sure not all ref switches are hit
+        self.fakeSetupDoneAndSetPos(vacuumSensVerticalEncoderCounter=300)
+        simulator.rotational_encoder_value = 1  # introduce a minor offset
+
+        # make sure the offset is persistent
+        self.controller.mainLoopIteration()
+        self.assertEqual(1, simulator.rotational_encoder_value)
+
+        # ensure the offset gets corrected
+        vgr.vacuumSensRotEnd = True  # simulate a press of the ref-switch
+        self.controller.mainLoopIteration()
+        self.assertEqual(0, simulator.rotational_encoder_value)
+
+    def test_temper_protection(self):
+        """
+        Ensure that the robot does not reset its counter if somebody presses
+        the ref switch by hand
+        """
+        vgr = self.controller.machines[0]
+        simulator = self.controller.vaccumGripperSimulator
+
+        # set up the robot very far from the ref-switch
+        self.fakeSetupDoneAndSetPos(vacuumSensRotEncoderCounter=800)
+
+        # somebody presses the ref switch, even if the robot is far from the switch
+        vgr.vacuumSensRotEnd = True
+        self.controller.mainLoopIteration()
+        self.assertEqual(800, simulator.rotational_encoder_value)
+
+
     # TODO move to a test helper module
     def checkVGRPosition(self, expectedVerticalEncoder : int , expectedRotEncoder : int, expectedArmEncoder :int) -> None:
         """verifies that the Vacuum Gripper encoder values are close enought to the expected values taking into account the simulation increment"""
@@ -1103,18 +1137,27 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertAlmostEqual(vgr.vacuumSensRotEncoderCounter, expectedRotEncoder, delta=delta)
         self.assertAlmostEqual(vgr.vacuumSensArmEncoderCounter, expectedArmEncoder, delta=delta)
 
-
-    def fakeSetupDoneAndSetPos(self, vacuumSensVerticalEncoderCounter: int = 0 , vacuumSensRotEncoderCounter : int = 0, vacuumSensArmEncoderCounter :int = 0,
-                            vacuumSensArmEndIn : bool = True, vacuumSensRotEnd : bool = True , vacuumSensVerticalEndUp : bool = True) -> None:
+    def fakeSetupDoneAndSetPos(self,
+                               vacuumSensVerticalEncoderCounter: int = 0,
+                               vacuumSensRotEncoderCounter: int = 0,
+                               vacuumSensArmEncoderCounter: int = 0) -> None:
         vgr = self.controller.machines[0]
-        assert isinstance(vgr,VacuumGripper)
-        vgr.isInitialized = True
-        vgr.vacuumSensVerticalEncoderCounter = vacuumSensVerticalEncoderCounter
-        vgr.vacuumSensRotEncoderCounter = vacuumSensRotEncoderCounter
-        vgr.vacuumSensArmEncoderCounter =  vacuumSensArmEncoderCounter
-        vgr.vacuumSensArmEndIn = vacuumSensArmEndIn
-        vgr.vacuumSensRotEnd= vacuumSensRotEnd
-        vgr.vacuumSensVerticalEndUp = vacuumSensVerticalEndUp
+        self.assertIsInstance(vgr, VacuumGripper)
+        simulator = self.controller.vaccumGripperSimulator
+
+        # apply values to simulator
+        simulator.horizontal_encoder_value = vacuumSensArmEncoderCounter
+        simulator.rotational_encoder_value = vacuumSensRotEncoderCounter
+        simulator.vertical_encoder_value = vacuumSensVerticalEncoderCounter
+
+        # mark simulator as calibrated
+        simulator.hasBeenCalibratedOnArm = True
+        simulator.hasBeenCalibratedRotational = True
+        simulator.hasBeenCalibratedVertically = True
+
+        simulator.simulatedRead()  # apply values to vgr
+        self.controller.reset()  # make sure reset helpers are not set
+        vgr.isInitialized = True  # mark vgr as initialized
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 import logging
-import multiprocessing 
+import multiprocessing
 from multiprocessing import Process
 from multiprocessing import Queue
 from queue import Empty
@@ -35,7 +35,7 @@ class VacuumGripperController(RevPiPyMachineController):
         """
 
         super().__init__(configurationFile)
-        
+
         # Instantiate RevPiModIO
         if(not simulatedRevPiModIO):
             self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
@@ -91,19 +91,19 @@ class VacuumGripperController(RevPiPyMachineController):
         self.rpi.io.dio1_O_8.value = self.vacuumGripperMachine.vacuumActValve
 
 
-         
-    
+
+
     def reset(self) -> None:
-        # TODO find a way to read from a configuration file
         assert self.rpi.io is not None
-        vg = self.vacuumGripperMachine.resetHelper()
-        if vg[0]:
+        if self.vacuumGripperMachine.vertical_reset_helper.must_reset():
             self.rpi.io.dio1_Counter_5.reset()
+        if self.vacuumGripperMachine.arm_reset_helper.must_reset():
             self.rpi.io.dio1_Counter_7.reset()
+        if self.vacuumGripperMachine.rot_reset_helper.must_reset():
             self.rpi.io.dio1_Counter_9.reset()
 
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s',
                         level=logging.DEBUG,
                         datefmt='%Y-%m-%d %H:%M:%S')
     handler = logging.FileHandler("logfile.log")

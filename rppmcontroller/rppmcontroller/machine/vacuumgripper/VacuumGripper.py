@@ -1,7 +1,7 @@
-from typing_extensions import override
-
 import logging
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, List
+
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -12,6 +12,7 @@ from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.machine.ResetHelper import ResetHelper
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import \
     VacuumGripperConfig
@@ -56,6 +57,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__axisArm = Axis(AxisType.Encoder, 5)
         self.__axisVertical = Axis(AxisType.Encoder, 10)
         self.__axisRot = Axis(AxisType.Encoder, 5)
+        self.__rot_reset_helper = ResetHelper()
+        self.__vertical_reset_helper = ResetHelper()
+        self.__arm_reset_helper = ResetHelper()
 
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,
@@ -81,7 +85,6 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # helper variables
         self.configReached = False
         self.__is_initialized = False
-        self.mustReset = False
         self.configGoal = None
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
@@ -95,6 +98,24 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.safeHorizontal = safetyPos.get('horizontal', None)
         self.safeVertical = safetyPos.get('vertical', None)
         self.safeRotation = safetyPos.get('rotation', None)
+
+    @property
+    def __reset_helpers(self) -> List[ResetHelper]:
+        return [self.vertical_reset_helper, self.rot_reset_helper, self.arm_reset_helper]
+
+    @property
+    def mustReset(self) -> bool:
+        return all(
+            (helper.is_marked_for_reset for helper in self.__reset_helpers))
+
+    @mustReset.setter
+    def mustReset(self, value: bool) -> None:
+        if value:
+            for helper in self.__reset_helpers:
+                helper.mark_for_reset()
+        else:
+            for helper in self.__reset_helpers:
+                helper.must_reset()
 
     @property
     def isInitialized(self) -> bool:
@@ -182,6 +203,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumSensVerticalEndUp.setter
     def vacuumSensVerticalEndUp(self, value):
         self.__vacuumSensVerticalEndUp = value
+        self.vertical_reset_helper.mark_for_reset_if(value, self.vacuumSensVerticalEncoderCounter)
 
     @property
     def vacuumSensVerticalEncoderCounter(self):
@@ -201,6 +223,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumSensArmEndIn.setter
     def vacuumSensArmEndIn(self, value):
         self.__vacuumSensArmEndIn = value
+        self.arm_reset_helper.mark_for_reset_if(value, self.vacuumSensArmEncoderCounter)
 
     @property
     def vacuumSensArmEncoderCounter(self):
@@ -220,6 +243,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumSensRotEnd.setter
     def vacuumSensRotEnd(self, value):
         self.__vacuumSensRotEnd = value
+        self.rot_reset_helper.mark_for_reset_if(value, self.vacuumSensRotEncoderCounter)
 
     @property
     def vacuumSensRotEncoderCounter(self):
@@ -276,6 +300,18 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumActRotLeft.setter
     def vacuumActRotLeft(self, value):
         self.__vacuumActRotLeft = value
+
+    @property
+    def vertical_reset_helper(self) -> ResetHelper:
+        return self.__vertical_reset_helper
+
+    @property
+    def arm_reset_helper(self) -> ResetHelper:
+        return self.__arm_reset_helper
+
+    @property
+    def rot_reset_helper(self) -> ResetHelper:
+        return self.__rot_reset_helper
 
     def sensorStatusString(self) -> str:
         s = lambda b: "T" if b else "F"
@@ -467,10 +503,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         config = VacuumGripperConfig()
         runner.then_goto(config, info="setup")
 
-        # finally we mark the setup as done and reset the counters
+        # finally we mark the setup as done
         def on_setup_finish():
             self.__is_initialized = True
-            self.mustReset = True
             return CycleStepResult.done()
 
         runner.then_run(on_setup_finish, info="finishing")
