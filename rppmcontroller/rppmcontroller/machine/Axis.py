@@ -108,7 +108,7 @@ class Axis:
         """
         Set outputs to reach the wanted counter goal for that axis.
 
-        Note: If you set counter goal to `0` this method will behave exactly
+        Note: If you set `counter_goal` to `0` this method will behave exactly
         as when `end_pos` is `True`.
 
         :param end_pos: Whether to move to the end-position of the axis
@@ -122,7 +122,7 @@ class Axis:
         # ref-switch
         # -> there are checks in place which prevent moving beyond a
         #   ref-switch
-        if end_pos <= 0:
+        if counter_goal <= 0:
             end_pos = True
 
         target_reached = False
