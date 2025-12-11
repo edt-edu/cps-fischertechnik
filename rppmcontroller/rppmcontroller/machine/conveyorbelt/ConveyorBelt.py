@@ -27,17 +27,17 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
     @isInitialized.setter
     def isInitialized(self, value):
         logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property") 
-    
+        raise AttributeError("isInitialized is a read-only property")
+
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         res = self.__conveyorActForward or self.__conveyorActBackward
-        
+
         if (self.executing_runner == None):
             routine = "None"
         else:
             routine = str(self.executing_runner)
-        
+
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
@@ -197,7 +197,7 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
         runner.then_goto(ConveyorBeltConfig(state=ConveyorState.from_direction(direction)), and_stay_for=1.0, info="Sensor passed")
         # stop the belt
         runner.then_goto(ConveyorBeltConfig(), info="Conveyor stopped")
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def move_nb_steps_Command(self, direction: Direction, steps: int) -> Runner:
@@ -226,7 +226,7 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
         def runnable()-> None:
             self.current = self.countSteps()
             logging.debug(f"goal : {goal} counter : {self.current}")
-        
+
         config.state = state
         runner.then_run(runnable, until=nb_cycles_reached, info="Wait number of steps")
 
@@ -235,7 +235,7 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
 
         logging.debug(f"Actualgoal : {goal} counter : {self.current}")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def move_to_sensor_Command(self, direction: Direction):
@@ -261,6 +261,6 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
         config.state = ConveyorState.IDLE
         runner.then_goto(config, info="Conveyor stopped")
 
-        
 
-        return runner.run()
+
+        return runner
