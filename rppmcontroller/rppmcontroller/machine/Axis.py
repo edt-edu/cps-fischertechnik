@@ -17,10 +17,10 @@ class AxisType(Enum):
 #TODO ensure no negative values are accepted for counter goal
 class Axis:
 
-    def __init__(self, typ: AxisType, tolerance):
+    def __init__(self, axis_type: AxisType, tolerance: int):
         """constructor creates ImpulseCounter object if necessary"""
-        self.__type = typ
-        if typ == AxisType.Counter:
+        self.__type = axis_type
+        if axis_type == AxisType.Counter:
             self.__counter = ImpulseCounter()
         else:
             self.__counter = Counter()
@@ -31,11 +31,10 @@ class Axis:
         self.__counterinput: int = 0
         self.__outputplus = False
         self.__outputminus = False
-        if typ == AxisType.Encoder:
+        if axis_type == AxisType.Encoder:
             self.play = 8
         else:
             self.play = 2
-        self.__endpos_is_at_low_counter_values = True
 
     @property
     def counterValueCurrent(self):
