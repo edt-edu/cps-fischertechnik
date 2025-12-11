@@ -49,13 +49,13 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumActRotRight = False
         self.robot1.vacuumActVerticalDown = False
         self.robot1.vacuumActVerticalUp = False
-        self.robot1.vacuumSensArmEncoderCounter = 0
-        self.robot1.vacuumSensVerticalEncoderCounter = 0
-        self.robot1.vacuumSensRotEncoderCounter = 0
+        self.robot1.vacuumSensArmEncoderCounter = 200
+        self.robot1.vacuumSensVerticalEncoderCounter = 200
+        self.robot1.vacuumSensRotEncoderCounter = 200
 
         ret = self.robot1.setup_Command()
 
-        # at first it should retract the arm
+        # at first, it should retract the arm
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
         self.assertTrue(self.robot1.vacuumActArmIn)
         self.assertFalse(self.robot1.vacuumActArmOut)
@@ -65,9 +65,8 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertFalse(self.robot1.vacuumActVerticalUp)
 
         # suppose we retracted the arm
-        self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = True
-        self.robot1.vacuumSensVerticalEndUp = False
+        self.robot1.vacuumSensArmEncoderCounter = 0
 
         ret = self.robot1.setup_Command()
 
@@ -83,8 +82,9 @@ class VacuumGripperTestCase(unittest.TestCase):
         # simulate move
         # we suppose that it finish to touch the sensor
         self.robot1.vacuumSensRotEnd = True
-        self.robot1.vacuumSensArmEndIn = True
         self.robot1.vacuumSensVerticalEndUp = True
+        self.robot1.vacuumSensVerticalEncoderCounter = 0
+        self.robot1.vacuumSensRotEncoderCounter = 0
 
         ret = self.robot1.setup_Command()
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
