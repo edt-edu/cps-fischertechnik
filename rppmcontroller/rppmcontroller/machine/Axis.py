@@ -98,25 +98,27 @@ class Axis:
     def gotoAxisConfig(self, axis_config: AxisConfig) -> bool:
         """
         Set the outputs to move towards the specified axis_config
+
         :param axis_config: An AxisConfig specifying where to move to
         :return: True if the goal specified by the config has been reached. If the internal counter is a pulse counter, then the direction of that is also returned.
         """
         return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
 
-    def gotoConfig(self, endpos: bool, counterGoal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
+    def gotoConfig(self, end_pos: bool, counter_goal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
         """
-        method to set outputs to reach the wanted config goal for that axis
-        :param endpos: Whether to move to the end-position of the axis
-        :param counterGoal: The counter position to move to. Will be ignored
-        if endpos is True
-        :return: True if the target has been reached. If the internal counter
+        Set outputs to reach the wanted counter goal for that axis
+
+        :param end_pos: Whether to move to the end-position of the axis
+        :param counter_goal: The counter position to move to. Will be ignored
+        if end_pos is `True`
+        :return: `True` if the target has been reached. If the internal counter
         is an ImpulseCounter, the direction of the movement is returned as
         second parameter
         """
         target_reached = False
         direction = None
         #if you want to use the limit switch always set up counterGoal
-        if endpos:
+        if end_pos:
             if not self.__end_pos:
                 self.__outputminus = True
                 self.__outputplus = False
@@ -150,7 +152,7 @@ class Axis:
             else:
                 self.__counter.counter = self.__counter_input
 
-            counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.tolerance)
+            counterPos = self.howtoCounterPos(counter_goal, self.__counter.counter, self.tolerance)
             # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
             if counterPos == PlusMinusStop.PLUS:
                 self.__outputminus = False
