@@ -17,7 +17,7 @@ class AxisType(Enum):
 #TODO ensure no negative values are accepted for counter goal
 class Axis:
 
-    def __init__(self, typ: AxisType, tolerance, endpos_is_at_low_counter_values = True):
+    def __init__(self, typ: AxisType, tolerance):
         """constructor creates ImpulseCounter object if necessary"""
         self.__type = typ
         if typ == AxisType.Counter:
@@ -35,7 +35,7 @@ class Axis:
             self.play = 8
         else:
             self.play = 2
-        self.__endpos_is_at_low_counter_values = endpos_is_at_low_counter_values
+        self.__endpos_is_at_low_counter_values = True
 
     @property
     def counterValueCurrent(self):
@@ -118,12 +118,8 @@ class Axis:
         #if you want to use the limit switch always set up counterGoal
         if endpos:
             if not self.__endpos:
-                if self.__endpos_is_at_low_counter_values:
-                    self.__outputminus = True
-                    self.__outputplus = False
-                else:
-                    self.__outputplus = True
-                    self.__outputminus = False
+                self.__outputminus = True
+                self.__outputplus = False
                 if isinstance(self.__counter, ImpulseCounter):
                     self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
@@ -173,10 +169,7 @@ class Axis:
             # extra check to make sure we are not telling the hardware to
             # move beyond a ref-switch
             ref_switch_reached = self.__endpos
-            if self.__endpos_is_at_low_counter_values:
-                movToRefSwitch = self.outputminus
-            else:
-                movToRefSwitch = self.outputplus
+            movToRefSwitch = self.outputminus
             if ref_switch_reached and movToRefSwitch:
                 self.__outputminus = False
                 self.__outputplus = False
