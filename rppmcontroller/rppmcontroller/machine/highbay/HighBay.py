@@ -633,7 +633,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             return CycleStepResult.done()
 
         return self.create_runner().then_run(self.goto_config_CycleStep, info="goto_config_setup").then_run(
-            mark_setup_finished, info="mark_setup_finished").run()
+            mark_setup_finished, info="mark_setup_finished")
 
     @protocol_command_function()
     def conveyor_forward_Command(self) -> Callable[[], CycleStepResult]:
@@ -698,7 +698,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.run_setup_unless_initialized(runner)
         config = self.get_current_config()
         config.horizontal_axis_config = AxisConfig.to_counter_goal(counter_goal)
-        return runner.then_goto(config).run()
+        return runner.then_goto(config)
 
     @protocol_command_function()
     def vertical_to_Command(self, counter_goal: int) -> Runner:
@@ -718,7 +718,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.run_setup_unless_initialized(runner)
         config = self.get_current_config()
         config.vertical_axis_config = AxisConfig.to_counter_goal(counter_goal)
-        return runner.then_goto(config).run()
+        return runner.then_goto(config)
 
     @protocol_command_function()
     def goto_column_Command(self, column: Union[Column, int]) -> Callable[
@@ -831,7 +831,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # perform a setup to recalibrate the encoders
         runner.then_run_runner_from(self.setup_Command, info="setup")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def pickup_from_Command(self,
@@ -897,7 +897,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # perform another setup
         runner.then_run_runner_from(self.setup_Command, info="setup")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def stop_Command(self) -> Callable[[], CycleStepResult]:
@@ -919,11 +919,11 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             config = self.get_current_config()
             config.horizontal_axis_config = AxisConfig.to_counter_goal(self.safeHorizontal)
             config.vertical_axis_config = AxisConfig.to_counter_goal(self.safeVertical)
-            return runner.then_goto(config).run()
+            return runner.then_goto(config)
 
             # runner = self.create_runner()
             # runner.then_run(self.vertical_to_Command(self.safeVertical), info="Moving vertically to safe pos")
             # runner.then_run(self.horizontal_to_Command(self.safeHorizontal), info="Moving horizontally to safe pos")
-            # return runner.run()
+            # return runner
         else:
             return self.setup_Command()

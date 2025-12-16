@@ -510,7 +510,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
         runner.then_run(on_setup_finish, info="finishing")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function(description="Moves the gripper to the position without changing the valve or compressor status.")
     def go_to_position_Command(self, targetPos: Position) -> Runner:
@@ -528,7 +528,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         config.gripper_active = self.vacuumActValve
         runner.then_goto(config, info="moving to target position")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function(description="Moves the arm to the specified position, but retracts the arm before")
     def retracted_go_to_position_Command(self, target_position: Position) -> Runner:
@@ -542,7 +542,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         runner = self.create_runner()
         runner.then_run_runner_from(lambda: self.retract_arm_Command(), info="Retracting arm")
         runner.then_run_runner_from(lambda: self.ordered_move_to_Command(target_position, AxisBoolThreeD(vertical=True, horizontal=False, rot=True)), info="Move to position")
-        return runner.run()
+        return runner
 
 
     @protocol_command_function(description="Command triggering a move token action. I.e. it picks a token on the startPos and drop it on the endPos")
@@ -562,7 +562,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # place token
         runner.then_run_runner_from(lambda: self.place_Command(endPos), info="place")
 
-        return runner.run()
+        return runner
 
 
     @protocol_command_function(description="Command triggering a pick token action. I.e. it moves the arm to the startPos and grips a token on that position")
@@ -588,7 +588,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # move back to hover pos
         runner.then_run_runner_from(lambda: self.go_to_position_Command(hover_pos), info="lift payload")
 
-        return runner.run()
+        return runner
 
 
     @protocol_command_function(description="Command triggering a place token action. I.e. it moves the arm to the endPos and release the token on that position")
@@ -614,7 +614,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # move up again
         runner.then_run_runner_from(lambda: self.go_to_position_Command(hover_pos), info="retreat from drop-off position")
 
-        return runner.run()
+        return runner
 
 
     @protocol_command_function(description="Command activating the gripper without moving the arm.")
@@ -626,7 +626,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         """
         config = self.get_current_config()
         config.gripper_active = True
-        return self.create_runner().then_goto(config, and_stay_for=0.5, info="gripping").run()
+        return self.create_runner().then_goto(config, and_stay_for=0.5, info="gripping")
 
     #@protocol_command_function(description="Command deactivating the gripper without moving the arm.")
     # def release_Command(self) -> Runner:
@@ -638,7 +638,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         """
         config = self.get_current_config()
         config.gripper_active = False
-        return self.create_runner().then_goto(config, info="releasing").run()
+        return self.create_runner().then_goto(config, info="releasing")
 
     @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
@@ -666,7 +666,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         """
         config = self.get_current_config()
         config.horizontal_axis_config = AxisConfig.to_end_position()
-        return self.create_runner().then_goto(config, info="retracting arm").run()
+        return self.create_runner().then_goto(config, info="retracting arm")
 
 
     @protocol_command_function(description="Move the arm to position. Moving first the specified axis and then the others.")
@@ -694,4 +694,4 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         config.gripper_active = self.vacuumActValve
         runner.then_goto(config, info="Moving to dest position")
 
-        return runner.run()
+        return runner

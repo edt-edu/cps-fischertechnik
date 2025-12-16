@@ -504,4 +504,4 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.ejectingPayload = False
         runner.then_run(self.ejectPayloadByTime_CycleStep, info="Ejecting payload")
 
-        return runner.run()
+        return runner
