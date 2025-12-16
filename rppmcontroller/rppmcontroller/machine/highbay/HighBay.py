@@ -16,6 +16,7 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ResetHelper import ResetHelper
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
+from rppmcontroller.machine.highbay.HighBayParameters import HighBayParameters
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 
@@ -90,7 +91,8 @@ class Row(Enum):
 
 
 class HighBay(Machine, TransitioningMachine[HighBayConfig]):
-    def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
+    def __init__(self, id1,
+                 row_offset: Union[int, Tuple[int, int, int, int]] = 0,
                  column_offset: Union[int, Tuple[int, int, int, int]] = 0,
                  safetyPos: Optional[Dict[str, int]] = None,
                  pwmParameters: Optional[Dict[str, int]] = None):
@@ -172,7 +174,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.previous_isExecuting_log = None
         self.__is_initialized = False
         self.next_config = HighBayConfig()
-        self.__state = None
         self.stdSpeed = pwmParameters.get('stdSpeed', 100)
         self.reducedSpeed = pwmParameters.get('reducedSpeed', 40)
         self.approachTol = pwmParameters.get('approachTol', 100)
@@ -180,6 +181,9 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # safety position
         self.safeHorizontal = safetyPos.get('horizontal', None)
         self.safeVertical = safetyPos.get('vertical', None)
+
+        self.__parameters = HighBayParameters()
+        self.__parameters.adjust_pickup_distance(3)
 
     @property
     def __reset_helpers(self) -> List[ResetHelper]:
