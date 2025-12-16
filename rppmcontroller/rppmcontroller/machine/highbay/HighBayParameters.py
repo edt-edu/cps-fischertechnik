@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Self
 
+from rppmcontroller.machine.parameter.Parameters import IntParameter
+
 
 @dataclass
 class HighBayParameters:
@@ -8,10 +10,12 @@ class HighBayParameters:
     All configurable parameters of the HighBay machine.
     """
 
-    pickup_distance: int = 150
-    """How far up the arm will be moved, when picking up an item"""
-    conveyor_column: int = 70
-    """The encoder value of the horizontal conveyor position"""
+    def __init__(self):
+        self.pickup_distance = IntParameter(self, 150)
+        """How far up the arm will be moved, when picking up an item"""
+        self.conveyor_column = IntParameter(self, 70)
+        """The encoder value of the horizontal conveyor position"""
+
     right_column: int = 1550
     """The encoder value of the horizontal position of the column closest to the conveyor"""
     middle_column: int = 2700

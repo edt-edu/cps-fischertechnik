@@ -1,9 +1,10 @@
 import typing
+from typing import Generic
 
 P = typing.TypeVar('P')
 
 
-class IntParameter:
+class IntParameter(Generic[P]):
     """
     Represents a parameter of the type `int`
     """
