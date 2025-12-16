@@ -26,6 +26,9 @@ class HighBayParameters:
     """The encoder value of the vertical position of the middle row"""
     top_row: int = 200
     """The encoder value of the vertical position of the top row"""
+    # TODO vertical_safety_pos
+    # TODO horizontal_safety_pos
+    # TODO pwm_parameters
 
     def add_horizontal_offset(self, offset: int) -> Self:
         """
