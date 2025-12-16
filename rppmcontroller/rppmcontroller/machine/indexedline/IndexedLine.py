@@ -383,7 +383,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config.slider_1_extended = False
         runner.then_goto(config, info="Stopping milling conveyor")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def mill_Command(self) -> Runner:
@@ -395,7 +395,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         runner.then_goto(config, and_stay_for=2.0, info="milling")
         config.milling = False
         runner.then_goto(config, info="Stopping mill")
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def move_to_drill_Command(self) -> Runner:
@@ -414,7 +414,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config.drilling_conveyor = False
         runner.then_goto(config, info="stopping conveyors")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def drill_Command(self) -> Runner:
@@ -428,7 +428,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config.drilling = False
         runner.then_goto(config, info="stopping drill")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def move_to_output_Command(self) -> Runner:
@@ -455,7 +455,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config.swap_conveyor = False
         config.slider_2_extended = False
         runner.then_goto(config, info="stopping")
-        return runner.run()
+        return runner
 
     @protocol_command_function()
     def process1_Command(self) -> Runner:
@@ -483,7 +483,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         # move to output
         runner.then_run_runner_from(self.move_to_output_Command, info="moving to output")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:

@@ -69,11 +69,11 @@ class PunchingMachine(Machine, TransitioningMachine[PunchingMachineConfig]):
     @property
     def isInitialized(self) -> bool:
         return True  # always ready, since there are no encoder actuators
-    
+
     @isInitialized.setter
     def isInitialized(self, value):
         logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property") 
+        raise AttributeError("isInitialized is a read-only property")
 
     # Input properties
 
@@ -237,7 +237,7 @@ class PunchingMachine(Machine, TransitioningMachine[PunchingMachineConfig]):
         config.conveyor_state = ConveyorState.IDLE
         runner.then_goto(config, info="stopping")
 
-        return runner.run()
+        return runner
 
     @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
