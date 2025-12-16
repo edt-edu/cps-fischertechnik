@@ -35,10 +35,10 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
     @isInitialized.setter
     def isInitialized(self, value):
         logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property") 
-    
+        raise AttributeError("isInitialized is a read-only property")
+
     #TODO self.once: implement reset possibility from execute
-    
+
     @Machine.isExecuting.getter
     def isExecuting(self) -> bool:
         res = (self.sortingLineActCompressorOn or
@@ -47,12 +47,12 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                 self.sortingLineActRedEjector or
                 self.sortingLineActBlueEjector or
                 self.is_executing_runner)
-        
+
         if (self.executing_runner == None):
             routine = "None"
         else:
             routine = str(self.executing_runner)
-        
+
         # log isexecuting and debug info only if message has changed
         isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
         if isExecuting_log != self.previous_isExecuting_log :
@@ -305,7 +305,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         return CycleStepResult(CycleStepResultEnum.DONE,
                                     f"stop_CycleStep",
                                     None)
-    
+
     @cycle_step_function()
     def detectColor_CycleStep(self) -> CycleStepResult:
         """
@@ -327,7 +327,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             if self.sortingLineSensBlueDetector:
                 self.colorToEject = Color.BLUE
                 return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
-            
+
         # If the token has arrived to the middle sensor, the detector didn't work
         if not self.sortingLineSensMiddleLightBarrier:
             if not self._mockAnalogSensor:
@@ -356,10 +356,10 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                     self.sortingLineSensWhiteDetector = True
                     self.colorToEject = Color.WHITE
                     return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
-        
+
         # Else, must continue
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
-    
+
     @cycle_step_function()
     def ejectPayloadBySteps_CycleStep(self) -> CycleStepResult:
         """
@@ -383,11 +383,11 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         redCounter = 14
         blueCounter = 24
 
-        # If counter attained the steps needed, eject 
+        # If counter attained the steps needed, eject
         if (self.colorToEject == Color.WHITE and current > whiteCounter) or \
            (self.colorToEject == Color.RED and current > redCounter) or  \
            (self.colorToEject == Color.BLUE and current > blueCounter):
-            
+
             self.__sortingLineActCompressorOn = True
             if self.colorToEject == Color.WHITE:
                 self.__sortingLineActWhiteEjector = True
@@ -396,11 +396,11 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             elif self.colorToEject == Color.BLUE:
                 self.__sortingLineActBlueEjector = True
 
-            # Wait 5 steps more to retract the arm and end the command 
+            # Wait 5 steps more to retract the arm and end the command
             if (self.colorToEject == Color.WHITE and current > whiteCounter+5) or \
                (self.colorToEject == Color.RED and current > redCounter+5) or   \
                (self.colorToEject == Color.BLUE and current > blueCounter+5):
-                
+
                 self.ejectingPayload = False
                 self.__sortingLineActMotorConveyor = False
                 self.__sortingLineActCompressorOn = False
@@ -410,7 +410,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                 return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
 
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
-    
+
     @cycle_step_function()
     def ejectPayloadByTime_CycleStep(self) -> CycleStepResult:
         """
@@ -426,25 +426,25 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         if not self.ejectingPayload:
             self.ejectingPayload = True
             regenerateTimer = True
-        
+
         # Regenerate the timer according to the color of the payload
-        if regenerateTimer or self.timer == None:
+        if regenerateTimer or self.timer is None:
             if self.colorToEject == Color.WHITE:
-                self.timer = Timer(self.WHITE_EJECTOR_DELAY)
+                self.timer = Timer(self.WHITE_EJECTOR_DELAY + self.__delay_offsets[0])
             elif self.colorToEject == Color.RED:
-                self.timer = Timer(self.RED_EJECTOR_DELAY)
+                self.timer = Timer(self.RED_EJECTOR_DELAY + self.__delay_offsets[1])
             elif self.colorToEject == Color.BLUE:
-                self.timer = Timer(self.BLUE_EJECTOR_DELAY)
+                self.timer = Timer(self.BLUE_EJECTOR_DELAY + self.__delay_offsets[2])
             else:
                 logging.error("No color defined, command aborted")
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
-        
+
         # Start timer
         if not self.timer.is_started():
             self.timer.start()
 
         # If timer is elapsed, activate the piston and relaunch a timer
-        if self.timer.is_started() and self.timer.elapsed() and not self.__sortingLineActCompressorOn:            
+        if self.timer.is_started() and self.timer.elapsed() and not self.__sortingLineActCompressorOn:
             self.__sortingLineActCompressorOn = True
             self.__sortingLineActMotorConveyor = False
             if self.colorToEject == Color.WHITE:
@@ -453,12 +453,12 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                 self.__sortingLineActRedEjector = True
             elif self.colorToEject == Color.BLUE:
                 self.__sortingLineActBlueEjector = True
-            
+
             self.ejectorActivationTimer.reset(start=True)
 
         # If timer is elapsed, finish the command
-        if self.ejectorActivationTimer.is_started() and self.ejectorActivationTimer.elapsed() and self.__sortingLineActCompressorOn: 
-            
+        if self.ejectorActivationTimer.is_started() and self.ejectorActivationTimer.elapsed() and self.__sortingLineActCompressorOn:
+
             self.ejectingPayload = False
             self.__sortingLineActCompressorOn = False
             self.__sortingLineActRedEjector = False
@@ -489,7 +489,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         # start conveyor
         config.conveyor_active = True
         runner.then_goto(config, info="Going to middle sensor")
-        
+
         # if color defined, set the attribute to the color
         if not color == Color.AUTO:
             self.colorToEject = color
@@ -499,7 +499,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
         # Forward to middle sensor
         runner.then_goto(config, until=lambda: not self.sortingLineSensMiddleLightBarrier, info="Going to middle sensor")
-        
+
         # Eject the payload in right output
         self.ejectingPayload = False
         runner.then_run(self.ejectPayloadByTime_CycleStep, info="Ejecting payload")
