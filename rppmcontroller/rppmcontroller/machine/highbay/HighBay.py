@@ -189,8 +189,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
     @property
     def parameters(self) -> HighBayParameters:
-        # return a deepcopy so that parameters are effectively immutable
-        return deepcopy(self.__parameters)
+        return self.__parameters
 
     # ------------------ Input Properties ------------------
 

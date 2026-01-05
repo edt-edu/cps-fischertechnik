@@ -91,8 +91,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     @property
     def parameters(self) -> VacuumGripperParameters:
-        # by using deepcopy we make __parameters effectively immutable
-        return deepcopy(self.__parameters)
+        return self.__parameters
 
     @property
     def __reset_helpers(self) -> List[ResetHelper]:

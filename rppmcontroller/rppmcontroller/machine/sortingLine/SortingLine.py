@@ -117,8 +117,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
     @property
     def parameters(self) -> SortingLineParameters:
-        # by using deepcopy we make the __parameters effectively immutable
-        return deepcopy(self.__parameters)
+        return self.__parameters
 
     @property
     def sortingLineSensImpulseCounterRaw(self):

@@ -125,8 +125,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
     @property
     def parameters(self) -> MultiProcessingParameters:
-        # by using deepcopy we make __parameters effectively immutable
-        return deepcopy(self.__parameters)
+        return self.__parameters
 
     @property
     def isInitialized(self) -> bool:
