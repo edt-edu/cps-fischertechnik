@@ -66,7 +66,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         if parameters is None:
             parameters = HighBayParameters()
 
-        # TODO initialize parameters here instead of the bottom of the constructor
+        self.__parameters = parameters
 
         #  inputs
         self.__highbaySensHorizontal = False
@@ -136,8 +136,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.previous_isExecuting_log = None
         self.__is_initialized = False
         self.next_config = HighBayConfig()
-
-        self.__parameters = parameters
 
     @property
     def __reset_helpers(self) -> List[ResetHelper]:
