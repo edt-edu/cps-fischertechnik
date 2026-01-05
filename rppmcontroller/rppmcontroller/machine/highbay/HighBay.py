@@ -66,6 +66,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         if parameters is None:
             parameters = HighBayParameters()
 
+        # TODO initialize parameters here instead of the bottom of the constructor
+
         #  inputs
         self.__highbaySensHorizontal = False
         self.__highbaySensInside = True

@@ -23,7 +23,12 @@ class SortingLineParameters:
     ejector_activation_time: float = 0.5
     """The time in seconds for which an ejector stays activated"""
     mock_analog_sensor: bool = False
-    """Whether to mock the analog sensor instead of using the hardware one"""
+    """
+    Whether to mock the analog sensor instead of using the hardware one.
+
+    Not every setup requires the analog sensor.
+    Setting this to true will randomly pick a color.
+    """
 
     def add_ejector_offset(self, offset: float) -> None:
         """
