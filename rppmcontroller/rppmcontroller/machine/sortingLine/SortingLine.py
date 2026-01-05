@@ -1,6 +1,6 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 from typing_extensions import override
 
@@ -48,7 +48,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                 self.sortingLineActBlueEjector or
                 self.is_executing_runner)
 
-        if (self.executing_runner == None):
+        if self.executing_runner is None:
             routine = "None"
         else:
             routine = str(self.executing_runner)
@@ -238,7 +238,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.__sortingLineSensWhiteDetector = value
 
     def sensorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"ConvSens[{s(self.sortingLineSensInputLightBarrier)}, {s(self.sortingLineSensMiddleLightBarrier)}], " + \
                f"ColoSens[{s(self.sortingLineSensWhiteLightBarrier)}, {s(self.sortingLineSensBlueLightBarrier)}, {s(self.sortingLineSensRedLightBarrier)}], " + \
@@ -246,7 +246,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                f"Counter[{self.sortingLineSensImpulseCounterRaw}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"Conveyor[{s(self.sortingLineActMotorConveyor)}], " + \
                f"CompValv[{s(self.sortingLineActCompressorOn)}, {s(self.sortingLineActWhiteEjector)}, {s(self.sortingLineActRedEjector)}, {s(self.sortingLineActBlueEjector)}]"
