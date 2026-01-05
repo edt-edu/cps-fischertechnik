@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from typing import Any, Callable, Dict, Union, Optional
 
 from typing_extensions import deprecated, override
@@ -15,6 +16,8 @@ from rppmcontroller.machine.TurnTableDirection import TurnTableDirection
 from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
 from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import \
     MultiProcessingConfig
+from rppmcontroller.machine.multiprocessing.MultiProcessingParameters import \
+    MultiProcessingParameters
 from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
     TurnTablePosition
 from rppmcontroller.protocol.decoratorFunctions import \
@@ -58,49 +61,11 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         __multiProcessingValveFeeder (bool) :
     """
 
-    @property
-    def isInitialized(self) -> bool:
-        return True # technically always initialized, since there are no encoder actuators
+    def __init__(self, id1, parameters: Optional[MultiProcessingParameters] = None):
+        if parameters is None:
+            parameters = MultiProcessingParameters()
 
-    @isInitialized.setter
-    def isInitialized(self, value):
-        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property")
-
-    @Machine.isExecuting.getter
-    def isExecuting(self) -> bool:
-        res = (self.isProcessingSequence() or
-               self.processing or
-               self.__multiProcessingActRotClockwise or
-               self.__multiProcessingActRotCounterclockwise or
-               self.__multiProcessingActConveyorForward or
-               self.__multiProcessingActSaw or
-               self.__multiProcessingActOvenInward or
-               self.__multiProcessingActOvenOutward or
-               self.__multiProcessingActGripperToOven or
-               self.__multiProcessingActGripperToTurntable or
-               self.__multiProcessingOvenLight or
-               self.__multiProcessingCompressor or
-               self.__multiProcessingActLowerValve or
-               self.__multiProcessingValveFeeder or
-               self.is_executing_runner)
-
-        if self.executing_runner is None:
-            routine = "None"
-        else:
-            routine = str(self.executing_runner)
-
-        # log isexecuting and debug info only if message has changed
-        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
-        if isExecuting_log != self.previous_isExecuting_log :
-            logging.debug(isExecuting_log)
-            self.previous_isExecuting_log = isExecuting_log
-
-        return res
-
-    def __init__(self, id1, safetyPos: Optional[Dict[str, bool]] = None):
-        if safetyPos is None:
-            safetyPos = {}
+        self.__parameters = parameters
 
         #  inputs
         self.__multiProcessingSensTurntablePosVacuum = False
@@ -158,8 +123,52 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         self.previous_isExecuting_log = None
         self.__turn_table_direction = TurnTableDirection.NONE
 
-        # safety position
-        self.safeToOven = safetyPos.get('toOven', None)
+    @property
+    def parameters(self) -> MultiProcessingParameters:
+        # by using deepcopy we make __parameters effectively immutable
+        return deepcopy(self.__parameters)
+
+    @property
+    def isInitialized(self) -> bool:
+        return True # technically always initialized, since there are no encoder actuators
+
+    @isInitialized.setter
+    def isInitialized(self, value):
+        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
+        raise AttributeError("isInitialized is a read-only property")
+
+    @Machine.isExecuting.getter
+    def isExecuting(self) -> bool:
+        res = (self.isProcessingSequence() or
+               self.processing or
+               self.__multiProcessingActRotClockwise or
+               self.__multiProcessingActRotCounterclockwise or
+               self.__multiProcessingActConveyorForward or
+               self.__multiProcessingActSaw or
+               self.__multiProcessingActOvenInward or
+               self.__multiProcessingActOvenOutward or
+               self.__multiProcessingActGripperToOven or
+               self.__multiProcessingActGripperToTurntable or
+               self.__multiProcessingOvenLight or
+               self.__multiProcessingCompressor or
+               self.__multiProcessingActLowerValve or
+               self.__multiProcessingValveFeeder or
+               self.is_executing_runner)
+
+        if self.executing_runner is None:
+            routine = "None"
+        else:
+            routine = str(self.executing_runner)
+
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
+
+        return res
+
+
 
     @property
     def multiProcessingSensTurntablePosVacuum(self) -> bool:
@@ -1019,8 +1028,8 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         runner = self.create_runner()
         config = self.get_current_config()
 
-        if self.safeToOven is not None:
-            if self.safeToOven:
+        if self.parameters.safety_at_oven is not None:
+            if self.parameters.safety_at_oven:
                 config.vacuum_arm_at_oven = True
                 runner.then_goto(config, info="go to oven")
             else :
