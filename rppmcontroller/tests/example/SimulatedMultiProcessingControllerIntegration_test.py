@@ -923,7 +923,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         #setup the MPS with the arm on turntable
         mps = self.controller.machines[0]
         assert isinstance(mps, MultiProcessing)
-        mps.safeToOven = True # TODO this call doesn't exist anymore
+        mps.parameters.safety_at_oven = True
         mps.multiProcessingSensOvenFeederOut = True
         mps.multiProcessingSensTurntablePosVacuum = True
         mps.multiProcessingSensVacuumGripperAtTurntable = True
@@ -977,7 +977,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         #setup the MPS with the arm on turntable
         mps = self.controller.machines[0]
         assert isinstance(mps, MultiProcessing)
-        mps.safeToOven = False  # TODO this call doesn't exist anymore
+        mps.parameters.safety_at_oven = False
         mps.multiProcessingSensOvenFeederOut = True
         mps.multiProcessingSensTurntablePosVacuum = True
         mps.multiProcessingSensVacuumGripperAtOven = True
