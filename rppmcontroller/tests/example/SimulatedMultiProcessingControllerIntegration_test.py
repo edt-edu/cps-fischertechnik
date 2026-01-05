@@ -33,9 +33,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     ### ________ PROCESS 1 ___________
     def test_process1(self):
-        '''
+        """
             Test the process1 command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -111,9 +111,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
     ### ________ PROCESS ___________
     def test_processNoSawNoOvenOutOven(self):
-        '''
+        """
             Test the process command with no oven nor saw time and output at oven
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -163,9 +163,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_processNoSawNoOvenOutConv(self):
-        '''
+        """
             Test the process command with no oven nor saw time and output at conveyor
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -230,9 +230,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_processSawNoOvenOutOven(self):
-        '''
+        """
             Test the process command with saw time and output at oven
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -306,9 +306,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_processNoSawOvenOutConv(self):
-        '''
+        """
             Test the process command with oven time and output at conveyor
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -381,9 +381,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_heatInOven(self):
-        '''
+        """
             Test the oven_process command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -438,9 +438,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_sawOnTurntable(self):
-        '''
+        """
             Test the saw_cut command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -487,9 +487,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_armToOven(self):
-        '''
+        """
             Test the arm_move command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -542,9 +542,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_armToTurntable(self):
-        '''
+        """
             Test the arm_move command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -597,9 +597,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_pickUp(self):
-        '''
+        """
             Test the arm_pick command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -638,16 +638,16 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
                 pass
             else:
                 self.assertRegex(notification, r"MultiProcessing01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
-                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                ctHelper.readMachineFeedbackNotification(self.controller)
                 logging.debug(f"COMMAND DONE reached in {iterationDone} iterations")
                 endCommandReached = True
             self.assertLess(iterationDone, 10, "COMMAND not reached in less than 10 iterations" )
 
 
     def test_place(self):
-        '''
+        """
             Test the arm_place command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -694,9 +694,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_turntableToArm(self):
-        '''
+        """
             Test the turntable_rotate command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -749,9 +749,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_turntableToSaw(self):
-        '''
+        """
             Test the turntable_rotate command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -804,9 +804,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_turntableToConveyor(self):
-        '''
+        """
             Test the turntable_rotate command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -859,9 +859,9 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_ejectFromTurntable(self):
-        '''
+        """
             Test the turntable_eject command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -915,15 +915,15 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_moveToSafetyOven(self):
-        '''
+        """
             Test the move_to_safe_position command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         #setup the MPS with the arm on turntable
         mps = self.controller.machines[0]
         assert isinstance(mps, MultiProcessing)
-        mps.safeToOven = True
+        mps.safeToOven = True # TODO this call doesn't exist anymore
         mps.multiProcessingSensOvenFeederOut = True
         mps.multiProcessingSensTurntablePosVacuum = True
         mps.multiProcessingSensVacuumGripperAtTurntable = True
@@ -969,15 +969,15 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
 
 
     def test_moveToSafetyTurntable(self):
-        '''
+        """
             Test the move_to_safe_position command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         #setup the MPS with the arm on turntable
         mps = self.controller.machines[0]
         assert isinstance(mps, MultiProcessing)
-        mps.safeToOven = False
+        mps.safeToOven = False  # TODO this call doesn't exist anymore
         mps.multiProcessingSensOvenFeederOut = True
         mps.multiProcessingSensTurntablePosVacuum = True
         mps.multiProcessingSensVacuumGripperAtOven = True
