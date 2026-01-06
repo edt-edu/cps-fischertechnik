@@ -303,12 +303,12 @@ class Runner(CycleStepResult):
 
         return self.then_run(runner_pointer.run, no_param_until, or_timeout_after=or_timeout_after, info=info)
 
-    def run(self) -> Runner:
+    def run(self) -> CycleStepResult:
         """
-        Advance the current routine and update the CycleStepResult properties
+        Advance the current routine and update the `CycleStepResult` properties
         of this
 
-        :return: self
+        :return: A new `CycleStepResult`
         """
         if not self.must_continue():
             raise RuntimeError(f"runner shouldn't be used anymore: {self}")
@@ -340,11 +340,7 @@ class Runner(CycleStepResult):
             else:
                 self.run()  # directly start the next routine to avoid idling
 
-        # The main loop assumes that every step returns a unique CycleStepResult
-        # But the Runner(subclass of CycleStepResult) aggregates multiple steps into one
-        # Thus, we need to return a new object(with a different id) with the same internal state
-        #return copy.deepcopy(self)
-        return self
+        return CycleStepResult(self.result, self.info, self.subCycleStepResult)
 
     @property
     def running(self) -> bool:
@@ -358,13 +354,13 @@ class Runner(CycleStepResult):
         """
         return not self.running
 
-    def __call__(self, *args, **kwargs) -> Runner:
+    def __call__(self, *args, **kwargs) -> CycleStepResult:
         """
         Call the run function
 
         :param args: ignored
         :param kwargs: ignored
-        :return: self
+        :return: A new `CycleStepResult`
         """
         return self.run()
 

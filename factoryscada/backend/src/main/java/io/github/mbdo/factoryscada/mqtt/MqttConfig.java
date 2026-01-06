@@ -14,7 +14,7 @@ import org.springframework.messaging.MessageChannel;
 @Configuration
 public class MqttConfig {
 
-    @Value("${configuration.mqttHost:tcp://mbdo-server.local:1883}")
+    @Value("${configuration.mqttHost:tcp://localhost:1883}")
     String mqttHost;
 
     @Bean
