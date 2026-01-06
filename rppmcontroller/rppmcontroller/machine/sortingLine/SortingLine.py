@@ -428,13 +428,13 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             regenerateTimer = True
 
         # Regenerate the timer according to the color of the payload
-        if regenerateTimer or self.timer == None:
+        if regenerateTimer or self.timer is None:
             if self.colorToEject == Color.WHITE:
-                self.timer = Timer(self.WHITE_EJECTOR_DELAY)
+                self.timer = Timer(self.WHITE_EJECTOR_DELAY + self.__delay_offsets[0])
             elif self.colorToEject == Color.RED:
-                self.timer = Timer(self.RED_EJECTOR_DELAY)
+                self.timer = Timer(self.RED_EJECTOR_DELAY + self.__delay_offsets[1])
             elif self.colorToEject == Color.BLUE:
-                self.timer = Timer(self.BLUE_EJECTOR_DELAY)
+                self.timer = Timer(self.BLUE_EJECTOR_DELAY + self.__delay_offsets[2])
             else:
                 logging.error("No color defined, command aborted")
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
