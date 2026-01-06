@@ -13,50 +13,52 @@ class AxisTestCase(unittest.TestCase):
 
     def testUpdate(self):
         """tests, that setter for counterinput works"""
-        self.assertEqual(self.axis.counterinput, 0)
+        self.assertEqual(0, self.axis.counterinput)
+
         self.axis.update(False, 10)
-        self.assertEqual(self.axis.counterinput, 10)
+        self.assertEqual(10, self.axis.counterinput)
 
     def testCounter(self):
         """Tests outputs of the goToConfig function in combination with counterinputs"""
-        self.assertEqual(self.axis.counterinput, 0)
+        self.assertEqual(0, self.axis.counterinput)
 
         self.axis.update(False, 10)
-        #values for outputplus/minus first set (no execution of counter func here)
+        # values for outputplus/minus first set (no execution of counter func here)
         t = self.axis.gotoConfig(False, 100)
-        self.assertEqual(t[0], False)
-        self.assertEqual(self.axis.counterValueCurrent, 0)
-        self.assertEqual(self.axis.outputplus, True)
-        self.assertEqual(self.axis.outputminus, False)
+        self.assertEqual(False, t[0])
+        self.assertEqual(0, self.axis.counterValueCurrent)
+        self.assertEqual(True, self.axis.outputplus)
+        self.assertEqual(False, self.axis.outputminus)
 
         self.axis.update(False, 11)
-        #first execution of counter func (11 set as zero point)
+        # first execution of counter func (11 set as zero point)
         t = self.axis.gotoConfig(False, 100)
-        self.assertEqual(t[0], False)
-        self.assertEqual(self.axis.counterValueCurrent, 0)
-        self.assertEqual(self.axis.outputplus, True)
-        self.assertEqual(self.axis.outputminus, False)
+        self.assertEqual(False, t[0])
+        self.assertEqual(0, self.axis.counterValueCurrent)
+        self.assertEqual(True, self.axis.outputplus)
+        self.assertEqual(False, self.axis.outputminus)
 
         self.axis.update(False, 100)
         t = self.axis.gotoConfig(False, 100)
-        self.assertEqual(t[0], False)
-        self.assertEqual(self.axis.counterValueCurrent, 89)
-        self.assertEqual(self.axis.outputplus, True)
-        self.assertEqual(self.axis.outputminus, False)
+        self.assertEqual(False, t[0])
+        self.assertEqual(89, self.axis.counterValueCurrent)
+        self.assertEqual(True, self.axis.outputplus)
+        self.assertEqual(False, self.axis.outputminus)
 
         self.axis.update(False, 130)
         t = self.axis.gotoConfig(False, 100)
-        self.assertEqual(t[0], False)
-        self.assertEqual(self.axis.counterValueCurrent,119)
-        self.assertEqual(self.axis.outputplus, False)
-        self.assertEqual(self.axis.outputminus, True)
+        self.assertEqual(False, t[0])
+        self.assertEqual(119, self.axis.counterValueCurrent)
+        self.assertEqual(False, self.axis.outputplus)
+        self.assertEqual(True, self.axis.outputminus)
 
         self.axis.update(False, 140)
         t = self.axis.gotoConfig(False, 100)
-        self.assertEqual(t[0], True)
-        self.assertEqual(self.axis.counterValueCurrent,109)
-        self.assertEqual(self.axis.outputplus, False)
-        self.assertEqual(self.axis.outputminus, False)
+        self.assertEqual(True, t[0])
+        self.assertEqual(109, self.axis.counterValueCurrent)
+        self.assertEqual(False, self.axis.outputplus)
+        self.assertEqual(False, self.axis.outputminus)
+
 
 if __name__ == '__main__':
     unittest.main()

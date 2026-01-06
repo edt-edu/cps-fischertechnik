@@ -46,6 +46,25 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.rotational_encoder_value = 0
         """The value of the rotational encoder counter, as seen by the RevPi"""
 
+        self.vertical_offset = 0
+        """
+        Artificial error between the zero position and the ref-switch of the
+        vertical axis.
+        Is reset, when the axis is reset.
+        """
+        self.horizontal_offset = 0
+        """
+        Artificial error between the zero position and the ref-switch of the
+        horizontal axis.
+        Is reset, when the axis is reset.
+        """
+        self.rotational_offset = 0
+        """
+        Artificial error between the zero position and the ref-switch of the
+        rotational axis.
+        Is reset, when the axis is reset.
+        """
+
         self.__next_horizontal_encoder_increment = 0
         """The increment of the horizontal encoder counter in the next read"""
         self.__next_vertical_encoder_increment = 0
@@ -80,9 +99,12 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.controlledVacuumGripper.vacuumSensRotEncoderCounter = self.rotational_encoder_value
 
         # simulate sensors
-        self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.vertical_encoder_value <= (0 if self.hasBeenCalibratedVertically else -self.initialVerticalDistToSensor)
-        self.controlledVacuumGripper.vacuumSensArmEndIn = self.horizontal_encoder_value <= (0 if self.hasBeenCalibratedOnArm else -self.initialHorizontalDistToSensor)
-        self.controlledVacuumGripper.vacuumSensRotEnd = self.rotational_encoder_value <= (0 if self.hasBeenCalibratedRotational else -self.initialRotationDistToSensor)
+        self.controlledVacuumGripper.vacuumSensVerticalEndUp = self.vertical_encoder_value + self.vertical_offset <= (
+            0 if self.hasBeenCalibratedVertically else -self.initialVerticalDistToSensor)
+        self.controlledVacuumGripper.vacuumSensArmEndIn = self.horizontal_encoder_value + self.horizontal_offset <= (
+            0 if self.hasBeenCalibratedOnArm else -self.initialHorizontalDistToSensor)
+        self.controlledVacuumGripper.vacuumSensRotEnd = self.rotational_encoder_value + self.rotational_offset <= (
+            0 if self.hasBeenCalibratedRotational else -self.initialRotationDistToSensor)
 
         # no need to simulate compressor and valve
 
@@ -124,13 +146,16 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.hasBeenCalibratedOnArm = True
         # 0 means the arm is retracted, higher values means it's going outward
         self.horizontal_encoder_value = 0
+        self.horizontal_offset = 0
 
     def simulatedRotationReset(self) -> None:
         self.hasBeenCalibratedRotational = True
         # 0 means the arm is at maximum clockwise position, higher values means it's going counter-clockwise from this position
         self.rotational_encoder_value = 0
+        self.rotational_offset = 0
 
     def simulatedVerticalReset(self) -> None:
         self.hasBeenCalibratedVertically = True
         # 0 means the axis is in the uppermost position, higher values means it s going down
         self.vertical_encoder_value = 0
+        self.vertical_offset = 0

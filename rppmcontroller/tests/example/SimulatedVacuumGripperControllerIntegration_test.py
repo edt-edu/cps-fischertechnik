@@ -1127,6 +1127,60 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(800, simulator.rotational_encoder_value)
 
+    def test_horizontal_offset_correction(self):
+        """
+        When a positive horizontal offset is introduced, it should be corrected
+        by a movement to 0
+        """
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        simulator = self.controller.vaccumGripperSimulator
+        encoder_increment = self.controller.vaccumGripperSimulator.encoderIncrement
+        self.fakeSetupDoneAndSetPos(vacuumSensArmEncoderCounter=6 * encoder_increment)
+
+        simulator.horizontal_offset = 2 * encoder_increment
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a go-to command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
+            Position("END", 0, 0, 0)
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        encoder_went_negative = False
+        end_command_reached = False
+        iterations_done = 0
+        while not end_command_reached:
+            self.controller.mainLoopIteration()
+
+            if simulator.horizontal_encoder_value < 0:
+                encoder_went_negative = True
+
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterations_done += 1
+            elif not re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                # in between the machine will be put into active state
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification,r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+                logging.debug(f"GO_TO_POSITION reached in {iterations_done} iterations")
+                end_command_reached = True
+
+            self.assertLess(iterations_done, 10, "GO_TO_POSITION not reached in less than 30 iterations")
+        self.assertTrue(encoder_went_negative, "encoder counter should have been negative in between!")
+        self.assertEqual(0, simulator.horizontal_offset)
+
 
     def test_runner_list_cleanup(self):
         """
@@ -1175,7 +1229,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
     # TODO move to a test helper module
     def checkVGRPosition(self, expectedVerticalEncoder : int , expectedRotEncoder : int, expectedArmEncoder :int) -> None:
-        """verifies that the Vacuum Gripper encoder values are close enought to the expected values taking into account the simulation increment"""
+        """verifies that the Vacuum Gripper encoder values are close enough to the expected values taking into account the simulation increment"""
         vgr = self.controller.machines[0]
         assert isinstance(vgr,VacuumGripper)
         delta = self.controller.vaccumGripperSimulator.encoderIncrement - round(self.controller.vaccumGripperSimulator.encoderIncrement/3)

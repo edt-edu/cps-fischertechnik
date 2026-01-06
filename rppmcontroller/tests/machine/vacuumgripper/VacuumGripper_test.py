@@ -1,4 +1,3 @@
-
 import inspect
 import logging
 import unittest
@@ -19,24 +18,25 @@ class VacuumGripperTestCase(unittest.TestCase):
         # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
         self.robot1 = VacuumGripper("1")
 
-
     def test_GoToconfigGripUnGrip(self):
         """Tests that the grip ungrip acts on the correct actuators """
         logging.debug(f'{inspect.stack()[0][3]} start')
-        self.robot1.goto_config_CycleStep(VacuumGripperConfig(gripper_active=False))
+        self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(gripper_active=False))
         self.assertEqual(self.robot1.vacuumActValve, False)
         self.assertEqual(self.robot1.vacuumActCompressorOn, False)
         # activate grip
         logging.debug("Activate Grip")
-        self.robot1.goto_config_CycleStep(VacuumGripperConfig(gripper_active=True))
+        self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(gripper_active=True))
         self.assertEqual(self.robot1.vacuumActValve, True)
         self.assertEqual(self.robot1.vacuumActCompressorOn, True)
         # release grip
         logging.debug("Release Grip")
-        self.robot1.goto_config_CycleStep(VacuumGripperConfig(gripper_active=False))
+        self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(gripper_active=False))
         self.assertEqual(self.robot1.vacuumActValve, False)
         self.assertEqual(self.robot1.vacuumActCompressorOn, False)
-
 
     def testSetup(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
@@ -49,13 +49,13 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumActRotRight = False
         self.robot1.vacuumActVerticalDown = False
         self.robot1.vacuumActVerticalUp = False
-        self.robot1.vacuumSensArmEncoderCounter = 0
-        self.robot1.vacuumSensVerticalEncoderCounter = 0
-        self.robot1.vacuumSensRotEncoderCounter = 0
+        self.robot1.vacuumSensArmEncoderCounter = 200
+        self.robot1.vacuumSensVerticalEncoderCounter = 200
+        self.robot1.vacuumSensRotEncoderCounter = 200
 
         ret = self.robot1.setup_Command().run()
 
-        # at first it should retract the arm
+        # at first, it should retract the arm
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
         self.assertTrue(self.robot1.vacuumActArmIn)
         self.assertFalse(self.robot1.vacuumActArmOut)
@@ -65,9 +65,8 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertFalse(self.robot1.vacuumActVerticalUp)
 
         # suppose we retracted the arm
-        self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = True
-        self.robot1.vacuumSensVerticalEndUp = False
+        self.robot1.vacuumSensArmEncoderCounter = 0
 
         ret = self.robot1.setup_Command().run()
 
@@ -83,8 +82,9 @@ class VacuumGripperTestCase(unittest.TestCase):
         # simulate move
         # we suppose that it finish to touch the sensor
         self.robot1.vacuumSensRotEnd = True
-        self.robot1.vacuumSensArmEndIn = True
         self.robot1.vacuumSensVerticalEndUp = True
+        self.robot1.vacuumSensVerticalEncoderCounter = 0
+        self.robot1.vacuumSensRotEncoderCounter = 0
 
         ret = self.robot1.setup_Command().run()
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
@@ -111,7 +111,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 100
         self.robot1.vacuumSensRotEncoderCounter = 100
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(500),AxisConfig.to_counter_goal(500),AxisConfig.to_counter_goal(500),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(500),
+                                AxisConfig.to_counter_goal(500),
+                                AxisConfig.to_counter_goal(500), False))
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
@@ -127,7 +130,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 495
         self.robot1.vacuumSensRotEncoderCounter = 505
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(500),AxisConfig.to_counter_goal(500),AxisConfig.to_counter_goal(500),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(500),
+                                AxisConfig.to_counter_goal(500),
+                                AxisConfig.to_counter_goal(500), False))
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
@@ -136,7 +142,6 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertFalse(self.robot1.vacuumActRotRight)
         self.assertFalse(self.robot1.vacuumActVerticalDown)
         self.assertFalse(self.robot1.vacuumActVerticalUp)
-
 
     def testGotoconfigDecrease(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
@@ -153,7 +158,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 500
         self.robot1.vacuumSensRotEncoderCounter = 500
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100), False))
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
         self.assertTrue(self.robot1.vacuumActArmIn)
@@ -169,7 +177,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 105
         self.robot1.vacuumSensRotEncoderCounter = 95
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100), False))
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
@@ -195,7 +206,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 500
         self.robot1.vacuumSensRotEncoderCounter = 500
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100), False))
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
         self.assertFalse(self.robot1.vacuumActArmIn)
@@ -221,7 +235,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 500
         self.robot1.vacuumSensRotEncoderCounter = 500
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100), False))
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
         self.assertTrue(self.robot1.vacuumActArmIn)
@@ -230,7 +247,6 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertFalse(self.robot1.vacuumActRotRight)
         self.assertFalse(self.robot1.vacuumActVerticalDown)
         self.assertTrue(self.robot1.vacuumActVerticalUp)
-
 
     def testGotoConfigShouldNotGoUpIfTouchingSensor(self):
         """Test that even if the counter say it's possible to go up but the sensor is reached, do not activate engine toward the sensor"""
@@ -248,7 +264,10 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.robot1.vacuumSensVerticalEncoderCounter = 500
         self.robot1.vacuumSensRotEncoderCounter = 500
 
-        ret = self.robot1.goto_config_CycleStep(VacuumGripperConfig(AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),AxisConfig.to_counter_goal(100),False))
+        ret = self.robot1.goto_config_CycleStep(
+            VacuumGripperConfig(AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100),
+                                AxisConfig.to_counter_goal(100), False))
         self.assertEqual(ret.result, CycleStepResultEnum.MUST_CONTINUE)
 
         self.assertTrue(self.robot1.vacuumActArmIn)
@@ -258,7 +277,81 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertFalse(self.robot1.vacuumActVerticalDown)
         self.assertFalse(self.robot1.vacuumActVerticalUp)
 
+    def test_move_to_zero_behaves_like_move_to_ref_switch(self):
+        """
+        Ensure that an instruction to move to position 0 on an axis will
+        only be considered completed once the corresponding ref switch is hit,
+        independently of what the counter value says.
+        """
+        vgr = self.robot1
+
+        # rotation
+        config = VacuumGripperConfig()
+        config.rotation_axis_config = AxisConfig.to_counter_goal(0)
+
+        vgr.vacuumSensRotEncoderCounter = 200
+        vgr.vacuumSensRotEnd = False
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActRotRight)
+
+        vgr.vacuumSensRotEncoderCounter = 0
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActRotRight)
+
+        vgr.vacuumSensRotEncoderCounter = -3
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActRotRight)
+
+        vgr.vacuumSensRotEnd = True
+        vgr.goto_config_CycleStep(config)
+        self.assertFalse(vgr.vacuumActRotRight)
+
+        # vertical
+        config = VacuumGripperConfig()
+        config.vertical_axis_config = AxisConfig.to_counter_goal(0)
+
+        vgr.vacuumSensVerticalEncoderCounter = 200
+        vgr.vacuumSensVerticalEndUp = False
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActVerticalUp)
+
+        vgr.vacuumSensVerticalEncoderCounter = 0
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActVerticalUp)
+
+        vgr.vacuumSensVerticalEncoderCounter = -3
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActVerticalUp)
+
+        vgr.vacuumSensVerticalEndUp = True
+        vgr.goto_config_CycleStep(config)
+        self.assertFalse(vgr.vacuumActVerticalUp)
+
+        # horizontal
+        config = VacuumGripperConfig()
+        config.horizontal_axis_config = AxisConfig.to_counter_goal(0)
+
+        vgr.vacuumSensArmEncoderCounter = 200
+        vgr.vacuumSensArmEndIn = False
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActArmIn)
+
+        vgr.vacuumSensArmEncoderCounter = 0
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActArmIn)
+
+        vgr.vacuumSensArmEncoderCounter = -3
+        vgr.goto_config_CycleStep(config)
+        self.assertTrue(vgr.vacuumActArmIn)
+
+        vgr.vacuumSensArmEndIn = True
+        vgr.goto_config_CycleStep(config)
+        self.assertFalse(vgr.vacuumActArmIn)
+
+
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(
+        format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s',
+        level=logging.DEBUG)
 
     unittest.main()

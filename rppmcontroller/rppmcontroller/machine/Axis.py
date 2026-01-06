@@ -17,25 +17,24 @@ class AxisType(Enum):
 #TODO ensure no negative values are accepted for counter goal
 class Axis:
 
-    def __init__(self, typ: AxisType, tolerance, endpos_is_at_low_counter_values = True):
+    def __init__(self, axis_type: AxisType, tolerance: int):
         """constructor creates ImpulseCounter object if necessary"""
-        self.__type = typ
-        if typ == AxisType.Counter:
+        self.__type = axis_type
+        if axis_type == AxisType.Counter:
             self.__counter = ImpulseCounter()
         else:
             self.__counter = Counter()
         self.__tolerance = tolerance
         self.__first = True
         #variables need to be manually updated/written
-        self.__endpos: bool = False
-        self.__counterinput: int = 0
+        self.__end_pos: bool = False
+        self.__counter_input: int = 0
         self.__outputplus = False
         self.__outputminus = False
-        if typ == AxisType.Encoder:
+        if axis_type == AxisType.Encoder:
             self.play = 8
         else:
             self.play = 2
-        self.__endpos_is_at_low_counter_values = endpos_is_at_low_counter_values
 
     @property
     def counterValueCurrent(self):
@@ -47,11 +46,11 @@ class Axis:
 
     @property
     def endpos(self):
-        return self.__endpos
+        return self.__end_pos
 
     @property
     def counterinput(self):
-        return self.__counterinput
+        return self.__counter_input
 
     @property
     def outputplus(self):
@@ -65,15 +64,16 @@ class Axis:
     def tolerance(self) -> int:
         return self.__tolerance + self.play
 
-    def update(self, endpos: bool, counterinput: int) -> None:
+    def update(self, end_pos: bool, counter_input: int) -> None:
         """
         Informs this Axis about the current values
-        :param endpos: Whether the Axis has reached its end-switch
-        :param counterinput: The current counter value
+
+        :param end_pos: Whether the Axis has reached its end-switch
+        :param counter_input: The current counter value
         :return: None
         """
-        self.__endpos = endpos
-        self.__counterinput = counterinput
+        self.__end_pos = end_pos
+        self.__counter_input = counter_input
 
     # we might want to make this method non-static in the future
     # noinspection PyMethodMayBeStatic
@@ -87,7 +87,7 @@ class Axis:
         if counterGoal > counterCurrent + tolerance:
             return PlusMinusStop.PLUS
         elif counterGoal < counterCurrent - tolerance and counterCurrent > 4000000:
-            logging.debug('handeled overflow')
+            logging.debug('handled overflow')
             return PlusMinusStop.PLUS
         elif counterGoal < counterCurrent - tolerance:
             return PlusMinusStop.MINUS
@@ -98,34 +98,42 @@ class Axis:
     def gotoAxisConfig(self, axis_config: AxisConfig) -> bool:
         """
         Set the outputs to move towards the specified axis_config
+
         :param axis_config: An AxisConfig specifying where to move to
         :return: True if the goal specified by the config has been reached. If the internal counter is a pulse counter, then the direction of that is also returned.
         """
         return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
 
-    def gotoConfig(self, endpos: bool, counterGoal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
+    def gotoConfig(self, end_pos: bool, counter_goal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
         """
-        method to set outputs to reach the wanted config goal for that axis
-        :param endpos: Whether to move to the end-position of the axis
-        :param counterGoal: The counter position to move to. Will be ignored
-        if endpos is True
-        :return: True if the target has been reached. If the internal counter
+        Set outputs to reach the wanted counter goal for that axis.
+
+        Note: If you set `counter_goal` to `0` this method will behave exactly
+        as when `end_pos` is `True`.
+
+        :param end_pos: Whether to move to the end-position of the axis
+        :param counter_goal: The counter position to move to. Will be ignored
+        if end_pos is `True`
+        :return: `True` if the target has been reached. If the internal counter
         is an ImpulseCounter, the direction of the movement is returned as
         second parameter
         """
+        # In order to improve precision, consider a move to 0 as a move to
+        # ref-switch
+        # -> there are checks in place which prevent moving beyond a
+        #   ref-switch
+        if counter_goal <= 0:
+            end_pos = True
+
         target_reached = False
         direction = None
         #if you want to use the limit switch always set up counterGoal
-        if endpos:
-            if not self.__endpos:
-                if self.__endpos_is_at_low_counter_values:
-                    self.__outputminus = True
-                    self.__outputplus = False
-                else:
-                    self.__outputplus = True
-                    self.__outputminus = False
+        if end_pos:
+            if not self.__end_pos:
+                self.__outputminus = True
+                self.__outputplus = False
                 if isinstance(self.__counter, ImpulseCounter):
-                    self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
+                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.MINUS)
                     logging.debug(self.__counter.counter)
                 direction = PlusMinusStop.MINUS
             else:
@@ -136,7 +144,7 @@ class Axis:
             #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
             if isinstance(self.__counter, ImpulseCounter):
                 if self.outputplus:
-                    self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.PLUS)
+                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.PLUS)
                     logging.debug(self.__counter.counter)
                     #print("compute counter")
                     if self.__first or self.endpos:
@@ -144,7 +152,7 @@ class Axis:
                         logging.debug("Reset arm counter here here here here here here")
                         self.__counter.counter = 0
                 elif self.outputminus:
-                    self.__counter.counter = self.__counter.compute(self.__counterinput, PlusMinusStop.MINUS)
+                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.MINUS)
                     print(self.__counter.counter)
                     if self.__first or self.endpos:
                         self.__first = False
@@ -152,9 +160,9 @@ class Axis:
                         self.__counter.counter = 0
 
             else:
-                self.__counter.counter = self.__counterinput
+                self.__counter.counter = self.__counter_input
 
-            counterPos = self.howtoCounterPos(counterGoal, self.__counter.counter, self.tolerance)
+            counterPos = self.howtoCounterPos(counter_goal, self.__counter.counter, self.tolerance)
             # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
             if counterPos == PlusMinusStop.PLUS:
                 self.__outputminus = False
@@ -172,11 +180,8 @@ class Axis:
 
             # extra check to make sure we are not telling the hardware to
             # move beyond a ref-switch
-            ref_switch_reached = self.__endpos
-            if self.__endpos_is_at_low_counter_values:
-                movToRefSwitch = self.outputminus
-            else:
-                movToRefSwitch = self.outputplus
+            ref_switch_reached = self.__end_pos
+            movToRefSwitch = self.outputminus
             if ref_switch_reached and movToRefSwitch:
                 self.__outputminus = False
                 self.__outputplus = False
