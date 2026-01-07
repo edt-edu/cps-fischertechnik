@@ -1,5 +1,4 @@
 import logging
-from copy import deepcopy
 from typing import Any, Callable, Dict, Optional, List
 
 from typing_extensions import override
@@ -362,6 +361,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActArmIn = False
         self.vacuumActArmOut = False
         self.__axisArm.update(self.vacuumSensArmEndIn, self.vacuumSensArmEncoderCounter)
+        error = self.__axisArm.config_would_exceed_max_counter_value(config.horizontal_axis_config)
+        if error:
+            self.stop_CycleStep()
+            return error.as_abort()
         if not self.__axisArm.gotoAxisConfig(config.horizontal_axis_config):
             self.vacuumActArmIn = self.__axisArm.outputminus
             self.vacuumActArmOut = self.__axisArm.outputplus
@@ -378,6 +381,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActVerticalUp = False
         self.vacuumActVerticalDown = False
         self.__axisVertical.update(self.vacuumSensVerticalEndUp, self.vacuumSensVerticalEncoderCounter)
+        error = self.__axisVertical.config_would_exceed_max_counter_value(config.vertical_axis_config)
+        if error:
+            self.stop_CycleStep()
+            return error.as_abort()
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
             self.vacuumActVerticalUp = self.__axisVertical.outputminus
             self.vacuumActVerticalDown = self.__axisVertical.outputplus
@@ -394,6 +401,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActRotRight = False
         self.vacuumActRotLeft = False
         self.__axisRot.update(self.vacuumSensRotEnd, self.vacuumSensRotEncoderCounter)
+        error = self.__axisRot.config_would_exceed_max_counter_value(config.rotation_axis_config)
+        if error:
+            self.stop_CycleStep()
+            return error.as_abort()
         if not self.__axisRot.gotoAxisConfig(config.rotation_axis_config):
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
@@ -409,7 +420,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # vacuum valve
         self.vacuumActValve = config.gripper_active
 
-        # activate compressor only if valve is active
+        # activate compressor only if the valve is active
         self.vacuumActCompressorOn = self.vacuumActValve
 
         return res
