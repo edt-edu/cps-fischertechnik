@@ -90,8 +90,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         #  encoder
         self.__highbaySensHorizontalEncoderCounter = 0
         self.__highbaySensVerticalEncoderCounter = 0
-        self.__axisHorizontal = Axis(AxisType.Encoder, 5)
-        self.__axisVertical = Axis(AxisType.Encoder, 10)
+        self.__axisHorizontal = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
+        self.__axisVertical = Axis(AxisType.Encoder, 10, parameters.max_vertical_counter_value)
         self.__horizontal_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
 
