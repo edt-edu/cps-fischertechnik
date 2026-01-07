@@ -1,7 +1,6 @@
-from typing import Union, Tuple, Optional
-
 import logging
 from enum import Enum
+from typing import Union, Tuple, Optional
 
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.utils.Counter import Counter
@@ -14,7 +13,6 @@ class AxisType(Enum):
     Counter = 1
     Encoder = 2
 
-#TODO ensure no negative values are accepted for counter goal
 class Axis:
 
     def __init__(self, axis_type: AxisType, tolerance: int):
@@ -79,14 +77,13 @@ class Axis:
     # noinspection PyMethodMayBeStatic
     def howtoCounterPos(self, counterGoal, counterCurrent, tolerance):
         """method to determine which way the axis needs to rotate"""
-        #TODO probably set a different play for impulse counters(maybe 2) vs encoder counters (maybe 10)
         #"handle" overflow
-        #assume overflow if counter greater 4 millions
+        #assume overflow if counter greater than 4 million
         if counterGoal < 0:
             counterGoal = 0
         if counterGoal > counterCurrent + tolerance:
             return PlusMinusStop.PLUS
-        elif counterGoal < counterCurrent - tolerance and counterCurrent > 4000000:
+        elif counterGoal < counterCurrent - tolerance and counterCurrent > 4E6:
             logging.debug('handled overflow')
             return PlusMinusStop.PLUS
         elif counterGoal < counterCurrent - tolerance:
