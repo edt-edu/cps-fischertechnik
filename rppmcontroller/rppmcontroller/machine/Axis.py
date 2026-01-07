@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Union, Tuple, Optional
 
 from rppmcontroller.machine.AxisConfig import AxisConfig
+from rppmcontroller.machine.MaxValueExceededError import MaxValueExceededError
 from rppmcontroller.utils.Counter import Counter
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
@@ -99,6 +100,46 @@ class Axis:
             return PlusMinusStop.MINUS
         else:
             return PlusMinusStop.STOP
+
+    def config_would_exceed_max_counter_value(self, axis_config: AxisConfig) \
+        -> Optional[MaxValueExceededError]:
+        """
+        Checks whether the counter-goal specified by the config would exceed
+        the maximum counter-value
+
+        Example:
+        .. code-block:: python
+
+            error = axis.config_would_exceed_max_counter_value(config)
+            if error:  # `error` itself will always evaluate to `True`
+                raise error
+
+        :param axis_config: An AxisConfig specifying where to move to
+        :return: A `MaxValueExceededError` if the goal exceeds the maximum
+            counter-value, otherwise `None`
+        """
+        return self.goal_would_exceed_max_counter_value(axis_config.counter_goal)
+
+    def goal_would_exceed_max_counter_value(self, counter_goal: int) \
+        -> Optional[MaxValueExceededError]:
+        """
+        Checks whether the specified counter-goal would exceed the maximum
+        counter-value
+
+        Example:
+        .. code-block:: python
+
+            error = axis.goal_would_exceed_max_counter_value(4000)
+            if error:  # `error` itself will always evaluate to `True`
+                raise error
+
+        :param counter_goal: A counter-goal to check
+        :return: A `MaxValueExceededError` if the goal exceeds the maximum
+            counter-value, otherwise `None`
+        """
+        return MaxValueExceededError(counter_goal, self.__max_counter_value) \
+            if self.__max_counter_value is not None and counter_goal > self.__max_counter_value \
+            else None
 
 
     def gotoAxisConfig(self, axis_config: AxisConfig) -> bool:
@@ -222,29 +263,3 @@ class Axis:
     def resetDirection(self) -> None:
         self.__output_minus = False
         self.__output_plus = False
-
-
-class MaxValueExceededError(Exception):
-    """
-    Indicates that a move to a specific configuration would exceed the
-    maximum counter-value
-    """
-
-    def __init__(self, requested_counter_value: int, max_counter_value: int):
-        self.__requested_counter_value = requested_counter_value
-        self.__max_counter_value = max_counter_value
-
-    @property
-    def message(self) -> str:
-        return (f"Movement to counter-value {self.__requested_counter_value} "
-                f"would exceed maximum counter-value of {self.__max_counter_value}")
-
-    def __bool__(self):
-        """
-        Evaluates to `True` so that this can be used in an if-statement
-        :return: `True`
-        """
-        return True
-
-    def __str__(self):
-        return self.message
