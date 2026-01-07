@@ -196,7 +196,7 @@ class Axis:
 
             # extra check to make sure we are not moving further beyond the
             # max counter-value
-            max_counter_value_exceeded = self.__counter.counter > self.__max_counter_value
+            max_counter_value_exceeded = self.__max_counter_value is not None and self.__counter.counter > self.__max_counter_value
             mov_to_greater_counter_values = self.outputplus
             if max_counter_value_exceeded and mov_to_greater_counter_values:
                 self.__output_minus = False
