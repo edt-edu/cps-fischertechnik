@@ -340,13 +340,12 @@ class VacuumGripperTestCase(unittest.TestCase):
         """
         vgr = self.robot1
         invalid_rotation = vgr.parameters.max_rotational_counter_value + 100
-        config = VacuumGripperConfig(rotation_axis_config=AxisConfig.to_counter_goal(
-            invalid_rotation))
+        config = VacuumGripperConfig(
+            rotation_axis_config=AxisConfig.to_counter_goal(invalid_rotation))
 
         res = vgr.goto_config_CycleStep(config)
         self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, res.result)
         self.assert_stopped()
-
 
     def test_abort_on_invalid_vertical_goal(self):
         """
@@ -355,8 +354,9 @@ class VacuumGripperTestCase(unittest.TestCase):
         """
         vgr = self.robot1
         invalid_vertical_goal = vgr.parameters.max_vertical_counter_value + 100
-        config = VacuumGripperConfig(vertical_axis_config=AxisConfig.to_counter_goal(
-            invalid_vertical_goal))
+        config = VacuumGripperConfig(
+            vertical_axis_config=AxisConfig.to_counter_goal(
+                invalid_vertical_goal))
 
         res = vgr.goto_config_CycleStep(config)
         self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, res.result)
@@ -369,8 +369,9 @@ class VacuumGripperTestCase(unittest.TestCase):
         """
         vgr = self.robot1
         invalid_horizontal_goal = vgr.parameters.max_horizontal_counter_value + 100
-        config = VacuumGripperConfig(horizontal_axis_config=AxisConfig.to_counter_goal(
-            invalid_horizontal_goal))
+        config = VacuumGripperConfig(
+            horizontal_axis_config=AxisConfig.to_counter_goal(
+                invalid_horizontal_goal))
 
         res = vgr.goto_config_CycleStep(config)
         self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, res.result)
