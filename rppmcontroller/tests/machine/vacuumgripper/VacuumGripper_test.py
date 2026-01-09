@@ -89,12 +89,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         ret = self.robot1.setup_Command().run()
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
-        self.assertFalse(self.robot1.vacuumActArmIn)
-        self.assertFalse(self.robot1.vacuumActArmOut)
-        self.assertFalse(self.robot1.vacuumActRotLeft)
-        self.assertFalse(self.robot1.vacuumActRotRight)
-        self.assertFalse(self.robot1.vacuumActVerticalDown)
-        self.assertFalse(self.robot1.vacuumActVerticalUp)
+        self.assert_stopped()
 
     def testGotoconfigIncrease(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
@@ -136,12 +131,7 @@ class VacuumGripperTestCase(unittest.TestCase):
                                 AxisConfig.to_counter_goal(500), False))
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
-        self.assertFalse(self.robot1.vacuumActArmIn)
-        self.assertFalse(self.robot1.vacuumActArmOut)
-        self.assertFalse(self.robot1.vacuumActRotLeft)
-        self.assertFalse(self.robot1.vacuumActRotRight)
-        self.assertFalse(self.robot1.vacuumActVerticalDown)
-        self.assertFalse(self.robot1.vacuumActVerticalUp)
+        self.assert_stopped()
 
     def testGotoconfigDecrease(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
@@ -183,12 +173,7 @@ class VacuumGripperTestCase(unittest.TestCase):
                                 AxisConfig.to_counter_goal(100), False))
         self.assertEqual(ret.result, CycleStepResultEnum.DONE)
 
-        self.assertFalse(self.robot1.vacuumActArmIn)
-        self.assertFalse(self.robot1.vacuumActArmOut)
-        self.assertFalse(self.robot1.vacuumActRotLeft)
-        self.assertFalse(self.robot1.vacuumActRotRight)
-        self.assertFalse(self.robot1.vacuumActVerticalDown)
-        self.assertFalse(self.robot1.vacuumActVerticalUp)
+        self.assert_stopped()
 
     def testGotoConfigShouldNotRetractIfTouchingSensor(self):
         """Test that even if the counter say it's possible to retract but the sensor is reached, do not activate engine toward the sensor"""
@@ -281,7 +266,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         """
         Ensure that an instruction to move to position 0 on an axis will
         only be considered completed once the corresponding ref switch is hit,
-        independently of what the counter value says.
+        independently of what the counter-value says.
         """
         vgr = self.robot1
 
@@ -347,6 +332,60 @@ class VacuumGripperTestCase(unittest.TestCase):
         vgr.vacuumSensArmEndIn = True
         vgr.goto_config_CycleStep(config)
         self.assertFalse(vgr.vacuumActArmIn)
+
+    def test_abort_on_invalid_rotation(self):
+        """
+        Ensure that commands to move to an invalid rotational configuration
+        are rejected by returning an abort
+        """
+        vgr = self.robot1
+        invalid_rotation = vgr.parameters.max_rotational_counter_value + 100
+        config = VacuumGripperConfig(rotation_axis_config=AxisConfig.to_counter_goal(
+            invalid_rotation))
+
+        res = vgr.goto_config_CycleStep(config)
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, res.result)
+        self.assert_stopped()
+
+
+    def test_abort_on_invalid_vertical_goal(self):
+        """
+        Ensure that commands to move to an invalid vertical configuration
+        are rejected by returning an abort
+        """
+        vgr = self.robot1
+        invalid_vertical_goal = vgr.parameters.max_vertical_counter_value + 100
+        config = VacuumGripperConfig(vertical_axis_config=AxisConfig.to_counter_goal(
+            invalid_vertical_goal))
+
+        res = vgr.goto_config_CycleStep(config)
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, res.result)
+        self.assert_stopped()
+
+    def test_abort_on_invalid_horizontal_goal(self):
+        """
+        Ensure that commands to move to an invalid horizontal configuration
+        are rejected by returning an abort
+        """
+        vgr = self.robot1
+        invalid_horizontal_goal = vgr.parameters.max_horizontal_counter_value + 100
+        config = VacuumGripperConfig(horizontal_axis_config=AxisConfig.to_counter_goal(
+            invalid_horizontal_goal))
+
+        res = vgr.goto_config_CycleStep(config)
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, res.result)
+        self.assert_stopped()
+
+    def assert_stopped(self) -> None:
+        """
+        Asserts that no actuators are active
+        """
+        self.assertFalse(self.robot1.vacuumActArmIn)
+        self.assertFalse(self.robot1.vacuumActArmOut)
+        self.assertFalse(self.robot1.vacuumActRotLeft)
+        self.assertFalse(self.robot1.vacuumActRotRight)
+        self.assertFalse(self.robot1.vacuumActVerticalDown)
+        self.assertFalse(self.robot1.vacuumActVerticalUp)
 
 
 if __name__ == '__main__':
