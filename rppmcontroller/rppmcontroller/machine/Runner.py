@@ -260,15 +260,31 @@ class Runner(CycleStepResult):
         Run the runner provided by the specified runner_supplier until it is
         done.
 
+        This method can be used to complete another command or sub-process
+        described by another `Runner` before proceeding.
+
+        Example:
+        -------
+
+        .. code-block:: python
+
+            # Wait till setup is completed
+            runner.then_run_runner_from(self.setup_Command)
+            # continue with going to the desired config
+            runner.then_goto_config(config)
+
+        This code snippet will perform the setup_Command before going to the
+        desired config.
+
         :param runner_supplier: A callable returning a Runner
         :param until: When provided, the runner is called until this function
-        indicates the desired state has been reached. May optionally take the
-        Runner provided by the runner_supplier as first argument.
+            indicates the desired state has been reached. May optionally take
+            the Runner provided by the runner_supplier as the first argument.
         :param or_timeout_after: The number of seconds after which the runner
-        is considered finished. Values smaller or equal to zero imply infinite
-        time.
+            is considered finished. Values smaller or equal to zero imply
+            infinite time.
         :param info: A human-readable info what the runner is doing in this
-        step, similar to a comment
+            step, similar to a comment
         :return: self
         """
 
