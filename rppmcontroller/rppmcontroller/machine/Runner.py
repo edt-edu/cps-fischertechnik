@@ -175,17 +175,16 @@ class Runner(CycleStepResult):
         until it specifies that it is done.
 
         :param runnable: The runnable to execute. Must return a
-        CycleStepResult or `True` in
-        order to indicate that it is done.
+            CycleStepResult or `True` to indicate that it is done.
         :param until: A check whether the runnable is done. If set,
-        the return value of the runnable is ignored.
+            the return value of the runnable is ignored.
         :param and_stay_for: The number of seconds to continue to call the
-        runnable after it is done.
+            runnable after it is done.
         :param or_timeout_after: The number of seconds after which the runnable
-        is considered done. Values smaller or equal to zero imply infinite
-        time.
+            is considered done. Values smaller or equal to zero imply infinite
+            time.
         :param info: A human-readable info what the runner is doing in this
-        step, similar to a comment
+            step, similar to a comment
         :return: self
         """
         hold_timer = Timer(and_stay_for)
@@ -203,15 +202,10 @@ class Runner(CycleStepResult):
                     f"Offending runnable: {identity}"
                 )
 
-            if until is not None:   # if until is provided, its results overides the one returned by the runnable
+            if until is not None:  # if until is provided, its result overrides the one returned by the runnable
                 res = until()
 
-            assert res is not None
-            if isinstance(res, bool): # convert boolean result into CycleStepResult
-                if res:
-                    res = CycleStepResult(CycleStepResultEnum.DONE)
-                else:
-                    res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
+            res = as_result(res)
 
             if timeout_timer is not None:
                 if not timeout_timer.is_started():
@@ -230,7 +224,7 @@ class Runner(CycleStepResult):
                 hold_timer.reset()
                 return res
 
-            # we can assume that the sub-routine is done
+            # we can assume that the subroutine is done
             if not hold_timer.is_started():
                 hold_timer.start()
 
@@ -385,3 +379,19 @@ class Runner(CycleStepResult):
 
     def actual_routine(self) -> Subroutine:
         return self.__routine[self.__routine_index]
+
+
+def as_result(result: Union[bool, CycleStepResult]) -> CycleStepResult:
+    """
+    Convert a boolean result into a CycleStepResult.
+
+    :param result: A boolean or CycleStepResult
+    :return: A CycleStepResult
+    """
+    if isinstance(result, CycleStepResult):
+        return result
+
+    if result:
+        return CycleStepResult(CycleStepResultEnum.DONE)
+    else:
+        return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
