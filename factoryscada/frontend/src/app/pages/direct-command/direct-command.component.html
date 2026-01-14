@@ -540,6 +540,34 @@
         }
       }
 
+      <!-- P U N C H I N G   M A C H I N E -->
+
+      @case ("punchingMachine") {
+        @switch (selectedCommand) {
+          @case ("punch") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'PUNCH'"
+                                          [description]="'Move the payload to the puncher and punch it, then move it back.'"
+                                          [destinationSuffix]="'/command/punch'"></app-generic-no-param-command>
+          }
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'STOP'"
+                                          [description]="'Immediately stop any ongoing operation or command on this machine.'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
+        }
+      }
+
       @default {
         <div class="">
           <p>Machine not selected</p>
