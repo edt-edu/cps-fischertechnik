@@ -1,17 +1,21 @@
 import time
 from typing import Optional
 
-custom_current_time: Optional[float] = None
-"""
-Set a custom current time for testing purposes. It is usually safe to set this
-value to zero in order to initialize a test.
-"""
 
 class Timer:
     """
     A tool to implement a realtime delay in a machine.
     The timer starts running after the `poll` method is called for the first
     time
+    """
+
+    custom_current_time: Optional[float] = None
+    """
+    Set a custom current time for testing purposes. It is usually safe to set this
+    value to zero in order to initialize a test.
+
+    Note that this is a STATIC VARIABLE!
+    Settings this value sets it for every Timer instance in the runtime!
     """
 
     def __init__(self, seconds: float, single_use: bool = False):
@@ -32,7 +36,7 @@ class Timer:
 
         :return: Current time
         """
-        return custom_current_time if custom_current_time is not None else time.time()
+        return self.custom_current_time if self.custom_current_time is not None else time.time()
 
     def elapsed(self) -> bool:
         """
