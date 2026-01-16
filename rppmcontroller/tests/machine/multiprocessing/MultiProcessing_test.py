@@ -1,23 +1,20 @@
 import inspect
 import logging
-
-from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
-from rppmcontroller.machine.multiprocessing.MultiProcessingConfig import MultiProcessingConfig
-from rppmcontroller.machine.Direction import Direction
-
-
 import unittest
+
+from rppmcontroller.machine.multiprocessing.MultiProcessing import \
+    MultiProcessing
+
 
 class MultiProcessingTestCase(unittest.TestCase):
     def setUp(self):
-        self.multiProcessing1 = MultiProcessing(1)
+        self.multiProcessing1 = MultiProcessing("1")
 
-    
+
     def test_Stop(self):
-        '''
-            Test if stop function stop the multi processing station
-        '''
+        """
+        Test if stop function stops the multiprocessing station
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         self.multiProcessing1.multiProcessingActGripperToOven = True
