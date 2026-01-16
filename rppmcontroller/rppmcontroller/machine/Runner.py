@@ -209,7 +209,7 @@ class Runner(CycleStepResult):
                 res = as_result(until())
 
             # lowest priority check: execute the runnable itself
-            if res is None:
+            if res is None or res.must_continue():
                 runnable_res = runnable()
 
                 if runnable_res is None:
