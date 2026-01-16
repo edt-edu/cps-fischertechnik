@@ -1,6 +1,11 @@
 import time
 from typing import Optional
 
+custom_current_time: Optional[float] = None
+"""
+Set a custom current time for testing purposes. It is usually safe to set this
+value to zero in order to initialize a test.
+"""
 
 class Timer:
     """
@@ -18,6 +23,16 @@ class Timer:
         self.__seconds: float = seconds
         self.__single_use: bool = single_use
         self.__start_time: Optional[float] = None
+
+    def __get_current_time(self) -> float:
+        """
+        Get the current time, usually in seconds since epoch.
+
+        Note that this value can be overridden for testing purposes.
+
+        :return: Current time
+        """
+        return custom_current_time if custom_current_time is not None else time.time()
 
     def elapsed(self) -> bool:
         """
@@ -39,7 +54,7 @@ class Timer:
         if self.__start_time is None:
             raise Exception("Timer#elapsed is called without being started!")
 
-        elapsed_seconds = time.time() - self.__start_time
+        elapsed_seconds = self.__get_current_time() - self.__start_time
 
         if elapsed_seconds >= self.__seconds:
             if not self.__single_use:
@@ -55,7 +70,7 @@ class Timer:
         :return: None
         """
         if start:
-            self.__start_time = time.time()
+            self.__start_time = self.__get_current_time()
         else:
             self.__start_time = None
 
