@@ -193,9 +193,7 @@ class Runner(CycleStepResult):
             timeout_timer = Timer(or_timeout_after)
 
         def sub_routine_runnable() -> CycleStepResult:
-            res = None
-
-            # check timeout, since it should have the highest priority
+            # check timeout; if it expired, abort
             if timeout_timer is not None:
                 if not timeout_timer.is_started():
                     timeout_timer.start()
@@ -204,15 +202,18 @@ class Runner(CycleStepResult):
                     return CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
                                           "runner timeout")
 
-            # check whether until states that the runnable is done
+            # if until is present, it determines the result
             if until is not None:
                 res = as_result(until())
 
-            # lowest priority check: execute the runnable itself
-            if res is None or res.must_continue():
+                # call the runnable only if needed
+                if res.must_continue():
+                    runnable()
+            else:
+                # result is determined by runnable
                 runnable_res = runnable()
 
-                if runnable_res is None and until is None :
+                if runnable_res is None:
                     raise ValueError(
                         f"If 'runnable' returns None, 'until' must be provided.\n"
                         f"Offending runnable: {describe_callable(runnable)}"
