@@ -25,6 +25,11 @@ class IndexedLineTestCase(unittest.TestCase):
         i_line = IndexedLine("1")
         i_line.indexedLineSensSlider1Rear = True
         i_line.indexedLineSensSlider2Rear = True
+        i_line.indexedLineSensLoading = True
+        i_line.indexedLineSensSlider1 = True
+        i_line.indexedLineSensMilling = True
+        i_line.indexedLineSensDrilling = True
+        i_line.indexedLineSensSwap = True
         self.indexedLine = i_line
         Timer.custom_current_time = 0
 
