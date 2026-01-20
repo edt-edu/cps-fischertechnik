@@ -221,20 +221,10 @@ class IndexedLineTestCase(unittest.TestCase):
         self.assert_act_state(expected_state,
                               "only slider 2 should have been retracted")
 
-        # slider 2 reaching the end should largely maintain the state
+        # slider 2 reaching the end should stop the runner
         i_line.indexedLineSensSlider2Front = False
         i_line.indexedLineSensSlider2Rear = True
         expected_state.act_slider2_backward = False
-        runner.run()
-        self.assert_act_state(expected_state, "slider 2 at rear changed the state")
-
-        # runner should remain like this for a second
-        Timer.custom_current_time += 0.9
-        runner.run()
-        self.assert_act_state(expected_state, "state changed too early")
-        Timer.custom_current_time += 0.1
-
-        # runner should stop now
         expected_state.act_swap_conveyor = False
         runner.run()
         self.assert_act_state(expected_state, "did not stop")
