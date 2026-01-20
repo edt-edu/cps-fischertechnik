@@ -419,13 +419,13 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         return runner
 
     @protocol_command_function()
-    def drill_Command(self) -> Runner:
+    def drill_Command(self, drill_seconds: float = 2.0) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # drill for a few seconds
         config.drilling = True
-        runner.then_goto(config, and_stay_for=2.0, info="drilling")
+        runner.then_goto(config, and_stay_for=drill_seconds, info="drilling")
 
         config.drilling = False
         runner.then_goto(config, info="stopping drill")
