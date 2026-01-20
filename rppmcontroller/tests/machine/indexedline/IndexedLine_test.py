@@ -33,6 +33,9 @@ class IndexedLineTestCase(unittest.TestCase):
         self.indexedLine = i_line
         Timer.custom_current_time = 0
 
+    def tearDown(self):
+        Timer.custom_current_time = None
+
     def test_process1(self):
         i_line = self.indexedLine
         runner = i_line.process1_Command()
