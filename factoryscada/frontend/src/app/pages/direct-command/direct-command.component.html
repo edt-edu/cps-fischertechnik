@@ -175,7 +175,7 @@
                                           [placeholder]="commandToSend"
                                           [title]="selectedMissionCommand"
                                           [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
-                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command>
         }
       }
 
@@ -209,7 +209,7 @@
                                           [placeholder]="commandToSend"
                                           [title]="selectedMissionCommand"
                                           [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
-                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command>
         }
       }
 
@@ -260,7 +260,7 @@
                                           [placeholder]="commandToSend"
                                           [title]="selectedMissionCommand"
                                           [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
-                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command>
         }
       }
 
@@ -402,7 +402,39 @@
                                           [placeholder]="commandToSend"
                                           [title]="selectedMissionCommand"
                                           [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
-                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command>
+        }
+      }
+
+      <!-- I N D E X E D   L I N E -->
+
+      @case ("indexedLine") {
+        @switch (selectedCommand) {
+          @case ("process1") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'PROCESS1'"
+                                          [description]="'Launch process 1 of the indexed line. ' +
+                                           '(wait until payload is present, ' +
+                                           'mix it for a few seconds, ' +
+                                           'drill it for a few seconds ' +
+                                           'and move it to the output)'"
+                                          [destinationSuffix]="'/command/process1'"></app-generic-no-param-command>
+          }
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'STOP'"
+                                          [description]="'Immediately stop any ongoing operation or command on this machine.'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
         }
       }
 
@@ -504,7 +536,35 @@
                                           [placeholder]="commandToSend"
                                           [title]="selectedMissionCommand"
                                           [description]="getMissionCommandDescription(missionConfiguration, selectedMissionCommand)"
-                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command> 
+                                          [destinationSuffix]="getDestinationSuffixFromJSONPlaceholder(commandToSend)"></app-generic-no-param-command>
+        }
+      }
+
+      <!-- P U N C H I N G   M A C H I N E -->
+
+      @case ("punchingMachine") {
+        @switch (selectedCommand) {
+          @case ("punch") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'PUNCH'"
+                                          [description]="'Move the payload to the puncher and punch it, then move it back.'"
+                                          [destinationSuffix]="'/command/punch'"></app-generic-no-param-command>
+          }
+          @case ("stop") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'STOP'"
+                                          [description]="'Immediately stop any ongoing operation or command on this machine.'"
+                                          [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
+          }
+          @default {
+            @if (!selectedMissionCommand) {
+              <div class="ui compact message">
+                <p>Please select a Command or a Mission Command.</p>
+              </div>
+            }
+          }
         }
       }
 
