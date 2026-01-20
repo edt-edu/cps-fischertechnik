@@ -388,13 +388,13 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         return runner
 
     @protocol_command_function()
-    def mill_Command(self) -> Runner:
+    def mill_Command(self, mill_seconds: float = 2.0) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # mill for a few seconds
         config.milling = True
-        runner.then_goto(config, and_stay_for=2.0, info="milling")
+        runner.then_goto(config, and_stay_for=mill_seconds, info="milling")
         config.milling = False
         runner.then_goto(config, info="Stopping mill")
         return runner
