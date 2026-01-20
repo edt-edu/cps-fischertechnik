@@ -279,13 +279,13 @@
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'PROCESS1'"
-                                          [description]="'Launch the process 1 of the multiprocessing station. \
-                                          (wait until payload is present, \
-                                          move payload into oven, \
-                                          activate oven for a few seconds, \
-                                          move payload to turn table, \
-                                          turn to saw and saw for a few seconds, \
-                                          eject payload via conveyor)'"
+                                          [description]="'Launch the process 1 of the multiprocessing station. ' +
+                                           '(wait until payload is present, ' +
+                                           'move payload into oven, ' +
+                                           'activate oven for a few seconds, ' +
+                                           'move payload to turn table, ' +
+                                           'turn to saw and saw for a few seconds, ' +
+                                           'eject payload via conveyor)'"
                                           [destinationSuffix]="'/command/process1'"></app-generic-no-param-command>
           }
           @case ("process") {
