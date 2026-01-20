@@ -455,8 +455,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
 
         # move payload to end of swap station
         config.slider_2_extended = False
-        runner.then_goto(config, and_stay_for=1.0,
-                         info="Moving to end of swap station")
+        runner.then_goto(config, info="Moving to end of swap station")
 
         # stop station
         config.swap_conveyor = False
