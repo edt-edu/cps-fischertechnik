@@ -417,6 +417,13 @@
                                           [description]="'Move the payload to the milling station.'"
                                           [destinationSuffix]="'/command/move_to_mill'"></app-generic-no-param-command>
           }
+          @case ("move_to_drill") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_TO_DRILL'"
+                                          [description]="'Move the payload to the drilling station.'"
+                                          [destinationSuffix]="'/command/move_to_drill'"></app-generic-no-param-command>
+          }
           @case ("process1") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
