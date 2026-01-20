@@ -215,6 +215,7 @@ class IndexedLineTestCase(unittest.TestCase):
                               "state changed without payload reaching swap sensor")
 
         # payload reaches the swap sensor; slider 2 should retract but swap conveyor should remain active for another second
+        i_line.indexedLineSensSwap = False
         expected_state.act_slider2_backward = True
         runner.run()
         self.assert_act_state(expected_state,
@@ -224,6 +225,8 @@ class IndexedLineTestCase(unittest.TestCase):
         i_line.indexedLineSensSlider2Front = False
         i_line.indexedLineSensSlider2Rear = True
         expected_state.act_slider2_backward = False
+        runner.run()
+        self.assert_act_state(expected_state, "slider 2 at rear changed the state")
 
         # runner should remain like this for a second
         Timer.custom_current_time += 0.9

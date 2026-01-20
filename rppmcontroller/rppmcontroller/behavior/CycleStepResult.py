@@ -1,6 +1,6 @@
-from __future__ import annotations  # place at the very top of the file. fixes pylance type hinting and forward references
+from __future__ import \
+    annotations  # place at the very top of the file. fixes pylance type hinting and forward references
 
-import logging
 from typing import Any, Optional, Tuple, Union
 
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -59,14 +59,14 @@ class CycleStepResult:
 
 
     def is_terminated(self) -> bool:
-        """Convenience method in order to know if the _CycleStep function must not continue due to interruption (timeout, error, aborted)"""
+        """Convenience method to know if the _CycleStep function must not continue due to interruption (timeout, error, aborted)"""
         return self._result in (CycleStepResultEnum.INTERRUPTED,
                                CycleStepResultEnum.ABORTED_TIMEOUT,
                                CycleStepResultEnum.ABORTED_ERROR)
 
     def is_done(self) -> bool:
         """
-        Convenience method in order to know if the result of this is DONE
+        Convenience method to know if the result of this is DONE
         :return: True when the result of this is DONE
         """
         return self._result is CycleStepResultEnum.DONE
@@ -90,7 +90,7 @@ class CycleStepResult:
             sub_cycle_step_result_equal = (
                 self._subCycleStepResult[0] == other._subCycleStepResult[0] and
                 self._subCycleStepResult[1].is_equivalent_result(other._subCycleStepResult[1])
-            )        
+            )
         else:
             sub_cycle_step_result_equal = False
 
@@ -99,7 +99,7 @@ class CycleStepResult:
             self._info == other._info and
             sub_cycle_step_result_equal
         )
-    
+
     def __eq__(self, other: Any) -> bool:
         """
         Compares two CycleStepResult objects for equivalence.
@@ -110,5 +110,5 @@ class CycleStepResult:
         Returns:
             bool: True if the objects are equivalent, False otherwise.
         """
-        
+
         return self.is_equivalent_result(other)
