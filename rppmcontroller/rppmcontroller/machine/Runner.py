@@ -175,17 +175,16 @@ class Runner(CycleStepResult):
         until it specifies that it is done.
 
         :param runnable: The runnable to execute. Must return a
-        CycleStepResult or `True` in
-        order to indicate that it is done.
+            CycleStepResult or `True` to indicate that it is done.
         :param until: A check whether the runnable is done. If set,
-        the return value of the runnable is ignored.
+            the return value of the runnable is ignored.
         :param and_stay_for: The number of seconds to continue to call the
-        runnable after it is done.
+            runnable after it is done.
         :param or_timeout_after: The number of seconds after which the runnable
-        is considered done. Values smaller or equal to zero imply infinite
-        time.
+            is considered done. Values smaller or equal to zero imply infinite
+            time.
         :param info: A human-readable info what the runner is doing in this
-        step, similar to a comment
+            step, similar to a comment
         :return: self
         """
         hold_timer = Timer(and_stay_for)
@@ -194,34 +193,33 @@ class Runner(CycleStepResult):
             timeout_timer = Timer(or_timeout_after)
 
         def sub_routine_runnable() -> CycleStepResult:
-            res = runnable()
-            if res is None and until is None:
-
-                identity = describe_callable(runnable)
-                raise ValueError(
-                    f"If 'runnable' returns None, 'until' must be provided.\n"
-                    f"Offending runnable: {identity}"
-                )
-
-            if until is not None:   # if until is provided, its results overides the one returned by the runnable
-                res = until()
-
-            assert res is not None
-            if isinstance(res, bool): # convert boolean result into CycleStepResult
-                if res:
-                    res = CycleStepResult(CycleStepResultEnum.DONE)
-                else:
-                    res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
-
+            # check timeout; if it expired, abort
             if timeout_timer is not None:
                 if not timeout_timer.is_started():
                     timeout_timer.start()
-
                 if timeout_timer.elapsed():
-                    res = CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
-                                          "runner timeout",
-                                          (f"subRoutineIndex: "
-                                           f"{self.__routine_index}", res))
+                    # return abort immediately
+                    return CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
+                                          "runner timeout")
+
+            # if until is present, it determines the result
+            if until is not None:
+                res = as_result(until())
+
+                # call the runnable only if needed
+                if res.must_continue():
+                    runnable()
+            else:
+                # result is determined by runnable
+                runnable_res = runnable()
+
+                if runnable_res is None:
+                    raise ValueError(
+                        f"If 'runnable' returns None, 'until' must be provided.\n"
+                        f"Offending runnable: {describe_callable(runnable)}"
+                    )
+
+                res = as_result(runnable_res)
 
             if res.is_terminated():
                 return res
@@ -230,7 +228,7 @@ class Runner(CycleStepResult):
                 hold_timer.reset()
                 return res
 
-            # we can assume that the sub-routine is done
+            # we can assume that the subroutine is done
             if not hold_timer.is_started():
                 hold_timer.start()
 
@@ -260,15 +258,31 @@ class Runner(CycleStepResult):
         Run the runner provided by the specified runner_supplier until it is
         done.
 
+        This method can be used to complete another command or sub-process
+        described by another `Runner` before proceeding.
+
+        Example:
+        -------
+
+        .. code-block:: python
+
+            # Wait till setup is completed
+            runner.then_run_runner_from(self.setup_Command)
+            # continue with going to the desired config
+            runner.then_goto_config(config)
+
+        This code snippet will perform the setup_Command before going to the
+        desired config.
+
         :param runner_supplier: A callable returning a Runner
         :param until: When provided, the runner is called until this function
-        indicates the desired state has been reached. May optionally take the
-        Runner provided by the runner_supplier as first argument.
+            indicates the desired state has been reached. May optionally take
+            the Runner provided by the runner_supplier as the first argument.
         :param or_timeout_after: The number of seconds after which the runner
-        is considered finished. Values smaller or equal to zero imply infinite
-        time.
+            is considered finished. Values smaller or equal to zero imply
+            infinite time.
         :param info: A human-readable info what the runner is doing in this
-        step, similar to a comment
+            step, similar to a comment
         :return: self
         """
 
@@ -369,3 +383,19 @@ class Runner(CycleStepResult):
 
     def actual_routine(self) -> Subroutine:
         return self.__routine[self.__routine_index]
+
+
+def as_result(result: Union[bool, CycleStepResult]) -> CycleStepResult:
+    """
+    Convert a boolean result into a CycleStepResult.
+
+    :param result: A boolean or CycleStepResult
+    :return: A CycleStepResult
+    """
+    if isinstance(result, CycleStepResult):
+        return result
+
+    if result:
+        return CycleStepResult(CycleStepResultEnum.DONE)
+    else:
+        return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)

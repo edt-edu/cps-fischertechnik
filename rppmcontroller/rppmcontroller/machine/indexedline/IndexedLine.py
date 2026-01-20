@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, Callable
+
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
@@ -10,7 +11,8 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.indexedline.IndexedLineConfig import \
     IndexedLineConfig
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 
 
 class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
@@ -403,7 +405,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config = IndexedLineConfig()
 
         # make sure payload is at milling machine
-        runner.then_run_runner_from(self.move_to_mill_Command, until=lambda mill_runner: mill_runner.is_done() or not self.indexedLineSensDrilling, info="ensure payload at milling machine")
+        runner.then_run_runner_from(self.move_to_mill_Command, until=lambda: not self.indexedLineSensMilling or not self.indexedLineSensDrilling, info="ensure payload at milling machine")
 
         # move payload to drilling machine
         config.milling_conveyor = True
@@ -436,7 +438,9 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config = IndexedLineConfig()
 
         # make sure payload it at drilling machine
-        runner.then_run_runner_from(self.move_to_drill_Command, until=lambda drill_runner: drill_runner.is_done() or not self.indexedLineSensSwap, info="ensure payload at drilling machine")
+        runner.then_run_runner_from(self.move_to_drill_Command,
+                                    until=lambda: not self.indexedLineSensDrilling or not self.indexedLineSensSwap,
+                                    info="ensure payload at drilling machine")
 
          # move payload onto slider2
         config.drilling_conveyor = True
@@ -446,14 +450,15 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config.drilling_conveyor = False
         config.slider_2_extended = True
         config.swap_conveyor = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensSwap, info="moving to swap station")
+        runner.then_goto(config, until=lambda: not self.indexedLineSensSwap,
+                         info="moving to swap station")
 
         # move payload to end of swap station
-        runner.then_goto(config, and_stay_for=1.0, info="Moving to end of swap station")
+        config.slider_2_extended = False
+        runner.then_goto(config, info="Moving to end of swap station")
 
         # stop station
         config.swap_conveyor = False
-        config.slider_2_extended = False
         runner.then_goto(config, info="stopping")
         return runner
 
