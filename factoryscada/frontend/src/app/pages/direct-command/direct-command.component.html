@@ -410,6 +410,13 @@
 
       @case ("indexedLine") {
         @switch (selectedCommand) {
+          @case ("move_to_mill") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_TO_MILL'"
+                                          [description]="'Move the payload to the milling station.'"
+                                          [destinationSuffix]="'/command/move_to_mill'"></app-generic-no-param-command>
+          }
           @case ("process1") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
