@@ -21,19 +21,21 @@ public class IndexedLineController extends AbstractMachineController<IndexedLine
     super(factoryScada);
   }
 
+  @MessageMapping("/{machineName}/command/move_to_mill")
+  public String receiveMoveToMillCommand(@DestinationVariable("machineName") String machineName,
+                                         @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> moveToMillDTO) {
+    return executeCommand(machineName, "moveToMill", moveToMillDTO);
+  }
+
   @MessageMapping("/{machineName}/command/process1")
-  public String receiveMoveCommand(
-      @DestinationVariable("machineName") String machineName,
-      @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> moveOutDTO
-  ) {
-    return executeCommand(machineName, "process1", moveOutDTO);
+  public String receiveProcess1Command(@DestinationVariable("machineName") String machineName,
+                                       @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> process1DTO) {
+    return executeCommand(machineName, "process1", process1DTO);
   }
 
   @MessageMapping("/{machineName}/command/stop")
-  public String receiveStopCommand(
-      @DestinationVariable("machineName") String machineName,
-      @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> stopDTO
-  ) {
+  public String receiveStopCommand(@DestinationVariable("machineName") String machineName,
+                                   @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> stopDTO) {
     return executeCommand(machineName, "stop", stopDTO);
   }
 }

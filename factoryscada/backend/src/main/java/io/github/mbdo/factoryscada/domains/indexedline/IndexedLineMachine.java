@@ -1,15 +1,16 @@
 package io.github.mbdo.factoryscada.domains.indexedline;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.domains.indexedline.commands.MoveToMillCommand;
 import io.github.mbdo.factoryscada.domains.indexedline.commands.Process1Command;
 import io.github.mbdo.factoryscada.domains.indexedline.commands.StopCommand;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 public class IndexedLineMachine extends AbstractMachine {
@@ -29,5 +30,10 @@ public class IndexedLineMachine extends AbstractMachine {
   public void stop(@Valid @NotNull final GenericMachineCommandDTO<IndexedLineMachine> stopDTO) {
     log.info("Stop indexedLine {}", stopDTO);
     new StopCommand(this, stopDTO).execute();
+  }
+
+  public void moveToMill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> moveToMillDTO) {
+    log.info("Move to mill indexedLine {}", moveToMillDTO);
+    new MoveToMillCommand(this, moveToMillDTO).execute();
   }
 }
