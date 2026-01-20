@@ -16,6 +16,9 @@ class Timer:
 
     Note that this is a STATIC VARIABLE!
     Settings this value sets it for every Timer instance in the runtime!
+
+    DO NOT FORGET TO RESET THIS VALUE BACK TO `None` AFTER TESTING!
+    Otherwise other unit tests might be impacted and fail.
     """
 
     def __init__(self, seconds: float, single_use: bool = False):
