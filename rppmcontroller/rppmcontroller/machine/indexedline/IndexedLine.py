@@ -466,7 +466,9 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
                                            "2 seconds, drill it for 2 seconds "
                                            "and move it to the output")
     def process1_Command(self) -> Runner:
-        return self.process_Command()
+        return self.process_Command(milling_seconds=2.0,
+                                    drilling_seconds=2.0,
+                                    wait_for_payload=True)
 
     @protocol_command_function(description="Move a payload through all stations "
                                            "of the IndexedLine and process it "
