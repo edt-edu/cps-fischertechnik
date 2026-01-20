@@ -19,6 +19,12 @@ class Timer:
 
     DO NOT FORGET TO RESET THIS VALUE BACK TO `None` AFTER TESTING!
     Otherwise other unit tests might be impacted and fail.
+    This is best done by overriding the method unittest.TestCase#tearDown:
+    .. highlight:: python
+    .. code-block:: python
+        def tearDown(self):
+            Timer.custom_current_time = None
+
     """
 
     def __init__(self, seconds: float, single_use: bool = False):
