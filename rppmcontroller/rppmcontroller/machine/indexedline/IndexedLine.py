@@ -388,13 +388,13 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         return runner
 
     @protocol_command_function()
-    def mill_Command(self) -> Runner:
+    def mill_Command(self, mill_seconds: float = 2.0) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # mill for a few seconds
         config.milling = True
-        runner.then_goto(config, and_stay_for=2.0, info="milling")
+        runner.then_goto(config, and_stay_for=mill_seconds, info="milling")
         config.milling = False
         runner.then_goto(config, info="Stopping mill")
         return runner
@@ -419,13 +419,13 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         return runner
 
     @protocol_command_function()
-    def drill_Command(self) -> Runner:
+    def drill_Command(self, drill_seconds: float = 2.0) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # drill for a few seconds
         config.drilling = True
-        runner.then_goto(config, and_stay_for=2.0, info="drilling")
+        runner.then_goto(config, and_stay_for=drill_seconds, info="drilling")
 
         config.drilling = False
         runner.then_goto(config, info="stopping drill")
@@ -462,31 +462,50 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         runner.then_goto(config, info="stopping")
         return runner
 
-    @protocol_command_function()
+    @protocol_command_function(description="Wait for a payload, mill it for "
+                                           "2 seconds, drill it for 2 seconds "
+                                           "and move it to the output")
     def process1_Command(self) -> Runner:
+        return self.process_Command(milling_seconds=2.0,
+                                    drilling_seconds=2.0,
+                                    wait_for_payload=True)
+
+    @protocol_command_function(description="Move a payload through all stations "
+                                           "of the IndexedLine and process it "
+                                           "for the specified timespans")
+    def process_Command(self,
+                        milling_seconds: float = 0.0,
+                        drilling_seconds: float = 0.0,
+                        wait_for_payload: bool = False) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # wait until payload is present
-        runner.then_goto(config,
-                         until=lambda: not self.indexedLineSensLoading,
-                         and_stay_for=0.5,
-                         info="waiting for payload")
+        if wait_for_payload:
+            runner.then_goto(config,
+                             until=lambda: not self.indexedLineSensLoading,
+                             and_stay_for=0.5,
+                             info="waiting for payload")
 
         # move to mill
-        runner.then_run_runner_from(self.move_to_mill_Command, info="moving to mill")
+        runner.then_run_runner_from(self.move_to_mill_Command,
+                                    info="moving to mill")
 
         # mill
-        runner.then_run_runner_from(self.mill_Command, info="milling")
+        runner.then_run_runner_from(lambda: self.mill_Command(milling_seconds),
+                                    info="milling")
 
         # move to drill
-        runner.then_run_runner_from(self.move_to_drill_Command, info="moving to drill")
+        runner.then_run_runner_from(self.move_to_drill_Command,
+                                    info="moving to drill")
 
         # drill
-        runner.then_run_runner_from(self.drill_Command, info="drilling")
+        runner.then_run_runner_from(
+            lambda: self.drill_Command(drilling_seconds), info="drilling")
 
         # move to output
-        runner.then_run_runner_from(self.move_to_output_Command, info="moving to output")
+        runner.then_run_runner_from(self.move_to_output_Command,
+                                    info="moving to output")
 
         return runner
 
