@@ -32,7 +32,7 @@ public class IndexedLineMachine extends AbstractMachine {
     new StopCommand(this, stopDTO).execute();
   }
 
-  public void moveToMill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> moveToMillDTO) {
+  public void move_to_mill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> moveToMillDTO) {
     log.info("Move to mill indexedLine {}", moveToMillDTO);
     new MoveToMillCommand(this, moveToMillDTO).execute();
   }
