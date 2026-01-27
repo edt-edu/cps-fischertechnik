@@ -2,7 +2,7 @@ package io.github.mbdo.factoryscada.domains.indexedline;
 
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.indexedline.commands.MoveToMillCommand;
+import io.github.mbdo.factoryscada.domains.indexedline.commands.MoveToDrillCommand;import io.github.mbdo.factoryscada.domains.indexedline.commands.MoveToMillCommand;
 import io.github.mbdo.factoryscada.domains.indexedline.commands.Process1Command;
 import io.github.mbdo.factoryscada.domains.indexedline.commands.StopCommand;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -35,5 +35,10 @@ public class IndexedLineMachine extends AbstractMachine {
   public void move_to_mill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> moveToMillDTO) {
     log.info("Move to mill indexedLine {}", moveToMillDTO);
     new MoveToMillCommand(this, moveToMillDTO).execute();
+  }
+
+  public void move_to_drill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> moveToDrillDTO) {
+    log.info("Move to drill indexedLine {}", moveToDrillDTO);
+    new MoveToDrillCommand(this, moveToDrillDTO).execute();
   }
 }
