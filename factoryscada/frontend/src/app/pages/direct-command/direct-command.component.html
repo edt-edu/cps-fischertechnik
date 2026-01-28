@@ -417,12 +417,26 @@
                                           [description]="'Move the payload to the milling station.'"
                                           [destinationSuffix]="'/command/move_to_mill'"></app-generic-no-param-command>
           }
+          @case ("mill") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'MILL'"
+                                         [description]="'Mill the payload for x seconds.'"
+                                         [destinationSuffix]="'/command/mill'"></app-generic-integer-command>
+          }
           @case ("move_to_drill") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'MOVE_TO_DRILL'"
                                           [description]="'Move the payload to the drilling station.'"
                                           [destinationSuffix]="'/command/move_to_drill'"></app-generic-no-param-command>
+          }
+          @case ("drill") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'DRILL'"
+                                         [description]="'Drill the payload for x seconds.'"
+                                         [destinationSuffix]="'/command/drill'"></app-generic-integer-command>
           }
           @case ("move_to_output") {
             <app-generic-no-param-command [machine]="selectedMachine"
