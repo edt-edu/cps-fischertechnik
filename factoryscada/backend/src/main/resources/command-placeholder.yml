@@ -994,3 +994,43 @@ commandPlaceholder:
                 "parameters": []
               }
             }
+        - name: "mill"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "MILL",
+                "parameters": [
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  }
+               ]
+              }
+            }
+        - name: "drill"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "DRILL",
+                "parameters": [
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  }
+               ]
+              }
+            }

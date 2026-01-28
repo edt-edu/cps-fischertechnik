@@ -44,4 +44,14 @@ public class IndexedLineMachine extends AbstractMachine {
     log.info("Move to output indexedLine {}", moveToOutputDTO);
     new MoveToOutputCommand(this, moveToOutputDTO).execute();
   }
+
+  public void mill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> millDTO) {
+    log.info("Mill indexedLine {}", millDTO);
+    new MillCommand(this, millDTO).execute();
+  }
+
+  public void drill(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> drillDTO) {
+    log.info("Drill indexedLine {}", drillDTO);
+    new DrillCommand(this, drillDTO).execute();
+  }
 }
