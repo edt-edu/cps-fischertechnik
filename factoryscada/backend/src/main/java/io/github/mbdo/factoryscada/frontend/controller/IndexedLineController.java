@@ -52,6 +52,11 @@ public class IndexedLineController extends AbstractMachineController<IndexedLine
     return executeCommand(machineName, "move_to_output", moveToOutputDTO);
   }
 
+  @MessageMapping("/{machineName}/command/process")
+  public String receiveProcessCommand(@DestinationVariable("machineName") String machineName, @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> processDTO) {
+    return executeCommand(machineName, "process", processDTO);
+  }
+
   @MessageMapping("/{machineName}/command/process1")
   public String receiveProcess1Command(@DestinationVariable("machineName") String machineName,
                                        @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> process1DTO) {

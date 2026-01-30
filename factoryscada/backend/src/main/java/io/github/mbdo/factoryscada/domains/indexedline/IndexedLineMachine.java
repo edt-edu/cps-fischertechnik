@@ -20,6 +20,11 @@ public class IndexedLineMachine extends AbstractMachine {
     return "indexedLine";
   }
 
+  public void process(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> processDTO) {
+    log.info("Process indexedLine {}", processDTO);
+    new ProcessCommand(this, processDTO).execute();
+  }
+
   public void process1(@Valid @NotNull final GenericMachineCommandDTO<IndexedLineMachine> process1DTO) {
     log.info("Process 1 indexedLine {}", process1DTO);
     new Process1Command(this, process1DTO).execute();
