@@ -1034,3 +1034,35 @@ commandPlaceholder:
                ]
               }
             }
+        - name: "process"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "PROCESS",
+                "parameters": [
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  },
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  },
+                  {
+                    "passableType" : "BOOL",
+                    "passable" : {
+                      "bool" : false
+                    }
+                  },
+               ]
+              }
+            }
