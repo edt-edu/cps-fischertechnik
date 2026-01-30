@@ -24,7 +24,7 @@ public class IndexedLineController extends AbstractMachineController<IndexedLine
   @MessageMapping("/{machineName}/command/move_to_mill")
   public String receiveMoveToMillCommand(@DestinationVariable("machineName") String machineName,
                                          @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> moveToMillDTO) {
-    return executeCommand(machineName, "moveToMill", moveToMillDTO);
+    return executeCommand(machineName, "move_to_mill", moveToMillDTO);
   }
 
   @MessageMapping("/{machineName}/command/mill")
@@ -42,14 +42,14 @@ public class IndexedLineController extends AbstractMachineController<IndexedLine
   @MessageMapping("/{machineName}/command/move_to_drill")
   public String receiveMoveToDrillCommand(@DestinationVariable("machineName") String machineName,
                                           @Valid @Payload GenericMachineCommandDTO<IndexedLineMachine> moveToDrillDTO) {
-    return executeCommand(machineName, "moveToDrill", moveToDrillDTO);
+    return executeCommand(machineName, "move_to_drill", moveToDrillDTO);
   }
 
   @MessageMapping("/{machineName}/command/move_to_output")
   public String receiveMoveToOutputCommand(@DestinationVariable("machineName") String machineName,
                                            @Valid @Payload
                                            GenericMachineCommandDTO<IndexedLineMachine> moveToOutputDTO) {
-    return executeCommand(machineName, "moveToOutput", moveToOutputDTO);
+    return executeCommand(machineName, "move_to_output", moveToOutputDTO);
   }
 
   @MessageMapping("/{machineName}/command/process1")
