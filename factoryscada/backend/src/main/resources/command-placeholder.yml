@@ -1031,7 +1031,7 @@ commandPlaceholder:
                       "number" : 2
                     }
                   }
-               ]
+                ]
               }
             }
         - name: "process"
@@ -1062,7 +1062,7 @@ commandPlaceholder:
                     "passable" : {
                       "bool" : false
                     }
-                  },
-               ]
+                  }
+                ]
               }
             }
