@@ -99,6 +99,10 @@ def customDecoder(idict):
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'TURTLEBOTGRIPPER':
                     passable = param['passable']
                     meaning = passable['meaning']
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'BOOL':
+                    passable = param['passable']
+                    bool_string = passable['bool']
+                    parameterList.append(bool_string)
             # create the python-objects from the information gathered and return them
             m = MachineCommand(jsonType, type, commandId, name, parameterList)
             jsonOutput = JSONOutput(topicName, timestamp, m)
