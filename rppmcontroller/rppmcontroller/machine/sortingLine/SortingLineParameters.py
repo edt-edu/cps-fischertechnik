@@ -31,6 +31,21 @@ class SortingLineParameters:
     Not every setup requires the analog sensor.
     Setting this to true will randomly pick a color.
     """
+    white_ejector_steps: int = 4
+    """
+    The number of steps after which the white ejector gets triggered after a
+    token passed the light barrier behind the color sensor.
+    """
+    red_ejector_steps: int = 14
+    """
+    The number of steps after which the red ejector gets triggered after a
+    token passed the light barrier behind the color sensor.
+    """
+    blue_ejector_steps: int = 24
+    """
+    The number of steps after which the blue ejector gets triggered after a
+    token passed the light barrier behind the color sensor.
+    """
 
     def add_ejector_time_offset(self, seconds: float) -> None:
         """
@@ -51,3 +66,13 @@ class SortingLineParameters:
         :return: None
         """
         self.add_ejector_time_offset(offset)
+
+    def add_ejector_steps_offset(self, steps: int) -> None:
+        """
+        Adds an offset to all ejector steps
+        :param steps: The offset number of steps to add
+        :return: None
+        """
+        self.white_ejector_steps += steps
+        self.red_ejector_steps += steps
+        self.blue_ejector_steps += steps
