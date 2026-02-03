@@ -30,17 +30,17 @@ class SortingLineParameters:
     """
     ejector_activation_time: float = 0.5
     """The time in seconds for which an ejector stays activated"""
-    white_ejector_steps: int = 4
+    white_ejector_steps: int = 5
     """
     The number of steps after which the white ejector gets triggered after a
     token passed the light barrier behind the color sensor.
     """
-    red_ejector_steps: int = 14
+    red_ejector_steps: int = 15
     """
     The number of steps after which the red ejector gets triggered after a
     token passed the light barrier behind the color sensor.
     """
-    blue_ejector_steps: int = 24
+    blue_ejector_steps: int = 25
     """
     The number of steps after which the blue ejector gets triggered after a
     token passed the light barrier behind the color sensor.
