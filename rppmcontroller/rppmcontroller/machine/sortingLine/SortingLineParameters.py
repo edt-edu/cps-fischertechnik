@@ -22,7 +22,7 @@ class SortingLineParameters:
     The delay in seconds after which the blue ejector gets triggered after a
     token passed the light barrier behind the color sensor.
     """
-    pass_through_delay: float = 3.0
+    pass_through_delay: float = 3.5
     """
     The delay in seconds after which a payload should have been transported
     to the end of the conveyor belt, after it passed the light barrier behind

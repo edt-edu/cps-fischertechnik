@@ -444,7 +444,6 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
         # Regenerate the timer according to the color of the payload
         color = self.colorToEject
-        pass_through = False
         if regenerate_timer or self.timer is None:
             if color == Color.WHITE:
                 self.timer = Timer(self.parameters.white_ejector_delay)
@@ -454,9 +453,10 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                 self.timer = Timer(self.parameters.blue_ejector_delay)
             elif color == Color.UNRECOGNIZED:
                 self.timer = Timer(self.parameters.pass_through_delay)
-                pass_through = True
             else:
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"no valid eject-color set", None)
+
+        pass_through = color == Color.UNRECOGNIZED
 
         # Start timer
         if not self.timer.is_started():
@@ -474,6 +474,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             self.ejectorActivationTimer.reset(start=True)
 
         # If timer is elapsed, finish the command
+
         if self.ejectorActivationTimer.is_started() and (self.ejectorActivationTimer.elapsed() or pass_through):
             self.ejectorActivationTimer.reset()
 
