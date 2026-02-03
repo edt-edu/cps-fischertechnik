@@ -394,10 +394,16 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         redCounter = 14
         blueCounter = 24
 
+        requiredSteps = None
+        if self.colorToEject == Color.WHITE:
+            requiredSteps = self.parameters.white_ejector_steps
+        elif self.colorToEject == Color.RED:
+            requiredSteps = self.parameters.red_ejector_steps
+        elif self.colorToEject == Color.BLUE:
+            requiredSteps = self.parameters.blue_ejector_steps
+
         # If counter attained the steps needed, eject
-        if (self.colorToEject == Color.WHITE and current > whiteCounter) or \
-           (self.colorToEject == Color.RED and current > redCounter) or  \
-           (self.colorToEject == Color.BLUE and current > blueCounter):
+        if current > requiredSteps:
 
             self.__sortingLineActCompressorOn = True
             if self.colorToEject == Color.WHITE:
