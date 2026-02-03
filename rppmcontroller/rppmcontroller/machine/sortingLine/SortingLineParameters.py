@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass(kw_only=True)
+@dataclass
 class SortingLineParameters:
     """All configurable parameters of the SortingLine machine."""
 
