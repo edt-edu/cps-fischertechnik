@@ -7,15 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.mbdo.factoryscada.core.Passable;
 import io.github.mbdo.factoryscada.core.enums.PassableType;
-import io.github.mbdo.factoryscada.core.passable.BoxNumber;
-import io.github.mbdo.factoryscada.core.passable.Color;
-import io.github.mbdo.factoryscada.core.passable.Direction;
-import io.github.mbdo.factoryscada.core.passable.NumberNatural;
-import io.github.mbdo.factoryscada.core.passable.PositionParameterThreeD;
-import io.github.mbdo.factoryscada.core.passable.AxisPrioritized;
-import io.github.mbdo.factoryscada.core.passable.MPSOutput;
-import io.github.mbdo.factoryscada.core.passable.MPSArmPosition;
-import io.github.mbdo.factoryscada.core.passable.MPSTurntablePosition;
+import io.github.mbdo.factoryscada.core.passable.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -43,17 +35,14 @@ public class ParameterDeserializer extends JsonDeserializer<Parameter> {
             case MPSOUTPUT -> mapper.treeToValue(node.get("passable"), MPSOutput.class);
             case MPSARMPOSITION -> mapper.treeToValue(node.get("passable"), MPSArmPosition.class);
             case MPSTURNTABLEPOSITION -> mapper.treeToValue(node.get("passable"), MPSTurntablePosition.class);
-            default -> {
-                log.error("Unknown passable type: {}", passableType);
-                throw new IllegalArgumentException("Unknown passable type: " + passableType);
-            }
+            case BOOL -> mapper.treeToValue(node.get("passable"), Bool.class);
         };
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         Validator validator = factory.getValidator();
 
         Set<ConstraintViolation<Passable>> violations = validator.validate(passable);
         for (ConstraintViolation<Passable> violation : violations) {
-            log.error("invalid Passable " + node.get("passable") +" " +violation.getMessage());
+            log.error("invalid Passable {} {}", node.get("passable"), violation.getMessage());
             throw new IllegalArgumentException("invalid passable: " + node.get("passable"));
         }
         

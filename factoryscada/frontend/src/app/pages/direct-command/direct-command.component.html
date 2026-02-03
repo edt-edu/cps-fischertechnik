@@ -279,13 +279,13 @@
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
                                           [title]="'PROCESS1'"
-                                          [description]="'Launch the process 1 of the multiprocessing station. \
-                                          (wait until payload is present, \
-                                          move payload into oven, \
-                                          activate oven for a few seconds, \
-                                          move payload to turn table, \
-                                          turn to saw and saw for a few seconds, \
-                                          eject payload via conveyor)'"
+                                          [description]="'Launch the process 1 of the multiprocessing station. ' +
+                                           '(wait until payload is present, ' +
+                                           'move payload into oven, ' +
+                                           'activate oven for a few seconds, ' +
+                                           'move payload to turn table, ' +
+                                           'turn to saw and saw for a few seconds, ' +
+                                           'eject payload via conveyor)'"
                                           [destinationSuffix]="'/command/process1'"></app-generic-no-param-command>
           }
           @case ("process") {
@@ -410,6 +410,41 @@
 
       @case ("indexedLine") {
         @switch (selectedCommand) {
+          @case ("move_to_mill") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_TO_MILL'"
+                                          [description]="'Move the payload to the milling station.'"
+                                          [destinationSuffix]="'/command/move_to_mill'"></app-generic-no-param-command>
+          }
+          @case ("mill") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'MILL'"
+                                         [description]="'Mill the payload for x seconds.'"
+                                         [destinationSuffix]="'/command/mill'"></app-generic-integer-command>
+          }
+          @case ("move_to_drill") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_TO_DRILL'"
+                                          [description]="'Move the payload to the drilling station.'"
+                                          [destinationSuffix]="'/command/move_to_drill'"></app-generic-no-param-command>
+          }
+          @case ("drill") {
+            <app-generic-integer-command [machine]="selectedMachine"
+                                         [placeholder]="commandToSend"
+                                         [title]="'DRILL'"
+                                         [description]="'Drill the payload for x seconds.'"
+                                         [destinationSuffix]="'/command/drill'"></app-generic-integer-command>
+          }
+          @case ("move_to_output") {
+            <app-generic-no-param-command [machine]="selectedMachine"
+                                          [placeholder]="commandToSend"
+                                          [title]="'MOVE_TO_OUTPUT'"
+                                          [description]="'Move the payload to the output (swap station).'"
+                                          [destinationSuffix]="'/command/move_to_output'"></app-generic-no-param-command>
+          }
           @case ("process1") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"
@@ -420,6 +455,10 @@
                                            'drill it for a few seconds ' +
                                            'and move it to the output)'"
                                           [destinationSuffix]="'/command/process1'"></app-generic-no-param-command>
+          }
+          @case ("process") {
+            <app-indexedline-process [machine]="selectedMachine"
+                                     [placeholder]="commandToSend"></app-indexedline-process>
           }
           @case ("stop") {
             <app-generic-no-param-command [machine]="selectedMachine"
