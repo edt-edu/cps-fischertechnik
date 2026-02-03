@@ -1,11 +1,9 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
-from copy import deepcopy
+import random
 from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import override
-
-import random
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -14,11 +12,13 @@ from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
-from rppmcontroller.machine.sortingLine.SortingLineConfig import SortingLineConfig
 from rppmcontroller.machine.Timer import Timer
+from rppmcontroller.machine.sortingLine.SortingLineConfig import \
+    SortingLineConfig
 from rppmcontroller.machine.sortingLine.SortingLineParameters import \
     SortingLineParameters
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
@@ -334,30 +334,39 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         if not self.sortingLineSensMiddleLightBarrier:
             if not self.parameters.mock_analog_sensor:
                 # Default case: adc is not working and mocking is not enabled
-                logging.error("The detector didn't send any signal, verify the analogic/digital converter")
-                return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
+                logging.warning("The detector didn't send any signal, verify the analogic/digital converter")
+                self.colorToEject = Color.UNRECOGNIZED
+                return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
             else:
                 # Fallback: No adc is connected but sorting line is instructed to mock the color sensor
-                mockedChoice = random.choice(["red", "blue", "white"])
+                mockedChoice = random.choice([Color.RED, Color.BLUE, Color.WHITE, Color.UNRECOGNIZED])
                 logging.warning("Mocking color sensor to return " + mockedChoice)
-                if mockedChoice == "red":
+                if mockedChoice is Color.RED:
                     self.sortingLineSensRedDetector = True
                     self.sortingLineSensBlueDetector = False
                     self.sortingLineSensWhiteDetector = False
                     self.colorToEject = Color.RED
                     return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
-                elif mockedChoice == "blue":
+                elif mockedChoice is Color.BLUE:
                     self.sortingLineSensRedDetector = False
                     self.sortingLineSensBlueDetector = True
                     self.sortingLineSensWhiteDetector = False
                     self.colorToEject = Color.BLUE
                     return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
-                else:
+                elif mockedChoice is Color.WHITE:
                     self.sortingLineSensRedDetector = False
                     self.sortingLineSensBlueDetector = False
                     self.sortingLineSensWhiteDetector = True
                     self.colorToEject = Color.WHITE
                     return CycleStepResult(CycleStepResultEnum.DONE, f"detectColorCycleStep", None)
+                else:
+                    self.sortingLineSensRedDetector = False
+                    self.sortingLineSensBlueDetector = False
+                    self.sortingLineSensWhiteDetector = False
+                    self.colorToEject = Color.UNRECOGNIZED
+                    return CycleStepResult(CycleStepResultEnum.DONE,
+                                           f"detectColorCycleStep",
+                                           None)
 
         # Else, must continue
         return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, f"detectColorCycleStep", None)
