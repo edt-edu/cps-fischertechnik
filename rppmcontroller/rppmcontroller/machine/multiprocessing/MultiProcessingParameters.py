@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MultiProcessingParameters:
     safety_at_oven: Optional[bool] = None
     """
