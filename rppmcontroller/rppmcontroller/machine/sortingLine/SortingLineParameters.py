@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from typing_extensions import deprecated
+
 
 @dataclass
 class SortingLineParameters:
@@ -30,12 +32,22 @@ class SortingLineParameters:
     Setting this to true will randomly pick a color.
     """
 
+    def add_ejector_time_offset(self, seconds: float) -> None:
+        """
+        Adds an offset to all ejector delays
+
+        :param seconds: The offset to add, in seconds
+        :return: None
+        """
+        self.white_ejector_delay += seconds
+        self.red_ejector_delay += seconds
+        self.blue_ejector_delay += seconds
+
+    @deprecated("In favor of add_ejector_time_offset")
     def add_ejector_offset(self, offset: float) -> None:
         """
         Adds an offset to all ejector delays
         :param offset: The offset to add, in seconds
         :return: None
         """
-        self.white_ejector_delay += offset
-        self.red_ejector_delay += offset
-        self.blue_ejector_delay += offset
+        self.add_ejector_time_offset(offset)
