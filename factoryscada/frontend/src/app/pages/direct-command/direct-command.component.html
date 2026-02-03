@@ -456,6 +456,10 @@
                                            'and move it to the output)'"
                                           [destinationSuffix]="'/command/process1'"></app-generic-no-param-command>
           }
+          @case ("process") {
+            <app-indexedline-process [machine]="selectedMachine"
+                                     [placeholder]="commandToSend"></app-indexedline-process>
+          }
           @case ("stop") {
             <app-generic-no-param-command [machine]="selectedMachine"
                                           [placeholder]="commandToSend"

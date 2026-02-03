@@ -1,0 +1,34 @@
+<!-- Parameters -->
+<div class="form-group " [formGroup]="parametersForm">
+  <div class="flex justify-content-evenly flex-wrap">
+
+    @if (! (title === undefined)) {
+      <div class="form-group  flex-grow-1" formGroupName="millGroup">
+        <label>{{ title }}</label>
+      </div>
+    }
+
+    <div class="form-group  flex-grow-1" formGroupName="millGroup">
+      <label>Mill seconds</label>
+      <p-inputNumber
+        formControlName="mill"
+        inputId="minmax"
+        mode="decimal"
+        (onInput)="emitValues()"
+        [min]="0"/>
+    </div>
+    <div class="form-group   flex-grow-1"  formGroupName="drillGroup">
+      <label>Drill seconds</label>
+      <p-inputNumber
+        formControlName="drill"
+        inputId="minmax"
+        mode="decimal"
+        (onInput)="emitValues()"
+        [min]="0"/>
+    </div>
+    <div class="form-group flex-grow-1" formGroupName="waitForPayloadGroup">
+      <label>Wait for payload?</label>
+      <p-inputSwitch formControlName="waitForPayload" (onChange)="emitValues()"></p-inputSwitch>
+    </div>
+  </div>
+</div>
