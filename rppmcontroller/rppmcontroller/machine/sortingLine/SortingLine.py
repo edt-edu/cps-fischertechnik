@@ -1,5 +1,6 @@
 #from Layout.Machine import Layout.Machine #why is this Layout.Machine???
 import logging
+from copy import deepcopy
 from typing import Any, Callable, Dict, Optional
 
 from typing_extensions import override
@@ -15,6 +16,8 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.sortingLine.SortingLineConfig import SortingLineConfig
 from rppmcontroller.machine.Timer import Timer
+from rppmcontroller.machine.sortingLine.SortingLineParameters import \
+    SortingLineParameters
 from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
@@ -22,48 +25,11 @@ from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
 class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
-    WHITE_EJECTOR_DELAY = 0.5
-    RED_EJECTOR_DELAY = 1.55
-    BLUE_EJECTOR_DELAY = 2.6
-    EJECTOR_ACTIVATION_TIME = 0.5 # time the ejector stays activated
+    def __init__(self, id1: str, parameters: Optional[SortingLineParameters] = None):
+        if parameters is None:
+            parameters = SortingLineParameters()
 
-
-    @property
-    def isInitialized(self) -> bool:
-        return True # no encoder actuators
-
-    @isInitialized.setter
-    def isInitialized(self, value):
-        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
-        raise AttributeError("isInitialized is a read-only property")
-
-    #TODO self.once: implement reset possibility from execute
-
-    @Machine.isExecuting.getter
-    def isExecuting(self) -> bool:
-        res = (self.sortingLineActCompressorOn or
-                self.sortingLineActMotorConveyor or
-                self.sortingLineActWhiteEjector or
-                self.sortingLineActRedEjector or
-                self.sortingLineActBlueEjector or
-                self.is_executing_runner)
-
-        if (self.executing_runner == None):
-            routine = "None"
-        else:
-            routine = str(self.executing_runner)
-
-        # log isexecuting and debug info only if message has changed
-        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
-        if isExecuting_log != self.previous_isExecuting_log :
-            logging.debug(isExecuting_log)
-            self.previous_isExecuting_log = isExecuting_log
-
-        return res
-
-    def __init__(self, id1: str, delay_offsets = (0.0, 0.0, 0.0), mockAnalogSensor=False):
-        # configuration
-        self.__delay_offsets = delay_offsets # offset for the delay while ejecting white, red, blue tokens
+        self.__parameters = parameters
 
         # inputs
         self.__sortingLineSensImpulseCounterRaw = 0
@@ -110,12 +76,48 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.ejectingPayload = False
         self.waitOneCycle = False
         self.timer = None
-        self.ejectorActivationTimer = Timer(self.EJECTOR_ACTIVATION_TIME)
+        self.ejectorActivationTimer = Timer(self.parameters.ejector_activation_time)
         # TODO(Hellwig): are the methods using the counter still used?
         self.__counter = ImpulseCounter()
-        # Not every setup has analog input needed,
-        # thus this toggles the mocking by randomly picking one of the colors
-        self._mockAnalogSensor = mockAnalogSensor
+
+    @property
+    def isInitialized(self) -> bool:
+        return True # no encoder actuators
+
+    @isInitialized.setter
+    def isInitialized(self, value):
+        logging.warning(f"Attempted to set read-only property 'isInitialized' on {self}")
+        raise AttributeError("isInitialized is a read-only property")
+
+    #TODO self.once: implement reset possibility from execute
+
+    @Machine.isExecuting.getter
+    def isExecuting(self) -> bool:
+        res = (self.sortingLineActCompressorOn or
+                self.sortingLineActMotorConveyor or
+                self.sortingLineActWhiteEjector or
+                self.sortingLineActRedEjector or
+                self.sortingLineActBlueEjector or
+                self.is_executing_runner)
+
+        if self.executing_runner is None:
+            routine = "None"
+        else:
+            routine = str(self.executing_runner)
+
+        # log isexecuting and debug info only if message has changed
+        isExecuting_log = f'\n\tisExecuting({self.id})={res}\n\tRoutine : {routine}\n\tSensors={self.sensorStatusString()}\n\tActuators= {self.actuatorStatusString()}'
+        if isExecuting_log != self.previous_isExecuting_log :
+            logging.debug(isExecuting_log)
+            self.previous_isExecuting_log = isExecuting_log
+
+        return res
+
+
+
+    @property
+    def parameters(self) -> SortingLineParameters:
+        return self.__parameters
 
     @property
     def sortingLineSensImpulseCounterRaw(self):
@@ -238,7 +240,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.__sortingLineSensWhiteDetector = value
 
     def sensorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"ConvSens[{s(self.sortingLineSensInputLightBarrier)}, {s(self.sortingLineSensMiddleLightBarrier)}], " + \
                f"ColoSens[{s(self.sortingLineSensWhiteLightBarrier)}, {s(self.sortingLineSensBlueLightBarrier)}, {s(self.sortingLineSensRedLightBarrier)}], " + \
@@ -246,7 +248,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
                f"Counter[{self.sortingLineSensImpulseCounterRaw}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda bool: "T" if bool else "F"
+        s = lambda b: "T" if b else "F"
 
         return f"Conveyor[{s(self.sortingLineActMotorConveyor)}], " + \
                f"CompValv[{s(self.sortingLineActCompressorOn)}, {s(self.sortingLineActWhiteEjector)}, {s(self.sortingLineActRedEjector)}, {s(self.sortingLineActBlueEjector)}]"
@@ -330,7 +332,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
 
         # If the token has arrived to the middle sensor, the detector didn't work
         if not self.sortingLineSensMiddleLightBarrier:
-            if not self._mockAnalogSensor:
+            if not self.parameters.mock_analog_sensor:
                 # Default case: adc is not working and mocking is not enabled
                 logging.error("The detector didn't send any signal, verify the analogic/digital converter")
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)
@@ -430,11 +432,11 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         # Regenerate the timer according to the color of the payload
         if regenerateTimer or self.timer is None:
             if self.colorToEject == Color.WHITE:
-                self.timer = Timer(self.WHITE_EJECTOR_DELAY + self.__delay_offsets[0])
+                self.timer = Timer(self.parameters.white_ejector_delay)
             elif self.colorToEject == Color.RED:
-                self.timer = Timer(self.RED_EJECTOR_DELAY + self.__delay_offsets[1])
+                self.timer = Timer(self.parameters.red_ejector_delay)
             elif self.colorToEject == Color.BLUE:
-                self.timer = Timer(self.BLUE_EJECTOR_DELAY + self.__delay_offsets[2])
+                self.timer = Timer(self.parameters.blue_ejector_delay)
             else:
                 logging.error("No color defined, command aborted")
                 return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"detectColorCycleStep", None)

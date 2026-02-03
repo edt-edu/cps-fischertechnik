@@ -13,7 +13,7 @@ class MultiProcessingTestCase(unittest.TestCase):
 
     def test_Stop(self):
         """
-        Test if stop function stops the multiprocessing station
+        Test if stop function stops the multi-processing station
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
 

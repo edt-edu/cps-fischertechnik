@@ -1,6 +1,7 @@
 import logging
+from copy import deepcopy
 from enum import Enum
-from typing import Dict, Any, Union, Callable, Tuple, Optional, List
+from typing import Dict, Any, Union, Callable, Optional, List
 
 from typing_extensions import override
 
@@ -16,11 +17,9 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ResetHelper import ResetHelper
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
+from rppmcontroller.machine.highbay.HighBayParameters import HighBayParameters
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
-
-PICKUP_DISTANCE = 150
-"""how far up we need to move the arm, when picking up an item"""
 
 
 class Column(Enum):
@@ -29,31 +28,18 @@ class Column(Enum):
     MIDDLE = 2
     LEFT = 3
 
-    def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
-        if isinstance(offset, int):
-            if self == Column.CONVEYOR:
-                return max(0, 70 + offset)
-            elif self == Column.RIGHT:
-                return max(0, 1550 + offset)
-            elif self == Column.MIDDLE:
-                return max(0, 2700 + offset)
-            elif self == Column.LEFT:
-                return max(0, 3900 + offset)
-            else:
-                raise ValueError(f"no counter goal defined for {self}")
-        elif isinstance(offset, Tuple) and len(offset) == 4:
-            if self == Column.CONVEYOR:
-                return max(0, 70 + offset[0])
-            elif self == Column.RIGHT:
-                return max(0, 1550 + offset[1])
-            elif self == Column.MIDDLE:
-                return max(0, 2700 + offset[2])
-            elif self == Column.LEFT:
-                return max(0, 3900 + offset[3])
-            else:
-                raise ValueError(f"no counter goal defined for {self}")
+    def to_counter_goal(self, parameters: HighBayParameters) -> int:
+        if self == Column.CONVEYOR:
+            return parameters.conveyor_column
+        elif self == Column.RIGHT:
+            return parameters.right_column
+        elif self == Column.MIDDLE:
+            return parameters.middle_column
+        elif self == Column.LEFT:
+            return parameters.left_column
         else:
-            raise TypeError("offset must be an int or a tuple of 4 ints")
+            raise ValueError(f"no counter goal defined for {self}")
+
 
 
 class Row(Enum):
@@ -62,43 +48,25 @@ class Row(Enum):
     MIDDLE = 2
     TOP = 3
 
-    def to_counter_goal(self, offset: Union[int, Tuple[int, int, int, int]]) -> int:
-        if isinstance(offset, int):
-            if self == Row.CONVEYOR:
-                return max(0, 1450 + offset)
-            elif self == Row.BOTTOM:
-                return max(0, 1700 + offset)
-            elif self == Row.MIDDLE:
-                return max(0, 900 + offset)
-            elif self == Row.TOP:
-                return max(0, 200 + offset)
-            else:
-                raise ValueError(f"no counter goal defined for {self}")
-        elif isinstance(offset, Tuple) and len(offset) == 4:
-            if self == Row.CONVEYOR:
-                return max(0, 1450 + offset[0])
-            elif self == Row.BOTTOM:
-                return max(0, 1700 + offset[1])
-            elif self == Row.MIDDLE:
-                return max(0, 900 + offset[2])
-            elif self == Row.TOP:
-                return max(0, 200 + offset[3])
-            else:
-                raise ValueError(f"no counter goal defined for {self}")
+    def to_counter_goal(self, parameters: HighBayParameters) -> int:
+        if self == Row.CONVEYOR:
+            return parameters.conveyor_row
+        elif self == Row.BOTTOM:
+            return parameters.bottom_row
+        elif self == Row.MIDDLE:
+            return parameters.middle_row
+        elif self == Row.TOP:
+            return parameters.top_row
         else:
-            raise TypeError("offset must be an int or a tuple of 4 ints")
+            raise ValueError(f"no counter goal defined for {self}")
 
 
 class HighBay(Machine, TransitioningMachine[HighBayConfig]):
-    def __init__(self, id1, row_offset: Union[int, Tuple[int, int, int, int]] = 0,
-                 column_offset: Union[int, Tuple[int, int, int, int]] = 0,
-                 safetyPos: Optional[Dict[str, int]] = None,
-                 pwmParameters: Optional[Dict[str, int]] = None):
-        if safetyPos is None:
-            safetyPos = {}
-        if pwmParameters is None:
-            pwmParameters = {'stdSpeed': 100, 'reducedSpeed': 50,
-                             'approachTol': 100}
+    def __init__(self, id1, parameters: Optional[HighBayParameters] = None):
+        if parameters is None:
+            parameters = HighBayParameters()
+
+        self.__parameters = parameters
 
         #  inputs
         self.__highbaySensHorizontal = False
@@ -127,10 +95,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__axisVertical = Axis(AxisType.Encoder, 10)
         self.__horizontal_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
-
-        # offsets
-        self.row_offset = row_offset
-        self.column_offset = column_offset
 
         dictMap = {
             RequestedParameter.REFERENCESWITCHHORIZONTALAXIS:
@@ -172,14 +136,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.previous_isExecuting_log = None
         self.__is_initialized = False
         self.next_config = HighBayConfig()
-        self.__state = None
-        self.stdSpeed = pwmParameters.get('stdSpeed', 100)
-        self.reducedSpeed = pwmParameters.get('reducedSpeed', 40)
-        self.approachTol = pwmParameters.get('approachTol', 100)
-
-        # safety position
-        self.safeHorizontal = safetyPos.get('horizontal', None)
-        self.safeVertical = safetyPos.get('vertical', None)
 
     @property
     def __reset_helpers(self) -> List[ResetHelper]:
@@ -230,6 +186,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             self.previous_isExecuting_log = isExecuting_log
 
         return res
+
+    @property
+    def parameters(self) -> HighBayParameters:
+        return self.__parameters
 
     # ------------------ Input Properties ------------------
 
@@ -497,7 +457,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             distance_to_move = self.__axisVertical.counterValueCurrent - (
                 config.vertical_axis_config.counter_goal or 0)
             if (
-                abs(distance_to_move) > PICKUP_DISTANCE +
+                abs(distance_to_move) > self.parameters.pickup_distance +
                     self.__axisVertical.tolerance):
                 arm_movement = ArmMovement.MAYOR
             else:
@@ -508,10 +468,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                                      self.highbaySensHorizontalEncoderCounter)
         if not self.__axisHorizontal.gotoAxisConfig(config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
-            if self.__axisHorizontal.isCloseFromEnd(config.horizontal_axis_config, self.approachTol):
-                self.pwmHorizontal = self.reducedSpeed
+            if self.__axisHorizontal.isCloseFromEnd(config.horizontal_axis_config, self.parameters.pwm_approach_tolerance):
+                self.pwmHorizontal = self.parameters.pwm_reduced_speed
             else :
-                self.pwmHorizontal = self.stdSpeed
+                self.pwmHorizontal = self.parameters.pwm_standard_speed
 
         # logging.debug(f"arm_movement: {arm_movement}")
         if (
@@ -621,12 +581,12 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
     @protocol_command_function()
     def setup_Command(self) -> Runner:
         """
-        Set up the highbay and calibrate the counters.
+        Set up the HighBay and calibrate the counters.
         :return: A Runner performing the setup
         """
 
-        self.pwmHorizontal = self.stdSpeed
-        self.pwmVertical = self.stdSpeed
+        self.pwmHorizontal = self.parameters.pwm_standard_speed
+        self.pwmVertical = self.parameters.pwm_standard_speed
 
         def mark_setup_finished():
             self.__is_initialized = True
@@ -739,7 +699,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         if isinstance(column, int):
             column = Column(column)
 
-        return self.horizontal_to_Command(column.to_counter_goal(self.column_offset))
+        return self.horizontal_to_Command(column.to_counter_goal(self.parameters))
 
     @protocol_command_function()
     def goto_row_Command(self, row: Union[Row, int]) -> Callable[
@@ -759,7 +719,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         if isinstance(row, int):
             row = Row(row)
 
-        return self.vertical_to_Command(row.to_counter_goal(self.row_offset))
+        return self.vertical_to_Command(row.to_counter_goal(self.parameters))
 
     @protocol_command_function()
     def store_to_Command(self,
@@ -794,9 +754,9 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
         # goto conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            Column.CONVEYOR.to_counter_goal(self.column_offset))
+            Column.CONVEYOR.to_counter_goal(self.parameters))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            Row.CONVEYOR.to_counter_goal(self.row_offset))
+            Row.CONVEYOR.to_counter_goal(self.parameters))
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
@@ -810,22 +770,22 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
         # pickup item and stop conveyor
         config.conveyor_state = ConveyorState.IDLE
-        config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
-        config.verticalPWM = self.reducedSpeed
+        config.vertical_axis_config.counter_goal -= self.parameters.pickup_distance
+        config.verticalPWM = self.parameters.pwm_reduced_speed
         runner.then_goto(config, info="pickup item and stop conveyor")
 
         # move to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            column.to_counter_goal(self.column_offset))
+            column.to_counter_goal(self.parameters))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            row.to_counter_goal(self.row_offset) - PICKUP_DISTANCE)
+            row.to_counter_goal(self.parameters) - self.parameters.pickup_distance)
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
         runner.then_goto(config, info="move to rack")
 
         # drop off item
-        config.vertical_axis_config.counter_goal += PICKUP_DISTANCE
+        config.vertical_axis_config.counter_goal += self.parameters.pickup_distance
         runner.then_goto(config, info="drop off item")
 
         # perform a setup to recalibrate the encoders
@@ -868,28 +828,28 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
         # go to rack
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            column.to_counter_goal(self.column_offset))
+            column.to_counter_goal(self.parameters))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            row.to_counter_goal(self.row_offset))
+            row.to_counter_goal(self.parameters))
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True)
         runner.then_goto(config, info="go to rack")
 
         # pickup item
-        config.vertical_axis_config.counter_goal -= PICKUP_DISTANCE
+        config.vertical_axis_config.counter_goal -= self.parameters.pickup_distance
         runner.then_goto(config, info="pickup item")
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
-            Column.CONVEYOR.to_counter_goal(self.column_offset))
+            Column.CONVEYOR.to_counter_goal(self.parameters))
         vertical_axis_config = AxisConfig.to_counter_goal(
-            Row.CONVEYOR.to_counter_goal(self.row_offset))
+            Row.CONVEYOR.to_counter_goal(self.parameters))
         config = HighBayConfig(horizontal_axis_config,
                                vertical_axis_config,
                                True,
                                ConveyorState.FORWARD)
-        config.verticalPWM = self.reducedSpeed
+        config.verticalPWM = self.parameters.pwm_reduced_speed
         runner.then_goto(config,
                          until=lambda: not self.highbaySensOutside,
                          info="move to conveyor")
@@ -913,12 +873,12 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         Moves the Vacuum Gripper to the safe position if specified. Go to setup position else
         :return: A Runner performing the command
         """
-        if self.safeVertical is not None and self.safeHorizontal is not None:
+        if self.parameters.vertical_safety_position is not None and self.parameters.horizontal_safety_position is not None:
             runner = self.create_runner()
             self.run_setup_unless_initialized(runner)
             config = self.get_current_config()
-            config.horizontal_axis_config = AxisConfig.to_counter_goal(self.safeHorizontal)
-            config.vertical_axis_config = AxisConfig.to_counter_goal(self.safeVertical)
+            config.horizontal_axis_config = AxisConfig.to_counter_goal(self.parameters.horizontal_safety_position)
+            config.vertical_axis_config = AxisConfig.to_counter_goal(self.parameters.vertical_safety_position)
             return runner.then_goto(config)
 
             # runner = self.create_runner()
