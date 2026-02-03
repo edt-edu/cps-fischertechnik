@@ -4,5 +4,6 @@ public enum Color {
     WHITE,
     RED,
     BLUE,
-    AUTO
+    AUTO,
+    UNRECOGNIZED,
 }
