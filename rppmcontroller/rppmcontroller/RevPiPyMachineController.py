@@ -26,7 +26,6 @@ from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MachineStatus import MachineStatus
-from rppmcontroller.machine.Runner import Runner
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.highbay.HighBay import HighBay
@@ -300,13 +299,19 @@ class RevPiPyMachineController:
                                     ret = func(m, box[0], box[1])
                                 else:
                                     logging.warning(f"unsupported number of parameters: {i}")
-                            elif func is not None and (inputBufferItem.message.type == "SORTING" or inputBufferItem.message.type == "INDEXEDLINE"):
+                            elif func is not None and inputBufferItem.message.type == "SORTING":
                                 color = inputBufferItem.message.parameters
                                 i = len(color)
                                 if i == 0:
                                     ret = func(m)
                                 if i == 1:
                                     ret = func(m, color[0])
+                            elif func is not None and inputBufferItem.message.type == "INDEXEDLINE":
+                                params = inputBufferItem.message.parameters
+                                try:
+                                    ret = func(m, *params)
+                                except TypeError:
+                                    logging.warning(f"unsupported number of parameters: {len(params)}")
                             elif func is not None and inputBufferItem.message.type == "MULTIPROCESSING":
                                 parameters = inputBufferItem.message.parameters
                                 logging.debug(inputBufferItem.message)
@@ -478,7 +483,7 @@ class RevPiPyMachineController:
             result_changed = not lastResult.is_equivalent_result(cached_result.result) or lastCommand.commandId != cached_result.command.commandId
             logging.debug(f'lastResult.is_equivalent_result(cached_result.result) {lastResult.is_equivalent_result(cached_result.result)}')
             logging.debug(f'lastCommand.commandId {lastCommand.commandId} != cached_result.command.commandId {cached_result.command.commandId}')
-        if result_changed : 
+        if result_changed :
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
                 jsonid = cycleStepCommand.commandId
