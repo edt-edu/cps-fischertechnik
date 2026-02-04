@@ -414,7 +414,11 @@ class RevPiPyMachineController:
             cycleStepCommand = self.currentlyExecuting[key]
             if cycleStepCommand is not None:
                 #logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
-                ret = cycleStepCommand.cycleStep()
+                try:
+                    ret = cycleStepCommand.cycleStep()
+                except Exception:
+                    logging.exception("Error while executing cycleStepCommand")
+
                 # removes currentlyExecuting function once it indicates it is finished
                 # logging.debug(f"{ret}")
                 if ret.is_done():
