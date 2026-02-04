@@ -340,7 +340,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
             else:
                 # Fallback: No adc is connected but sorting line is instructed to mock the color sensor
                 mockedChoice = random.choice([Color.RED, Color.BLUE, Color.WHITE, Color.UNRECOGNIZED])
-                logging.warning("Mocking color sensor to return " + mockedChoice)
+                logging.warning("Mocking color sensor to return " + str(mockedChoice))
                 if mockedChoice is Color.RED:
                     self.sortingLineSensRedDetector = True
                     self.sortingLineSensBlueDetector = False
