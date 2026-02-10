@@ -26,6 +26,7 @@ from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MachineStatus import MachineStatus
+from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.machine.highbay.HighBay import HighBay
@@ -218,6 +219,8 @@ class RevPiPyMachineController:
         json_type = message.jsonType
         machine_type_name = machine.machineTypeName()
         machine_id = machine.id
+        parameters = message.parameters
+
         if json_type == "STATUSREQUEST":
             logging.debug("Status")
 
@@ -229,8 +232,7 @@ class RevPiPyMachineController:
                                    json.dumps(message, default=str))
             # request status and append it to the outputBuffer
             try:
-                requested_parameter_values = machine.request(
-                    message.parameters)
+                requested_parameter_values = machine.request(parameters)
                 answer = MachineStatusRequestAnswer("STATUSANSWER",
                                                     message.requestId,
                                                     requested_parameter_values)
@@ -242,7 +244,6 @@ class RevPiPyMachineController:
                 print("status not supported")
 
         elif json_type == "COMMAND":
-            ret = None
             message_type = message.type
             message_name = message.name
             logging.debug(f'Command {message_type} {message_name}')
@@ -286,127 +287,72 @@ class RevPiPyMachineController:
                                                      f"Invalid Command {message_name} {message.commandId}"))
                 return
 
-            # Call the command function: it must return either None if nothing else is required
-            #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
-            # Arrange the function parameters in the correct order and match them with the function.
-            if command_function is not None and (
-                message_type == "GRIPPER" or message_type == "VACUUM"):
-                pos = message.parameters
-                i = len(pos)
-                if i == 0:
-                    logging.debug("function called with no args")
-                    #m.setupFirst = True unschön
+            parameter_count = len(parameters)
 
-                    machine.incrementNbMinimumRequiredExecutionCycles()
-                    ret = command_function(machine)
-                if i == 1:
-                    # just assume that start/end is correct
-                    # TODO get rid of assumption
-                    logging.debug("function called with one arg")
-                    machine.incrementNbMinimumRequiredExecutionCycles()
-                    ret = command_function(machine, pos[0])
-                if i == 2:
-                    #for the ordered move command
-                    if isinstance(pos[1].horizontal, bool) :
-                        logging.debug("function called with two args")
-                        machine.incrementNbMinimumRequiredExecutionCycles()
-                        ret = command_function(machine, pos[0], pos[1])
-                    elif pos[0].meaning == "START" and pos[1].meaning == "END":
-                        logging.debug("function called with two args")
-                        machine.incrementNbMinimumRequiredExecutionCycles()
-                        ret = command_function(machine, pos[0], pos[1])
-                    elif pos[0].meaning == "END" and pos[1].meaning == "START":
-                        logging.debug("function called with two args")
-                        machine.incrementNbMinimumRequiredExecutionCycles()
-                        ret = command_function(machine, pos[1], pos[0])
-                    else:
-                        logging.error("command not supported - params")
-                        # TODO activate:
-                        # raise JSONCommandNotSupportedOnThisMachineException()
-            elif command_function is not None and message_type == "WAREHOUSE":
-                box = message.parameters
-                i = len(box)
-                logging.debug(f"func: {command_function}, number of parameters: {i}")
-                if i == 0:
-                    ret = command_function(machine)
-                elif i == 1:
-                    ret = command_function(machine, box[0])
-                elif i == 2:
-                    ret = command_function(machine, box[0], box[1])
-                else:
-                    logging.warning(f"unsupported number of parameters: {i}")
-            elif command_function is not None and message_type == "SORTING":
-                color = message.parameters
-                i = len(color)
-                if i == 0:
-                    ret = command_function(machine)
-                if i == 1:
-                    ret = command_function(machine, color[0])
-            elif command_function is not None and message_type == "INDEXEDLINE":
-                params = message.parameters
-                try:
-                    ret = command_function(machine, *params)
-                except TypeError:
-                    logging.warning(f"unsupported number of parameters: {len(params)}")
-            elif command_function is not None and message_type == "MULTIPROCESSING":
-                parameters = message.parameters
-                logging.debug(message)
-                i = len(parameters)
-                if i == 0:
-                    ret = command_function(machine)
-                elif i == 1:
-                    ret = command_function(machine, parameters[0])
-                elif i == 3:
-                    ret = command_function(machine, parameters[0], parameters[1], parameters[2])
-                else:
-                    logging.warning(f"unsupported number of parameters: {i}")
-                    logging.warning(parameters)
-            elif command_function is not None and message_type == "PUNCHING":
-               ret = command_function(machine)
-            elif command_function is not None and (message_type == "CONVEYOR"):
-                mix = message.parameters
-                i = len(mix)
-                if i == 0:
-                    ret = command_function(machine)
-                if i == 1:
-                    ret = command_function(machine, mix[0])
-                if i == 2:
-                    if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
-                        ret = command_function(machine, mix[0], mix[1])
-                    else:
-                        ret = command_function(machine, mix[1], mix[0])
+            # apply machine-specific parameter modifications
+            if message_type == "GRIPPER" or message_type == "VACUUM":
+                # swap the first two parameters if START and END are swapped
+                if (parameter_count > 1 and
+                    isinstance(parameters[0], Position) and
+                    isinstance(parameters[1], Position) and
+                    parameters[0].meaning == "END" and
+                    parameters[1].meaning == "START"):
+                    parameters[0], parameters[1] = parameters[1], parameters[0]
+            elif message_type == "CONVEYOR":
+                # TODO this doesn't look right, investigate why we swap the
+                #  parameters in this specific case
+                if (parameter_count == 2 and
+                    parameters[0] != Direction.BACKWARD and
+                    parameters[0] != Direction.FORWARD):
+                    parameters[0], parameters[1] = parameters[1], parameters[0]
 
-            # store the cycleStep function that is currently executed on each machine
-            cycleStepFunction = self.cast_to_callable(ret)
-            if cycleStepFunction is not None:
-                # logging.debug(f'cycleStepFunction is not None')
-                if machine in self.currentlyExecuting :
-                    command = self.currentlyExecuting[machine]
-                    if command is not None:
-                        logging.debug(f'self.currentlyExecuting[m] is not None')
-                        # send interruption feedback for the previously running command on the machine
-                        self.sendCommandFeedbackOnChange(machine, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {message_name} {message.commandId}"))
-                        machine.processSequenceContext = None
-                # logging.debug("survived execution check")
-                message_name = message_name
-                # logging.debug(f"message_name: {message_name}")
-                try:
-                    source = inspect.getsource(cycleStepFunction)
-                except:
-                    # logging.debug("failed to determine source of cycleStepFunction")
-                    source = f"{cycleStepFunction}"
-                # logging.debug(f"source: {source}")
-                display_name = f"{message_name} [{source.strip()}]"
-                # logging.warning(f"display_name: {display_name}")
-                command_id = message.commandId
-                # logging.debug(f"command_id: {command_id}")
-                self.currentlyExecuting[machine] = CycleStepCommand(cycleStepFunction,
-                                                              display_name,
-                                                              command_id)
-                # logging.debug("survived execution update")
-            else:
+            # Call the command function: it must return either None if
+            # nothing else is required or return a lambda that calls a
+            # cycleStep method (i.e., a method intended to run in the main
+            # loop during the exLoop).
+            logging.debug(f"calling function {command_function_name} with {parameter_count} parameters")
+            machine.incrementNbMinimumRequiredExecutionCycles()
+            try:
+                ret = command_function(machine, *parameters)
+            except TypeError as e:
+                logging.warning(f"unsupported number of parameters for method {command_function_name}: {parameter_count}",
+                                exc_info=e)
+                # TODO activate:
+                # raise JSONCommandNotSupportedOnThisMachineException()
+                return
+
+            # store the cycleStep function currently executed on each machine
+            cycle_step_function = self.cast_to_callable(ret)
+            if cycle_step_function is None:
+                # TODO this doesn't seem right either. Why would we abandon
+                #  here if None is a perfectly expected result?
                 self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {message_name} {message.commandId}"))
-                # an invalid command doesn't interrupt the currently running command
+                return
+
+            # logging.debug(f'cycleStepFunction is not None')
+            if machine in self.currentlyExecuting :
+                command = self.currentlyExecuting[machine]
+                if command is not None:
+                    logging.debug(f'self.currentlyExecuting[m] is not None')
+                    # send interruption feedback for the previously running command on the machine
+                    self.sendCommandFeedbackOnChange(machine, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {message_name} {message.commandId}"))
+                    machine.processSequenceContext = None
+            # logging.debug("survived execution check")
+            # logging.debug(f"message_name: {message_name}")
+            try:
+                source = inspect.getsource(cycle_step_function)
+            except:
+                # logging.debug("failed to determine source of cycleStepFunction")
+                source = f"{cycle_step_function}"
+            # logging.debug(f"source: {source}")
+            display_name = f"{message_name} [{source.strip()}]"
+            # logging.warning(f"display_name: {display_name}")
+            command_id = message.commandId
+            # logging.debug(f"command_id: {command_id}")
+            self.currentlyExecuting[machine] = CycleStepCommand(cycle_step_function,
+                                                          display_name,
+                                                          command_id)
+            # logging.debug("survived execution update")
 
         else:
             # ignore messages which are not status requests or commands
