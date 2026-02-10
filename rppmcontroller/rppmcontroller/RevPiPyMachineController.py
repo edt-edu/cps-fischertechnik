@@ -185,9 +185,12 @@ class RevPiPyMachineController:
 
     def processJson(self, inputBuffer: Queue) -> None:
         """
-        gets the JSONOutput-objects out of the input buffer and decides which command function to execute
-        The function to execute must use the name of the command lowercase with a "_Command" postfix,
-        a command function must return a lambda pointing to a "_cycleStep" function
+        gets the JSONOutput-objects out of the input buffer and decides
+        which command function to execute
+        The function to execute must use the name of the command lowercase
+        with a "_Command" postfix,
+        a command function must return a lambda pointing to a "_cycleStep"
+        function
         :param inputBuffer: The command input buffer queue
         :return: `None`
         """
@@ -239,8 +242,8 @@ class RevPiPyMachineController:
                 json_output = JSONOutput(machine_id, time.time(), answer)
                 self.outputBuffer.put(json_output)
             except AttributeError:
-                #TODO change:
-                #raise JSONCommandNotSupportedOnThisMachineException()
+                # TODO change:
+                # raise JSONCommandNotSupportedOnThisMachineException()
                 print("status not supported")
 
         elif json_type == "COMMAND":
@@ -267,23 +270,32 @@ class RevPiPyMachineController:
             }
             machine_class = machine_type_to_class_mapping[message_type]
             if machine_class is None:
-                logging.warning(f"invalid JSON command: unsupported machine type: {message_type}")
+                logging.warning(f"invalid JSON command: unsupported machine "
+                                f"type: {message_type}")
                 return
 
             if not isinstance(machine, machine_class):
-                logging.warning(f"invalid JSON command: missmatch between topic name and message type: {topic_name} incompatible with {message_type}")
+                logging.warning(f"invalid JSON command: missmatch between "
+                                f"topic name and message type: {topic_name} "
+                                f"incompatible with {message_type}")
                 return
 
             command_function_name = f"{str.lower(message_name)}_Command"
             try:
-                command_function = getattr(machine_class, command_function_name)
+                command_function = getattr(machine_class,
+                                           command_function_name)
             except AttributeError as e:
-                logging.warning(f"command not supported: cannot find function {message_type}.{command_function_name}", exc_info=e)
+                logging.warning(f"command not supported: cannot find "
+                                f"function"
+                                f" {message_type}.{command_function_name}",
+                                exc_info=e)
                 self.sendCommandFeedbackOnChange(machine,
                                                  None,
                                                  CycleStepResult(
                                                      CycleStepResultEnum.ABORTED_ERROR,
-                                                     f"Invalid Command {message_name} {message.commandId}"))
+                                                     f"Invalid Command "
+                                                     f"{message_name} "
+                                                     f"{message.commandId}"))
                 return
 
             parameter_count = len(parameters)
@@ -309,12 +321,15 @@ class RevPiPyMachineController:
             # nothing else is required or return a lambda that calls a
             # cycleStep method (i.e., a method intended to run in the main
             # loop during the exLoop).
-            logging.debug(f"calling function {command_function_name} with {parameter_count} parameters")
+            logging.debug(f"calling function {command_function_name} with "
+                          f"{parameter_count} parameters")
             machine.incrementNbMinimumRequiredExecutionCycles()
             try:
                 ret = command_function(machine, *parameters)
             except TypeError as e:
-                logging.warning(f"unsupported number of parameters for method {command_function_name}: {parameter_count}",
+                logging.warning(f"unsupported number of paramete"
+                                f"rs for method {command_function_name}: {
+                                parameter_count}",
                                 exc_info=e)
                 # TODO activate:
                 # raise JSONCommandNotSupportedOnThisMachineException()
@@ -325,29 +340,45 @@ class RevPiPyMachineController:
             if cycle_step_function is None:
                 # TODO this doesn't seem right either. Why would we abandon
                 #  here if None is a perfectly expected result?
-                self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {message_name} {message.commandId}"))
+                self.sendCommandFeedbackOnChange(machine,
+                                                 None,
+                                                 CycleStepResult(
+                                                     CycleStepResultEnum.ABORTED_ERROR,
+                                                     f"Invalid Command "
+                                                     f"{message_name} "
+                                                     f"{message.commandId}"))
                 return
 
             # logging.debug(f'cycleStepFunction is not None')
             currently_executing_command = self.currentlyExecuting[machine]
             if currently_executing_command is not None:
                 logging.debug(f'self.currentlyExecuting[m] is not None')
-                # send interruption feedback for the previously running command on the machine
-                self.sendCommandFeedbackOnChange(machine, currently_executing_command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {message_name} {message.commandId}"))
+                # send interruption feedback for the previously running
+                # command on the machine
+                self.sendCommandFeedbackOnChange(machine,
+                                                 currently_executing_command,
+                                                 CycleStepResult(
+                                                     CycleStepResultEnum.INTERRUPTED,
+                                                     f"Interrupted by "
+                                                     f"Command "
+                                                     f"{message_name} "
+                                                     f"{message.commandId}"))
                 machine.processSequenceContext = None
             # logging.debug("survived execution check")
             # logging.debug(f"message_name: {message_name}")
             try:
                 source = inspect.getsource(cycle_step_function)
             except OSError:
-                # logging.debug("failed to determine source of cycleStepFunction")
+                # logging.debug("failed to determine source of
+                # cycleStepFunction")
                 source = f"{cycle_step_function}"
             # logging.debug(f"source: {source}")
             display_name = f"{message_name} [{source.strip()}]"
 
-            self.currentlyExecuting[machine] = CycleStepCommand(cycle_step_function,
-                                                          display_name,
-                                                          message.commandId)
+            self.currentlyExecuting[machine] = CycleStepCommand(
+                cycle_step_function,
+                display_name,
+                message.commandId)
             # logging.debug("survived execution update")
 
         # --- end of command handling ---
