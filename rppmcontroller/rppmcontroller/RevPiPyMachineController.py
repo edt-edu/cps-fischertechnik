@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import inspect
 import json as json
@@ -204,18 +206,10 @@ class RevPiPyMachineController(ABC):
         topic_name = input_buffer_item.topicName
 
         # find a matching machine
-        logging.debug(f"looking for {topic_name} in following machines: "
-                      f"{self.machines}")
-        machine = next((machine for machine in self.machines if
-                        machine.id == topic_name), None)
+        machine = self.__find_machine(topic_name)
         if machine is None:
             logging.warning(f"unknown topic name: {topic_name}")
-            self.MQTT.publishEvent(self.plcId,
-                                   '',
-                                   '',
-                                   EventKind.RECEIVED,
-                                   "ignored",
-                                   json.dumps(message, default=str))
+            self.__publish_received_message_event("ignored", message)
             return
 
         # handle different json-types
@@ -227,12 +221,11 @@ class RevPiPyMachineController(ABC):
         if json_type == "STATUSREQUEST":
             logging.debug("Handling status request")
 
-            self.MQTT.publishEvent(self.plcId,
-                                   machine_type_name,
-                                   machine_id,
-                                   EventKind.RECEIVED,
-                                   "request",
-                                   json.dumps(message, default=str))
+            self.__publish_received_message_event("request",
+                                                  message,
+                                                  machine_type_name,
+                                                  machine_id)
+
             # request status and append it to the outputBuffer
             try:
                 requested_parameter_values = machine.request(parameters)
@@ -251,12 +244,10 @@ class RevPiPyMachineController(ABC):
             message_name = message.name
             logging.debug(f'Handling command: {message_type} {message_name}')
 
-            self.MQTT.publishEvent(self.plcId,
-                                   machine_type_name,
-                                   machine_id,
-                                   EventKind.RECEIVED,
-                                   "command",
-                                   json.dumps(message, default=str))
+            self.__publish_received_message_event("command",
+                                                  message,
+                                                  machine_type_name,
+                                                  machine_id)
 
             # find the correct command function (using reflection)
             machine_type_to_class_mapping = {
@@ -382,12 +373,29 @@ class RevPiPyMachineController(ABC):
         # --- end of command handling ---
         else:
             # ignore messages which are not status requests or commands
-            self.MQTT.publishEvent(self.plcId,
-                                   machine_type_name,
-                                   machine_id,
-                                   EventKind.RECEIVED,
-                                   "ignored",
-                                   json.dumps(message, default=str))
+            self.__publish_received_message_event("ignored",
+                                                  message,
+                                                  machine_type_name,
+                                                  machine_id)
+
+    def __find_machine(self, machine_id: str) -> Machine | None:
+        logging.debug(f"looking for {machine_id} in following machines: "
+                      f"{self.machines}")
+        machine = next((machine for machine in self.machines if
+                        machine.id == machine_id), None)
+        return machine
+
+    def __publish_received_message_event(self,
+                                         event_group: str,
+                                         message,
+                                         machine_type_name: str = '',
+                                         machine_id: str = ''):
+        self.MQTT.publishEvent(self.plcId,
+                               machine_type_name,
+                               machine_id,
+                               EventKind.RECEIVED,
+                               event_group,
+                               json.dumps(message, default=str))
 
     @abstractmethod
     def read(self) -> None:
