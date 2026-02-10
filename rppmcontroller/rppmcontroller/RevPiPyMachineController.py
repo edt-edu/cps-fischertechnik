@@ -227,6 +227,13 @@ class RevPiPyMachineController(ABC):
                                                   machine)
 
     def __find_machine(self, machine_id: str) -> Machine | None:
+        """
+        Attempts to find a machine with the given id.
+
+        :param machine_id: The id of the machine to find.
+        :return: The respective machine or `None` if no matching machine was
+        found.
+        """
         logging.debug(f"looking for {machine_id} in following machines: "
                       f"{self.machines}")
         machine = next((machine for machine in self.machines if
@@ -234,6 +241,13 @@ class RevPiPyMachineController(ABC):
         return machine
 
     def __handle_status_request(self, machine: Machine, message: Any) -> None:
+        """
+        Handles an incoming status request.
+
+        :param machine: The machine for which the status was requested
+        :param message: The message which requested the status
+        :return: None
+        """
         logging.debug("Handling status request")
 
         self.__publish_received_message_event("request",
@@ -257,6 +271,14 @@ class RevPiPyMachineController(ABC):
                          machine: Machine,
                          message: Any,
                          topic_name: str) -> None:
+        """
+        Handles an incoming command.
+
+        :param machine: The machine at which the command was targeted
+        :param message: The message which sent the command
+        :param topic_name: The topic name which selected the machine
+        :return: None
+        """
         message_type = message.type
         message_name = message.name
         parameters = message.parameters
@@ -282,8 +304,8 @@ class RevPiPyMachineController(ABC):
 
         # find the correct command function
         command_function_name = f"{str.lower(message_name)}_Command"
-        command_function = self.__find_command_function(command_function_name,
-                                                        machine_class)
+        command_function = self.__find_command_function(machine_class,
+                                                        command_function_name)
 
         if command_function is None:
             logging.warning(f"command not supported: cannot find "
@@ -308,9 +330,8 @@ class RevPiPyMachineController(ABC):
             machine,
             parameters)
         if command_function_return_value is None:
-            logging.warning(f"unsupported number of parameters"
-                            f"for method {command_function_name}: "
-                            f"{len(parameters)}")
+            logging.warning(f"bad parameters for method "
+                            f"{command_function_name}: {parameters}")
             # TODO activate:
             # raise JSONCommandNotSupportedOnThisMachineException()
             return
@@ -318,8 +339,7 @@ class RevPiPyMachineController(ABC):
         # store the cycleStep function currently executed on each machine
         cycle_step_function = self.cast_to_callable(command_function_return_value)
         if cycle_step_function is None:
-            # TODO this doesn't seem right either. Why would we abandon
-            #  here if None is a perfectly expected result?
+            # abort if the function did not return a callable
             self.sendCommandFeedbackOnChange(machine,
                                              None,
                                              CycleStepResult(
@@ -334,14 +354,26 @@ class RevPiPyMachineController(ABC):
         self.__interrupt_currently_running_command(machine, message)
 
         # store the new command on the machine
-        self.__set_currently_executing_command(cycle_step_function,
-                                               machine,
+        self.__set_currently_executing_command(machine,
+                                               cycle_step_function,
                                                message)
 
     def __set_currently_executing_command(self,
-                                          cycle_step_function: Callable[[], CycleStepResult],
                                           machine: Machine,
+                                          cycle_step_function: Callable[
+                                              [], CycleStepResult],
                                           message: Any) -> None:
+        """
+        Will set the executing command of a machine to the provided
+        `cycle_step_function`. This method does NOT automatically interrupt
+        the currently running command on the machine.
+
+        :param machine: The machine for which to set the executing command
+        :param cycle_step_function: A cycle step function to set as executing
+            command
+        :param message: The message which caused the command
+        :return: None
+        """
         try:
             source = inspect.getsource(cycle_step_function)
         except (OSError, TypeError):
@@ -358,6 +390,14 @@ class RevPiPyMachineController(ABC):
     def __interrupt_currently_running_command(self,
                                               machine: Machine,
                                               message: Any) -> None:
+        """
+        Interrupts the currently running command of a machine
+
+        :param machine: The machine for which to interrupt the currently
+            running command
+        :param message: The message which caused the interrupt
+        :return: None
+        """
         currently_executing_command = self.currentlyExecuting[machine]
         if currently_executing_command is not None:
             logging.debug(f'interrupting currently running command')
@@ -377,8 +417,16 @@ class RevPiPyMachineController(ABC):
                                 machine: Machine,
                                 parameters: list[Any]) \
         -> Callable[[], CycleStepResult] | None:
-        # Call the command function: it must return either None if
-        # nothing else is required or return a lambda that calls a
+        """
+        Calls a command function on a machine
+        :param command_function: The command function to call
+        :param command_function_name: The name of the command function
+        :param machine: The machine on which to call the command function
+        :param parameters: The parameters to pass to the command function
+        :return: The return value of the command function or `None` if the
+            parameters were not applicable to the provided command function
+        """
+        # Call the command function: it must return a lambda that calls a
         # cycleStep method (i.e., a method intended to run in the main
         # loop during the exLoop).
         logging.debug(f"calling function {command_function_name} with "
@@ -392,6 +440,15 @@ class RevPiPyMachineController(ABC):
     def __apply_machine_specific_parameter_modifications(self,
                                                          machine_type: str,
                                                          parameters: list[Any]):
+        """
+        For certain machines and methods the parameters need to be modified
+        before they are passed to the command function. This method
+        handles that modification.
+        :param machine_type: The machine type as provided by a JSON message
+        :param parameters: The (mutable) parameters which will be passed to the
+            command function
+        :return: None
+        """
         parameter_count = len(parameters)
         if machine_type == "GRIPPER" or machine_type == "VACUUM":
             # swap the first two parameters if START and END are swapped
@@ -411,15 +468,42 @@ class RevPiPyMachineController(ABC):
                 parameters[0], parameters[1] = parameters[1], parameters[0]
 
     def __find_command_function(self,
-                                command_function_name: str,
-                                machine_class: type[Machine]) -> Any | None:
+                                machine_class: type[Machine],
+                                command_function_name: str) -> Any | None:
+        """
+        Tries to find a method with a given name on a machine class.
+
+        Note: This is done using reflection.
+
+        :param machine_class: The class of the machine where to look for the
+            method
+        :param command_function_name: The name of the function to look for
+        :return: The found function or `None` if no function with the given
+            name was found
+        """
         try:
-            return getattr(machine_class,
-                                       command_function_name)
+            return getattr(machine_class, command_function_name)
         except AttributeError:
             return None
 
-    def __get_machine_class(self, message_type) -> type[Machine] | None:
+    def __get_machine_class(self, machine_type) -> type[Machine] | None:
+        """
+        Gets the class of a machine for the specified type name.
+
+        Currently supported type names are:
+
+        - VACUUM
+        - WAREHOUSE
+        - SORTING
+        - INDEXEDLINE
+        - MULTIPROCESSING
+        - CONVEYOR
+        - PUNCHING
+
+        :param machine_type: A machine type name
+        :return: The class of the associated machine or `None` for an
+            unsupported type name
+        """
         machine_type_to_class_mapping = {
             "VACUUM": VacuumGripper,
             "WAREHOUSE": HighBay,
@@ -429,12 +513,20 @@ class RevPiPyMachineController(ABC):
             "CONVEYOR": ConveyorBelt,
             "PUNCHING": PunchingMachine,
         }
-        return machine_type_to_class_mapping[message_type]
+        return machine_type_to_class_mapping[machine_type]
 
     def __publish_received_message_event(self,
                                          event_group: str,
                                          message: Any,
                                          machine: Optional[Machine] = None) -> None:
+        """
+        Publish the event of a received message to MQTT
+
+        :param event_group: The event group
+        :param message: The received message
+        :param machine: Which machine was targeted by the message, if known
+        :return: None
+        """
         machine_type_name = machine.machineTypeName() if machine is not None else ''
         machine_id = machine.id if machine is not None else ''
         event = json.dumps(message, default=str)
