@@ -182,206 +182,204 @@ class RevPiPyMachineController:
 
 
 
-    def processJson(self, inputBuffer: Queue):
-        #maybe output buffer als parameter übergeben wie inputbuffer???
+    def processJson(self, inputBuffer: Queue) -> None:
         """
         gets the JSONOutput-objects out of the input buffer and decides which command function to execute
         The function to execute must use the name of the command lowercase with a "_Command" postfix,
         a command function must return a lambda pointing to a "_cycleStep" function
-        :param inputBuffer:
-        :return:
+        :param inputBuffer: The command input buffer queue
+        :return: `None`
         """
         # logging.debug("processingJson")
         foundMatchingMachine = False
         func = None
         ret = None
-        inputBufferItem = None
         try:
             inputBufferItem = inputBuffer.get(block=False)
         except Empty:
             # logging.debug("nothing in queue")
-            pass
-        if inputBufferItem is not None:
-            for m in self.machines:
-                # überprüfe ob maschinen-id bekannt
-                logging.debug(f"machines: {self.machines}")
-                if m.id == inputBufferItem.topicName:
-                    foundMatchingMachine = True
+            return
 
-                    # find diff btw command and request
-                    if inputBufferItem.message.jsonType == "STATUSREQUEST":
-                        logging.debug("Status")
+        for m in self.machines:
+            # überprüfe ob maschinen-id bekannt
+            logging.debug(f"machines: {self.machines}")
+            if m.id == inputBufferItem.topicName:
+                foundMatchingMachine = True
 
-                        #self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", JSONParser.parse(inputBufferItem.message))
-                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", json.dumps(inputBufferItem.message, default=str))
-                        # Status abfragen und Ergebnis an outputBuffer anfügen
-                        try:
-                            statusanswer = m.request(inputBufferItem.message.parameters)
-                            a = MachineStatusRequestAnswer("STATUSANSWER", inputBufferItem.message.requestId, statusanswer)
-                            j = JSONOutput(m.id, time.time(), a)
-                            self.outputBuffer.put(j)
-                        except AttributeError:
-                            #TODO change:
-                            #raise JSONCommandNotSupportedOnThisMachineException()
-                            print("status not supported")
-                            break
-                    elif inputBufferItem.message.jsonType == "COMMAND":
-                        logging.debug(f'Command {inputBufferItem.message.type} {inputBufferItem.message.name}')
-                        # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
-                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
-                        try:
-                            # find a function in the machine class with name = "{message.name}_Command"
-                            if inputBufferItem.message.type == "VACUUM" and isinstance(m, VacuumGripper):
-                                func = getattr(VacuumGripper, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
-                            #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
-                            elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, HighBay):
-                                func = getattr(HighBay, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
-                                func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
-                                func = getattr(IndexedLine, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
-                                func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
-                                func = getattr(ConveyorBelt, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
-                                func = getattr(PunchingMachine, f'{str.lower(inputBufferItem.message.name)}_Command')
-                            else:
-                                #TODO raise an exception here
-                                #TODO send a COMMAND_FEEDBACK  IGNORED message
-                                logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
-                            # Call the command function: it must return either None if nothing else is required
-                            #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
-                            # Arrange the function parameters in the correct order and match them with the function.
-                            if func is not None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
-                                pos = inputBufferItem.message.parameters
-                                i = len(pos)
-                                if i == 0:
-                                    logging.debug("function called with no args")
-                                    #m.setupFirst = True unschön
+                # find diff btw command and request
+                if inputBufferItem.message.jsonType == "STATUSREQUEST":
+                    logging.debug("Status")
 
+                    #self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", JSONParser.parse(inputBufferItem.message))
+                    self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", json.dumps(inputBufferItem.message, default=str))
+                    # Status abfragen und Ergebnis an outputBuffer anfügen
+                    try:
+                        statusanswer = m.request(inputBufferItem.message.parameters)
+                        a = MachineStatusRequestAnswer("STATUSANSWER", inputBufferItem.message.requestId, statusanswer)
+                        j = JSONOutput(m.id, time.time(), a)
+                        self.outputBuffer.put(j)
+                    except AttributeError:
+                        #TODO change:
+                        #raise JSONCommandNotSupportedOnThisMachineException()
+                        print("status not supported")
+                        break
+                elif inputBufferItem.message.jsonType == "COMMAND":
+                    logging.debug(f'Command {inputBufferItem.message.type} {inputBufferItem.message.name}')
+                    # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
+                    self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
+                    try:
+                        # find a function in the machine class with name = "{message.name}_Command"
+                        if inputBufferItem.message.type == "VACUUM" and isinstance(m, VacuumGripper):
+                            func = getattr(VacuumGripper, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
+                        #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
+                        elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(m, HighBay):
+                            func = getattr(HighBay, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        elif inputBufferItem.message.type == "SORTING" and isinstance(m, SortingLine):
+                            func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(m, IndexedLine):
+                            func = getattr(IndexedLine, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(m, MultiProcessing):
+                            func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        elif inputBufferItem.message.type == "CONVEYOR" and isinstance(m, ConveyorBelt):
+                            func = getattr(ConveyorBelt, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        elif inputBufferItem.message.type == "PUNCHING" and isinstance(m, PunchingMachine):
+                            func = getattr(PunchingMachine, f'{str.lower(inputBufferItem.message.name)}_Command')
+                        else:
+                            #TODO raise an exception here
+                            #TODO send a COMMAND_FEEDBACK  IGNORED message
+                            logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
+                        # Call the command function: it must return either None if nothing else is required
+                        #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
+                        # Arrange the function parameters in the correct order and match them with the function.
+                        if func is not None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
+                            pos = inputBufferItem.message.parameters
+                            i = len(pos)
+                            if i == 0:
+                                logging.debug("function called with no args")
+                                #m.setupFirst = True unschön
+
+                                m.incrementNbMinimumRequiredExecutionCycles()
+                                ret = func(m)
+                            if i == 1:
+                                # just assume that start/end is correct
+                                # TODO get rid of assumption
+                                logging.debug("function called with one arg")
+                                m.incrementNbMinimumRequiredExecutionCycles()
+                                ret = func(m, pos[0])
+                            if i == 2:
+                                #for the ordered move command
+                                if isinstance(pos[1].horizontal, bool) :
+                                    logging.debug("function called with two args")
                                     m.incrementNbMinimumRequiredExecutionCycles()
-                                    ret = func(m)
-                                if i == 1:
-                                    # just assume that start/end is correct
-                                    # TODO get rid of assumption
-                                    logging.debug("function called with one arg")
+                                    ret = func(m, pos[0], pos[1])
+                                elif pos[0].meaning == "START" and pos[1].meaning == "END":
+                                    logging.debug("function called with two args")
                                     m.incrementNbMinimumRequiredExecutionCycles()
-                                    ret = func(m, pos[0])
-                                if i == 2:
-                                    #for the ordered move command
-                                    if isinstance(pos[1].horizontal, bool) :
-                                        logging.debug("function called with two args")
-                                        m.incrementNbMinimumRequiredExecutionCycles()
-                                        ret = func(m, pos[0], pos[1])
-                                    elif pos[0].meaning == "START" and pos[1].meaning == "END":
-                                        logging.debug("function called with two args")
-                                        m.incrementNbMinimumRequiredExecutionCycles()
-                                        ret = func(m, pos[0], pos[1])
-                                    elif pos[0].meaning == "END" and pos[1].meaning == "START":
-                                        logging.debug("function called with two args")
-                                        m.incrementNbMinimumRequiredExecutionCycles()
-                                        ret = func(m, pos[1], pos[0])
-                                    else:
-                                        logging.error("command not supported - params")
-                                        # TODO activate:
-                                        # raise JSONCommandNotSupportedOnThisMachineException()
-                            elif func is not None and inputBufferItem.message.type == "WAREHOUSE":
-                                box = inputBufferItem.message.parameters
-                                i = len(box)
-                                logging.debug(f"func: {func}, number of parameters: {i}")
-                                if i == 0:
-                                    ret = func(m)
-                                elif i == 1:
-                                    ret = func(m, box[0])
-                                elif i == 2:
-                                    ret = func(m, box[0], box[1])
+                                    ret = func(m, pos[0], pos[1])
+                                elif pos[0].meaning == "END" and pos[1].meaning == "START":
+                                    logging.debug("function called with two args")
+                                    m.incrementNbMinimumRequiredExecutionCycles()
+                                    ret = func(m, pos[1], pos[0])
                                 else:
-                                    logging.warning(f"unsupported number of parameters: {i}")
-                            elif func is not None and inputBufferItem.message.type == "SORTING":
-                                color = inputBufferItem.message.parameters
-                                i = len(color)
-                                if i == 0:
-                                    ret = func(m)
-                                if i == 1:
-                                    ret = func(m, color[0])
-                            elif func is not None and inputBufferItem.message.type == "INDEXEDLINE":
-                                params = inputBufferItem.message.parameters
-                                try:
-                                    ret = func(m, *params)
-                                except TypeError:
-                                    logging.warning(f"unsupported number of parameters: {len(params)}")
-                            elif func is not None and inputBufferItem.message.type == "MULTIPROCESSING":
-                                parameters = inputBufferItem.message.parameters
-                                logging.debug(inputBufferItem.message)
-                                i = len(parameters)
-                                if i == 0:
-                                    ret = func(m)
-                                elif i == 1:
-                                    ret = func(m, parameters[0])
-                                elif i == 3:
-                                    ret = func(m, parameters[0], parameters[1], parameters[2])
-                                else:
-                                    logging.warning(f"unsupported number of parameters: {i}")
-                                    logging.warning(parameters)
-                            elif func is not None and inputBufferItem.message.type == "PUNCHING":
-                               ret = func(m)
-                            elif func is not None and (inputBufferItem.message.type == "CONVEYOR"):
-                                mix = inputBufferItem.message.parameters
-                                i = len(mix)
-                                if i == 0:
-                                    ret = func(m)
-                                if i == 1:
-                                    ret = func(m, mix[0])
-                                if i == 2:
-                                    if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
-                                        ret = func(m, mix[0], mix[1])
-                                    else:
-                                        ret = func(m, mix[1], mix[0])
-
-                            # store the cycleStep function that is currently executed on each machine
-                            cycleStepFunction = self.cast_to_callable(ret)
-                            if cycleStepFunction is not None:
-                                # logging.debug(f'cycleStepFunction is not None')
-                                if m in self.currentlyExecuting :
-                                    command = self.currentlyExecuting[m]
-                                    if command is not None:
-                                        logging.debug(f'self.currentlyExecuting[m] is not None')
-                                        # send interruption feedback for the previously running command on the machine
-                                        self.sendCommandFeedbackOnChange(m, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
-                                        m.processSequenceContext = None
-                                # logging.debug("survived execution check")
-                                message_name = inputBufferItem.message.name
-                                # logging.debug(f"message_name: {message_name}")
-                                try:
-                                    source = inspect.getsource(cycleStepFunction)
-                                except:
-                                    # logging.debug("failed to determine source of cycleStepFunction")
-                                    source = f"{cycleStepFunction}"
-                                # logging.debug(f"source: {source}")
-                                display_name = f"{message_name} [{source.strip()}]"
-                                # logging.warning(f"display_name: {display_name}")
-                                command_id = inputBufferItem.message.commandId
-                                # logging.debug(f"command_id: {command_id}")
-                                self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
-                                                                              display_name,
-                                                                              command_id)
-                                # logging.debug("survived execution update")
+                                    logging.error("command not supported - params")
+                                    # TODO activate:
+                                    # raise JSONCommandNotSupportedOnThisMachineException()
+                        elif func is not None and inputBufferItem.message.type == "WAREHOUSE":
+                            box = inputBufferItem.message.parameters
+                            i = len(box)
+                            logging.debug(f"func: {func}, number of parameters: {i}")
+                            if i == 0:
+                                ret = func(m)
+                            elif i == 1:
+                                ret = func(m, box[0])
+                            elif i == 2:
+                                ret = func(m, box[0], box[1])
                             else:
-                                self.sendCommandFeedbackOnChange(m, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
-                                # an invalid command doesn't interrupt currentlyRunning command
-                            break
-                        except AttributeError as e:
-                            logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
+                                logging.warning(f"unsupported number of parameters: {i}")
+                        elif func is not None and inputBufferItem.message.type == "SORTING":
+                            color = inputBufferItem.message.parameters
+                            i = len(color)
+                            if i == 0:
+                                ret = func(m)
+                            if i == 1:
+                                ret = func(m, color[0])
+                        elif func is not None and inputBufferItem.message.type == "INDEXEDLINE":
+                            params = inputBufferItem.message.parameters
+                            try:
+                                ret = func(m, *params)
+                            except TypeError:
+                                logging.warning(f"unsupported number of parameters: {len(params)}")
+                        elif func is not None and inputBufferItem.message.type == "MULTIPROCESSING":
+                            parameters = inputBufferItem.message.parameters
+                            logging.debug(inputBufferItem.message)
+                            i = len(parameters)
+                            if i == 0:
+                                ret = func(m)
+                            elif i == 1:
+                                ret = func(m, parameters[0])
+                            elif i == 3:
+                                ret = func(m, parameters[0], parameters[1], parameters[2])
+                            else:
+                                logging.warning(f"unsupported number of parameters: {i}")
+                                logging.warning(parameters)
+                        elif func is not None and inputBufferItem.message.type == "PUNCHING":
+                           ret = func(m)
+                        elif func is not None and (inputBufferItem.message.type == "CONVEYOR"):
+                            mix = inputBufferItem.message.parameters
+                            i = len(mix)
+                            if i == 0:
+                                ret = func(m)
+                            if i == 1:
+                                ret = func(m, mix[0])
+                            if i == 2:
+                                if mix[0] == Direction.BACKWARD or mix[0] == Direction.FORWARD:
+                                    ret = func(m, mix[0], mix[1])
+                                else:
+                                    ret = func(m, mix[1], mix[0])
+
+                        # store the cycleStep function that is currently executed on each machine
+                        cycleStepFunction = self.cast_to_callable(ret)
+                        if cycleStepFunction is not None:
+                            # logging.debug(f'cycleStepFunction is not None')
+                            if m in self.currentlyExecuting :
+                                command = self.currentlyExecuting[m]
+                                if command is not None:
+                                    logging.debug(f'self.currentlyExecuting[m] is not None')
+                                    # send interruption feedback for the previously running command on the machine
+                                    self.sendCommandFeedbackOnChange(m, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                                    m.processSequenceContext = None
+                            # logging.debug("survived execution check")
+                            message_name = inputBufferItem.message.name
+                            # logging.debug(f"message_name: {message_name}")
+                            try:
+                                source = inspect.getsource(cycleStepFunction)
+                            except:
+                                # logging.debug("failed to determine source of cycleStepFunction")
+                                source = f"{cycleStepFunction}"
+                            # logging.debug(f"source: {source}")
+                            display_name = f"{message_name} [{source.strip()}]"
+                            # logging.warning(f"display_name: {display_name}")
+                            command_id = inputBufferItem.message.commandId
+                            # logging.debug(f"command_id: {command_id}")
+                            self.currentlyExecuting[m] = CycleStepCommand(cycleStepFunction,
+                                                                          display_name,
+                                                                          command_id)
+                            # logging.debug("survived execution update")
+                        else:
                             self.sendCommandFeedbackOnChange(m, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
-                            break
-                    else:
-                        self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
-            # logging.debug("exited machine loop")
-            if not foundMatchingMachine:
-                logging.warning(f"unknown id: {inputBufferItem.topicName}")
-                self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
+                            # an invalid command doesn't interrupt currentlyRunning command
+                        break
+                    except AttributeError as e:
+                        logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
+                        self.sendCommandFeedbackOnChange(m, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                        break
+                else:
+                    self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
+        # logging.debug("exited machine loop")
+        if not foundMatchingMachine:
+            logging.warning(f"unknown id: {inputBufferItem.topicName}")
+            self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
 
     @abstractmethod
     def read(self) -> None:
