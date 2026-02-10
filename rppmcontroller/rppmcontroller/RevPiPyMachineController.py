@@ -9,7 +9,7 @@ import signal
 import socket
 import sys
 import time
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from multiprocessing import Process
 from multiprocessing import Queue
@@ -57,7 +57,7 @@ class CommandResult:
 # commandServer will be on PORT_BASE+1
 # notificationServer will be on PORT_BASE+11
 
-class RevPiPyMachineController:
+class RevPiPyMachineController(ABC):
     """
     Abstract Class allowing to stream commands to and from  machines controlled by a RevPi
     """
@@ -165,7 +165,7 @@ class RevPiPyMachineController:
                 s.sendall(bytes(message, "utf-8"))
                 logging.debug(messageSend)
             except Empty:
-                if self.brokenCommandSocketDetected.value == True:
+                if self.brokenCommandSocketDetected.value:
                     logging.info(f"sendNotificationMessages socket connection closed - cause: receiveCommandMessages socket connection broken")
                     s.close()
                     isBrokenConnection = True
