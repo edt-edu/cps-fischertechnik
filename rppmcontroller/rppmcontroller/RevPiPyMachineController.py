@@ -25,7 +25,6 @@ from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 # noinspection PyDeprecation
-from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MachineStatus import MachineStatus
@@ -449,23 +448,14 @@ class RevPiPyMachineController(ABC):
             command function
         :return: None
         """
-        parameter_count = len(parameters)
-        if machine_type == "GRIPPER" or machine_type == "VACUUM":
+        if ((machine_type == "GRIPPER" or machine_type == "VACUUM") and
+            len(parameters) > 1 and
+            isinstance(parameters[0], Position) and
+            isinstance(parameters[1], Position) and
+            parameters[0].meaning == "END" and
+            parameters[1].meaning == "START"):
             # swap the first two parameters if START and END are swapped
-            if (parameter_count > 1 and
-                isinstance(parameters[0], Position) and
-                isinstance(parameters[1], Position) and
-                parameters[0].meaning == "END" and
-                parameters[1].meaning == "START"):
-                parameters[0], parameters[1] = parameters[1], parameters[0]
-        elif machine_type == "CONVEYOR":
-            # TODO this doesn't look right, investigate why we swap the
-            #  parameters in this specific case
-            # noinspection PyDeprecation
-            if (parameter_count == 2 and
-                parameters[0] != Direction.BACKWARD and
-                parameters[0] != Direction.FORWARD):
-                parameters[0], parameters[1] = parameters[1], parameters[0]
+            parameters[0], parameters[1] = parameters[1], parameters[0]
 
     def __find_command_function(self,
                                 machine_class: type[Machine],
