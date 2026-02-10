@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 from typing_extensions import override
 
@@ -13,7 +13,8 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.conveyorbelt.ConveyorBeltConfig import \
     ConveyorBeltConfig
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
 
@@ -200,7 +201,7 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
         return runner
 
     @protocol_command_function()
-    def move_nb_steps_Command(self, direction: Direction, steps: int) -> Runner:
+    def move_nb_steps_Command(self, steps: int, direction: Direction) -> Runner:
         """Move the conveyor belt to a given direction with a given number of steps
             Args:
                 direction (Direction) : the direction where to move the package
