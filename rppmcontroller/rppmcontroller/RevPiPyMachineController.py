@@ -60,6 +60,7 @@ class CommandResult:
 # commandServer will be on PORT_BASE+1
 # notificationServer will be on PORT_BASE+11
 
+# noinspection PyMethodMayBeStatic
 class RevPiPyMachineController(ABC):
     """
     Abstract Class allowing to stream commands to and from  machines controlled by a RevPi
@@ -265,17 +266,7 @@ class RevPiPyMachineController(ABC):
                                               message,
                                               machine)
 
-        # find the correct command function (using reflection)
-        machine_type_to_class_mapping = {
-            "VACUUM": VacuumGripper,
-            "WAREHOUSE": HighBay,
-            "SORTING": SortingLine,
-            "INDEXEDLINE": IndexedLine,
-            "MULTIPROCESSING": MultiProcessing,
-            "CONVEYOR": ConveyorBelt,
-            "PUNCHING": PunchingMachine,
-        }
-        machine_class = machine_type_to_class_mapping[message_type]
+        machine_class = self.__get_machine_class(message_type)
         if machine_class is None:
             logging.warning(f"invalid JSON command: unsupported machine "
                             f"type: {message_type}")
@@ -289,15 +280,15 @@ class RevPiPyMachineController(ABC):
                             f"incompatible with {message_type}")
             return
 
+        # find the correct command function
         command_function_name = f"{str.lower(message_name)}_Command"
-        try:
-            command_function = getattr(machine_class,
-                                       command_function_name)
-        except AttributeError as e:
+        command_function = self.__find_command_function(command_function_name,
+                                                        machine_class)
+
+        if command_function is None:
             logging.warning(f"command not supported: cannot find "
                             f"function"
-                            f" {message_type}.{command_function_name}",
-                            exc_info=e)
+                            f" {message_type}.{command_function_name}")
             self.sendCommandFeedbackOnChange(machine,
                                              None,
                                              CycleStepResult(
@@ -307,46 +298,25 @@ class RevPiPyMachineController(ABC):
                                                  f"{message.commandId}"))
             return
 
-        parameter_count = len(parameters)
-
         # apply machine-specific parameter modifications
-        if message_type == "GRIPPER" or message_type == "VACUUM":
-            # swap the first two parameters if START and END are swapped
-            if (parameter_count > 1 and
-                isinstance(parameters[0], Position) and
-                isinstance(parameters[1], Position) and
-                parameters[0].meaning == "END" and
-                parameters[1].meaning == "START"):
-                parameters[0], parameters[1] = parameters[1], parameters[0]
-        elif message_type == "CONVEYOR":
-            # TODO this doesn't look right, investigate why we swap the
-            #  parameters in this specific case
-            # noinspection PyDeprecation
-            if (parameter_count == 2 and
-                parameters[0] != Direction.BACKWARD and
-                parameters[0] != Direction.FORWARD):
-                parameters[0], parameters[1] = parameters[1], parameters[0]
-
-        # Call the command function: it must return either None if
-        # nothing else is required or return a lambda that calls a
-        # cycleStep method (i.e., a method intended to run in the main
-        # loop during the exLoop).
-        logging.debug(f"calling function {command_function_name} with "
-                      f"{parameter_count} parameters")
-        machine.incrementNbMinimumRequiredExecutionCycles()
-        try:
-            ret = command_function(machine, *parameters)
-        except TypeError as e:
+        self.__apply_machine_specific_parameter_modifications(message_type,
+                                                              parameters)
+        # call command function
+        command_function_return_value = self.__call_command_function(
+            command_function,
+            command_function_name,
+            machine,
+            parameters)
+        if command_function_return_value is None:
             logging.warning(f"unsupported number of parameters"
                             f"for method {command_function_name}: "
-                            f"{parameter_count}",
-                            exc_info=e)
+                            f"{len(parameters)}")
             # TODO activate:
             # raise JSONCommandNotSupportedOnThisMachineException()
             return
 
         # store the cycleStep function currently executed on each machine
-        cycle_step_function = self.cast_to_callable(ret)
+        cycle_step_function = self.cast_to_callable(command_function_return_value)
         if cycle_step_function is None:
             # TODO this doesn't seem right either. Why would we abandon
             #  here if None is a perfectly expected result?
@@ -361,6 +331,33 @@ class RevPiPyMachineController(ABC):
 
         # send interruption feedback for the previously running
         # command on the machine
+        self.__interrupt_currently_running_command(machine, message)
+
+        # store the new command on the machine
+        self.__set_currently_executing_command(cycle_step_function,
+                                               machine,
+                                               message)
+
+    def __set_currently_executing_command(self,
+                                          cycle_step_function: Callable[[], CycleStepResult],
+                                          machine: Machine,
+                                          message: Any) -> None:
+        try:
+            source = inspect.getsource(cycle_step_function)
+        except (OSError, TypeError):
+            # use a str repr of the function if we failed to determine its
+            # source
+            source = f"{cycle_step_function}"
+        display_name = f"{message.name} [{source.strip()}]"
+
+        self.currentlyExecuting[machine] = CycleStepCommand(
+            cycle_step_function,
+            display_name,
+            message.commandId)
+
+    def __interrupt_currently_running_command(self,
+                                              machine: Machine,
+                                              message: Any) -> None:
         currently_executing_command = self.currentlyExecuting[machine]
         if currently_executing_command is not None:
             logging.debug(f'interrupting currently running command')
@@ -370,27 +367,69 @@ class RevPiPyMachineController(ABC):
                                                  CycleStepResultEnum.INTERRUPTED,
                                                  f"Interrupted by "
                                                  f"Command "
-                                                 f"{message_name} "
+                                                 f"{message.name} "
                                                  f"{message.commandId}"))
             machine.processSequenceContext = None
 
-        # store the new command on the machine
+    def __call_command_function(self,
+                                command_function: Any | None,
+                                command_function_name: str,
+                                machine: Machine,
+                                parameters: list[Any]) \
+        -> Callable[[], CycleStepResult] | None:
+        # Call the command function: it must return either None if
+        # nothing else is required or return a lambda that calls a
+        # cycleStep method (i.e., a method intended to run in the main
+        # loop during the exLoop).
+        logging.debug(f"calling function {command_function_name} with "
+                      f"{len(parameters)} parameters")
+        machine.incrementNbMinimumRequiredExecutionCycles()
         try:
-            source = inspect.getsource(cycle_step_function)
-        except (OSError, TypeError):
-            # use a str repr of the function if we failed to determine its
-            # source
-            source = f"{cycle_step_function}"
-        display_name = f"{message_name} [{source.strip()}]"
+            return command_function(machine, *parameters)
+        except TypeError:
+            return None
 
-        self.currentlyExecuting[machine] = CycleStepCommand(
-            cycle_step_function,
-            display_name,
-            message.commandId)
+    def __apply_machine_specific_parameter_modifications(self,
+                                                         machine_type: str,
+                                                         parameters: list[Any]):
+        parameter_count = len(parameters)
+        if machine_type == "GRIPPER" or machine_type == "VACUUM":
+            # swap the first two parameters if START and END are swapped
+            if (parameter_count > 1 and
+                isinstance(parameters[0], Position) and
+                isinstance(parameters[1], Position) and
+                parameters[0].meaning == "END" and
+                parameters[1].meaning == "START"):
+                parameters[0], parameters[1] = parameters[1], parameters[0]
+        elif machine_type == "CONVEYOR":
+            # TODO this doesn't look right, investigate why we swap the
+            #  parameters in this specific case
+            # noinspection PyDeprecation
+            if (parameter_count == 2 and
+                parameters[0] != Direction.BACKWARD and
+                parameters[0] != Direction.FORWARD):
+                parameters[0], parameters[1] = parameters[1], parameters[0]
 
+    def __find_command_function(self,
+                                command_function_name: str,
+                                machine_class: type[Machine]) -> Any | None:
+        try:
+            return getattr(machine_class,
+                                       command_function_name)
+        except AttributeError:
+            return None
 
-
-
+    def __get_machine_class(self, message_type) -> type[Machine] | None:
+        machine_type_to_class_mapping = {
+            "VACUUM": VacuumGripper,
+            "WAREHOUSE": HighBay,
+            "SORTING": SortingLine,
+            "INDEXEDLINE": IndexedLine,
+            "MULTIPROCESSING": MultiProcessing,
+            "CONVEYOR": ConveyorBelt,
+            "PUNCHING": PunchingMachine,
+        }
+        return machine_type_to_class_mapping[message_type]
 
     def __publish_received_message_event(self,
                                          event_group: str,
