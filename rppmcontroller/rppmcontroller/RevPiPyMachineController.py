@@ -194,22 +194,21 @@ class RevPiPyMachineController:
         :param inputBuffer: The command input buffer queue
         :return: `None`
         """
-        # logging.debug("processingJson")
         try:
             input_buffer_item = inputBuffer.get(block=False)
         except Empty:
-            # logging.debug("nothing in queue")
             return
 
         message = input_buffer_item.message
         topic_name = input_buffer_item.topicName
 
         # find a matching machine
-        logging.debug(f"machines: {self.machines}")
+        logging.debug(f"looking for {topic_name} in following machines: "
+                      f"{self.machines}")
         machine = next((machine for machine in self.machines if
                         machine.id == topic_name), None)
         if machine is None:
-            logging.warning(f"unknown id: {topic_name}")
+            logging.warning(f"unknown topic name: {topic_name}")
             self.MQTT.publishEvent(self.plcId,
                                    '',
                                    '',
@@ -225,7 +224,7 @@ class RevPiPyMachineController:
         parameters = message.parameters
 
         if json_type == "STATUSREQUEST":
-            logging.debug("Status")
+            logging.debug("Handling status request")
 
             self.MQTT.publishEvent(self.plcId,
                                    machine_type_name,
@@ -249,7 +248,7 @@ class RevPiPyMachineController:
         elif json_type == "COMMAND":
             message_type = message.type
             message_name = message.name
-            logging.debug(f'Command {message_type} {message_name}')
+            logging.debug(f'Handling command: {message_type} {message_name}')
 
             self.MQTT.publishEvent(self.plcId,
                                    machine_type_name,
@@ -312,6 +311,7 @@ class RevPiPyMachineController:
             elif message_type == "CONVEYOR":
                 # TODO this doesn't look right, investigate why we swap the
                 #  parameters in this specific case
+                # noinspection PyDeprecation
                 if (parameter_count == 2 and
                     parameters[0] != Direction.BACKWARD and
                     parameters[0] != Direction.FORWARD):
@@ -327,9 +327,9 @@ class RevPiPyMachineController:
             try:
                 ret = command_function(machine, *parameters)
             except TypeError as e:
-                logging.warning(f"unsupported number of paramete"
-                                f"rs for method {command_function_name}: {
-                                parameter_count}",
+                logging.warning(f"unsupported number of parameters"
+                                f"for method {command_function_name}: "
+                                f"{parameter_count}",
                                 exc_info=e)
                 # TODO activate:
                 # raise JSONCommandNotSupportedOnThisMachineException()
@@ -349,12 +349,11 @@ class RevPiPyMachineController:
                                                      f"{message.commandId}"))
                 return
 
-            # logging.debug(f'cycleStepFunction is not None')
+            # send interruption feedback for the previously running
+            # command on the machine
             currently_executing_command = self.currentlyExecuting[machine]
             if currently_executing_command is not None:
-                logging.debug(f'self.currentlyExecuting[m] is not None')
-                # send interruption feedback for the previously running
-                # command on the machine
+                logging.debug(f'interrupting currently running command')
                 self.sendCommandFeedbackOnChange(machine,
                                                  currently_executing_command,
                                                  CycleStepResult(
@@ -364,22 +363,20 @@ class RevPiPyMachineController:
                                                      f"{message_name} "
                                                      f"{message.commandId}"))
                 machine.processSequenceContext = None
-            # logging.debug("survived execution check")
-            # logging.debug(f"message_name: {message_name}")
+
+            # store the new command on the machine
             try:
                 source = inspect.getsource(cycle_step_function)
             except OSError:
-                # logging.debug("failed to determine source of
-                # cycleStepFunction")
+                # use a str repr of the function if we failed to determine its
+                # source
                 source = f"{cycle_step_function}"
-            # logging.debug(f"source: {source}")
             display_name = f"{message_name} [{source.strip()}]"
 
             self.currentlyExecuting[machine] = CycleStepCommand(
                 cycle_step_function,
                 display_name,
                 message.commandId)
-            # logging.debug("survived execution update")
 
         # --- end of command handling ---
         else:
