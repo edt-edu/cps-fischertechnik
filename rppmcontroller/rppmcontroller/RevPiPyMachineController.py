@@ -209,35 +209,15 @@ class RevPiPyMachineController(ABC):
         machine = self.__find_machine(topic_name)
         if machine is None:
             logging.warning(f"unknown topic name: {topic_name}")
-            self.__publish_received_message_event("ignored", message)
+            self.__publish_received_message_event("ignored", message, machine)
             return
 
         # handle different json-types
         json_type = message.jsonType
-        machine_type_name = machine.machineTypeName()
-        machine_id = machine.id
         parameters = message.parameters
 
         if json_type == "STATUSREQUEST":
-            logging.debug("Handling status request")
-
-            self.__publish_received_message_event("request",
-                                                  message,
-                                                  machine_type_name,
-                                                  machine_id)
-
-            # request status and append it to the outputBuffer
-            try:
-                requested_parameter_values = machine.request(parameters)
-                answer = MachineStatusRequestAnswer("STATUSANSWER",
-                                                    message.requestId,
-                                                    requested_parameter_values)
-                json_output = JSONOutput(machine_id, time.time(), answer)
-                self.outputBuffer.put(json_output)
-            except AttributeError:
-                # TODO change:
-                # raise JSONCommandNotSupportedOnThisMachineException()
-                print("status not supported")
+            self.__handle_status_request(machine, message)
 
         elif json_type == "COMMAND":
             message_type = message.type
@@ -246,8 +226,7 @@ class RevPiPyMachineController(ABC):
 
             self.__publish_received_message_event("command",
                                                   message,
-                                                  machine_type_name,
-                                                  machine_id)
+                                                  machine)
 
             # find the correct command function (using reflection)
             machine_type_to_class_mapping = {
@@ -375,8 +354,27 @@ class RevPiPyMachineController(ABC):
             # ignore messages which are not status requests or commands
             self.__publish_received_message_event("ignored",
                                                   message,
-                                                  machine_type_name,
-                                                  machine_id)
+                                                  machine)
+
+    def __handle_status_request(self, machine: Machine, message: Any) -> None:
+        logging.debug("Handling status request")
+
+        self.__publish_received_message_event("request",
+                                              message,
+                                              machine)
+
+        # request status and append it to the outputBuffer
+        try:
+            requested_parameter_values = machine.request(message.parameters)
+            answer = MachineStatusRequestAnswer("STATUSANSWER",
+                                                message.requestId,
+                                                requested_parameter_values)
+            json_output = JSONOutput(machine.id, time.time(), answer)
+            self.outputBuffer.put(json_output)
+        except AttributeError:
+            # TODO change:
+            # raise JSONCommandNotSupportedOnThisMachineException()
+            print("status not supported")
 
     def __find_machine(self, machine_id: str) -> Machine | None:
         logging.debug(f"looking for {machine_id} in following machines: "
@@ -387,15 +385,18 @@ class RevPiPyMachineController(ABC):
 
     def __publish_received_message_event(self,
                                          event_group: str,
-                                         message,
-                                         machine_type_name: str = '',
-                                         machine_id: str = ''):
+                                         message: Any,
+                                         machine: Optional[Machine] = None) -> None:
+        machine_type_name = machine.machineTypeName() if machine is not None else ''
+        machine_id = machine.id if machine is not None else ''
+        event = json.dumps(message, default=str)
+
         self.MQTT.publishEvent(self.plcId,
                                machine_type_name,
                                machine_id,
                                EventKind.RECEIVED,
                                event_group,
-                               json.dumps(message, default=str))
+                               event)
 
     @abstractmethod
     def read(self) -> None:
