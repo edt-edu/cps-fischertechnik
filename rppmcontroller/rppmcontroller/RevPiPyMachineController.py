@@ -367,7 +367,7 @@ class RevPiPyMachineController(ABC):
             # store the new command on the machine
             try:
                 source = inspect.getsource(cycle_step_function)
-            except OSError:
+            except (OSError, TypeError):
                 # use a str repr of the function if we failed to determine its
                 # source
                 source = f"{cycle_step_function}"
