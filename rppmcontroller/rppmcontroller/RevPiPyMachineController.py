@@ -192,77 +192,92 @@ class RevPiPyMachineController:
         """
         # logging.debug("processingJson")
         try:
-            inputBufferItem = inputBuffer.get(block=False)
+            input_buffer_item = inputBuffer.get(block=False)
         except Empty:
             # logging.debug("nothing in queue")
             return
 
+        message = input_buffer_item.message
+        topic_name = input_buffer_item.topicName
+
         # find a matching machine
         logging.debug(f"machines: {self.machines}")
         machine = next((machine for machine in self.machines if
-                        machine.id == inputBufferItem.topicName), None)
+                        machine.id == topic_name), None)
         if machine is None:
-            logging.warning(f"unknown id: {inputBufferItem.topicName}")
+            logging.warning(f"unknown id: {topic_name}")
             self.MQTT.publishEvent(self.plcId,
                                    '',
                                    '',
                                    EventKind.RECEIVED,
                                    "ignored",
-                                   json.dumps(inputBufferItem.message,
-                                              default=str))
+                                   json.dumps(message, default=str))
             return
 
-        func = None
-        ret = None
-
-        # find diff btw command and request
-        if inputBufferItem.message.jsonType == "STATUSREQUEST":
+        # handle different json-types
+        json_type = message.jsonType
+        machine_type_name = machine.machineTypeName()
+        machine_id = machine.id
+        if json_type == "STATUSREQUEST":
             logging.debug("Status")
 
-            #self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "request", JSONParser.parse(inputBufferItem.message))
-            self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.RECEIVED, "request", json.dumps(inputBufferItem.message, default=str))
-            # Status abfragen und Ergebnis an outputBuffer anfügen
+            self.MQTT.publishEvent(self.plcId,
+                                   machine_type_name,
+                                   machine_id,
+                                   EventKind.RECEIVED,
+                                   "request",
+                                   json.dumps(message, default=str))
+            # request status and append it to the outputBuffer
             try:
-                statusanswer = machine.request(inputBufferItem.message.parameters)
-                a = MachineStatusRequestAnswer("STATUSANSWER", inputBufferItem.message.requestId, statusanswer)
-                j = JSONOutput(machine.id, time.time(), a)
-                self.outputBuffer.put(j)
+                requested_parameter_values = machine.request(
+                    message.parameters)
+                answer = MachineStatusRequestAnswer("STATUSANSWER",
+                                                    message.requestId,
+                                                    requested_parameter_values)
+                json_output = JSONOutput(machine_id, time.time(), answer)
+                self.outputBuffer.put(json_output)
             except AttributeError:
                 #TODO change:
                 #raise JSONCommandNotSupportedOnThisMachineException()
                 print("status not supported")
-                return
-        elif inputBufferItem.message.jsonType == "COMMAND":
-            logging.debug(f'Command {inputBufferItem.message.type} {inputBufferItem.message.name}')
+
+        elif json_type == "COMMAND":
+            func = None
+            ret = None
+            logging.debug(f'Command {message.type} {message.name}')
             # self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.RECEIVED, "command", JSONParser.parse(inputBufferItem.message))
-            self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.RECEIVED, "command", json.dumps(inputBufferItem.message, default=str))
+            self.MQTT.publishEvent(self.plcId,
+                                   machine_type_name,
+                                   machine_id, EventKind.RECEIVED, "command", json.dumps(
+                message, default=str))
             try:
                 # find a function in the machine class with name = "{message.name}_Command"
-                if inputBufferItem.message.type == "VACUUM" and isinstance(machine, VacuumGripper):
-                    func = getattr(VacuumGripper, f'{str.lower(inputBufferItem.message.name)}_Command')
+                if message.type == "VACUUM" and isinstance(machine, VacuumGripper):
+                    func = getattr(VacuumGripper, f'{str.lower(message.name)}_Command')
                 # elif inputBufferItem.message.type == "GRIPPER" and isinstance(m, Robot):
                 #     func = getattr(Robot, str.lower(inputBufferItem.message.name))
-                elif inputBufferItem.message.type == "WAREHOUSE" and isinstance(machine, HighBay):
-                    func = getattr(HighBay, f'{str.lower(inputBufferItem.message.name)}_Command')
-                elif inputBufferItem.message.type == "SORTING" and isinstance(machine, SortingLine):
-                    func = getattr(SortingLine, f'{str.lower(inputBufferItem.message.name)}_Command')
-                elif inputBufferItem.message.type == "INDEXEDLINE" and isinstance(machine, IndexedLine):
-                    func = getattr(IndexedLine, f'{str.lower(inputBufferItem.message.name)}_Command')
-                elif inputBufferItem.message.type == "MULTIPROCESSING" and isinstance(machine, MultiProcessing):
-                    func = getattr(MultiProcessing, f'{str.lower(inputBufferItem.message.name)}_Command')
-                elif inputBufferItem.message.type == "CONVEYOR" and isinstance(machine, ConveyorBelt):
-                    func = getattr(ConveyorBelt, f'{str.lower(inputBufferItem.message.name)}_Command')
-                elif inputBufferItem.message.type == "PUNCHING" and isinstance(machine, PunchingMachine):
-                    func = getattr(PunchingMachine, f'{str.lower(inputBufferItem.message.name)}_Command')
+                elif message.type == "WAREHOUSE" and isinstance(machine, HighBay):
+                    func = getattr(HighBay, f'{str.lower(message.name)}_Command')
+                elif message.type == "SORTING" and isinstance(machine, SortingLine):
+                    func = getattr(SortingLine, f'{str.lower(message.name)}_Command')
+                elif message.type == "INDEXEDLINE" and isinstance(machine, IndexedLine):
+                    func = getattr(IndexedLine, f'{str.lower(message.name)}_Command')
+                elif message.type == "MULTIPROCESSING" and isinstance(machine, MultiProcessing):
+                    func = getattr(MultiProcessing, f'{str.lower(message.name)}_Command')
+                elif message.type == "CONVEYOR" and isinstance(machine, ConveyorBelt):
+                    func = getattr(ConveyorBelt, f'{str.lower(message.name)}_Command')
+                elif message.type == "PUNCHING" and isinstance(machine, PunchingMachine):
+                    func = getattr(PunchingMachine, f'{str.lower(message.name)}_Command')
                 else:
                     #TODO raise an exception here
                     #TODO send a COMMAND_FEEDBACK  IGNORED message
-                    logging.error(f"Invalid json command. Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}")
+                    logging.error(f"Invalid json command. Cannot find function {message.type}.{message.name}")
                 # Call the command function: it must return either None if nothing else is required
                 #  return a lambda that calls a cycleStep method (ie. a method intended to run in the main loop during the exLoop)
                 # Arrange the function parameters in the correct order and match them with the function.
-                if func is not None and (inputBufferItem.message.type == "GRIPPER" or inputBufferItem.message.type == "VACUUM"):
-                    pos = inputBufferItem.message.parameters
+                if func is not None and (
+                    message.type == "GRIPPER" or message.type == "VACUUM"):
+                    pos = message.parameters
                     i = len(pos)
                     if i == 0:
                         logging.debug("function called with no args")
@@ -294,8 +309,8 @@ class RevPiPyMachineController:
                             logging.error("command not supported - params")
                             # TODO activate:
                             # raise JSONCommandNotSupportedOnThisMachineException()
-                elif func is not None and inputBufferItem.message.type == "WAREHOUSE":
-                    box = inputBufferItem.message.parameters
+                elif func is not None and message.type == "WAREHOUSE":
+                    box = message.parameters
                     i = len(box)
                     logging.debug(f"func: {func}, number of parameters: {i}")
                     if i == 0:
@@ -306,22 +321,22 @@ class RevPiPyMachineController:
                         ret = func(machine, box[0], box[1])
                     else:
                         logging.warning(f"unsupported number of parameters: {i}")
-                elif func is not None and inputBufferItem.message.type == "SORTING":
-                    color = inputBufferItem.message.parameters
+                elif func is not None and message.type == "SORTING":
+                    color = message.parameters
                     i = len(color)
                     if i == 0:
                         ret = func(machine)
                     if i == 1:
                         ret = func(machine, color[0])
-                elif func is not None and inputBufferItem.message.type == "INDEXEDLINE":
-                    params = inputBufferItem.message.parameters
+                elif func is not None and message.type == "INDEXEDLINE":
+                    params = message.parameters
                     try:
                         ret = func(machine, *params)
                     except TypeError:
                         logging.warning(f"unsupported number of parameters: {len(params)}")
-                elif func is not None and inputBufferItem.message.type == "MULTIPROCESSING":
-                    parameters = inputBufferItem.message.parameters
-                    logging.debug(inputBufferItem.message)
+                elif func is not None and message.type == "MULTIPROCESSING":
+                    parameters = message.parameters
+                    logging.debug(message)
                     i = len(parameters)
                     if i == 0:
                         ret = func(machine)
@@ -332,10 +347,10 @@ class RevPiPyMachineController:
                     else:
                         logging.warning(f"unsupported number of parameters: {i}")
                         logging.warning(parameters)
-                elif func is not None and inputBufferItem.message.type == "PUNCHING":
+                elif func is not None and message.type == "PUNCHING":
                    ret = func(machine)
-                elif func is not None and (inputBufferItem.message.type == "CONVEYOR"):
-                    mix = inputBufferItem.message.parameters
+                elif func is not None and (message.type == "CONVEYOR"):
+                    mix = message.parameters
                     i = len(mix)
                     if i == 0:
                         ret = func(machine)
@@ -356,10 +371,10 @@ class RevPiPyMachineController:
                         if command is not None:
                             logging.debug(f'self.currentlyExecuting[m] is not None')
                             # send interruption feedback for the previously running command on the machine
-                            self.sendCommandFeedbackOnChange(machine, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                            self.sendCommandFeedbackOnChange(machine, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {message.name} {message.commandId}"))
                             machine.processSequenceContext = None
                     # logging.debug("survived execution check")
-                    message_name = inputBufferItem.message.name
+                    message_name = message.name
                     # logging.debug(f"message_name: {message_name}")
                     try:
                         source = inspect.getsource(cycleStepFunction)
@@ -369,22 +384,25 @@ class RevPiPyMachineController:
                     # logging.debug(f"source: {source}")
                     display_name = f"{message_name} [{source.strip()}]"
                     # logging.warning(f"display_name: {display_name}")
-                    command_id = inputBufferItem.message.commandId
+                    command_id = message.commandId
                     # logging.debug(f"command_id: {command_id}")
                     self.currentlyExecuting[machine] = CycleStepCommand(cycleStepFunction,
                                                                   display_name,
                                                                   command_id)
                     # logging.debug("survived execution update")
                 else:
-                    self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                    self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {message.name} {message.commandId}"))
                     # an invalid command doesn't interrupt currentlyRunning command
                 return
             except AttributeError as e:
-                logging.warning(f"command not supported: Cannot find function {inputBufferItem.message.type}.{inputBufferItem.message.name}_Command:\n{e}")
-                self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {inputBufferItem.message.name} {inputBufferItem.message.commandId}"))
+                logging.warning(f"command not supported: Cannot find function {message.type}.{message.name}_Command:\n{e}")
+                self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, f"Invalid Command {message.name} {message.commandId}"))
                 return
         else:
-            self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.RECEIVED, "ignored", json.dumps(inputBufferItem.message, default=str))
+            self.MQTT.publishEvent(self.plcId,
+                                   machine_type_name,
+                                   machine_id, EventKind.RECEIVED, "ignored", json.dumps(
+                message, default=str))
 
     @abstractmethod
     def read(self) -> None:
