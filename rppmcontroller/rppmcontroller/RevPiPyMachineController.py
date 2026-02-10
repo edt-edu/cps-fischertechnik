@@ -22,6 +22,7 @@ from rppmcontroller import __version__
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+# noinspection PyDeprecation
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
