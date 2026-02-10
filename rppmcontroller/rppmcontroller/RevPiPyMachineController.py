@@ -255,7 +255,6 @@ class RevPiPyMachineController:
                                    "command",
                                    json.dumps(message, default=str))
 
-
             # find the correct command function (using reflection)
             machine_type_to_class_mapping = {
                 "VACUUM": VacuumGripper,
@@ -330,30 +329,28 @@ class RevPiPyMachineController:
                 return
 
             # logging.debug(f'cycleStepFunction is not None')
-            if machine in self.currentlyExecuting :
-                command = self.currentlyExecuting[machine]
-                if command is not None:
-                    logging.debug(f'self.currentlyExecuting[m] is not None')
-                    # send interruption feedback for the previously running command on the machine
-                    self.sendCommandFeedbackOnChange(machine, command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {message_name} {message.commandId}"))
-                    machine.processSequenceContext = None
+            currently_executing_command = self.currentlyExecuting[machine]
+            if currently_executing_command is not None:
+                logging.debug(f'self.currentlyExecuting[m] is not None')
+                # send interruption feedback for the previously running command on the machine
+                self.sendCommandFeedbackOnChange(machine, currently_executing_command, CycleStepResult(CycleStepResultEnum.INTERRUPTED, f"Interrupted by Command {message_name} {message.commandId}"))
+                machine.processSequenceContext = None
             # logging.debug("survived execution check")
             # logging.debug(f"message_name: {message_name}")
             try:
                 source = inspect.getsource(cycle_step_function)
-            except:
+            except OSError:
                 # logging.debug("failed to determine source of cycleStepFunction")
                 source = f"{cycle_step_function}"
             # logging.debug(f"source: {source}")
             display_name = f"{message_name} [{source.strip()}]"
-            # logging.warning(f"display_name: {display_name}")
-            command_id = message.commandId
-            # logging.debug(f"command_id: {command_id}")
+
             self.currentlyExecuting[machine] = CycleStepCommand(cycle_step_function,
                                                           display_name,
-                                                          command_id)
+                                                          message.commandId)
             # logging.debug("survived execution update")
 
+        # --- end of command handling ---
         else:
             # ignore messages which are not status requests or commands
             self.MQTT.publishEvent(self.plcId,
