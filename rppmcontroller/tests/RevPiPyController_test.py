@@ -5,15 +5,12 @@ import os
 import time
 import unittest
 
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.machine.Position import Position
-from rppmcontroller.machine.BoxNumber import BoxNumber
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.machine.Color import Color
-from rppmcontroller.protocol.JSONReader import JSONReader
-from rppmcontroller.protocol.JSONOutput import JSONOutput
-from rppmcontroller.protocol.MachineCommand import MachineCommand
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.Position import Position
+from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.protocol.JSONOutput import JSONOutput
+from rppmcontroller.protocol.JSONReader import JSONReader
+from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 
 class RevPiPyControllerTestCase(unittest.TestCase):
@@ -30,7 +27,23 @@ class RevPiPyControllerTestCase(unittest.TestCase):
         # placeConveyorRobot1 = [2000,100,100]
         # placeRand = [2,3,4,5]
         # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
-        self.controller = RevPiPyMachineController(config_path)
+
+        # RevPiPyMachineController is abstract, so we need to instantiate a
+        # child class
+        class InstantiableController(RevPiPyMachineController):
+            def __init__(self, config_path):
+                super().__init__(config_path)
+
+            def read(self) -> None:
+                raise Exception("not implemented")
+
+            def write(self) -> None:
+                raise Exception("not implemented")
+
+            def reset(self) -> None:
+                raise Exception("not implemented")
+
+        self.controller = InstantiableController(config_path)
 
         self.gripperMachine = VacuumGripper("VacuumGripper01")
         self.controller.machines = [self.gripperMachine]
@@ -38,7 +51,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
                 self.gripperMachine: None
             }
         logging.debug(self.controller.currentlyExecuting.get(self.gripperMachine))
-        
+
 
     def test_processJson_with_jsonTxtMsg(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
@@ -71,7 +84,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
           }
         }""")
         self.controller.inputBuffer.put(jsonMessage)
-        # we use a multithread Queue in a mono thread, makes sure the message is queued 
+        # we use a multithread Queue in a mono thread, makes sure the message is queued
         time.sleep(0.1)
         #logging.debug(self.controller.inputBuffer.qsize())
 
@@ -82,14 +95,14 @@ class RevPiPyControllerTestCase(unittest.TestCase):
 
         #logging.debug(self.controller.inputBuffer.qsize())
         self.controller.processJson(self.controller.inputBuffer)
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0]) 
+        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
         assert currentlyExecutting is not None
         logging.debug(f"currently executing={currentlyExecutting.displayName}")
         self.assertIsNotNone(currentlyExecutting.cycleStep)
         self.assertEqual(currentlyExecutting.commandId,77)
-        
+
     def test_processJson_with_JSONOutputMsg(self):
-        
+
       # Create the equivalent JSONOutput command
       parameterList = [
           Position("START", 100, 200, 400),
@@ -97,15 +110,15 @@ class RevPiPyControllerTestCase(unittest.TestCase):
       ]
       message = MachineCommand("COMMAND", "VACUUM", 77, "MOVE", parameterList)
       jsonOutput = JSONOutput("VacuumGripper01", 1677144787.891000000, message)
-      
+
       self.controller.inputBuffer.put(jsonOutput)
 
-      # we use a multithread Queue in a mono thread, makes sure the message is queued 
+      # we use a multithread Queue in a mono thread, makes sure the message is queued
       time.sleep(0.1)
- 
+
       self.controller.processJson(self.controller.inputBuffer)
 
-      currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0]) 
+      currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
       assert currentlyExecutting is not None
       self.assertIsNotNone(currentlyExecutting.cycleStep)
 

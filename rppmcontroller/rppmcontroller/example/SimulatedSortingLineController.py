@@ -1,10 +1,10 @@
 import logging
-import rppmcontroller
-import rppmcontroller.machine
-import rppmcontroller.machine.sortingLine
-from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
+
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
-from rppmcontroller.machine.sortingLine.SortingLineSimpleSimulator import SortingLineSimpleSimulator
+from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
+from rppmcontroller.machine.sortingLine.SortingLineSimpleSimulator import \
+    SortingLineSimpleSimulator
+
 
 class SimulatedSortingLineController(RevPiPyMachineController):
     """
@@ -17,7 +17,7 @@ class SimulatedSortingLineController(RevPiPyMachineController):
         """
 
         super().__init__(configurationFile=configurationFile)
-        
+
         #the list of all machines that are connected to this core
         self.machines = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
@@ -45,8 +45,11 @@ class SimulatedSortingLineController(RevPiPyMachineController):
     def write(self) -> None:
         self.sortingLineSimulator.simulatedWrite()
 
+    def reset(self) -> None:
+        pass
+
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s',
                         level=logging.DEBUG,
                         datefmt='%Y-%m-%d %H:%M:%S')
     handler = logging.FileHandler("logfile.log")
@@ -55,6 +58,6 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(handler)
     # Start ConveyorBeltStreamer app
     root = SimulatedSortingLineController("config.yml")
-    
+
     # start communication threads and main control loop
     root.start()

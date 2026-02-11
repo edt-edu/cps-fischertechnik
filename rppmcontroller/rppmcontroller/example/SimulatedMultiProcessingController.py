@@ -16,7 +16,7 @@ class SimulatedMultiProcessingController(RevPiPyMachineController):
         """
 
         super().__init__(configurationFile=configurationFile)
-        
+
         #the list of all machines that are connected to this core
         self.machines = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
@@ -44,8 +44,11 @@ class SimulatedMultiProcessingController(RevPiPyMachineController):
     def write(self) -> None:
         self.multiProcessingSimulator.simulatedWrite()
 
+    def reset(self) -> None:
+        pass
+
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s', 
+    logging.basicConfig(format='%(asctime)s %(levelname)-5s: %(module)-30s,%(lineno)-3s: %(message)s',
                         level=logging.DEBUG,
                         datefmt='%Y-%m-%d %H:%M:%S')
     handler = logging.FileHandler("logfile.log")
@@ -54,6 +57,6 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(handler)
     # Start ConveyorBeltStreamer app
     root = SimulatedMultiProcessingController("config.yml")
-    
+
     # start communication threads and main control loop
     root.start()

@@ -1,27 +1,9 @@
 import logging
-import multiprocessing 
-from multiprocessing import Process
-from multiprocessing import Queue
-from queue import Empty
-import signal
-import socket
-import sys
-import time
-import json
-import os
-import ctypes
 
 import revpimodio2
 
-import rppmcontroller
-import rppmcontroller.machine
-import rppmcontroller.machine.conveyorbelt
-from rppmcontroller.protocol import socketConnexionHelper
-from rppmcontroller.protocol.JSONParser import JSONParser
-from rppmcontroller.protocol.JSONOutput import JSONOutput
-from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
-from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
 
 
 class ConveyorBeltController(RevPiPyMachineController):
@@ -35,7 +17,7 @@ class ConveyorBeltController(RevPiPyMachineController):
         """
 
         super().__init__(configurationFile)
-        
+
         # Instantiate RevPiModIO
         if(not simulatedRevPiModIO):
             self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
@@ -58,14 +40,17 @@ class ConveyorBeltController(RevPiPyMachineController):
     def read(self):
         assert self.rpi.io is not None
         self.conveyorBeltMachine.conveyorSensFeed = self.rpi.io.dio2_I_1.value
-        self.conveyorBeltMachine.conveyorSensSwap = self.rpi.io.dio2_I_2.value 
-        self.conveyorBeltMachine.conveyorSensImpulse= self.rpi.io.dio2_I_3.value 
-    
+        self.conveyorBeltMachine.conveyorSensSwap = self.rpi.io.dio2_I_2.value
+        self.conveyorBeltMachine.conveyorSensImpulse= self.rpi.io.dio2_I_3.value
+
     def write(self) -> None:
         assert self.rpi.io is not None
         self.rpi.io.dio2_O_1.value = self.conveyorBeltMachine.conveyorActForward
         self.rpi.io.dio2_O_2.value = self.conveyorBeltMachine.conveyorActBackward
-       
+
+    def reset(self) -> None:
+        pass
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)
     handler = logging.FileHandler("logfile.log")
