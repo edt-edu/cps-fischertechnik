@@ -79,8 +79,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                     elapsed_seconds = time.time() - start_time
                     logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
                     self.assertAlmostEqual  (elapsed_seconds,
-                                             self.controller.sortingLineMachine.WHITE_EJECTOR_DELAY +
-                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.sortingLineMachine.parameters.white_ejector_delay +
+                                             self.controller.sortingLineMachine.parameters.ejector_activation_time +
                                              self.controller.mainLoopDelay*2,
                                              delta=0.1,
                                              msg="Ejector timing for white was wrong")
@@ -122,7 +122,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
             elif iterationDone == 4:
@@ -141,8 +141,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                     elapsed_seconds = time.time() - start_time
                     logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
                     self.assertAlmostEqual  (elapsed_seconds,
-                                             self.controller.sortingLineMachine.RED_EJECTOR_DELAY +
-                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.sortingLineMachine.parameters.red_ejector_delay +
+                                             self.controller.sortingLineMachine.parameters.ejector_activation_time +
                                              self.controller.mainLoopDelay*2,
                                              delta=0.1,
                                              msg="Ejector timing for red was wrong")
@@ -204,8 +204,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                     elapsed_seconds = time.time() - start_time
                     logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
                     self.assertAlmostEqual  (elapsed_seconds,
-                                             self.controller.sortingLineMachine.BLUE_EJECTOR_DELAY +
-                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.sortingLineMachine.parameters.blue_ejector_delay +
+                                             self.controller.sortingLineMachine.parameters.ejector_activation_time +
                                              self.controller.mainLoopDelay*2,
                                              delta=0.1,
                                              msg="Ejector timing for blue was wrong")
@@ -273,8 +273,8 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                     elapsed_seconds = time.time() - start_time
                     logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
                     self.assertAlmostEqual  (elapsed_seconds,
-                                             self.controller.sortingLineMachine.RED_EJECTOR_DELAY +
-                                             self.controller.sortingLineMachine.EJECTOR_ACTIVATION_TIME +
+                                             self.controller.sortingLineMachine.parameters.red_ejector_delay +
+                                             self.controller.sortingLineMachine.parameters.ejector_activation_time +
                                              self.controller.mainLoopDelay*2,
                                              delta=0.1,
                                              msg="Ejector timing for red was wrong")

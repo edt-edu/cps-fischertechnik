@@ -875,9 +875,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         vgr = self.controller.machines[0]
         self.assertIsInstance(vgr, VacuumGripper)
         self.checkVGRPosition(
-            vgr.safeVertical if vgr.safeVertical is not None else 0,
-            vgr.safeRotation if vgr.safeRotation is not None else 0,
-            vgr.safeHorizontal if vgr.safeHorizontal is not None else 0
+            vgr.parameters.vertical_safety_position if vgr.parameters.vertical_safety_position is not None else 0,
+            vgr.parameters.rotational_safety_position if vgr.parameters.rotational_safety_position is not None else 0,
+            vgr.parameters.horizontal_safety_position if vgr.parameters.horizontal_safety_position is not None else 0
         )
 
 

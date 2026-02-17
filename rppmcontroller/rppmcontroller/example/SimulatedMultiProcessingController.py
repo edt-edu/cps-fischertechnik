@@ -3,6 +3,8 @@ import rppmcontroller.machine
 import rppmcontroller.machine.multiprocessing
 from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.multiprocessing.MultiProcessingParameters import \
+    MultiProcessingParameters
 from rppmcontroller.machine.multiprocessing.MultiProcessingSimpleSimulator import MultiProcessingSimpleSimulator
 
 class SimulatedMultiProcessingController(RevPiPyMachineController):
@@ -22,6 +24,7 @@ class SimulatedMultiProcessingController(RevPiPyMachineController):
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
         self.multiProcessingMachine = MultiProcessing("MultiProcessing01")
+
         self.machines = [self.multiProcessingMachine]
         self.currentlyExecuting = {
             self.multiProcessingMachine: None
