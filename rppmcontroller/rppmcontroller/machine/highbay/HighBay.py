@@ -1,5 +1,4 @@
 import logging
-from copy import deepcopy
 from enum import Enum
 from typing import Dict, Any, Union, Callable, Optional, List
 
@@ -91,8 +90,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         #  encoder
         self.__highbaySensHorizontalEncoderCounter = 0
         self.__highbaySensVerticalEncoderCounter = 0
-        self.__axisHorizontal = Axis(AxisType.Encoder, 5)
-        self.__axisVertical = Axis(AxisType.Encoder, 10)
+        self.__axisHorizontal = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
+        self.__axisVertical = Axis(AxisType.Encoder, 10, parameters.max_vertical_counter_value)
         self.__horizontal_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
 
@@ -452,6 +451,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # vertical axis
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
+        error = self.__axisVertical.config_would_exceed_max_counter_value(config.vertical_axis_config)
+        if error:
+            self.stop_CycleStep()
+            return error.as_abort()
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
             # only allow small vertical movements for pickup
             distance_to_move = self.__axisVertical.counterValueCurrent - (
@@ -466,6 +469,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # horizontal axis
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
+        error = self.__axisHorizontal.config_would_exceed_max_counter_value(config.horizontal_axis_config)
+        if error:
+            self.stop_CycleStep()
+            return error.as_abort()
         if not self.__axisHorizontal.gotoAxisConfig(config.horizontal_axis_config):
             arm_movement = ArmMovement.MAYOR
             if self.__axisHorizontal.isCloseFromEnd(config.horizontal_axis_config, self.parameters.pwm_approach_tolerance):
