@@ -6,3 +6,4 @@ class Color(Enum):
     RED = 1
     BLUE = 2
     AUTO = 3
+    UNRECOGNIZED = 4

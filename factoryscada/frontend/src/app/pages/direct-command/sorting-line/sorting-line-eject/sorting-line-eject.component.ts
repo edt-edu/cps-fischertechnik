@@ -1,11 +1,11 @@
 import {Component, inject, Input} from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
-import { FieldsetModule } from 'primeng/fieldset';
-import { PanelModule } from 'primeng/panel';
-import { Machine } from "../../../../models/i-factory-configuration";
-import { MyRxStompService } from "../../../../services/my-rx-stomp.service";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {ButtonModule} from 'primeng/button';
+import {DropdownModule} from 'primeng/dropdown';
+import {FieldsetModule} from 'primeng/fieldset';
+import {PanelModule} from 'primeng/panel';
+import {Machine} from "../../../../models/i-factory-configuration";
+import {MyRxStompService} from "../../../../services/my-rx-stomp.service";
 
 @Component({
   selector: 'app-sorting-line-eject',
@@ -33,7 +33,8 @@ export class SortingLineEjectComponent {
     {name: "White", value: "WHITE"},
     {name: "Red", value: "RED"},
     {name: "Blue", value: "BLUE"},
-    {name: "Auto", value: "AUTO"}
+    {name: "Auto", value: "AUTO"},
+    {name: "Unrecognized", value: "UNRECOGNIZED"}
   ];
 
   selectedColor : any = this.colors[0];
@@ -49,7 +50,7 @@ export class SortingLineEjectComponent {
       message: {
         ...JSON.parse(this.placeholder).message,
         outputId: "AUTO_ID",
-        parameters: [ // rewrite the paramters part with the values from the fields
+        parameters: [ // rewrite the parameters part with the values from the fields
           { "passableType":"COLOR",
             "passable":{
               "color": this.selectedColor.value
