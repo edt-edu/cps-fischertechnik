@@ -52,6 +52,16 @@ class HighBayParameters:
     """
     Tolerance for when an axis is considered to be close to its target position
     """
+    max_vertical_counter_value: int = 1750
+    """
+    The maximum encoder counter value for the vertical axis.
+    This value is limited by the physical setup.
+    """
+    max_horizontal_counter_value: int = 4000
+    """
+    The maximum encoder counter value for the horizontal axis.
+    This value is limited by the physical setup.
+    """
 
     def add_horizontal_offset(self, offset: int) -> None:
         """
