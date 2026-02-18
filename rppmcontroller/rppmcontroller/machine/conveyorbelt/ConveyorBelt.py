@@ -92,11 +92,11 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
         self.__conveyorSensSwap = value
 
     @property
-    def conveyorSensImpulse(self):
+    def conveyorSensImpulse(self) -> int:
         return self.__conveyorSensImpulseCounterRaw
 
     @conveyorSensImpulse.setter
-    def conveyorSensImpulse(self, value):
+    def conveyorSensImpulse(self, value: int) -> None:
         self.__conveyorSensImpulseCounterRaw = value
 
     @property
