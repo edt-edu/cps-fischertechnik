@@ -47,7 +47,6 @@ class Machine(ABC):
 
     #use for feedbackOnChange
     @property
-    @abstractmethod
     def isExecuting(self) -> bool:
         """Returns whether the machine is currently performing actions
 
@@ -65,7 +64,6 @@ class Machine(ABC):
         return self.__class__.__name__
 
     @property
-    @abstractmethod
     def isInitialized(self) -> bool:
         """Returns whether the machine is initialized . ie if the setup is Done
 
