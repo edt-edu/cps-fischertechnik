@@ -323,12 +323,13 @@ class RevPiPyMachineController(ABC):
         # apply parameter modifications
         try:
             self.__resolve_named_positions(machine, parameters)
-        except ValueError as e:
-            logging.warning(f"Cannot resolve named position: {e}")
+        except UnknownNamedPosition as e:
+            named_position = e.named_position
+            logging.warning(f"Cannot resolve named position '"
+                            f"{named_position}' for {machine.id}")
             self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(
                 CycleStepResultEnum.ABORTED_ERROR,
-                f"Invalid Command {message_name} {message.commandId}: "
-                f"{e}"))
+                f"Unknown named position: {named_position}"))
             return
 
         self.__apply_machine_specific_parameter_modifications(message_type,
@@ -456,8 +457,18 @@ class RevPiPyMachineController(ABC):
         :return: None
         :raise UnknownNamedPosition: If a named position cannot be resolved
         """
-        # TODO implement
-        pass
+
+        machine_parameters = machine.parameters
+        named_positions = machine_parameters.named_positions \
+            if machine_parameters is not None else {}
+
+        for parameter_index, parameter in enumerate(parameters):
+            if isinstance(parameter, NamedPosition):
+                resolved = named_positions[parameter.name]
+                if resolved is None:
+                    raise UnknownNamedPosition(parameter)
+
+                parameters[parameter_index] = resolved
 
     def __apply_machine_specific_parameter_modifications(self,
                                                          machine_type: str,
