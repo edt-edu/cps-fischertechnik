@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from rppmcontroller.machine.MachineParameters import MachineParameters
+
 
 @dataclass
-class VacuumGripperParameters:
+class VacuumGripperParameters(MachineParameters):
     """All configurable parameters of the VacuumGripper machine"""
 
     horizontal_safety_position: Optional[int] = None

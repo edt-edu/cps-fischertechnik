@@ -28,6 +28,7 @@ from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MachineStatus import MachineStatus
+from rppmcontroller.machine.NamedPosition import NamedPosition
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
@@ -319,7 +320,17 @@ class RevPiPyMachineController(ABC):
                                                  f"{message.commandId}"))
             return
 
-        # apply machine-specific parameter modifications
+        # apply parameter modifications
+        try:
+            self.__resolve_named_positions(machine, parameters)
+        except ValueError as e:
+            logging.warning(f"Cannot resolve named position: {e}")
+            self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(
+                CycleStepResultEnum.ABORTED_ERROR,
+                f"Invalid Command {message_name} {message.commandId}: "
+                f"{e}"))
+            return
+
         self.__apply_machine_specific_parameter_modifications(message_type,
                                                               parameters)
         # call command function
@@ -435,6 +446,18 @@ class RevPiPyMachineController(ABC):
             return command_function(machine, *parameters)
         except TypeError:
             return None
+
+    def __resolve_named_positions(self, machine: Machine, parameters: list[Any]) -> None:
+        """
+        Resolves named positions in the parameters for the given machine.
+
+        :param machine: The machine for which to resolve the named positions
+        :param parameters: The parameters to resolve named positions in
+        :return: None
+        :raise UnknownNamedPosition: If a named position cannot be resolved
+        """
+        # TODO implement
+        pass
 
     def __apply_machine_specific_parameter_modifications(self,
                                                          machine_type: str,
@@ -733,3 +756,11 @@ def signal_custom_handler(sig, frame, name: str):
         logging.info(f"Closing socket {s}")
         s.close()
     sys.exit(0)
+
+class UnknownNamedPosition(Exception):
+    def __init__(self, named_position: NamedPosition):
+        self.__named_position = named_position
+
+    @property
+    def named_position(self) -> NamedPosition:
+        return self.__named_position
