@@ -387,7 +387,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(500 - self.vgr_parameters.hover_offset,1000,1200)
 
 
     def test_two_different_moveCommands(self):
@@ -476,7 +476,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(550 - 250,1050,1250) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(550 - self.vgr_parameters.hover_offset,1050,1250)
 
 
     def test_pickCommand(self):
