@@ -32,6 +32,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             "TEST": Position(rot=400, vertical=300, horizontal=200, meaning="any")
         })
         vgr_parameters.derive_over_positions()
+        self.vgr_parameters = vgr_parameters
         self.controller = SimulatedVacuumGripperController(config_path, vgr_parameters)
         self.controller.mainLoopDelay = 0.05
 
@@ -210,7 +211,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(500 - self.vgr_parameters.hover_offset,1000,1200)
 
         # controller is idle
         for _ in range(2):
@@ -292,7 +293,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(500 - 250, 1000, 1200) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(500 - self.vgr_parameters.hover_offset, 1000, 1200)
 
         # controller is idle
         for _ in range(2):
@@ -347,7 +348,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(500 - self.vgr_parameters.hover_offset,1000,1200)
 
         # controller is idle
         for _ in range(2):
@@ -436,7 +437,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(500 - 250,1000,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(500 - self.vgr_parameters.hover_offset,1000,1200)
 
         # controller is idle
         for _ in range(2):
@@ -612,7 +613,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         # check current position via feedback and/or by reading machine IO
-        self.checkVGRPosition(500 - 250,0,1200) # 250 is the offset of the move command # TODO have a better management of this offset
+        self.checkVGRPosition(500 - self.vgr_parameters.hover_offset,0,1200)
 
         # controller is idle
         for _ in range(2):
