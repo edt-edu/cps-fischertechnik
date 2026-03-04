@@ -9,8 +9,11 @@ import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
     SimulatedVacuumGripperController
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
+from rppmcontroller.machine.NamedPosition import NamedPosition
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import \
+    VacuumGripperParameters
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 
@@ -25,7 +28,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         logging.debug("setup called")
-        self.controller = SimulatedVacuumGripperController(config_path)
+        vgr_parameters = VacuumGripperParameters(named_positions={
+            "TEST": Position(rot=400, vertical=300, horizontal=200, meaning="any")
+        })
+        vgr_parameters.derive_over_positions()
+        self.controller = SimulatedVacuumGripperController(config_path, vgr_parameters)
         self.controller.mainLoopDelay = 0.05
 
 
@@ -1225,6 +1232,49 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertLess(iterationDone, 100, "setup timed out")
 
         self.assertEqual(0, len(vgr.get_runners()), "runner list was not cleaned up")
+
+    def test_go_to_named_position(self):
+        """Verify that the VGR can work with named positions"""
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos()
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(self.controller), r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
+
+        # send a go-to command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
+            NamedPosition("TEST")
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
+                pass
+            else:
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
+                # in between the machine will be put into active state
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification,r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_ACTIVE")
+                notification = ctHelper.readMachineFeedbackNotification(self.controller)
+                self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
+                logging.debug(f"GO_TO_POSITION reached in {iterationDone} iterations")
+                endCommandReached = True
+                self.checkVGRPosition(300, 400, 200)
+
+            self.assertLess(iterationDone, 30, "GO_TO_POSITION not reached in less than 30 iterations" )
 
 
     # TODO move to a test helper module

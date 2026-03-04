@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 import logging
 
 from rppmcontroller.example.VacuumGripperController import \
     VacuumGripperController
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import \
+    VacuumGripperParameters
 from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import \
     VacuumGripperSimpleSimulator
 
@@ -12,7 +16,7 @@ class SimulatedVacuumGripperController(VacuumGripperController):
     Class allowing to stream commands to and from  a simulated vacuum gripper
     """
 
-    def __init__(self, configurationFile : str = ""):
+    def __init__(self, configurationFile : str = "", vgr_parameters: VacuumGripperParameters | None = None):
         """
         Init method of this class, starts all threads and everything is ready for receiving commands via Sockets and executing them
         """
@@ -24,7 +28,7 @@ class SimulatedVacuumGripperController(VacuumGripperController):
         self.machines = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
-        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
+        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01", vgr_parameters)
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {
             self.vacuumGripperMachine: None

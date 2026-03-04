@@ -94,7 +94,7 @@ class VacuumGripperParameters(MachineParameters):
         is retracted anyway before performing a pickup or placement.
         :return: self
         """
-        for name, position in self.named_positions:
+        for name, position in list(self.named_positions.items()):
             self.named_positions[f"OVER_{name}"] = Position(rot=position.rot,
                                                   vertical=position.vertical
                                                            - self.hover_offset,
