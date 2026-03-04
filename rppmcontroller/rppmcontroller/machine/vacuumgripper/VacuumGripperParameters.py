@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Self
+from typing import Optional, Dict
+
+from typing_extensions import Self
 
 from rppmcontroller.machine.MachineParameters import MachineParameters
 from rppmcontroller.machine.Position import Position
