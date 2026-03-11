@@ -48,8 +48,8 @@ def customDecoder(idict):
                     parameterList.append(Position(meaning, vertical, rot, horizontal))
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'NAMEDPOSITION':
                     passable = param['passable']
-                    name = passable['name']
-                    parameterList.append(NamedPosition(name))
+                    position_name = passable['name']
+                    parameterList.append(NamedPosition(position_name))
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'AXISPRIORITIZED':
                     passable = param['passable']
                     vertical = passable['vertical']
