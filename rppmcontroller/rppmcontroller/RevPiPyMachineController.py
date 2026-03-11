@@ -132,21 +132,28 @@ class RevPiPyMachineController(ABC):
         isBrokenConnection = False
         self.brokenCommandSocketDetected.value = False
 
-        while not isBrokenConnection:
-                data = s.recv(1024)
-                if data == b'':
+        try:
+            # use makefile to read line by line
+            f = s.makefile('r', encoding='utf-8')
+            while not isBrokenConnection:
+                line = f.readline()
+                if not line:
                     logging.info("receiveCommandMessages socket connection broken")
                     isBrokenConnection = True
                     self.brokenCommandSocketDetected.value = True
                     time.sleep(self.mainLoopDelay) # wait enough before possible connection so that sendNotificationMessages has time to consider the brokenCommandSocketDetected flag
-                else:
-                    if data.decode().strip('\n').startswith('WATCHDOG'):
-                        logging.info(f"IGNORED Received {data!r}")
-                    elif not data.isspace():
-                        logging.debug(f"Received {data!r}")
-                        self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{data!r}")
-                        objdata = JSONReader.read(data)
-                        self.inputBuffer.put(objdata)
+                elif line.strip('\n').startswith('WATCHDOG'):
+                    logging.info(f"IGNORED Received {line!r}")
+                elif not line.isspace():
+                    logging.debug(f"Received {line!r}")
+                    self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{line!r}")
+                    objdata = JSONReader.read(line)
+                    self.inputBuffer.put(objdata)
+        except Exception as e:
+            logging.error(f"Error in receiveCommandMessages: {e}")
+            isBrokenConnection = True
+            self.brokenCommandSocketDetected.value = True
+
         # reset boolean (required if notificationSocket is opened first)
         self.brokenCommandSocketDetected.value = False
 
