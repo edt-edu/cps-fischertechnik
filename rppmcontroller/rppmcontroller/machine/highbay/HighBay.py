@@ -6,8 +6,8 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, \
-    runner_augment_function
+from rppmcontroller.behavior.decoratorFunctions import (cycle_step_function,
+                                                        runner_augment_function)
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState
@@ -846,6 +846,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # pickup item
         config.vertical_axis_config.counter_goal -= self.parameters.pickup_distance
         runner.then_goto(config, info="pickup item")
+
+        # recalibrate horizontal-axis, since we need to be precise here
+        config.horizontal_axis_config = AxisConfig.to_end_position()
+        runner.then_goto(config, info="recalibrating horizontal-axis")
 
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
