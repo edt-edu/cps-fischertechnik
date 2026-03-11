@@ -290,6 +290,7 @@ class RevPiPyMachineController(ABC):
         message_name = message.name
         parameters = message.parameters
         logging.debug(f'Handling command: {message_type} {message_name}')
+        logging.debug(f"message: {message!r}")
 
         self.__publish_received_message_event("command",
                                               message,
