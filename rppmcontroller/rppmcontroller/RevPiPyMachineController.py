@@ -148,6 +148,7 @@ class RevPiPyMachineController(ABC):
                     logging.debug(f"Received {line!r}")
                     self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{line!r}")
                     objdata = JSONReader.read(line)
+                    logging.debug(f"-> as object data: {objdata!r}")
                     self.inputBuffer.put(objdata)
         except Exception as e:
             logging.error(f"Error in receiveCommandMessages: {e}")
