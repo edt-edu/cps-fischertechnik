@@ -955,3 +955,114 @@ commandPlaceholder:
                 "parameters": []
               }
             }
+        - name: "move_to_mill"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "MOVE_TO_MILL",
+                "parameters": []
+              }
+            }
+        - name: "move_to_drill"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "MOVE_TO_DRILL",
+                "parameters": []
+              }
+            }
+        - name: "move_to_output"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "MOVE_TO_OUTPUT",
+                "parameters": []
+              }
+            }
+        - name: "mill"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "MILL",
+                "parameters": [
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  }
+               ]
+              }
+            }
+        - name: "drill"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "DRILL",
+                "parameters": [
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  }
+                ]
+              }
+            }
+        - name: "process"
+          placeholder: >
+            {
+              "topicName": "IndexedLine01",
+              "timestamp": 1673975631.125,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "INDEXEDLINE",
+                "outputId": 1,
+                "name": "PROCESS",
+                "parameters": [
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  },
+                  {
+                    "passableType" : "NUMBERNATURAL",
+                    "passable" : {
+                      "number" : 2
+                    }
+                  },
+                  {
+                    "passableType" : "BOOL",
+                    "passable" : {
+                      "bool" : false
+                    }
+                  }
+                ]
+              }
+            }

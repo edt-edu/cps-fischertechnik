@@ -1,43 +1,63 @@
-import { Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, ViewChild } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { SortingLineEjectComponent } from "./sorting-line/sorting-line-eject/sorting-line-eject.component";
+import {Component, DestroyRef, ElementRef, inject, OnInit, Renderer2, ViewChild} from '@angular/core';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {SortingLineEjectComponent} from "./sorting-line/sorting-line-eject/sorting-line-eject.component";
 import {
   VacuumGripperGoToPositionComponent
 } from "./vacuum-gripper/vacuum-gripper-gotoposition/vacuum-gripper-gotoposition.component";
-import { VacuumGripperMoveComponent } from "./vacuum-gripper/vacuum-gripper-move/vacuum-gripper-move.component";
-import { VacuumGripperOrderedMoveToComponent } from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
-import { VacuumGripperPickComponent } from "./vacuum-gripper/vacuum-gripper-pick/vacuum-gripper-pick.component";
-import { VacuumGripperPlaceComponent } from "./vacuum-gripper/vacuum-gripper-place/vacuum-gripper-place.component";
+import {VacuumGripperMoveComponent} from "./vacuum-gripper/vacuum-gripper-move/vacuum-gripper-move.component";
+import {
+  VacuumGripperOrderedMoveToComponent
+} from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
+import {VacuumGripperPickComponent} from "./vacuum-gripper/vacuum-gripper-pick/vacuum-gripper-pick.component";
+import {VacuumGripperPlaceComponent} from "./vacuum-gripper/vacuum-gripper-place/vacuum-gripper-place.component";
 
-import { MultiProcessingArmPositionComponent } from './multiprocessing/multiprocessing-arm-position/multiprocessing-arm-position.component';
-import { MultiProcessingProcessComponent } from './multiprocessing/multiprocessing-process/multiprocessing-process.component';
-import { MultiProcessingTurntablePositionComponent } from './multiprocessing/multiprocessing-turntable-position/multiprocessing-turntable-position.component';
+import {
+  MultiProcessingArmPositionComponent
+} from './multiprocessing/multiprocessing-arm-position/multiprocessing-arm-position.component';
+import {
+  MultiProcessingProcessComponent
+} from './multiprocessing/multiprocessing-process/multiprocessing-process.component';
+import {
+  MultiProcessingTurntablePositionComponent
+} from './multiprocessing/multiprocessing-turntable-position/multiprocessing-turntable-position.component';
 
-import { HighBayWarehouseGoToColumnComponent } from "./highbay-warehouse/highbay-warehouse-gotocolumn/highbay-warehouse-gotocolumn.component";
-import { HighBayWarehouseGoToRowComponent } from "./highbay-warehouse/highbay-warehouse-gotorow/highbay-warehouse-gotorow.component";
-import { HighBayWarehouseHorizontalToComponent } from "./highbay-warehouse/highbay-warehouse-horizontalto/highbay-warehouse-horizontalto.component";
-import { HighBayWarehousePickupFromComponent } from "./highbay-warehouse/highbay-warehouse-pickupfrom/highbay-warehouse-pickupfrom.component";
-import { HighBayWarehouseStoreToComponent } from "./highbay-warehouse/highbay-warehouse-storeto/highbay-warehouse-storeto.component";
-import { HighBayWarehouseVerticalToComponent } from "./highbay-warehouse/highbay-warehouse-verticalto/highbay-warehouse-verticalto.component";
+import {
+  HighBayWarehouseGoToColumnComponent
+} from "./highbay-warehouse/highbay-warehouse-gotocolumn/highbay-warehouse-gotocolumn.component";
+import {
+  HighBayWarehouseGoToRowComponent
+} from "./highbay-warehouse/highbay-warehouse-gotorow/highbay-warehouse-gotorow.component";
+import {
+  HighBayWarehouseHorizontalToComponent
+} from "./highbay-warehouse/highbay-warehouse-horizontalto/highbay-warehouse-horizontalto.component";
+import {
+  HighBayWarehousePickupFromComponent
+} from "./highbay-warehouse/highbay-warehouse-pickupfrom/highbay-warehouse-pickupfrom.component";
+import {
+  HighBayWarehouseStoreToComponent
+} from "./highbay-warehouse/highbay-warehouse-storeto/highbay-warehouse-storeto.component";
+import {
+  HighBayWarehouseVerticalToComponent
+} from "./highbay-warehouse/highbay-warehouse-verticalto/highbay-warehouse-verticalto.component";
 
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { Message } from "@stomp/stompjs";
-import { AccordionModule } from 'primeng/accordion';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { DropdownModule } from 'primeng/dropdown';
-import { FieldsetModule } from 'primeng/fieldset';
-import { MessagesModule } from 'primeng/messages';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {Message} from "@stomp/stompjs";
+import {AccordionModule} from 'primeng/accordion';
+import {ButtonModule} from 'primeng/button';
+import {CardModule} from 'primeng/card';
+import {DropdownModule} from 'primeng/dropdown';
+import {FieldsetModule} from 'primeng/fieldset';
+import {MessagesModule} from 'primeng/messages';
 
-import { InputTextModule } from 'primeng/inputtext';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
-import { PanelModule } from 'primeng/panel';
-import { ScrollPanelModule } from 'primeng/scrollpanel';
-import { ICommandPlaceholder } from "../../models/i-command-placeholder";
-import { IConfiguration, Machine } from "../../models/i-factory-configuration";
-import { IFactoryInstance } from "../../models/i-factory-instance";
-import { IFactoryParallelizedMissionsConfiguration } from "../../models/i-factory-paralelized_missions";
-import { MyRxStompService } from "../../services/my-rx-stomp.service";
+import {InputTextModule} from 'primeng/inputtext';
+import {OverlayPanelModule} from 'primeng/overlaypanel';
+import {PanelModule} from 'primeng/panel';
+import {ScrollPanelModule} from 'primeng/scrollpanel';
+import {ICommandPlaceholder} from "../../models/i-command-placeholder";
+import {IConfiguration, Machine} from "../../models/i-factory-configuration";
+import {IFactoryInstance} from "../../models/i-factory-instance";
+import {IFactoryParallelizedMissionsConfiguration} from "../../models/i-factory-paralelized_missions";
+import {MyRxStompService} from "../../services/my-rx-stomp.service";
 
 import {
   beautifyJson,
@@ -52,14 +72,17 @@ import {
 } from "../../utilities/utils";
 
 
-import { CommandStatusWidgetComponent } from "../../widgets/command-status-widget/command-status-widget.component";
-import { LogTableWidgetComponent } from "../../widgets/log-table-widget/log-table-widget.component";
-import { MachineStatusWidgetComponent } from "../../widgets/machine-status-widget/machine-status-widget.component";
-import { GenericDirectionCommandComponent } from "./generic/direction-command/generic-direction-command.component";
-import { GenericDirectionNbStepsCommandComponent } from "./generic/direction-nb-steps-command/generic-direction-nb-steps-command.component";
-import { GenericIntegerCommandComponent } from "./generic/generic-integer-command/generic-integer-command.component";
-import { GenericNoParamCommandComponent } from "./generic/no-param-command/generic-no-param-command.component";
-import { GenericStatusCommandComponent } from "./generic/status-command/status-command.component";
+import {CommandStatusWidgetComponent} from "../../widgets/command-status-widget/command-status-widget.component";
+import {LogTableWidgetComponent} from "../../widgets/log-table-widget/log-table-widget.component";
+import {MachineStatusWidgetComponent} from "../../widgets/machine-status-widget/machine-status-widget.component";
+import {GenericDirectionCommandComponent} from "./generic/direction-command/generic-direction-command.component";
+import {
+  GenericDirectionNbStepsCommandComponent
+} from "./generic/direction-nb-steps-command/generic-direction-nb-steps-command.component";
+import {GenericIntegerCommandComponent} from "./generic/generic-integer-command/generic-integer-command.component";
+import {GenericNoParamCommandComponent} from "./generic/no-param-command/generic-no-param-command.component";
+import {GenericStatusCommandComponent} from "./generic/status-command/status-command.component";
+import {IndexedLineProcessComponent} from "./indexedline/process/indexedline-process.component";
 
 declare var $: any;
 
@@ -101,7 +124,8 @@ declare var $: any;
     CardModule,
     MachineStatusWidgetComponent,
     CommandStatusWidgetComponent,
-    LogTableWidgetComponent
+    LogTableWidgetComponent,
+    IndexedLineProcessComponent
   ],
   templateUrl: './direct-command.component.html',
   styleUrl: './direct-command.component.scss'

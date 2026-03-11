@@ -9,6 +9,24 @@ class Timer:
     time
     """
 
+    custom_current_time: Optional[float] = None
+    """
+    Set a custom current time for testing purposes. It is usually safe to set this
+    value to zero in order to initialize a test.
+
+    Note that this is a STATIC VARIABLE!
+    Settings this value sets it for every Timer instance in the runtime!
+
+    DO NOT FORGET TO RESET THIS VALUE BACK TO `None` AFTER TESTING!
+    Otherwise other unit tests might be impacted and fail.
+    This is best done by overriding the method unittest.TestCase#tearDown:
+    .. highlight:: python
+    .. code-block:: python
+        def tearDown(self):
+            Timer.custom_current_time = None
+
+    """
+
     def __init__(self, seconds: float, single_use: bool = False):
         """
         Create a new timer with a delay in seconds
@@ -18,6 +36,16 @@ class Timer:
         self.__seconds: float = seconds
         self.__single_use: bool = single_use
         self.__start_time: Optional[float] = None
+
+    def __get_current_time(self) -> float:
+        """
+        Get the current time, usually in seconds since epoch.
+
+        Note that this value can be overridden for testing purposes.
+
+        :return: Current time
+        """
+        return self.custom_current_time if self.custom_current_time is not None else time.time()
 
     def elapsed(self) -> bool:
         """
@@ -39,7 +67,7 @@ class Timer:
         if self.__start_time is None:
             raise Exception("Timer#elapsed is called without being started!")
 
-        elapsed_seconds = time.time() - self.__start_time
+        elapsed_seconds = self.__get_current_time() - self.__start_time
 
         if elapsed_seconds >= self.__seconds:
             if not self.__single_use:
@@ -55,7 +83,7 @@ class Timer:
         :return: None
         """
         if start:
-            self.__start_time = time.time()
+            self.__start_time = self.__get_current_time()
         else:
             self.__start_time = None
 

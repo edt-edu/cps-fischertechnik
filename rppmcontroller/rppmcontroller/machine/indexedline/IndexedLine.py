@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, Callable
+
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
@@ -10,7 +11,8 @@ from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.indexedline.IndexedLineConfig import \
     IndexedLineConfig
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 
 
 class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
@@ -386,13 +388,13 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         return runner
 
     @protocol_command_function()
-    def mill_Command(self) -> Runner:
+    def mill_Command(self, mill_seconds: float = 2.0) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # mill for a few seconds
         config.milling = True
-        runner.then_goto(config, and_stay_for=2.0, info="milling")
+        runner.then_goto(config, and_stay_for=mill_seconds, info="milling")
         config.milling = False
         runner.then_goto(config, info="Stopping mill")
         return runner
@@ -403,7 +405,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config = IndexedLineConfig()
 
         # make sure payload is at milling machine
-        runner.then_run_runner_from(self.move_to_mill_Command, until=lambda mill_runner: mill_runner.is_done() or not self.indexedLineSensDrilling, info="ensure payload at milling machine")
+        runner.then_run_runner_from(self.move_to_mill_Command, until=lambda: not self.indexedLineSensMilling or not self.indexedLineSensDrilling, info="ensure payload at milling machine")
 
         # move payload to drilling machine
         config.milling_conveyor = True
@@ -417,13 +419,13 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         return runner
 
     @protocol_command_function()
-    def drill_Command(self) -> Runner:
+    def drill_Command(self, drill_seconds: float = 2.0) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # drill for a few seconds
         config.drilling = True
-        runner.then_goto(config, and_stay_for=2.0, info="drilling")
+        runner.then_goto(config, and_stay_for=drill_seconds, info="drilling")
 
         config.drilling = False
         runner.then_goto(config, info="stopping drill")
@@ -436,7 +438,9 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config = IndexedLineConfig()
 
         # make sure payload it at drilling machine
-        runner.then_run_runner_from(self.move_to_drill_Command, until=lambda drill_runner: drill_runner.is_done() or not self.indexedLineSensSwap, info="ensure payload at drilling machine")
+        runner.then_run_runner_from(self.move_to_drill_Command,
+                                    until=lambda: not self.indexedLineSensDrilling or not self.indexedLineSensSwap,
+                                    info="ensure payload at drilling machine")
 
          # move payload onto slider2
         config.drilling_conveyor = True
@@ -446,42 +450,62 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         config.drilling_conveyor = False
         config.slider_2_extended = True
         config.swap_conveyor = True
-        runner.then_goto(config, until=lambda: not self.indexedLineSensSwap, info="moving to swap station")
+        runner.then_goto(config, until=lambda: not self.indexedLineSensSwap,
+                         info="moving to swap station")
 
         # move payload to end of swap station
-        runner.then_goto(config, and_stay_for=1.0, info="Moving to end of swap station")
+        config.slider_2_extended = False
+        runner.then_goto(config, info="Moving to end of swap station")
 
         # stop station
         config.swap_conveyor = False
-        config.slider_2_extended = False
         runner.then_goto(config, info="stopping")
         return runner
 
-    @protocol_command_function()
+    @protocol_command_function(description="Wait for a payload, mill it for "
+                                           "2 seconds, drill it for 2 seconds "
+                                           "and move it to the output")
     def process1_Command(self) -> Runner:
+        return self.process_Command(milling_seconds=2.0,
+                                    drilling_seconds=2.0,
+                                    wait_for_payload=True)
+
+    @protocol_command_function(description="Move a payload through all stations "
+                                           "of the IndexedLine and process it "
+                                           "for the specified timespans")
+    def process_Command(self,
+                        milling_seconds: float = 0.0,
+                        drilling_seconds: float = 0.0,
+                        wait_for_payload: bool = False) -> Runner:
         runner = self.create_runner()
         config = IndexedLineConfig()
 
         # wait until payload is present
-        runner.then_goto(config,
-                         until=lambda: not self.indexedLineSensLoading,
-                         and_stay_for=0.5,
-                         info="waiting for payload")
+        if wait_for_payload:
+            runner.then_goto(config,
+                             until=lambda: not self.indexedLineSensLoading,
+                             and_stay_for=0.5,
+                             info="waiting for payload")
 
         # move to mill
-        runner.then_run_runner_from(self.move_to_mill_Command, info="moving to mill")
+        runner.then_run_runner_from(self.move_to_mill_Command,
+                                    info="moving to mill")
 
         # mill
-        runner.then_run_runner_from(self.mill_Command, info="milling")
+        runner.then_run_runner_from(lambda: self.mill_Command(milling_seconds),
+                                    info="milling")
 
         # move to drill
-        runner.then_run_runner_from(self.move_to_drill_Command, info="moving to drill")
+        runner.then_run_runner_from(self.move_to_drill_Command,
+                                    info="moving to drill")
 
         # drill
-        runner.then_run_runner_from(self.drill_Command, info="drilling")
+        runner.then_run_runner_from(
+            lambda: self.drill_Command(drilling_seconds), info="drilling")
 
         # move to output
-        runner.then_run_runner_from(self.move_to_output_Command, info="moving to output")
+        runner.then_run_runner_from(self.move_to_output_Command,
+                                    info="moving to output")
 
         return runner
 

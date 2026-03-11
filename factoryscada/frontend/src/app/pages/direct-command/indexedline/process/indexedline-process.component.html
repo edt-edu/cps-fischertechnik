@@ -1,0 +1,15 @@
+<p-fieldset legend="{{ machine?.name }} - PROCESS">
+
+  <p style="margin-bottom: 2em;">Execute the process.
+    Mill seconds equal to zero mean no milling, same for drilling.
+    When waiting for payload, the light-barrier on the feed-conveyor has to be blocked.
+  </p>
+
+  <app-indexedline-process-widget (onValuesChanged)="handleValuesChanged($event)"/>
+
+  <!-- Action Buttons -->
+  <div class="">
+    <p-button label="Execute" (click)="onExecute()" ></p-button>
+  </div>
+
+</p-fieldset>

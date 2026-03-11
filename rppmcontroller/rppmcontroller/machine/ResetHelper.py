@@ -32,7 +32,7 @@ class ResetHelper:
             reset_helper = ResetHelper(temper_tolerance=200)
             reset_helper.mark_for_reset_if(True, 800)  # we assume somebody tempered with the ref-switch; no mark for reset actually happens.
             reset_helper.mark_for_reset_if(True, 10)  # counter is close enough to ref-switch; helper is marked for reset
-            reset_helper.mark_for_reset_if(True, -800) # this always works since we shouldn't move beyond the ref-switch
+            reset_helper.mark_for_reset_if(True, -800)  # this always works since we shouldn't move beyond the ref-switch
         :return: The temper tolerance
         """
         return self.__temper_tolerance

@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 class AxisConfig:
     """
     Interface to update the position of an Axis
