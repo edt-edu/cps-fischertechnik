@@ -847,10 +847,6 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         config.vertical_axis_config.counter_goal -= self.parameters.pickup_distance
         runner.then_goto(config, info="pickup item")
 
-        # recalibrate horizontal-axis, since we need to be precise here
-        config.horizontal_axis_config = AxisConfig.to_end_position()
-        runner.then_goto(config, info="recalibrating horizontal-axis")
-
         # move to conveyor
         horizontal_axis_config = AxisConfig.to_counter_goal(
             Column.CONVEYOR.to_counter_goal(self.parameters))
