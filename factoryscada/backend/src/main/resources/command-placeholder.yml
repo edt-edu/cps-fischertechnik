@@ -141,13 +141,21 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "VACUUM",
                 "outputId": 1,
-                "name": "GO_TO_POSITION",
+                "name": "ODERED_MOVE_TO",
                 "parameters": [
                   {
                     "passableType": "NAMEDPOSITION",
                     "passable": {
                       "name": "OVER_CB"
                     }
+                  },
+                  { 
+                    "passableType": "AXISPRIORITIZED",
+                      "passable": {
+                        "vertical": false,
+                        "horizontal": false,
+                        "rot": true
+                      }
                   }
                 ]
               }
