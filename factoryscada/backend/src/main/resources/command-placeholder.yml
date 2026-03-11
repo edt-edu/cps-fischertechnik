@@ -141,7 +141,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "VACUUM",
                 "outputId": 1,
-                "name": "ODERED_MOVE_TO",
+                "name": "ORDERED_MOVE_TO",
                 "parameters": [
                   {
                     "passableType": "NAMEDPOSITION",
