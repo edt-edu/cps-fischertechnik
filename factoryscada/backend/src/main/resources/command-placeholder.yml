@@ -146,7 +146,7 @@ commandPlaceholder:
                   {
                     "passableType": "NAMEDPOSITION",
                     "passable": {
-                      "name": "OVER_CB",
+                      "name": "OVER_CB"
                     }
                   }
                 ]
