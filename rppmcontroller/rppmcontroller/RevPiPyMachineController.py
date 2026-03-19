@@ -672,10 +672,19 @@ class RevPiPyMachineController(ABC):
             result_changed = True
         else:
             # use is_equivalent_result to consider only changes related to the result and info in case of Runner
-            result_changed = not lastResult.is_equivalent_result(cached_result.result) or lastCommand.commandId != cached_result.command.commandId
-            logging.debug(f'lastResult.is_equivalent_result(cached_result.result) {lastResult.is_equivalent_result(cached_result.result)}')
-            logging.debug(f'lastCommand.commandId {lastCommand.commandId} != cached_result.command.commandId {cached_result.command.commandId}')
-        if result_changed :
+            result_differs = \
+                not lastResult.is_equivalent_result(cached_result.result)
+            if result_differs:
+                logging.debug(f"Last result differs from cached result: "
+                              f"{lastResult!r} != {cached_result.result!r}")
+            cached_command_id = cached_result.command.commandId
+            last_command_id = lastCommand.commandId
+            command_id_differs = last_command_id != cached_command_id
+            if command_id_differs:
+                logging.debug(f"Last command id differs from cached command "
+                              f"id: {last_command_id} != {cached_command_id}")
+            result_changed = result_differs or command_id_differs
+        if result_changed:
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
                 jsonid = cycleStepCommand.commandId
