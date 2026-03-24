@@ -132,7 +132,34 @@ commandPlaceholder:
                 ]
               }
             }
-
+        - name: "go_to_named_position"
+          placeholder: >
+            {
+              "topicName": "VacuumGripper01",
+              "timestamp": 1677144787.891,
+              "message": {
+                "jsonType": "COMMAND",
+                "type": "VACUUM",
+                "outputId": 1,
+                "name": "ORDERED_MOVE_TO",
+                "parameters": [
+                  {
+                    "passableType": "NAMEDPOSITION",
+                    "passable": {
+                      "name": "OVER_CB"
+                    }
+                  },
+                  { 
+                    "passableType": "AXISPRIORITIZED",
+                      "passable": {
+                        "vertical": false,
+                        "horizontal": false,
+                        "rot": true
+                      }
+                  }
+                ]
+              }
+            }
         - name: "move"
           placeholder: >
             {

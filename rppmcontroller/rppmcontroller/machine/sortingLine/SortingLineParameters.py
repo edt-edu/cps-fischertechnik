@@ -2,9 +2,11 @@ from dataclasses import dataclass
 
 from typing_extensions import deprecated
 
+from rppmcontroller.machine.MachineParameters import MachineParameters
+
 
 @dataclass
-class SortingLineParameters:
+class SortingLineParameters(MachineParameters):
     """All configurable parameters of the SortingLine machine."""
 
     white_ejector_delay: float = 0.5

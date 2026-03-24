@@ -112,3 +112,8 @@ class CycleStepResult:
         """
 
         return self.is_equivalent_result(other)
+
+    def __repr__(self) -> str:
+        return (f"CycleStepResult(result={self._result}, "
+                f"info={self._info}, "
+                f"subCycleStepResult={self._subCycleStepResult})")

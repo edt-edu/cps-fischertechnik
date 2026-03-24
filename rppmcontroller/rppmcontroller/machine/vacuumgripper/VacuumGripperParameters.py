@@ -1,9 +1,15 @@
-from dataclasses import dataclass
-from typing import Optional
+import logging
+from dataclasses import dataclass, field
+from typing import Optional, Dict
+
+from typing_extensions import Self
+
+from rppmcontroller.machine.MachineParameters import MachineParameters
+from rppmcontroller.machine.Position import Position
 
 
 @dataclass
-class VacuumGripperParameters:
+class VacuumGripperParameters(MachineParameters):
     """All configurable parameters of the VacuumGripper machine"""
 
     horizontal_safety_position: Optional[int] = None
@@ -66,3 +72,44 @@ class VacuumGripperParameters:
     The maximum encoder counter value for the rotational axis.
     This value is limited by the physical setup.
     """
+    named_positions: Dict[str, Position] = field(default_factory=dict)
+    """
+    All named positions
+    """
+    hover_offset: int = 350
+    """
+    Offset how high to hover over a position.
+    Used in e.g. picking or placing.
+    """
+    pressure_offset: int = 250
+    """
+    Offset how much lower to go when pressuring a position.
+    Used in e.g. picking or placing.
+    """
+
+    def derive_over_positions(self) -> Self:
+        """
+        For all configured named_positions derive and add an "OVER_ position",
+        which hovers over the configured position.
+
+        Over-positions will not extend horizontally, since the arm
+        is retracted anyway before performing a pickup or placement, and
+        they can be used as safety positions.
+        :return: self
+        """
+        for name, position in list(self.named_positions.items()):
+            hover_positon_name = f"OVER_{name}"
+            if hover_positon_name in self.named_positions:
+                logging.warning(f"Cannot create and over-position for "
+                                f"position {name},"
+                                f" since position {hover_positon_name} "
+                                f"already exists.")
+                continue
+
+            self.named_positions[hover_positon_name] = Position(rot=position.rot,
+                                                  vertical=position.vertical
+                                                           - self.hover_offset,
+                                                  horizontal=0,
+                                                  meaning=position.meaning)
+        return self
+

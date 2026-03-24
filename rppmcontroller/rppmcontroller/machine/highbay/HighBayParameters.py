@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from rppmcontroller.machine.MachineParameters import MachineParameters
+
 
 @dataclass
-class HighBayParameters:
+class HighBayParameters(MachineParameters):
     """
     All configurable parameters of the HighBay machine.
     """

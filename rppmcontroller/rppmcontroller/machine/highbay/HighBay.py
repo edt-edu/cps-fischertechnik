@@ -6,8 +6,8 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, \
-    runner_augment_function
+from rppmcontroller.behavior.decoratorFunctions import (cycle_step_function,
+                                                        runner_augment_function)
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.ConveyorState import ConveyorState

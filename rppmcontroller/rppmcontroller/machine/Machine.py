@@ -1,20 +1,26 @@
+from __future__ import annotations
+
+import logging
 import math
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from time import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
+
 from typing_extensions import deprecated
+
+from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
-from rppmcontroller.behavior.ProcessSequenceContext import ProcessSequenceContext
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.ParameterRequestAnswer import ParameterRequestAnswer
+from rppmcontroller.behavior.ProcessSequenceContext import \
+    ProcessSequenceContext
+from rppmcontroller.machine.MachineParameters import MachineParameters
 from rppmcontroller.machine.MachineStatus import MachineStatus
-from rppmcontroller.machine.CommandExecutionStatus import CommandExecutionStatus
-import logging
+from rppmcontroller.machine.ParameterRequestAnswer import \
+    ParameterRequestAnswer
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
 
 
-class Machine:
+class Machine(ABC):
     """
     Superclass for all machines in the factory.
 
@@ -35,9 +41,12 @@ class Machine:
     def id(self) -> str:
         return self.__id
 
+    @property
+    def parameters(self) -> MachineParameters | None:
+        return None
+
     #use for feedbackOnChange
     @property
-    @abstractmethod
     def isExecuting(self) -> bool:
         """Returns whether the machine is currently performing actions
 
@@ -55,7 +64,6 @@ class Machine:
         return self.__class__.__name__
 
     @property
-    @abstractmethod
     def isInitialized(self) -> bool:
         """Returns whether the machine is initialized . ie if the setup is Done
 
@@ -66,16 +74,16 @@ class Machine:
     @isInitialized.setter
     def isInitialized(self, value: bool):
         self.__isInitialized = value
-    
-    
+
+
     @property
     def nbMinimumRequiredExecutionCycles(self) -> int:
         """Returns the number of cycles still required before considerring the current execution being done
-        when > 0 this condition can be used to help ensuring that at least this number of IO read, execute,  IO write is performed before 
+        when > 0 this condition can be used to help ensuring that at least this number of IO read, execute,  IO write is performed before
         setting the isExecuting back to FINISHED
         """
         return self.__nbMinimumRequiredExecutionCycles
-    
+
     @nbMinimumRequiredExecutionCycles.setter
     def nbMinimumRequiredExecutionCycles(self,value: int) -> None:
         self.__nbMinimumRequiredExecutionCycles = value
@@ -128,11 +136,11 @@ class Machine:
         Can be used to build MQTT messages
         """
         pass
-    
+
     @abstractmethod
     def internalStatus(self) -> Dict[str, Any]:
         """return a dict of internal values of the machine
-        Note: it may contain nested dictionnaries 
+        Note: it may contain nested dictionnaries
         Can be used to build MQTT messages
         """
         pass
@@ -157,7 +165,7 @@ class Machine:
         pass
 
 
-    
+
     @deprecated("in favor of Runner class")
     def process_sequence_CycleStep(self, subCycleStepList: List[CycleStepCommand]) -> CycleStepResult:
         """
@@ -165,7 +173,7 @@ class Machine:
         Note: Only one subCycleStep can be performe in a cycle.
         Note: despite compatible signature, nested process_sequence_CycleStep are NOT allowed (it would require stack management)
 
-        
+
         :param List[Callable[[], bool] subCycleStepList: list of Callable that should be processed
         :return: as a CycleStep, this function must return True when all subCycleStep have finished so this 'process_sequnece' can be removed from the currentlyExecuting map
         """
@@ -182,8 +190,8 @@ class Machine:
             self.__processSequenceContext =  ProcessSequenceContext(subCycleStepList)
             psContext = self.__processSequenceContext
             logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
-                
-        
+
+
         # call current subCycleStep
         psContext = self.__processSequenceContext
         subCommand = psContext.subCycleStepList[psContext.currentSubCycleStepIndex]
@@ -197,7 +205,7 @@ class Machine:
                     # finished processing this sequence
                     self.__processSequenceContext = None
                     logging.debug(f"process_sequence_CycleStep {self.id} last sub command done ")
-                    return CycleStepResult(CycleStepResultEnum.DONE, 
+                    return CycleStepResult(CycleStepResultEnum.DONE,
                                             f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
                                             f" : {psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
                                             (subCommand.displayName, res))
@@ -205,23 +213,23 @@ class Machine:
                     # proceed to next subCycleStep
                     psContext.currentSubCycleStepIndex = psContext.currentSubCycleStepIndex+1
                     logging.info(f"starting subCycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)} : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}")
-                    return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+                    return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                             f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
-                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                            f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
                                             (subCommand.displayName, res))
             else:
                 # transfert termination result to upper CycleStep
-                return CycleStepResult(res.result, 
+                return CycleStepResult(res.result,
                                         f"process_sequence_CycleStep terminated due to result of {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
-                                        f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                        f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
                                         (subCommand.displayName, res))
-        else:  
-            # use same text etc as in "proceed to next subCycleStep" in order to avoid multiple notifications due to comparison mismatch     
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, 
+        else:
+            # use same text etc as in "proceed to next subCycleStep" in order to avoid multiple notifications due to comparison mismatch
+            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                     f"process_sequence_CycleStep {psContext.currentSubCycleStepIndex+1}/{len(psContext.subCycleStepList)}"
-                                    f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}", 
+                                    f" : {self.id}.{psContext.subCycleStepList[psContext.currentSubCycleStepIndex].displayName}",
                                     (subCommand.displayName, res))
-    
+
     @deprecated("in favor of Runner class")
     def isProcessingSequence(self) -> bool:
         """

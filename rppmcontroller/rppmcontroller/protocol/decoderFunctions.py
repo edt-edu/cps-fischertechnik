@@ -5,6 +5,7 @@ from rppmcontroller.machine.BoxNumber import BoxNumber
 from rppmcontroller.machine.Color import Color
 from rppmcontroller.machine.Direction import Direction
 from rppmcontroller.machine.MPSOutput import MPSOutput
+from rppmcontroller.machine.NamedPosition import NamedPosition
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.enum.MPSArmPosition import MPSArmPosition
 from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
@@ -45,6 +46,10 @@ def customDecoder(idict):
                     rot = passable['rot']
                     horizontal = passable['horizontal']
                     parameterList.append(Position(meaning, vertical, rot, horizontal))
+                elif 'passableType' and 'passable' in param and param['passableType'] == 'NAMEDPOSITION':
+                    passable = param['passable']
+                    position_name = passable['name']
+                    parameterList.append(NamedPosition(position_name))
                 elif 'passableType' and 'passable' in param and param['passableType'] == 'AXISPRIORITIZED':
                     passable = param['passable']
                     vertical = passable['vertical']

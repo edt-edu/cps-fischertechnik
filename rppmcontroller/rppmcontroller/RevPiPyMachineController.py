@@ -6,7 +6,6 @@ import json as json
 import logging
 import multiprocessing
 import os
-import select
 import signal
 import socket
 import sys
@@ -18,6 +17,7 @@ from multiprocessing import Queue
 from queue import Empty
 from typing import Any, Dict, List, Optional, Callable, cast
 
+import select
 import yaml
 
 from rppmcontroller import __version__
@@ -28,6 +28,7 @@ from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.EventKind import EventKind
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.MachineStatus import MachineStatus
+from rppmcontroller.machine.NamedPosition import NamedPosition
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.StatusKind import StatusKind
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
@@ -147,6 +148,7 @@ class RevPiPyMachineController(ABC):
                     logging.debug(f"Received {line!r}")
                     self.MQTT.publishEvent(self.plcId, '', '', EventKind.RECEIVED, "message", f"{line!r}")
                     objdata = JSONReader.read(line)
+                    logging.debug(f"-> as object data: {objdata!r}")
                     self.inputBuffer.put(objdata)
         except Exception as e:
             logging.error(f"Error in receiveCommandMessages: {e}")
@@ -289,6 +291,7 @@ class RevPiPyMachineController(ABC):
         message_name = message.name
         parameters = message.parameters
         logging.debug(f'Handling command: {message_type} {message_name}')
+        logging.debug(f"message: {message!r}")
 
         self.__publish_received_message_event("command",
                                               message,
@@ -326,7 +329,18 @@ class RevPiPyMachineController(ABC):
                                                  f"{message.commandId}"))
             return
 
-        # apply machine-specific parameter modifications
+        # apply parameter modifications
+        try:
+            self.__replace_named_positions(machine, parameters)
+        except UnknownNamedPosition as e:
+            named_position = e.named_position
+            logging.warning(f"Cannot resolve named position '"
+                            f"{named_position}' for {machine.id}")
+            self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(
+                CycleStepResultEnum.ABORTED_ERROR,
+                f"Unknown named position: {named_position}"))
+            return
+
         self.__apply_machine_specific_parameter_modifications(message_type,
                                                               parameters)
         # call command function
@@ -442,6 +456,28 @@ class RevPiPyMachineController(ABC):
             return command_function(machine, *parameters)
         except TypeError:
             return None
+
+    def __replace_named_positions(self, machine: Machine, parameters: list[Any]) -> None:
+        """
+        Replaces named positions in the parameters for the given machine.
+
+        :param machine: The machine for which to replace the named positions
+        :param parameters: The parameters to replace named positions in
+        :return: None
+        :raise UnknownNamedPosition: If a named position cannot be resolved
+        """
+
+        machine_parameters = machine.parameters
+        named_positions = machine_parameters.named_positions \
+            if machine_parameters is not None else {}
+
+        for parameter_index, parameter in enumerate(parameters):
+            if isinstance(parameter, NamedPosition):
+                resolved = named_positions[parameter.name]
+                if resolved is None:
+                    raise UnknownNamedPosition(parameter)
+
+                parameters[parameter_index] = resolved
 
     def __apply_machine_specific_parameter_modifications(self,
                                                          machine_type: str,
@@ -636,10 +672,19 @@ class RevPiPyMachineController(ABC):
             result_changed = True
         else:
             # use is_equivalent_result to consider only changes related to the result and info in case of Runner
-            result_changed = not lastResult.is_equivalent_result(cached_result.result) or lastCommand.commandId != cached_result.command.commandId
-            logging.debug(f'lastResult.is_equivalent_result(cached_result.result) {lastResult.is_equivalent_result(cached_result.result)}')
-            logging.debug(f'lastCommand.commandId {lastCommand.commandId} != cached_result.command.commandId {cached_result.command.commandId}')
-        if result_changed :
+            result_differs = \
+                not lastResult.is_equivalent_result(cached_result.result)
+            if result_differs:
+                logging.debug(f"Last result differs from cached result: "
+                              f"{lastResult!r} != {cached_result.result!r}")
+            cached_command_id = cached_result.command.commandId
+            last_command_id = lastCommand.commandId
+            command_id_differs = last_command_id != cached_command_id
+            if command_id_differs:
+                logging.debug(f"Last command id differs from cached command "
+                              f"id: {last_command_id} != {cached_command_id}")
+            result_changed = result_differs or command_id_differs
+        if result_changed:
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
                 jsonid = cycleStepCommand.commandId
@@ -740,3 +785,11 @@ def signal_custom_handler(sig, frame, name: str):
         logging.info(f"Closing socket {s}")
         s.close()
     sys.exit(0)
+
+class UnknownNamedPosition(Exception):
+    def __init__(self, named_position: NamedPosition):
+        self.__named_position = named_position
+
+    @property
+    def named_position(self) -> NamedPosition:
+        return self.__named_position

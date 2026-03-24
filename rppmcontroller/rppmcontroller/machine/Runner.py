@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from abc import abstractmethod, ABC
 from copy import deepcopy
 from dataclasses import dataclass
@@ -61,7 +62,17 @@ class TransitioningMachine(Generic[TConfig], ABC):
 
     @property
     def is_executing_runner(self) -> bool:
-        return any(runner.running for runner in self.get_runners())
+        runners = self.get_runners()
+        # the following statement purly for debug purposes and can be skipped
+        # if debugging is not enabled
+        if logging.root.isEnabledFor(logging.DEBUG):
+            running_runners = [runner for runner in runners if runner.running]
+            if len(running_runners) > 0:
+                logging.debug(f"{self} is executing the following runners: ")
+                for runner in running_runners:
+                    logging.debug(f"  - {runner}")
+
+        return any(runner.running for runner in runners)
 
     @property
     def executing_runner(self) -> Optional[Subroutine]:

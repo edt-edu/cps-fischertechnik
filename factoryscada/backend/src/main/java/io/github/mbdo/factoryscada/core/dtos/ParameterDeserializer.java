@@ -30,6 +30,7 @@ public class ParameterDeserializer extends JsonDeserializer<Parameter> {
             case DIRECTION -> mapper.treeToValue(node.get("passable"), Direction.class);
             case BOXNUMBER -> mapper.treeToValue(node.get("passable"), BoxNumber.class);
             case POSITIONPARAMETERTHREED -> mapper.treeToValue(node.get("passable"), PositionParameterThreeD.class);
+            case NAMEDPOSITION -> mapper.treeToValue(node.get("passable"), NamedPosition.class);
             case NUMBERNATURAL -> mapper.treeToValue(node.get("passable"), NumberNatural.class);
             case AXISPRIORITIZED -> mapper.treeToValue(node.get("passable"), AxisPrioritized.class);
             case MPSOUTPUT -> mapper.treeToValue(node.get("passable"), MPSOutput.class);

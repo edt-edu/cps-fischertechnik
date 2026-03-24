@@ -578,8 +578,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         :return: A Runner performing the action
         """
         runner = self.create_runner()
-        hover_pos = Position(startPos.meaning, startPos.vertical - 350, startPos.rot, startPos.horizontal)
-        pressure_pos = Position(startPos.meaning, startPos.vertical + 250, startPos.rot, startPos.horizontal)
+        hover_pos = Position(startPos.meaning, startPos.vertical - self.parameters.hover_offset, startPos.rot, startPos.horizontal)
+        pressure_pos = Position(startPos.meaning, startPos.vertical + self.parameters.pressure_offset, startPos.rot, startPos.horizontal)
 
         # hover over payload
         runner.then_run_runner_from(lambda: self.retracted_go_to_position_Command(hover_pos), info="hover over payload")
@@ -604,8 +604,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         :return: A Runner performing the placement
         """
         runner = self.create_runner()
-        hover_pos = Position(endPos.meaning, endPos.vertical - 250, endPos.rot, endPos.horizontal)
-        pressure_pos = Position(endPos.meaning, endPos.vertical + 250, endPos.rot, endPos.horizontal)
+        hover_pos = Position(endPos.meaning, endPos.vertical - self.parameters.hover_offset, endPos.rot, endPos.horizontal)
+        pressure_pos = Position(endPos.meaning, endPos.vertical + self.parameters.pressure_offset, endPos.rot, endPos.horizontal)
 
         # hover over end pos
         runner.then_run_runner_from(lambda: self.retracted_go_to_position_Command(hover_pos), info="hover over drop-off position")

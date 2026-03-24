@@ -1,6 +1,6 @@
 class Position:
 
-    def __init__(self, meaning, vertical, rot, horizontal):
+    def __init__(self, meaning: str, vertical: int, rot: int, horizontal: int):
         if (meaning is None) or (vertical is None) or (rot is None) or (horizontal is None):
             raise TypeError("Missing arguments")
         self.__meaning = meaning

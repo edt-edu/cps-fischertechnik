@@ -48,3 +48,7 @@ class CycleStepCommand:
     @commandId.setter
     def commandId(self, commandId: int):
         self._commandId = commandId
+
+    def __str__(self):
+        return (f"CycleStepCommand(displayName={self._displayName}, "
+                f"commandId={self._commandId})")
