@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 from typing import Optional, Dict
 
@@ -90,12 +91,22 @@ class VacuumGripperParameters(MachineParameters):
         """
         For all configured named_positions derive and add an "OVER_ position",
         which hovers over the configured position.
-        Currently, hover positions will not extend horizontally, since the arm
-        is retracted anyway before performing a pickup or placement.
+
+        Over-positions will not extend horizontally, since the arm
+        is retracted anyway before performing a pickup or placement, and
+        they can be used as safety positions.
         :return: self
         """
         for name, position in list(self.named_positions.items()):
-            self.named_positions[f"OVER_{name}"] = Position(rot=position.rot,
+            hover_positon_name = f"OVER_{name}"
+            if hover_positon_name in self.named_positions:
+                logging.warning(f"Cannot create and over-position for "
+                                f"position {name},"
+                                f" since position {hover_positon_name} "
+                                f"already exists.")
+                continue
+
+            self.named_positions[hover_positon_name] = Position(rot=position.rot,
                                                   vertical=position.vertical
                                                            - self.hover_offset,
                                                   horizontal=0,
