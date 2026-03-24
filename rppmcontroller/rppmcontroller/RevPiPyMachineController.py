@@ -6,7 +6,6 @@ import json as json
 import logging
 import multiprocessing
 import os
-import select
 import signal
 import socket
 import sys
@@ -18,6 +17,7 @@ from multiprocessing import Queue
 from queue import Empty
 from typing import Any, Dict, List, Optional, Callable, cast
 
+import select
 import yaml
 
 from rppmcontroller import __version__
@@ -331,7 +331,7 @@ class RevPiPyMachineController(ABC):
 
         # apply parameter modifications
         try:
-            self.__resolve_named_positions(machine, parameters)
+            self.__replace_named_positions(machine, parameters)
         except UnknownNamedPosition as e:
             named_position = e.named_position
             logging.warning(f"Cannot resolve named position '"
@@ -457,12 +457,12 @@ class RevPiPyMachineController(ABC):
         except TypeError:
             return None
 
-    def __resolve_named_positions(self, machine: Machine, parameters: list[Any]) -> None:
+    def __replace_named_positions(self, machine: Machine, parameters: list[Any]) -> None:
         """
-        Resolves named positions in the parameters for the given machine.
+        Replaces named positions in the parameters for the given machine.
 
-        :param machine: The machine for which to resolve the named positions
-        :param parameters: The parameters to resolve named positions in
+        :param machine: The machine for which to replace the named positions
+        :param parameters: The parameters to replace named positions in
         :return: None
         :raise UnknownNamedPosition: If a named position cannot be resolved
         """
