@@ -687,6 +687,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         #Initialized if needed
         if not self.isInitialized:
             runner.then_run_runner_from(self.setup_Command, info="setup")
+            # assume default config since that is where the gripper will be
+            # after setup
+            config = VacuumGripperConfig()
 
         #Move to destination along the prioritized axis
         if prioritized_dir.horizontal: config.horizontal_axis_config = AxisConfig.to_counter_goal(dest_pos.horizontal)
