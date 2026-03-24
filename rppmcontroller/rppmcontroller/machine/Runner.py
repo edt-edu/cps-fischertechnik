@@ -5,7 +5,7 @@ import logging
 from abc import abstractmethod, ABC
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Callable, Generic, List, Optional, TypeVar, Union
+from typing import Callable, Generic, List, Optional, TypeVar
 
 from typing_extensions import override
 
@@ -143,8 +143,7 @@ class Runner(CycleStepResult):
 
     def then_goto(self,
                   config: MachineConfiguration,
-                  until: Optional[
-                      Callable[[], Union[bool, CycleStepResult]]] = None,
+                  until: Callable[[], bool | CycleStepResult] | None = None,
                   and_stay_for: float = 0.0,
                   or_timeout_after: float = 0.0,
                   clone_config: bool = True,
@@ -175,9 +174,8 @@ class Runner(CycleStepResult):
                              info=info)
 
     def then_run(self,
-                 runnable: Callable[[], Union[None, bool, CycleStepResult]],
-                 until: Optional[
-                     Callable[[], Union[bool, CycleStepResult]]] = None,
+                 runnable: Callable[[], None | bool | CycleStepResult],
+                 until: Callable[[], bool | CycleStepResult] | None = None,
                  and_stay_for: float = 0.0,
                  or_timeout_after: float = 0.0,
                  info: str = "") -> Runner:
@@ -259,10 +257,9 @@ class Runner(CycleStepResult):
 
     def then_run_runner_from(self,
                              runner_supplier: Callable[[], Runner],
-                             until: Optional[Union[Callable[
-                                 [], Union[bool, CycleStepResult]]],
-                             Callable[[Runner], Union[
-                                 bool, CycleStepResult]]] = None,
+                             until: Callable[[], bool | CycleStepResult]
+                                    | Callable[[Runner], bool | CycleStepResult]
+                                    | None = None,
                              or_timeout_after: float = 0.0,
                              info: str = "") -> Runner:
         """
@@ -396,7 +393,7 @@ class Runner(CycleStepResult):
         return self.__routine[self.__routine_index]
 
 
-def as_result(result: Union[bool, CycleStepResult]) -> CycleStepResult:
+def as_result(result: bool | CycleStepResult) -> CycleStepResult:
     """
     Convert a boolean result into a CycleStepResult.
 
