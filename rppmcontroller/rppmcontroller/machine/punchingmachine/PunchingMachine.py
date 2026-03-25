@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, Callable
+
 from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
@@ -9,8 +10,10 @@ from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
-from rppmcontroller.machine.punchingmachine.PunchingMachineConfig import PunchingMachineConfig
-from rppmcontroller.protocol.decoratorFunctions import protocol_command_function
+from rppmcontroller.machine.punchingmachine.PunchingMachineConfig import \
+    PunchingMachineConfig
+from rppmcontroller.protocol.decoratorFunctions import \
+    protocol_command_function
 
 
 class PunchingMachine(Machine, TransitioningMachine[PunchingMachineConfig]):
@@ -209,6 +212,9 @@ class PunchingMachine(Machine, TransitioningMachine[PunchingMachineConfig]):
     def stop_CycleStep(self) -> CycleStepResult:
         self.punchingMachineActUp = False
         self.punchingMachineActDown = False
+        self.punchingMachineActConveyorForward = False
+        self.punchingMachineActConveyorBackward = False
+        self.stop_runners()
         return CycleStepResult.done()
 
     # methods intended for orchestrator

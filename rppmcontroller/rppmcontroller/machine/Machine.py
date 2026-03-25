@@ -270,5 +270,8 @@ class Machine(ABC):
             else:
                 return MachineStatus.INITIALIZED_IDLE
 
+    def __str__(self):
+        return f"Machine({self.id})"
+
 
 

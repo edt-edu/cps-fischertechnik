@@ -569,6 +569,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__axisVertical.resetDirection()
         self.__axisHorizontal.resetDirection()
 
+        self.stop_runners()
+
         return CycleStepResult(CycleStepResultEnum.DONE)
 
     @runner_augment_function()

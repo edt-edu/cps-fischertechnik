@@ -459,6 +459,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.pwmRotational = self.parameters.pwm_standard_speed
         self.pwmVertical = self.parameters.pwm_standard_speed
 
+        self.stop_runners()
+
         return CycleStepResult.done()
 
     def get_current_config(self) -> VacuumGripperConfig:
@@ -684,22 +686,29 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         config = self.get_current_config()
         runner = self.create_runner()
 
-        #Initialized if needed
+        # Initialized if needed
         if not self.isInitialized:
             runner.then_run_runner_from(self.setup_Command, info="setup")
             # assume default config since that is where the gripper will be
             # after setup
             config = VacuumGripperConfig()
 
-        #Move to destination along the prioritized axis
-        if prioritized_dir.horizontal: config.horizontal_axis_config = AxisConfig.to_counter_goal(dest_pos.horizontal)
-        if prioritized_dir.vertical: config.vertical_axis_config = AxisConfig.to_counter_goal(dest_pos.vertical)
-        if prioritized_dir.rot: config.rotation_axis_config = AxisConfig.to_counter_goal(dest_pos.rot)
+        # Move to the destination along the prioritized axis
+        if prioritized_dir.horizontal:
+            config.horizontal_axis_config = AxisConfig.to_counter_goal(
+                dest_pos.horizontal)
+        if prioritized_dir.vertical:
+            config.vertical_axis_config = AxisConfig.to_counter_goal(
+                dest_pos.vertical)
+        if prioritized_dir.rot:
+            config.rotation_axis_config = AxisConfig.to_counter_goal(
+                dest_pos.rot)
+        logging.debug(f"prioritizing according to {prioritized_dir}: {config}")
         runner.then_goto(config, info="Moving according to priority")
 
-        #Move to destination along remaining axis
+        # Move to destination along the remaining axis
         config = self.config_from_target_pos(dest_pos)
-        config.gripper_active = self.vacuumActValve
+        config.gripper_active = self.vacuumActValve # copy other properties
         runner.then_goto(config, info="Moving to dest position")
 
         return runner

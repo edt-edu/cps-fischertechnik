@@ -28,6 +28,17 @@ class TransitioningMachine(Generic[TConfig], ABC):
         list when get_runners() is called.
         """
 
+    def stop_runners(self) -> None:
+        """
+        Removes all runners from the list of active runners.
+
+        As far as this machine is concerned, the runners are thereby stopped.
+        However, this method does not remove the runners from any controllers
+        in which they might be marked to be active.
+        :return: None
+        """
+        self.__runners = []
+
     def get_runners(self) -> List[Runner]:
         """
         Gets a list containing all runners which were created by this machine

@@ -49,6 +49,6 @@ class CycleStepCommand:
     def commandId(self, commandId: int):
         self._commandId = commandId
 
-    def __str__(self):
+    def __repr__(self):
         return (f"CycleStepCommand(displayName={self._displayName}, "
                 f"commandId={self._commandId})")
