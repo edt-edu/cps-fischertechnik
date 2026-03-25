@@ -304,6 +304,7 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.__packageCountSteps = False
         # self.once = True
         self.__counter.counter = 0
+        self.stop_runners()
         return CycleStepResult(CycleStepResultEnum.DONE,
                                     f"stop_CycleStep",
                                     None)

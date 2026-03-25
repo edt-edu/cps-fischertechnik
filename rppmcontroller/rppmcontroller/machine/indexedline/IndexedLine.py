@@ -319,6 +319,7 @@ class IndexedLine(Machine, TransitioningMachine[IndexedLineConfig]):
         self.__indexedLineActSwapConveyor = False
         self.__indexedLineActMilling = False
         self.__indexedLineActDrilling = False
+        self.stop_runners()
         return CycleStepResult.done()
 
     @override

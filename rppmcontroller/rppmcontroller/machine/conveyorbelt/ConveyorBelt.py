@@ -171,6 +171,7 @@ class ConveyorBelt(Machine, TransitioningMachine[ConveyorBeltConfig]):
         """Stop the conveyor"""
         self.__conveyorActForward = False
         self.__conveyorActBackward = False
+        self.stop_runners()
         return CycleStepResult(CycleStepResultEnum.DONE)
 
 

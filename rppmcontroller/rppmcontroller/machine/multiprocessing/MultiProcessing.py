@@ -1,13 +1,12 @@
 import logging
-from copy import deepcopy
 from typing import Any, Callable, Dict, Union, Optional
 
 from typing_extensions import deprecated, override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
-from rppmcontroller.behavior.decoratorFunctions import cycle_step_function, \
-    runner_augment_function
+from rppmcontroller.behavior.decoratorFunctions import (cycle_step_function,
+                                                        runner_augment_function)
 from rppmcontroller.machine.MPSOutput import MPSOutput
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -1019,6 +1018,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     @protocol_command_function(description="Command stopping all engines (incl. compressor).")
     def stop_Command(self) -> Callable[[], CycleStepResult]:
         """ Stop the machine """
+        self.stop_runners()
         return self.stop_CycleStep
 
     @protocol_command_function(description="Command moving the machine parts in a safe place if defined or to the setup position.")
