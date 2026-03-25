@@ -516,15 +516,15 @@
                                           [description]="'Stop the conveyor.'"
                                           [destinationSuffix]="'/command/conveyor_stop'"></app-generic-no-param-command>
           }
-          @case ("go_to_column") {
+          @case ("crane_goto_column") {
             <app-highbay-warehouse-go-to-column [machine]="selectedMachine"
                                                 [placeholder]="commandToSend"></app-highbay-warehouse-go-to-column>
           }
-          @case ("go_to_row") {
+          @case ("crane_goto_row") {
             <app-highbay-warehouse-go-to-row [machine]="selectedMachine"
                                              [placeholder]="commandToSend"></app-highbay-warehouse-go-to-row>
           }
-          @case ("horizontal_to") {
+          @case ("crane_goto_horizontal_position") {
             <app-highbay-warehouse-horizontal-to [machine]="selectedMachine"
                                                  [placeholder]="commandToSend"></app-highbay-warehouse-horizontal-to>
           }
@@ -550,7 +550,7 @@
                                           [description]="'Stop the highbay warehouse'"
                                           [destinationSuffix]="'/command/stop'"></app-generic-no-param-command>
           }
-          @case ("vertical_to") {
+          @case ("crane_goto_vertical_position") {
             <app-highbay-warehouse-vertical-to [machine]="selectedMachine"
                                                [placeholder]="commandToSend"></app-highbay-warehouse-vertical-to>
           }

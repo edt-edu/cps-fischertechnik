@@ -1,27 +1,14 @@
 package io.github.mbdo.factoryscada.domains.highbaywarehouse;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.CantileverBackwardCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.CantileverForwardCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.ConveyorBackwardCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.ConveyorForwardCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.ConveyorStopCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.GoToColumnCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.GoToRowCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.HorizontalToCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.MoveToSafePositionCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.PickupFromCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.SetupCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.StopCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.StoreToCommand;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.VerticalToCommand;
+import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.*;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 public class HighBayWarehouseMachine extends AbstractMachine {
@@ -59,17 +46,17 @@ public class HighBayWarehouseMachine extends AbstractMachine {
         new ConveyorStopCommand(this, dto).execute();
     }
 
-    public void go_to_column(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+    public void crane_goto_column(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Go To Column HighBayWarehouse {}", dto);
         new GoToColumnCommand(this, dto).execute();
     }
 
-    public void go_to_row(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+    public void crane_goto_row(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Go To Row HighBayWarehouse {}", dto);
         new GoToRowCommand(this, dto).execute();
     }
 
-    public void horizontal_to(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+    public void crane_goto_horizontal_position(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Horizontal To HighBayWarehouse {}", dto);
         new HorizontalToCommand(this, dto).execute();
     }
@@ -94,7 +81,7 @@ public class HighBayWarehouseMachine extends AbstractMachine {
         new StoreToCommand(this, dto).execute();
     }
 
-    public void vertical_to(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
+    public void crane_goto_vertical_position(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Vertical To HighBayWarehouse {}", dto);
         new VerticalToCommand(this, dto).execute();
     }
