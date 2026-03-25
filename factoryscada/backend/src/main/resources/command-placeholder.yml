@@ -749,7 +749,7 @@ commandPlaceholder:
                 "parameters": []
               }
             }
-        - name: "go_to_column"
+        - name: "crane_goto_column"
           placeholder: >
             {
               "topicName": "HighBay01",
@@ -758,7 +758,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",
                 "outputId": 1,
-                "name": "GOTO_COLUMN",
+                "name": "CRANE_GOTO_COLUMN",
                 "parameters":  [
                   {
                     "passableType": "NUMBERNATURAL",
@@ -769,7 +769,7 @@ commandPlaceholder:
                 ]
               }
             }
-        - name: "go_to_row"
+        - name: "crane_goto_row"
           placeholder: >
             {
               "topicName": "HighBay01",
@@ -778,7 +778,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",
                 "outputId": 1,
-                "name": "GOTO_ROW",
+                "name": "CRANE_GOTO_ROW",
                 "parameters":  [
                   {
                     "passableType": "NUMBERNATURAL",
@@ -789,7 +789,7 @@ commandPlaceholder:
                 ]
               }
             }
-        - name: "horizontal_to"
+        - name: "crane_goto_horizontal_position"
           placeholder: >
             {
               "topicName": "HighBay01",
@@ -798,7 +798,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",
                 "outputId": 1,
-                "name": "HORIZONTAL_TO",
+                "name": "CRANE_GOTO_HORIZONTAL_POSITION",
                 "parameters":  [
                   {
                     "passableType": "NUMBERNATURAL",
@@ -887,7 +887,7 @@ commandPlaceholder:
                 ]
               }
             }
-        - name: "vertical_to"
+        - name: "crane_goto_vertical_position"
           placeholder: >
             {
               "topicName": "HighBay01",
@@ -896,7 +896,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "WAREHOUSE",
                 "outputId": 1,
-                "name": "VERTICAL_TO",
+                "name": "CRANE_GOTO_VERTICAL_POSITION",
                 "parameters":  [
                   {
                     "passableType": "NUMBERNATURAL",

@@ -1,16 +1,15 @@
 package io.github.mbdo.factoryscada.frontend.controller;
 
+import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMachine;
+import io.github.mbdo.factoryscada.service.FactoryScada;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
-
-import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMachine;
-import io.github.mbdo.factoryscada.service.FactoryScada;
-import lombok.extern.slf4j.Slf4j;
-import jakarta.validation.Valid;
 
 @Slf4j
 @Controller
@@ -67,7 +66,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> go_to_columnDTO) {
         log.info("Received request on /{}/command/go_to_column", machineName);
-        return executeCommand(machineName, "go_to_column", go_to_columnDTO);
+        return executeCommand(machineName, "crane_goto_column", go_to_columnDTO);
     }
 
     @MessageMapping("/{machineName}/command/go_to_row")
@@ -75,7 +74,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> go_to_rowDTO) {
         log.info("Received request on /{}/command/go_to_row", machineName);
-        return executeCommand(machineName, "go_to_row", go_to_rowDTO);
+        return executeCommand(machineName, "crane_goto_row", go_to_rowDTO);
     }
 
     @MessageMapping("/{machineName}/command/horizontal_to")
@@ -83,7 +82,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> horizontal_toDTO) {
         log.info("Received request on /{}/command/horizontal_to", machineName);
-        return executeCommand(machineName, "horizontal_to", horizontal_toDTO);
+        return executeCommand(machineName, "crane_goto_horizontal_position", horizontal_toDTO);
     }
 
     @MessageMapping("/{machineName}/command/pickup_from")
@@ -123,7 +122,7 @@ public class HighBayWarehouseController extends AbstractMachineController<HighBa
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<HighBayWarehouseMachine> vertical_toDTO) {
         log.info("Received request on /{}/command/vertical_to", machineName);
-        return executeCommand(machineName, "vertical_to", vertical_toDTO);
+        return executeCommand(machineName, "crane_goto_vertical_position", vertical_toDTO);
     }
 
     @MessageMapping("/{machineName}/command/move_to_safe_position")
