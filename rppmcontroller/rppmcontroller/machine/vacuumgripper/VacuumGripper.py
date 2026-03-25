@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Callable, Dict, Optional, List
 
-from typing_extensions import override
+from typing_extensions import override, deprecated
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -546,7 +546,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         """
         runner = self.create_runner()
         runner.then_run_runner_from(lambda: self.retract_arm_Command(), info="Retracting arm")
-        runner.then_run_runner_from(lambda: self.ordered_move_to_Command(target_position, AxisBoolThreeD(vertical=True, horizontal=False, rot=True)), info="Move to position")
+        runner.then_run_runner_from(lambda: self.ordered_go_to_Command(target_position, AxisBoolThreeD(vertical=True, horizontal=False, rot=True)), info="Move to position")
         return runner
 
 
@@ -673,11 +673,32 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         config.horizontal_axis_config = AxisConfig.to_end_position()
         return self.create_runner().then_goto(config, info="retracting arm")
 
-
-    @protocol_command_function(description="Move the arm to position. Moving first the specified axis and then the others.")
-    def ordered_move_to_Command(self, dest_pos: Position, prioritized_dir: AxisBoolThreeD) -> Runner:
+    @deprecated("Irritating name, use ordered_go_to_Command instead.")
+    @protocol_command_function(description="Deprecated equivalent to the "
+                                           "ordered_go_to_Command")
+    def ordered_move_to_Command(self,
+                                dest_pos: Position,
+                                prioritized_dir: AxisBoolThreeD) -> Runner:
         """
-        Move the arm to position. Moving first the specified axis and then the others.
+        Deprecated equivalent to the ordered_go_to_Command.
+
+        This function is deprecated and will be removed in the future. Use the
+        ordered_go_to_Command instead.
+
+        :param dest_pos: The destination position
+        :param prioritized_dir: Which directions to prioritize
+        :return: A Runner performing the command
+        """
+        logging.warning("You are using a deprecated version of the "
+                        "ordered_go_to_Command. Please update your usages "
+                        "since this function might be removed in the future.")
+        return self.ordered_go_to_Command(dest_pos, prioritized_dir)
+
+    @protocol_command_function(description="Go to the specified position, moving the prioritized axes first and then the others.")
+    def ordered_go_to_Command(self, dest_pos: Position, prioritized_dir: AxisBoolThreeD) -> Runner:
+        """
+        Go to the specified position, moving the prioritized axes first and
+        then the others.
 
         :return: A Runner performing the command
         """

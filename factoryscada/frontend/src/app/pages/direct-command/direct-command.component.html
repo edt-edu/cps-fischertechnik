@@ -157,9 +157,9 @@
                                           [description]="'Retract the arm of the gripper.'"
                                           [destinationSuffix]="'/command/retract_arm'"></app-generic-no-param-command>
           }
-          @case ("ordered_move_to") {
-            <app-vacuum-gripper-orderedmoveto [machine]="selectedMachine"
-                                              [placeholder]="commandToSend"></app-vacuum-gripper-orderedmoveto>
+          @case ("ordered_go_to") {
+            <app-vacuum-gripper-orderedgoto [machine]="selectedMachine"
+                                              [placeholder]="commandToSend"></app-vacuum-gripper-orderedgoto>
           }
           @default {
             @if (!selectedMissionCommand) {

@@ -109,11 +109,11 @@ public class VacuumGripperController extends AbstractMachineController<VacuumGri
         return executeCommand(machineName, "retract_arm", retract_armDTO);
     }
 
-    @MessageMapping("/{machineName}/command/ordered_move_to")
-    public String executeOrderedMoveToCommand(
+    @MessageMapping("/{machineName}/command/ordered_go_to")
+    public String executeOrderedGoToCommand(
             @DestinationVariable("machineName") String machineName,
-            @Valid @Payload GenericMachineCommandDTO<VacuumGripperMachine> ordered_move_toDTO) {
-        log.info("Received request on /vacuumGripper/{}/command/ordered_move_to", machineName);
-        return executeCommand(machineName, "ordered_move_to", ordered_move_toDTO);
+            @Valid @Payload GenericMachineCommandDTO<VacuumGripperMachine> ordered_go_toDTO) {
+        log.info("Received request on /vacuumGripper/{}/command/ordered_go_to", machineName);
+        return executeCommand(machineName, "ordered_go_to", ordered_go_toDTO);
     }
 }

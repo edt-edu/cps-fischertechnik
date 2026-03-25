@@ -12,7 +12,7 @@ import {
 } from "../../../../widgets/vacuum-gripper-axis-bool-widget/vacuum-gripper-axis-bool-widget.component";
 
 @Component({
-  selector: 'app-vacuum-gripper-orderedmoveto',
+  selector: 'app-vacuum-gripper-orderedgoto',
   standalone: true,
     imports: [
         ReactiveFormsModule,
@@ -21,10 +21,10 @@ import {
         VacuumGripperPositionWidgetComponent,
         VacuumGripperAxisBoolWidgetComponent
     ],
-  templateUrl: './vacuum-gripper-orderedmoveto.component.html',
-  styleUrl: './vacuum-gripper-orderedmoveto.component.scss'
+  templateUrl: './vacuum-gripper-orderedgoto.component.html',
+  styleUrl: './vacuum-gripper-orderedgoto.component.scss'
 })
-export class VacuumGripperOrderedMoveToComponent {
+export class VacuumGripperOrderedgotoComponent {
 
   myRxStompService = inject(MyRxStompService);
 
@@ -71,7 +71,7 @@ export class VacuumGripperOrderedMoveToComponent {
     };
 
     this.myRxStompService.publish({
-      destination: `/app/${type}/${name}/command/ordered_move_to`,
+      destination: `/app/${type}/${name}/command/ordered_go_to`,
       body: JSON.stringify(payload) // Directly stringify the object
     });
   }

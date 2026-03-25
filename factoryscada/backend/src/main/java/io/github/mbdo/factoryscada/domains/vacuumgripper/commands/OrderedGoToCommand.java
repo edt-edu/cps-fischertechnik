@@ -6,10 +6,10 @@ import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class OrderedMoveToCommand extends AbstractCommand<VacuumGripperMachine> {
+public class OrderedGoToCommand extends AbstractCommand<VacuumGripperMachine> {
 
-    public OrderedMoveToCommand(VacuumGripperMachine vacuumGripperMachine, GenericMachineCommandDTO<VacuumGripperMachine> ordered_move_toDTO) {
-        super(vacuumGripperMachine, ordered_move_toDTO);
+    public OrderedGoToCommand(VacuumGripperMachine vacuumGripperMachine, GenericMachineCommandDTO<VacuumGripperMachine> ordered_go_toDTO) {
+        super(vacuumGripperMachine, ordered_go_toDTO);
     }
 
 	@Override

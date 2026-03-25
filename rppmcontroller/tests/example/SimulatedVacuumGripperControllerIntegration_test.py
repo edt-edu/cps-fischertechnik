@@ -947,8 +947,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a ordered move to command
-        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_MOVE_TO", [
+        # send an ordered go to command
+        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_GO_TO", [
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, True, False)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
@@ -976,11 +976,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
-                logging.debug(f"ORDERED_MOVE_TO reached in {iterationDone} iterations")
+                logging.debug(f"ORDERED_GO_TO reached in {iterationDone} iterations")
                 self.checkVGRPosition(300, 300, 300)
                 endCommandReached = True
 
-            self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "ORDERED_GO_TO not reached in less than 30 iterations" )
 
 
     def test_ordered_go_to_VerLastCommand(self):
@@ -1001,7 +1001,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a ordered move to command
-        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_MOVE_TO", [
+        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_GO_TO", [
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(False, True, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
@@ -1029,11 +1029,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
-                logging.debug(f"ORDERED_MOVE_TO reached in {iterationDone} iterations")
+                logging.debug(f"ORDERED_GO_TO reached in {iterationDone} iterations")
                 self.checkVGRPosition(300, 300, 300)
                 endCommandReached = True
 
-            self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "ORDERED_GO_TO not reached in less than 30 iterations" )
 
 
     def test_ordered_go_to_RotLastCommand(self):
@@ -1054,7 +1054,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
         # send a ordered move to command
-        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_MOVE_TO", [
+        message = MachineCommand("COMMAND", "VACUUM", 1, "ORDERED_GO_TO", [
                   Position("START", 300, 300, 300),
                   AxisBoolThreeD(True, False, True)])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
@@ -1082,11 +1082,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             else:
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
-                logging.debug(f"ORDERED_MOVE_TO reached in {iterationDone} iterations")
+                logging.debug(f"ORDERED_GO_TO reached in {iterationDone} iterations")
                 self.checkVGRPosition(300, 300, 300)
                 endCommandReached = True
 
-            self.assertLess(iterationDone, 30, "ORDERED_MOVE_TO not reached in less than 30 iterations" )
+            self.assertLess(iterationDone, 30, "ORDERED_GO_TO not reached in less than 30 iterations" )
 
 
     def test_rotation_reset(self):

@@ -308,7 +308,7 @@ commandPlaceholder:
                 "parameters": []
               }
             }
-        - name: "ordered_move_to"
+        - name: "ordered_go_to"
           placeholder: >
             {
               "topicName": "VacuumGripper01",
@@ -317,7 +317,7 @@ commandPlaceholder:
                 "jsonType": "COMMAND",
                 "type": "VACUUM",
                 "outputId": 2,
-                "name": "ORDERED_MOVE_TO",
+                "name": "ORDERED_GO_TO",
                 "parameters": [
                   {
                     "passableType": "POSITIONPARAMETERTHREED",
