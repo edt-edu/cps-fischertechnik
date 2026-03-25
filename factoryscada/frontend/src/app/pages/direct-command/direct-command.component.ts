@@ -6,8 +6,8 @@ import {
 } from "./vacuum-gripper/vacuum-gripper-gotoposition/vacuum-gripper-gotoposition.component";
 import {VacuumGripperMoveComponent} from "./vacuum-gripper/vacuum-gripper-move/vacuum-gripper-move.component";
 import {
-  VacuumGripperOrderedMoveToComponent
-} from "./vacuum-gripper/vacuum-gripper-orderedmoveto/vacuum-gripper-orderedmoveto.component";
+  VacuumGripperOrderedgotoComponent
+} from "./vacuum-gripper/vacuum-gripper-orderedgoto/vacuum-gripper-orderedgoto.component";
 import {VacuumGripperPickComponent} from "./vacuum-gripper/vacuum-gripper-pick/vacuum-gripper-pick.component";
 import {VacuumGripperPlaceComponent} from "./vacuum-gripper/vacuum-gripper-place/vacuum-gripper-place.component";
 
@@ -106,7 +106,7 @@ declare var $: any;
     VacuumGripperPickComponent,
     VacuumGripperMoveComponent,
     VacuumGripperGoToPositionComponent,
-    VacuumGripperOrderedMoveToComponent,
+    VacuumGripperOrderedgotoComponent,
     SortingLineEjectComponent,
     MultiProcessingProcessComponent,
     MultiProcessingArmPositionComponent,
