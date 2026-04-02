@@ -107,7 +107,8 @@ class RunnerTestSuite(TestCase):
         """Tests going to a certain configuration until a DONE is sent"""
         runner = self.runner
         config = TestConfig(5)
-        until_done = lambda: CycleStepResult.done() if self.machine.value == 3 \
+        until_done = lambda: CycleStepResult.done() if (self.machine.value ==
+                                                        3) \
             else CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         runner.then_goto(config, until=until_done)
 
@@ -130,8 +131,35 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_goto_until_abort(self):
+        """Tests going to a certain configuration until an abort is sent"""
+        runner = self.runner
+        config = TestConfig(5)
+        until_abort = lambda: CycleStepResult(
+            CycleStepResultEnum.ABORTED_ERROR) if self.machine.value == 3 \
+            else CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
+        runner.then_goto(config, until=until_abort)
+
+        self.assertEqual(1, len(runner._routine))
+        self.assertEqual(False,
+                         runner.running,
+                         "Runner hasn't been started yet")
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR, result.result)
+        self.assertEqual(False, runner.running, "Runner is aborted")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have reached advanced")
+
     # TODO Add test cases for:
-    #  then_goto until_abort
     #  then_goto and_stay_for
     #  then_goto or_timeout_after
     #  then_goto without_cloning_config
