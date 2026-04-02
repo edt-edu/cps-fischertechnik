@@ -10,8 +10,40 @@ from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 
 
 class RunnerTestSuite(TestCase):
-    pass  # TODO add test cases
+    """Validates that Runner functionality behaves as expected"""
 
+    # TODO Add test cases for:
+    #  result setter
+    #  then_goto config
+    #  then_goto until
+    #  then_goto and_stay_for
+    #  then_goto or_timeout_after
+    #  then_goto without_cloning_config
+    #  then_goto with_info
+    #  then_run none_function
+    #  then_run bool_function
+    #  then_run cycle_step_result_function
+    #  then_run none_function until_bool
+    #  then_run none_function until_cycle_step_result
+    #  then_run cycle_step_result_function until_bool
+    #  then_run cycle_step_result_function until_cycle_step_result
+    #  then_run and_stay_for
+    #  then_run or_timeout_after
+    #  then_run with_info
+    #  then_run_runner_from supplier
+    #  then_run_runner_from until_bool
+    #  then_run_runner_from until_cycle_step_result
+    #  then_run_runner_from until_runner_bool
+    #  then_run_runner_from until_runner_cycle_step_result
+    #  then_run_runner_from or_timeout_after
+    #  then_run_runner_from with_info
+    #  run single step routine
+    #  run multi step routine
+    #  run after done
+    #  run after termination
+    #  bool
+    #  call
+    #  as_result
 
 @dataclass
 class GenericTransitioningMachineConfig(MachineConfiguration):
