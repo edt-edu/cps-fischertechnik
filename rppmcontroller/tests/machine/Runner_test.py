@@ -74,9 +74,38 @@ class RunnerTestSuite(TestCase):
                          result.result,
                          "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
+
+    def test_then_goto_until_bool(self):
+        """Tests going to a certain configuration until a condition is met"""
+        runner = self.runner
+        config = TestConfig(5)
+        runner.then_goto(config, until=lambda: self.machine.value == 3)
+
+        self.assertEqual(1, len(runner._routine))
+        self.assertEqual(False,
+                         runner.running,
+                         "Runner hasn't been started yet")
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have been reached")
 
     # TODO Add test cases for:
-    #  then_goto until
+    #  then_goto until_done
+    #  then_goto until_abort
     #  then_goto and_stay_for
     #  then_goto or_timeout_after
     #  then_goto without_cloning_config
@@ -93,9 +122,11 @@ class RunnerTestSuite(TestCase):
     #  then_run with_info
     #  then_run_runner_from supplier
     #  then_run_runner_from until_bool
-    #  then_run_runner_from until_cycle_step_result
+    #  then_run_runner_from until_done
+    #  then_run_runner_from until_abort
     #  then_run_runner_from until_runner_bool
-    #  then_run_runner_from until_runner_cycle_step_result
+    #  then_run_runner_from until_runner_done
+    #  then_run_runner_from until_runner_abort
     #  then_run_runner_from or_timeout_after
     #  then_run_runner_from with_info
     #  run single step routine
@@ -115,7 +146,7 @@ class TestConfig(MachineConfiguration):
 class TestTransitioningMachine(TransitioningMachine[TestConfig]):
     def __init__(self):
         super().__init__()
-        self.__current_configuration = TestConfig()
+        self.value = 0
 
     @property
     def increment_result(self) -> CycleStepResult:
@@ -129,11 +160,11 @@ class TestTransitioningMachine(TransitioningMachine[TestConfig]):
 
     @override
     def goto_config_CycleStep(self, config: TestConfig) -> CycleStepResult:
-        if self.__current_configuration.value < config.value:
-            self.__current_configuration.value += 1
+        if self.value < config.value:
+            self.value += 1
             return self.increment_result
-        elif self.__current_configuration.value > config.value:
-            self.__current_configuration.value -= 1
+        elif self.value > config.value:
+            self.value -= 1
             return self.decrement_result
         else:
             return CycleStepResult.done()

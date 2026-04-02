@@ -168,17 +168,18 @@ class Runner(CycleStepResult):
 
         :param config: The config to transition to.
         :param until: If present, specifies whether the configuration has
-        been reached.
+            been reached.
         :param and_stay_for: Seconds to remain in the specified
-        configuration after it has been reached.
+            configuration after it has been reached.
         :param or_timeout_after: The number of seconds after which the config
-        is considered to be timed out and reaching it will be aborted.
-        An abort will only be thrown, when the config has not been reached yet.
-        Values smaller or equal to zero imply infinite time.
+            is considered to be timed out and reaching it will be aborted.
+            An abort will only be thrown, when the config has not been reached
+            yet.
+            Values smaller or equal to zero imply infinite time.
         :param clone_config: Whether to clone the config object so it can be
-        reused outside of this method.
+            reused outside of this method.
         :param info: A human-readable info what the runner is doing in this
-        step, similar to a comment
+            step, similar to a comment
         :return: self
         """
         if clone_config:
