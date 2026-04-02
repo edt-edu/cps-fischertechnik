@@ -136,7 +136,7 @@ class Runner(CycleStepResult):
 
     @override
     @CycleStepResult.result.setter
-    def result(self, result : CycleStepResultEnum):
+    def result(self, result: CycleStepResultEnum):
         if self._result != result:
             self.status_published = False
             self._result = result
@@ -157,8 +157,9 @@ class Runner(CycleStepResult):
         :param and_stay_for: Seconds to remain in the specified
         configuration after it has been reached.
         :param or_timeout_after: The number of seconds after which the config
-        is considered reached. Values smaller or equal to zero imply infinite
-        time.
+        is considered to be timed out and reaching it will be aborted.
+        An abort will only be thrown, when the config has not been reached yet.
+        Values smaller or equal to zero imply infinite time.
         :param clone_config: Whether to clone the config object so it can be
         reused outside of this method.
         :param info: A human-readable info what the runner is doing in this
@@ -190,8 +191,8 @@ class Runner(CycleStepResult):
         :param and_stay_for: The number of seconds to continue to call the
             runnable after it is done.
         :param or_timeout_after: The number of seconds after which the runnable
-            is considered done. Values smaller or equal to zero imply infinite
-            time.
+            will be aborted with a timeout error, unless it was already done.
+            Values smaller or equal to zero imply infinite time.
         :param info: A human-readable info what the runner is doing in this
             step, similar to a comment
         :return: self
@@ -297,13 +298,14 @@ class Runner(CycleStepResult):
         @dataclass
         class RunnerPointer:
             def __init__(self):
-                self.__runner: Optional[Runner] = None
+                self.__runner: Runner | None = None
 
             @property
             def runner(self) -> Runner:
-                if self.__runner is None:
-                    self.__runner = runner_supplier()
-                return self.__runner
+                runner = self.__runner
+                if runner is None:
+                    self.__runner = runner = runner_supplier()
+                return runner
 
             def run(self) -> CycleStepResult:
                 self.runner.run()
@@ -316,14 +318,17 @@ class Runner(CycleStepResult):
         runner_pointer = RunnerPointer()
 
         # resolve runner parameter in until function
-        no_param_until = until
-        if until is not None:
-            sig = inspect.signature(until)
-            if len(sig.parameters) == 1:
-                no_param_until = lambda: until(runner_pointer.runner)
+        if until is None:
+            no_param_until = None
+        elif len(inspect.signature(until).parameters) == 1:
+            no_param_until = lambda: until(runner_pointer.runner)
+        else:
+            no_param_until = lambda: until()
 
-
-        return self.then_run(runner_pointer.run, no_param_until, or_timeout_after=or_timeout_after, info=info)
+        return self.then_run(runner_pointer.run,
+                             until=no_param_until,
+                             or_timeout_after=or_timeout_after,
+                             info=info)
 
     def run(self) -> CycleStepResult:
         """
