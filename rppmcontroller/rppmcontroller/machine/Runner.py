@@ -377,6 +377,10 @@ class Runner(CycleStepResult):
     def running(self) -> bool:
         return self.__running
 
+    @property
+    def _routine(self) -> List[Subroutine]:
+        return self.__routine.copy()
+
     def __bool__(self):
         """
         Checks whether this routine is finished
