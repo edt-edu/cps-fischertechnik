@@ -26,8 +26,25 @@ class RunnerTestSuite(TestCase):
                          runner.status_published,
                          "Status should not be published yet")
 
+    def test_set_same_result(self):
+        runner = self.runner
+        runner.status_published = True
+
+        runner.result = CycleStepResultEnum.MUST_CONTINUE
+        self.assertEqual(CycleStepResultEnum.MUST_CONTINUE, runner.result)
+        self.assertEqual(True,
+                         runner.status_published,
+                         "Status hasn't changed")
+
+    def test_set_different_result(self):
+        runner = self.runner
+        runner.status_published = True
+
+        runner.result = CycleStepResultEnum.DONE
+        self.assertEqual(CycleStepResultEnum.DONE, runner.result)
+        self.assertEqual(False, runner.status_published, "Status changed")
+
     # TODO Add test cases for:
-    #  result setter
     #  then_goto config
     #  then_goto until
     #  then_goto and_stay_for
