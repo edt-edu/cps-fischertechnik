@@ -12,6 +12,20 @@ from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 class RunnerTestSuite(TestCase):
     """Validates that Runner functionality behaves as expected"""
 
+    def setUp(self):
+        self.machine = GenericTransitioningMachine()
+        self.runner = self.machine.create_runner()
+
+    def test_init(self):
+        runner = self.runner
+        self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                         runner.result,
+                         "Runner should continue after initialization")
+        self.assertEqual(False, runner.running, "Runner should not be running")
+        self.assertEqual(False,
+                         runner.status_published,
+                         "Status should not be published yet")
+
     # TODO Add test cases for:
     #  result setter
     #  then_goto config
@@ -45,6 +59,7 @@ class RunnerTestSuite(TestCase):
     #  call
     #  as_result
 
+
 @dataclass
 class GenericTransitioningMachineConfig(MachineConfiguration):
     value = 0
@@ -59,7 +74,7 @@ class GenericTransitioningMachine(
     @override
     def goto_config_CycleStep(self,
                               config: GenericTransitioningMachineConfig) -> (
-            CycleStepResult):
+        CycleStepResult):
         if self.__current_configuration.value < config.value:
             self.__current_configuration.value += 1
             return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,

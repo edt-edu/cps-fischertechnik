@@ -133,6 +133,10 @@ class Runner(CycleStepResult):
         self.__running: bool = False
         """Whether we are currently executing our routine"""
         self.status_published = False
+        """
+        Tracks whether the status of this runner has been picked up by a
+        controller yet. In other words, this value is mainly used for caching.
+        """
 
     @override
     @CycleStepResult.result.setter
