@@ -724,8 +724,48 @@ class RunnerTestSuite(TestCase):
         until-function that consumes that runner returns `True`"""
         runner = self.runner
 
+        def until(rnr: Runner) -> bool:
+            self.assertEqual(2,
+                             len(rnr._routine),
+                             "command runner should have two subroutines")
+            return self.machine.value == 3
+
         runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5),
-                                    until=lambda rnr: self.machine.value == 3)
+                                    until=until)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have been reached")
+
+    def test_then_run_runner_from_until_runner_done(self):
+        """Tests that a `Runner` provided by a supplier is called until its
+        until-function that consumes that runner returns `DONE`"""
+        runner = self.runner
+
+        def until(rnr: Runner) -> CycleStepResult:
+            self.assertEqual(2,
+                             len(rnr._routine),
+                             "command runner should have two subroutines")
+            if self.machine.value == 3:
+                return CycleStepResult.done()
+            else:
+                return MUST_CONTINUE_RESULT
+
+        runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5),
+                                    until=until)
         self.run_post_config_checks()
 
         for step in range(3):
@@ -745,7 +785,6 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     # TODO Add test cases for:
-    #  then_run_runner_from until_runner_done
     #  then_run_runner_from until_runner_abort
     #  then_run_runner_from or_timeout_after
     #  then_run_runner_from with_info
@@ -797,6 +836,9 @@ class TestTransitioningMachine(TransitioningMachine[TestConfig]):
     def goto_value_Command(self, target_value: int) -> Runner:
         runner = self.create_runner()
         config = TestConfig(value=target_value)
+        runner.then_goto(config)
+        # go to the config twice to have a command which has two
+        # subroutine steps
         runner.then_goto(config)
         return runner
 
