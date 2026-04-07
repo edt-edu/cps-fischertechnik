@@ -233,7 +233,9 @@ class RunnerTestSuite(TestCase):
                              result.result,
                              f"Unexpected result in step {step}")
             self.assertEqual(True, runner.running, "Runner is running")
-            self.assertEqual(3, config.value, "Config value should not have changed")
+            self.assertEqual(3,
+                             config.value,
+                             "Config value should not have changed")
 
         result = runner.run()
         self.assertEqual(CycleStepResultEnum.DONE, result.result)
@@ -243,7 +245,8 @@ class RunnerTestSuite(TestCase):
                          "Original value should have been reached")
 
     def test_then_goto_without_cloning_config(self):
-        """Validates that not cloning the config can update values on the fly"""
+        """Validates that not cloning the config can update values on the
+        fly"""
         runner = self.runner
         config = TestConfig(5)
         runner.then_goto(config, clone_config=False)
