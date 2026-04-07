@@ -816,10 +816,36 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is aborted")
         self.assertEqual(3,
                          self.machine.value,
-                         "Value should have been reached")
+                         "Value should have advanced")
+
+    def test_then_run_runner_from_or_timeout_after(self):
+        """Tests that a `Runner` provided by a supplier will be times out
+        after a few seconds"""
+        runner = self.runner
+        Timer.custom_current_time = 0
+
+        runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5),
+                                    or_timeout_after=3)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            Timer.custom_current_time += 1
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_TIMEOUT,
+                         result.result,
+                         "Runner should be aborted")
+        self.assertEqual(False, runner.running, "Runner is aborted")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have advanced")
 
     # TODO Add test cases for:
-    #  then_run_runner_from or_timeout_after
     #  then_run_runner_from with_info
     #  run single step routine
     #  run multi step routine
