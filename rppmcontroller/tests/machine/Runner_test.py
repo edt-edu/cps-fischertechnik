@@ -157,7 +157,7 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is aborted")
         self.assertEqual(3,
                          self.machine.value,
-                         "Value should have reached advanced")
+                         "Value should have advanced")
 
     # TODO Add test cases for:
     #  then_goto and_stay_for
