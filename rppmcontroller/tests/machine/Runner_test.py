@@ -7,6 +7,7 @@ from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
+from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 
@@ -17,6 +18,9 @@ class RunnerTestSuite(TestCase):
     def setUp(self):
         self.machine = TestTransitioningMachine()
         self.runner = self.machine.create_runner()
+
+    def tearDown(self):
+        Timer.custom_current_time = None
 
     def test_init(self):
         """Tests initial properties after runner creation"""
@@ -159,8 +163,37 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have advanced")
 
+    def test_then_goto_and_stay_for(self):
+        """Tests going to a certain configuration and staying for a certain
+        amount of time"""
+        runner = self.runner
+        Timer.custom_current_time = 0
+
+        config = TestConfig(5)
+        runner.then_goto(config, and_stay_for=3)
+
+        self.assertEqual(1, len(runner._routine))
+        self.assertEqual(False,
+                         runner.running,
+                         "Runner hasn't been started yet")
+
+        for step in range(8):
+            result = runner.run()
+            Timer.custom_current_time += 1
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
+
+
     # TODO Add test cases for:
-    #  then_goto and_stay_for
     #  then_goto or_timeout_after
     #  then_goto without_cloning_config
     #  then_goto with_info
