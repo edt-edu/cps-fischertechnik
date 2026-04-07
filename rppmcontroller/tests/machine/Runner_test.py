@@ -537,8 +537,30 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_run_and_stay_for(self):
+        """Tests that running a function that returns `True` will be executed
+        for some more seconds"""
+        runner = self.runner
+        Timer.custom_current_time = 0
+
+        runner.then_run(lambda: True, and_stay_for=3)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            Timer.custom_current_time += 1
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+
     # TODO Add test cases for:
-    #  then_run and_stay_for
     #  then_run or_timeout_after
     #  then_run with_info
     #  then_run_runner_from supplier
