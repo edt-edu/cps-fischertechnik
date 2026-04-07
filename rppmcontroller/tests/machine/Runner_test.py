@@ -269,8 +269,30 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Original value should have been reached")
 
+    def test_then_goto_with_info(self):
+        """Tests that the runner can show custom info on its status"""
+        runner = self.runner
+        for i in range(1, 4):
+            runner.then_goto(TestConfig(i), info=f"going to {i}")
+        self.run_post_config_checks(expected_routine_length=3)
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+            self.assertTrue(f"going to {step + 1}" in result.info,
+                            "Runner info should contain the custom info")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Final value should have been reached")
+
     # TODO Add test cases for:
-    #  then_goto with_info
     #  then_run none_function
     #  then_run bool_function
     #  then_run cycle_step_result_function
