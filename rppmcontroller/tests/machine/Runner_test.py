@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Self
 from unittest import TestCase, main
 
 from typing_extensions import override
@@ -112,7 +111,9 @@ class RunnerTestSuite(TestCase):
             self.assertEqual(True, runner.running, "Runner is running")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(3,
                          self.machine.value,
@@ -137,7 +138,9 @@ class RunnerTestSuite(TestCase):
             self.assertEqual(True, runner.running, "Runner is running")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(3,
                          self.machine.value,
@@ -188,7 +191,9 @@ class RunnerTestSuite(TestCase):
             self.assertEqual(True, runner.running, "Runner is running")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(5,
                          self.machine.value,
@@ -239,7 +244,9 @@ class RunnerTestSuite(TestCase):
                              "Config value should not have changed")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(5,
                          self.machine.value,
@@ -264,7 +271,9 @@ class RunnerTestSuite(TestCase):
             self.assertEqual(True, runner.running, "Runner is running")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(3,
                          self.machine.value,
@@ -287,7 +296,9 @@ class RunnerTestSuite(TestCase):
                             "Runner info should contain the custom info")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(3,
                          self.machine.value,
@@ -310,11 +321,10 @@ class RunnerTestSuite(TestCase):
         """Tests that running a function that returns a bool is run until it
         returns `False`"""
         runner = self.runner
-        counter = Counter(5)
-        runner.then_run(lambda: counter.decrement().is_zero())
+        runner.then_run(lambda: self.goto_step().is_done())
         self.run_post_config_checks()
 
-        for step in range(4):
+        for step in range(5):
             result = runner.run()
             self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
                              result.result,
@@ -322,8 +332,13 @@ class RunnerTestSuite(TestCase):
             self.assertEqual(True, runner.running, "Runner is running")
 
         result = runner.run()
-        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
 
     # TODO Add test cases for:
     #  then_run cycle_step_result_function
@@ -350,6 +365,10 @@ class RunnerTestSuite(TestCase):
     #  bool
     #  call
     #  as_result
+
+    def goto_step(self, target_value: int = 5) -> CycleStepResult:
+        return self.machine.goto_config_CycleStep(TestConfig(
+            value=target_value))
 
 
 @dataclass
@@ -389,18 +408,6 @@ class TestTransitioningMachine(TransitioningMachine[TestConfig]):
         config = TestConfig(value=target_value)
         runner.then_goto(config)
         return runner
-
-
-@dataclass
-class Counter:
-    counter: int = 0
-
-    def decrement(self) -> Self:
-        self.counter -= 1
-        return self
-
-    def is_zero(self) -> bool:
-        return self.counter == 0
 
 
 if __name__ == '__main__':
