@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from unittest import TestCase, main
 
@@ -21,6 +23,20 @@ class RunnerTestSuite(TestCase):
 
     def tearDown(self):
         Timer.custom_current_time = None
+
+    def run_post_config_checks(self, expected_routine_length: int = 1) -> None:
+        """
+        Validates that the runner has the correct number of subroutines and is
+        not running yet
+        :param expected_routine_length: The expected number of subroutines
+        :return: None
+        """
+        runner = self.runner
+
+        self.assertEqual(expected_routine_length, len(runner._routine))
+        self.assertEqual(False,
+                         runner.running,
+                         "Runner hasn't been started yet")
 
     def test_init(self):
         """Tests initial properties after runner creation"""
@@ -61,10 +77,7 @@ class RunnerTestSuite(TestCase):
         runner = self.runner
         config = TestConfig(5)
         runner.then_goto(config)
-        self.assertEqual(1, len(runner._routine))
-        self.assertEqual(False,
-                         runner.running,
-                         "Runner hasn't been started yet")
+        self.run_post_config_checks()
 
         for step in range(5):
             result = runner.run()
@@ -88,10 +101,7 @@ class RunnerTestSuite(TestCase):
         config = TestConfig(5)
         runner.then_goto(config, until=lambda: self.machine.value == 3)
 
-        self.assertEqual(1, len(runner._routine))
-        self.assertEqual(False,
-                         runner.running,
-                         "Runner hasn't been started yet")
+        self.run_post_config_checks()
 
         for step in range(3):
             result = runner.run()
@@ -116,10 +126,7 @@ class RunnerTestSuite(TestCase):
             else CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         runner.then_goto(config, until=until_done)
 
-        self.assertEqual(1, len(runner._routine))
-        self.assertEqual(False,
-                         runner.running,
-                         "Runner hasn't been started yet")
+        self.run_post_config_checks()
 
         for step in range(3):
             result = runner.run()
@@ -144,10 +151,7 @@ class RunnerTestSuite(TestCase):
             else CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
         runner.then_goto(config, until=until_abort)
 
-        self.assertEqual(1, len(runner._routine))
-        self.assertEqual(False,
-                         runner.running,
-                         "Runner hasn't been started yet")
+        self.run_post_config_checks()
 
         for step in range(3):
             result = runner.run()
@@ -172,10 +176,7 @@ class RunnerTestSuite(TestCase):
         config = TestConfig(5)
         runner.then_goto(config, and_stay_for=3)
 
-        self.assertEqual(1, len(runner._routine))
-        self.assertEqual(False,
-                         runner.running,
-                         "Runner hasn't been started yet")
+        self.run_post_config_checks()
 
         for step in range(8):
             result = runner.run()
@@ -192,9 +193,31 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_goto_or_timeout_after(self):
+        """Tests timing out after a certain amount of time"""
+        runner = self.runner
+        Timer.custom_current_time = 0
+
+        config = TestConfig(5)
+        runner.then_goto(config, or_timeout_after=3)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            Timer.custom_current_time += 1
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_TIMEOUT, result.result)
+        self.assertEqual(False, runner.running, "Runner is aborted")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have advanced")
 
     # TODO Add test cases for:
-    #  then_goto or_timeout_after
     #  then_goto without_cloning_config
     #  then_goto with_info
     #  then_run none_function
