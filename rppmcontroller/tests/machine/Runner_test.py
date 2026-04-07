@@ -879,6 +879,7 @@ class RunnerTestSuite(TestCase):
                          "Final value should have been reached")
 
     # TODO Add test cases for:
+    #  run zero step routine
     #  run single step routine
     #  run multi step routine
     #  run after done
