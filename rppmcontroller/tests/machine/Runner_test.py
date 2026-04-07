@@ -589,6 +589,7 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is aborted")
 
     def test_then_run_with_info(self):
+        """Tests that the runner can show custom info on its status"""
         runner = self.runner
         for i in range(1, 4):
             # copy i into target at lambda creation to avoid late-referencing
@@ -819,7 +820,7 @@ class RunnerTestSuite(TestCase):
                          "Value should have advanced")
 
     def test_then_run_runner_from_or_timeout_after(self):
-        """Tests that a `Runner` provided by a supplier will be times out
+        """Tests that a `Runner` provided by a supplier will be timed out
         after a few seconds"""
         runner = self.runner
         Timer.custom_current_time = 0
@@ -845,8 +846,39 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have advanced")
 
+    def test_then_run_runner_from_with_info(self):
+        """Tests that a `Runner` provided by a supplier can show custom info"""
+        runner = self.runner
+        for i in range(1, 4):
+            # copy i into target at lambda creation to avoid late-referencing
+            runner.then_run_runner_from(lambda target=i:
+                                        self.machine.goto_value_Command(
+                                            target),
+                                        info=f"going to {i}")
+        self.run_post_config_checks(expected_routine_length=3)
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+            expected_info = f"going to {step + 1}"
+            actual_info = result.info
+            self.assertEqual(True, expected_info in actual_info,
+                             f"'{expected_info}' should be in '"
+                             f"{actual_info}' (step: {step})")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Final value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run_runner_from with_info
     #  run single step routine
     #  run multi step routine
     #  run after done
