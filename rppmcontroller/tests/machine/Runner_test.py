@@ -392,7 +392,7 @@ class RunnerTestSuite(TestCase):
 
     def test_then_run_none_function_until_done(self):
         """Tests that running a function that returns None is executed until
-        it's until-function returns Done"""
+        it's until-function returns DONE"""
         runner = self.runner
 
         def increment():
@@ -448,8 +448,35 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_run_abort_function_until_bool(self):
+        """Tests that running a function that returns ABORT is executed until
+        it's until-function returns `True`"""
+        runner = self.runner
+
+        def increment():
+            self.machine.value += 1
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR)
+
+        runner.then_run(increment, until=lambda: self.machine.value == 5)
+        self.run_post_config_checks()
+
+        for step in range(5):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run abort_function until_bool
     #  then_run done_function until_done
     #  then_run abort_function until_done
     #  then_run and_stay_for
