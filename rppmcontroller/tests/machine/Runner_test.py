@@ -294,8 +294,11 @@ class RunnerTestSuite(TestCase):
                              result.result,
                              f"Unexpected result in step {step}")
             self.assertEqual(True, runner.running, "Runner is running")
-            self.assertTrue(f"going to {step + 1}" in result.info,
-                            "Runner info should contain the custom info")
+            expected_info = f"going to {step + 1}"
+            actual_info = result.info
+            self.assertEqual(True, expected_info in actual_info,
+                             f"'{expected_info}' should be in '"
+                             f"{actual_info}' (step: {step})")
 
         result = runner.run()
         self.assertEqual(CycleStepResultEnum.DONE,
@@ -583,8 +586,35 @@ class RunnerTestSuite(TestCase):
                          "Runner should have aborted")
         self.assertEqual(False, runner.running, "Runner is aborted")
 
+    def test_then_run_with_info(self):
+        runner = self.runner
+        for i in range(1, 4):
+            # copy i into target at lambda creation to avoid late-referencing
+            runner.then_run(lambda target=i: self.goto_step(target), info=f"going to {i}")
+        self.run_post_config_checks(expected_routine_length=3)
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+            expected_info = f"going to {step + 1}"
+            actual_info = result.info
+            self.assertEqual(True, expected_info in actual_info,
+                             f"'{expected_info}' should be in '"
+                             f"{actual_info}' (step: {step})")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Final value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run with_info
     #  then_run_runner_from supplier
     #  then_run_runner_from until_bool
     #  then_run_runner_from until_done
