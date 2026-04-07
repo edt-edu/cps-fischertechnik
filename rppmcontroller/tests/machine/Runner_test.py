@@ -13,6 +13,8 @@ from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 
+MUST_CONTINUE_RESULT = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
+
 
 class RunnerTestSuite(TestCase):
     """Validates that Runner functionality behaves as expected"""
@@ -125,7 +127,7 @@ class RunnerTestSuite(TestCase):
         config = TestConfig(5)
         until_done = lambda: CycleStepResult.done() if (self.machine.value ==
                                                         3) \
-            else CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
+            else MUST_CONTINUE_RESULT
         runner.then_goto(config, until=until_done)
 
         self.run_post_config_checks()
@@ -152,7 +154,7 @@ class RunnerTestSuite(TestCase):
         config = TestConfig(5)
         until_abort = lambda: CycleStepResult(
             CycleStepResultEnum.ABORTED_ERROR) if self.machine.value == 3 \
-            else CycleStepResult(CycleStepResultEnum.MUST_CONTINUE)
+            else MUST_CONTINUE_RESULT
         runner.then_goto(config, until=until_abort)
 
         self.run_post_config_checks()
@@ -341,8 +343,8 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_cycle_step_result_function(self):
-        """Tests that running a function that returns a CycleStepResult is run
-        until it returns `CycleStepResultEnum.DONE`"""
+        """Tests that running a function that returns a `CycleStepResult` is
+        run until it returns `DONE`"""
         runner = self.runner
         runner.then_run(lambda: self.goto_step())
         self.run_post_config_checks()
@@ -364,7 +366,7 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_none_function_until_bool(self):
-        """Test that running a function that returns None is executed until
+        """Test that running a function that returns `None` is executed until
         it's until-function returns `True`"""
         runner = self.runner
 
@@ -391,8 +393,8 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_none_function_until_done(self):
-        """Tests that running a function that returns None is executed until
-        it's until-function returns DONE"""
+        """Tests that running a function that returns `None` is executed until
+        it's until-function returns `DONE`"""
         runner = self.runner
 
         def increment():
@@ -400,8 +402,7 @@ class RunnerTestSuite(TestCase):
 
         runner.then_run(increment,
                         until=lambda: CycleStepResult.done() if
-                        self.machine.value == 5 else CycleStepResult(
-                            CycleStepResultEnum.MUST_CONTINUE))
+                        self.machine.value == 5 else MUST_CONTINUE_RESULT)
         self.run_post_config_checks()
 
         for step in range(5):
@@ -421,7 +422,7 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_done_function_until_bool(self):
-        """Tests that running a function that returns DONE is executed until
+        """Tests that running a function that returns `DONE` is executed until
         it's until-function returns `True`"""
         runner = self.runner
 
@@ -449,7 +450,7 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_abort_function_until_bool(self):
-        """Tests that running a function that returns ABORT is executed until
+        """Tests that running a function that returns `ABORT` is executed until
         it's until-function returns `True`"""
         runner = self.runner
 
@@ -476,8 +477,37 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_run_done_function_until_done(self):
+        """Tests that running a function that returns `DONE` is executed until
+        it's until-function returns `DONE`"""
+        runner = self.runner
+
+        def increment():
+            self.machine.value += 1
+            return CycleStepResult(CycleStepResultEnum.DONE)
+
+        runner.then_run(increment,
+                        until=lambda: CycleStepResult.done() if
+                        self.machine.value == 5 else MUST_CONTINUE_RESULT)
+        self.run_post_config_checks()
+
+        for step in range(5):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run done_function until_done
     #  then_run abort_function until_done
     #  then_run and_stay_for
     #  then_run or_timeout_after
