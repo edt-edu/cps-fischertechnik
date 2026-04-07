@@ -340,8 +340,30 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_run_cycle_step_result_function(self):
+        """Tests that running a function that returns a CycleStepResult is run
+        until it returns `CycleStepResultEnum.DONE`"""
+        runner = self.runner
+        runner.then_run(lambda: self.goto_step())
+        self.run_post_config_checks()
+
+        for step in range(5):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run cycle_step_result_function
     #  then_run none_function until_bool
     #  then_run none_function until_cycle_step_result
     #  then_run cycle_step_result_function until_bool
