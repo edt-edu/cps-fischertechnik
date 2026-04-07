@@ -560,8 +560,30 @@ class RunnerTestSuite(TestCase):
                          "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
 
+    def test_then_run_or_timeout_after(self):
+        """Tests that a function that returns `False` will be executed until
+        timeout"""
+        runner = self.runner
+        Timer.custom_current_time = 0
+
+        runner.then_run(lambda: False, or_timeout_after=5)
+        self.run_post_config_checks()
+
+        for step in range(5):
+            result = runner.run()
+            Timer.custom_current_time += 1
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_TIMEOUT,
+                         result.result,
+                         "Runner should have aborted")
+        self.assertEqual(False, runner.running, "Runner is aborted")
+
     # TODO Add test cases for:
-    #  then_run or_timeout_after
     #  then_run with_info
     #  then_run_runner_from supplier
     #  then_run_runner_from until_bool
