@@ -614,8 +614,30 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Final value should have been reached")
 
+    def test_then_run_runner_from_supplier(self):
+        """Tests that running a `Runner` provided by a supplier works"""
+        runner = self.runner
+
+        runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5))
+        self.run_post_config_checks()
+
+        for step in range(5):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run_runner_from supplier
     #  then_run_runner_from until_bool
     #  then_run_runner_from until_done
     #  then_run_runner_from until_abort
