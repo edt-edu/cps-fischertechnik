@@ -217,8 +217,56 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have advanced")
 
+    def test_then_goto_with_cloning_config(self):
+        """Validates that the runner clones the configuration by default"""
+        runner = self.runner
+        config = TestConfig(5)
+        runner.then_goto(config)
+
+        config.value = 3
+
+        self.run_post_config_checks()
+
+        for step in range(5):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+            self.assertEqual(3, config.value, "Config value should not have changed")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(5,
+                         self.machine.value,
+                         "Original value should have been reached")
+
+    def test_then_goto_without_cloning_config(self):
+        """Validates that not cloning the config can update values on the fly"""
+        runner = self.runner
+        config = TestConfig(5)
+        runner.then_goto(config, clone_config=False)
+
+        config.value = 3
+
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Original value should have been reached")
+
     # TODO Add test cases for:
-    #  then_goto without_cloning_config
     #  then_goto with_info
     #  then_run none_function
     #  then_run bool_function
