@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Self
 from unittest import TestCase, main
 
 from typing_extensions import override
@@ -300,9 +301,29 @@ class RunnerTestSuite(TestCase):
 
         try:
             runner.run()
-            self.fail("Running a None lambda without an until condition should fail")
+            self.fail(
+                "Running a None lambda without an until condition should fail")
         except ValueError:
             pass
+
+    def test_then_run_bool_function(self):
+        """Tests that running a function that returns a bool is run until it
+        returns `False`"""
+        runner = self.runner
+        counter = Counter(5)
+        runner.then_run(lambda: counter.decrement().is_zero())
+        self.run_post_config_checks()
+
+        for step in range(4):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE, result.result)
+        self.assertEqual(False, runner.running, "Runner is done")
 
     # TODO Add test cases for:
     #  then_run bool_function
@@ -369,6 +390,18 @@ class TestTransitioningMachine(TransitioningMachine[TestConfig]):
         config = TestConfig(value=target_value)
         runner.then_goto(config)
         return runner
+
+
+@dataclass
+class Counter:
+    counter: int = 0
+
+    def decrement(self) -> Self:
+        self.counter -= 1
+        return self
+
+    def is_zero(self) -> bool:
+        return self.counter == 0
 
 
 if __name__ == '__main__':
