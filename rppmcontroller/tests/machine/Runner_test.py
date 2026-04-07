@@ -7,6 +7,8 @@ from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
+
+ABORT_RESULT = CycleStepResult(CycleStepResultEnum.ABORTED_ERROR)
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Runner import TransitioningMachine, Runner
 from rppmcontroller.machine.Timer import Timer
@@ -690,9 +692,34 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have advanced")
 
+    def test_then_run_runner_from_until_abort(self):
+        """Tests that a `Runner` provided by a supplier is called until its
+        until-function returns `ABORTED_ERROR`"""
+        runner = self.runner
+
+        runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5),
+                                    until=lambda: ABORT_RESULT if
+                                    self.machine.value == 3 else
+                                    MUST_CONTINUE_RESULT)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR,
+                         result.result,
+                         "Runner should be aborted")
+        self.assertEqual(False, runner.running, "Runner is aborted")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have advanced")
+
     # TODO Add test cases for:
-    #  then_run_runner_from until_done
-    #  then_run_runner_from until_abort
     #  then_run_runner_from until_runner_bool
     #  then_run_runner_from until_runner_done
     #  then_run_runner_from until_runner_abort
