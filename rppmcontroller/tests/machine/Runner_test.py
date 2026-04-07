@@ -292,8 +292,19 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Final value should have been reached")
 
+    def test_then_run_none_function(self):
+        """Tests that running a function which returns None fails"""
+        runner = self.runner
+        runner.then_run(lambda: None)
+        self.run_post_config_checks()
+
+        try:
+            runner.run()
+            self.fail("Running a None lambda without an until condition should fail")
+        except ValueError:
+            pass
+
     # TODO Add test cases for:
-    #  then_run none_function
     #  then_run bool_function
     #  then_run cycle_step_result_function
     #  then_run none_function until_bool
