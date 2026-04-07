@@ -326,7 +326,6 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is done")
 
     # TODO Add test cases for:
-    #  then_run bool_function
     #  then_run cycle_step_result_function
     #  then_run none_function until_bool
     #  then_run none_function until_cycle_step_result
