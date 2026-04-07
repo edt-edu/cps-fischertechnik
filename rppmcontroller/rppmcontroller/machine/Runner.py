@@ -18,6 +18,7 @@ from rppmcontroller.utils.callable_tool import describe_callable
 
 TConfig = TypeVar('TConfig', bound=MachineConfiguration)
 
+
 class TransitioningMachine(Generic[TConfig], ABC):
     def __init__(self):
         self.__runners: List[Runner] = []
@@ -46,7 +47,8 @@ class TransitioningMachine(Generic[TConfig], ABC):
 
         :return: All active runners of this machine
         """
-        runners = [runner for runner in self.__runners if runner.must_continue()]
+        runners = [runner for runner in self.__runners if
+                   runner.must_continue()]
         self.__runners = runners
         return runners
 
@@ -87,7 +89,8 @@ class TransitioningMachine(Generic[TConfig], ABC):
 
     @property
     def executing_runner(self) -> Optional[Subroutine]:
-        return next((runner.actual_routine() for runner in self.get_runners() if runner.running), None)
+        return next((runner.actual_routine() for runner in self.get_runners()
+                     if runner.running), None)
 
 
 class Subroutine:
@@ -184,7 +187,8 @@ class Runner(CycleStepResult):
         """
         if clone_config:
             config = deepcopy(config)
-        return self.then_run(lambda: self.__machine.goto_config_CycleStep(config),
+        return self.then_run(lambda: self.__machine.goto_config_CycleStep(
+            config),
                              until,
                              and_stay_for=and_stay_for,
                              or_timeout_after=or_timeout_after,
@@ -226,7 +230,7 @@ class Runner(CycleStepResult):
                 if timeout_timer.elapsed():
                     # return abort immediately
                     return CycleStepResult(CycleStepResultEnum.ABORTED_TIMEOUT,
-                                          "runner timeout")
+                                           "runner timeout")
 
             # if until is present, it determines the result
             if until is not None:
@@ -241,8 +245,9 @@ class Runner(CycleStepResult):
 
                 if runnable_res is None:
                     raise ValueError(
-                        f"If 'runnable' returns None, 'until' must be provided.\n"
-                        f"Offending runnable: {describe_callable(runnable)}"
+                        f"If 'runnable' returns None, 'until' must be "
+                        f"provided.\n"
+                        f"Offending runnable: {describe_callable(runnable)}",
                     )
 
                 res = as_result(runnable_res)
@@ -274,9 +279,11 @@ class Runner(CycleStepResult):
 
     def then_run_runner_from(self,
                              runner_supplier: Callable[[], Runner],
-                             until: Callable[[], bool | CycleStepResult]
-                                    | Callable[[Runner], bool | CycleStepResult]
-                                    | None = None,
+                             until: Callable[[], bool | CycleStepResult] |
+                                    Callable[
+                                        [Runner], bool | CycleStepResult,
+                                    ] |
+                                    None = None,
                              or_timeout_after: float = 0.0,
                              info: str = "") -> Runner:
         """
@@ -364,7 +371,7 @@ class Runner(CycleStepResult):
                             f"{len(self.__routine)}: {sub_routine}")
         self.info = f"running {sub_routine_info}"
 
-        #logging.debug(self.info)
+        # logging.debug(self.info)
 
         # call the sub routine
         res = sub_routine()
