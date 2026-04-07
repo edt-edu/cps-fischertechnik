@@ -455,8 +455,8 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_abort_function_until_bool(self):
-        """Tests that running a function that returns `ABORT` is executed until
-        it's until-function returns `True`"""
+        """Tests that running a function that returns `ABORTED_ERROR` is
+        executed until it's until-function returns `True`"""
         runner = self.runner
 
         def increment():
@@ -513,8 +513,8 @@ class RunnerTestSuite(TestCase):
                          "Value should have been reached")
 
     def test_then_run_abort_function_until_done(self):
-        """Tests that running a function that returns `ABORT` is executed until
-                it's until-function returns `DONE`"""
+        """Tests that running a function that returns `ABORTED_ERROR` is
+        executed until it's until-function returns `DONE`"""
         runner = self.runner
 
         def increment():
@@ -784,8 +784,41 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_run_runner_from_until_runner_abort(self):
+        """Tests that a `Runner` provided by a supplier is called until its
+        until-function that consumes that runner returns `ABORTED_ERROR`"""
+        runner = self.runner
+
+        def until(rnr: Runner) -> CycleStepResult:
+            self.assertEqual(2,
+                             len(rnr._routine),
+                             "command runner should have two subroutines")
+            if self.machine.value == 3:
+                return ABORT_RESULT
+            else:
+                return MUST_CONTINUE_RESULT
+
+        runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5),
+                                    until=until)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR,
+                         result.result,
+                         "Runner should be aborted")
+        self.assertEqual(False, runner.running, "Runner is aborted")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have been reached")
+
     # TODO Add test cases for:
-    #  then_run_runner_from until_runner_abort
     #  then_run_runner_from or_timeout_after
     #  then_run_runner_from with_info
     #  run single step routine
