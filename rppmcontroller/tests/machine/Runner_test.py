@@ -590,7 +590,8 @@ class RunnerTestSuite(TestCase):
         runner = self.runner
         for i in range(1, 4):
             # copy i into target at lambda creation to avoid late-referencing
-            runner.then_run(lambda target=i: self.goto_step(target), info=f"going to {i}")
+            runner.then_run(lambda target=i: self.goto_step(target),
+                            info=f"going to {i}")
         self.run_post_config_checks(expected_routine_length=3)
 
         for step in range(3):
@@ -637,8 +638,32 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Value should have been reached")
 
+    def test_then_run_runner_from_until_bool(self):
+        """Tests that a `Runner` provided by a supplier is called until its
+        until-function returns `True`"""
+        runner = self.runner
+
+        runner.then_run_runner_from(lambda: self.machine.goto_value_Command(5),
+                                    until=lambda: self.machine.value == 3)
+        self.run_post_config_checks()
+
+        for step in range(3):
+            result = runner.run()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(3,
+                         self.machine.value,
+                         "Value should have advanced")
+
     # TODO Add test cases for:
-    #  then_run_runner_from until_bool
     #  then_run_runner_from until_done
     #  then_run_runner_from until_abort
     #  then_run_runner_from until_runner_bool
