@@ -1,6 +1,8 @@
 import ctypes
 from abc import ABC
+import revpimodio2
 
+from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 from rppmcontroller.machine.Type import Type
 
 
