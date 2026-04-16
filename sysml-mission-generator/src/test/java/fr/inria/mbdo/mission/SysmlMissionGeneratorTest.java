@@ -1,10 +1,6 @@
 package fr.inria.mbdo.mission;
 
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -13,53 +9,43 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SysmlMissionGeneratorTest {
+	private static final Logger LOGGER = LoggerFactory.getLogger(SysmlMissionGeneratorTest.class);
 	@TempDir
-    Path tempDir;
+	Path tempDir;
 
-    @BeforeAll
-    static void checkEnvironment() {
-        TestUtils.assertNodeAvailable();
-    }
-	
-    @Test
-    void import_CB_from_CBVGRMission() throws Exception {
-        SysmlMissionGenerator generator = new SysmlMissionGenerator();
+	@BeforeAll
+	static void checkEnvironment() {
+		TestUtils.assertNodeAvailable();
+	}
 
-        // files form /src/test/resources
-        File sysmlFile = new File(
-            getClass().getClassLoader().getResource("CBVGRMission/CB.sysml").toURI()
-        );
-        assertTrue(sysmlFile.exists());
+	@Test
+	void import_CB_from_CBVGRMission() throws Exception {
+		importTest("CBVGRMission/CB.sysml");
+	}
 
-        ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-        System.out.println(System.getenv("PATH"));
-        generator.importSysml(sysmlFile, resourceSet);
-        
-        //generator.generate(sysmlFile.getAbsolutePath(), targetDir);
+	@Test
+	void import_VGR_from_CBVGRMission() throws Exception {
+		importTest("CBVGRMission/VGR.sysml");
+	}
 
-        //verify(generator, times(1)).importSysml(any(), any());
-    }
-    
-    @Test
-    void import_VGR_from_CBVGRMission() throws Exception {
-        SysmlMissionGenerator generator = new SysmlMissionGenerator();
-        // files form /src/test/resources
-        File sysmlFile = new File(
-            getClass().getClassLoader().getResource("CBVGRMission/VGR.sysml").toURI()
-        );
-        assertTrue(sysmlFile.exists());
+	void importTest(String sysmlFileName) throws Exception {
+		SysmlMissionGenerator generator = new SysmlMissionGenerator();
 
-        ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-        System.out.println(System.getenv("PATH"));
-        generator.importSysml(sysmlFile, resourceSet);
-        
-        assertTrue(resourceSet.getResources().size() == 3);
+		// files form /src/test/resources
+		File sysmlFile = new File(getClass().getClassLoader().getResource(sysmlFileName).toURI());
+		assertTrue(sysmlFile.exists());
 
-    }
-    
-    
-    
+		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
+		generator.importSysml(sysmlFile, resourceSet);
+
+		assertTrue(
+				resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
+				() -> "Cannot find resource relative to " + sysmlFileName);
+
+	}
+
 }

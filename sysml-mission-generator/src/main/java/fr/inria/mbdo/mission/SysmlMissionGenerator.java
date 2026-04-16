@@ -31,13 +31,13 @@ public class SysmlMissionGenerator {
 		File sysmlFile = new File(sysmlFilePath);
         if (!sysmlFile.exists()) {
         	
-            System.err.println("File not found: " + sysmlFilePath);
+        	LOGGER.error("File not found: " + sysmlFilePath);
             return;
         }
 
         File targetFolder = new File(targetFolderPath);
         if (!targetFolder.isDirectory()) {
-            System.err.println("target folder must exist: " + targetFolderPath);
+        	LOGGER.error("target folder must exist: " + targetFolderPath);
             return;
         }
 		
@@ -59,22 +59,23 @@ public class SysmlMissionGenerator {
                 final String errorMessage = astResult.reports().stream()
                         .map(Status::toString)
                         .collect(Collectors.joining(System.lineSeparator(), System.lineSeparator(), System.lineSeparator()));
-                System.err.println("[AST] while parsing input file : " + errorMessage);
+                LOGGER.error("[AST] while parsing input file : " + errorMessage);
             }
 
             if (astResult.ast().isPresent()) {
                 Resource resource = astTransformer.convertResource(astResult.ast().get(), resourceSet);
 
-                if (resource != null && !resource.getContents().isEmpty()) {
-                    System.out.println("Model parsed successfully.");
+                if (resource != null && !resource.getContents().isEmpty()) {                	                	
+                	resource.setURI(URI.createURI("sysml://"+sysmlFile.getCanonicalPath()));
+                	LOGGER.info("Model parsed successfully.");
 //                    XMIResource resourceToSave = new XMIResourceImpl(URI.createFileURI(targetFilePath));
 //                    resourceToSave.getContents().addAll(resource.getContents());
 //                    resourceToSave.save(Collections.emptyMap());
                 } else {
-                    System.err.println("Failed to parse resource or resource is empty.");
+                	LOGGER.error("Failed to parse resource or resource is empty.");
                 }
             } else {
-            	System.err.println("Failed convert resource. Returned an empty AST");
+            	LOGGER.error("Failed convert resource. Returned an empty AST");
             }
             
 
@@ -82,7 +83,7 @@ public class SysmlMissionGenerator {
                 final String errorMessage = astTransformer.getTransformationMessages().stream()
                         .map(message -> message.level().toString() + " - " + message.body())
                         .collect(Collectors.joining(System.lineSeparator(), System.lineSeparator(), System.lineSeparator()));
-                System.err.println("Error while parsing input file : " + errorMessage);
+                LOGGER.error("Error while parsing input file : " + errorMessage);
             }
         }
     }

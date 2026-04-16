@@ -1,10 +1,12 @@
 package fr.inria.mbdo.mission;
 import org.junit.jupiter.api.Assertions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class TestUtils {
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class);
     public static void assertNodeAvailable() {
         try {
             Process process = new ProcessBuilder("node", "-v")
@@ -13,6 +15,8 @@ public class TestUtils {
 
             int exitCode = process.waitFor();
 
+
+            LOGGER.info("system PATH=" + System.getenv("PATH"));
             Assertions.assertEquals(
                 0,
                 exitCode,
