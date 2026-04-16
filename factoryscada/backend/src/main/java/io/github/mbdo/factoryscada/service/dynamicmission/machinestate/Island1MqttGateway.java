@@ -40,7 +40,13 @@ public class Island1MqttGateway {
       public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         log.info("Got message on topic {}", topic);
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode n = mapper.readTree(mqttMessage.getPayload());
+        JsonNode n = null;
+        try {
+          n = mapper.readTree(mqttMessage.getPayload());
+        } catch (IOException e) {
+          log.warn("Got invalid json, ignoring", e);
+          return;
+        }
         if(!n.isObject()){
           log.warn("Got non object json, ignoring");
           return;

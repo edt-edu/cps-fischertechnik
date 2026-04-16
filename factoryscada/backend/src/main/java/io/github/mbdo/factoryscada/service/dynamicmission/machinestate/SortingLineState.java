@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SortingLineState extends MachineState {
-  private boolean inputLightBarrier = false;
+  private boolean inputLightBarrier = true;
 
   public SortingLineState(FactoryScada factoryScada, String machineName) {
     super(factoryScada, machineName);
