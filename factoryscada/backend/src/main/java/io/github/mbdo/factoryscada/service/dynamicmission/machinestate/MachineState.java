@@ -1,8 +1,11 @@
 package io.github.mbdo.factoryscada.service.dynamicmission.machinestate;
 
 import io.github.mbdo.factoryscada.service.FactoryScada;
+import lombok.Getter;
 
+@Getter
 public abstract class MachineState {
+
   private final FactoryScada factoryScada;
   private final String machineName;
 

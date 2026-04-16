@@ -73,10 +73,12 @@ public class Demo {
   }
 
   private void run() {
+    var slState = island1State.getSortingLine01();
+
     while (active) {
-      var sortingLine = island1State.getSortingLine01();
-      if (!sortingLine.isInputLightBarrier() && sortingLine.isIdle()) {
+      if (!slState.isInputLightBarrier() && slState.isIdle()) {
         //TODO sort token to red, later sort it to random
+
 
       }
     }
