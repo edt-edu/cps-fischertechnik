@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.service.dynamicmission;
 
+import io.github.mbdo.factoryscada.core.enums.Color;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1MqttGateway;
@@ -77,9 +78,7 @@ public class Demo {
 
     while (active) {
       if (!slState.isInputLightBarrier() && slState.isIdle()) {
-        //TODO sort token to red, later sort it to random
-
-
+        sortingLine.eject(Color.AUTO);
       }
     }
   }

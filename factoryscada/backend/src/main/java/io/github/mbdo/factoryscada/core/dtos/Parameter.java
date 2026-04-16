@@ -3,6 +3,7 @@ package io.github.mbdo.factoryscada.core.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.github.mbdo.factoryscada.core.Passable;
+import io.github.mbdo.factoryscada.core.enums.Color;
 import io.github.mbdo.factoryscada.core.enums.PassableType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,4 +20,8 @@ public class Parameter {
 
     @JsonProperty("passable")
     private Passable passable;
+
+    public static Parameter color(Color color) {
+        return new Parameter(PassableType.COLOR, new io.github.mbdo.factoryscada.core.passable.Color(color));
+    }
 }

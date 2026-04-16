@@ -2,6 +2,8 @@ package io.github.mbdo.factoryscada.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
+import io.github.mbdo.factoryscada.core.dtos.Parameter;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
@@ -41,9 +43,32 @@ public abstract class AbstractMachine {
         this.commandIdGenerator = parameters.commandIdGenerator;
     }
 
-
+    /**
+     * @deprecated Static abuse. Use {@link #type()} instead.
+     */
+    @Deprecated
     public static String getType() {
         throw new UnsupportedOperationException("Subclasses must implement getType");
+    }
+
+    public String type() {
+      try {
+        return (String) getClass().getMethod("getType").invoke(null);
+      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        throw new RuntimeException("Failed to invoke method getType on object " + this, e);
+      }
+    }
+
+    protected <T extends AbstractMachine> GenericMachineCommandDTO<T> createCommandDTO(String commandName,
+                                                                                       Parameter... parameters) {
+        var outputId = commandIdGenerator.generateId();
+        var commandMessage = new CommandMessage("COMMAND",
+                                                type(),
+                                                Long.toString(outputId),
+                                                commandName,
+                                                List.of(parameters));
+        var timestamp = System.currentTimeMillis();
+        return new GenericMachineCommandDTO<>(getName(), Long.toString(timestamp), commandMessage);
     }
 
     /**
