@@ -1,25 +1,32 @@
 package io.github.mbdo.factoryscada.domains.sortingline;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
+import io.github.mbdo.factoryscada.core.enums.Color;
 import io.github.mbdo.factoryscada.domains.sortingline.commands.EjectCommand;
 import io.github.mbdo.factoryscada.domains.sortingline.commands.StopCommand;
-import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 @Slf4j
 public class SortingLineMachine extends AbstractMachine {
 
-    public SortingLineMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-        super(name, protocol, rawCommandNames);
+    public SortingLineMachine(Parameters parameters) {
+        super(parameters);
     }
 
     public static String getType() {
         return "sortingLine";
+    }
+
+    public void eject(Color color) {
+        //FIXME generate id
+        //FIXME add parameters
+        eject(new GenericMachineCommandDTO<>(getName(), String.valueOf(System.currentTimeMillis()), new CommandMessage("COMMAND", getType(), "AUTO_ID", "eject", List.of())));
     }
 
     public void eject(@Valid @NotNull final GenericMachineCommandDTO<SortingLineMachine> ejectDTO) {

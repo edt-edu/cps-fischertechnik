@@ -3,17 +3,14 @@ package io.github.mbdo.factoryscada.domains.indexedline;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.indexedline.commands.*;
-import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
 @Slf4j
 public class IndexedLineMachine extends AbstractMachine {
-  public IndexedLineMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-    super(name, protocol, rawCommandNames);
+  public IndexedLineMachine(Parameters parameters) {
+    super(parameters);
   }
 
   public static String getType() {

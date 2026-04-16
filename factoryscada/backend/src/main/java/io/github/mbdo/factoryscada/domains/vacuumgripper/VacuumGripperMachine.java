@@ -1,20 +1,8 @@
 package io.github.mbdo.factoryscada.domains.vacuumgripper;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GoToPositionCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GripCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveToSafePositionCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PickCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PlaceCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.OrderedGoToCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.RetractArmCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.SetupCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.StatusCommand;
-import io.github.mbdo.factoryscada.socket.Protocol;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class VacuumGripperMachine extends AbstractMachine {
 
-    public VacuumGripperMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-        super(name, protocol, rawCommandNames);
+    public VacuumGripperMachine(Parameters parameters) {
+        super(parameters);
     }
 
     public static String getType() {

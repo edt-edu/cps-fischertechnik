@@ -1,34 +1,7 @@
 package io.github.mbdo.factoryscada.service;
 
-import static io.github.mbdo.factoryscada.utilities.Utilities.convertYamlToObject;
-import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
-
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.CommandFeedbackDTO;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
@@ -47,10 +20,29 @@ import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.AppEnvironment;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
+import org.springframework.lang.NonNull;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static io.github.mbdo.factoryscada.utilities.Utilities.convertYamlToObject;
+import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
 
 @Slf4j
 @Getter
@@ -291,25 +283,35 @@ public class FactoryScada {
         String machineType = machineConfiguration.type();
 
         try {
-            log.info("creating MachineInstance for " + machineConfiguration.name());
+            log.info("creating MachineInstance for {}", machineConfiguration.name());
             // Find the concrete machine class corresponding to the machine type
             Class<? extends AbstractMachine> machineClass = findMachineClass(machineType,
                     appEnvironment.getMachineDomainsPackageName());
 
             // Instantiate the machine using the found class, constructor that takes String,
             // Protocol and List<String> as parameters
-            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(String.class,
-                    Protocol.class, List.class);
+            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(AbstractMachine.Parameters.class);
             Map<String, String> machineRawCommandPlaceholder = this.commandPlaceholder().get(machineType);
-            List<String> rawCommandNames = machineRawCommandPlaceholder != null
-                    ? machineRawCommandPlaceholder.keySet().stream().collect(Collectors.toList())
-                    : new ArrayList<>();
-            return constructor.newInstance(machineConfiguration.name(), controllerInstance, rawCommandNames);
+            var parameters = createMachineParameters(machineConfiguration, controllerInstance, machineRawCommandPlaceholder);
+            return constructor.newInstance(parameters);
 
         } catch (Exception e) {
             log.error("Error during machine instantiation: {}", e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    @NonNull
+    private AbstractMachine.Parameters createMachineParameters(FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration machineConfiguration,
+                                                               Protocol controllerInstance,
+                                                               Map<String, String> machineRawCommandPlaceholder) {
+        List<String> rawCommandNames = machineRawCommandPlaceholder != null ?
+            new ArrayList<>(machineRawCommandPlaceholder.keySet()) :
+            new ArrayList<>();
+        return new AbstractMachine.Parameters(machineConfiguration.name(),
+                                              controllerInstance,
+                                              rawCommandNames,
+                                              commandIdGenerator);
     }
 
     /**

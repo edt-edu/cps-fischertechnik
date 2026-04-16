@@ -1,27 +1,8 @@
 package io.github.mbdo.factoryscada.domains.multiprocessingstation;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.ArmMoveCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.ArmPickCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.ArmPlaceCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.ConveyorMoveOutCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.ConveyorMoveToSensorCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.MoveToSafePositionCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.OvenHeatCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.OvenLoadCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.OvenProcessCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.OvenUnloadCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.Process1Command;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.ProcessCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.SawCutCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.SetupCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.StopCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.TurntableEjectCommand;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.TurntableRotateCommand;
-import io.github.mbdo.factoryscada.socket.Protocol;
+import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MultiProcessingStationMachine extends AbstractMachine {
 
-    public MultiProcessingStationMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-        super(name, protocol, rawCommandNames);
+    public MultiProcessingStationMachine(Parameters parameters) {
+        super(parameters);
     }
 
     public static String getType() {

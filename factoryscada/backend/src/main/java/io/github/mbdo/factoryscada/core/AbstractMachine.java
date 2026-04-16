@@ -1,7 +1,10 @@
 package io.github.mbdo.factoryscada.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
+import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,26 +15,32 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @Data
 @Slf4j
 @AllArgsConstructor
 public abstract class AbstractMachine {
 
 	/**
-	 * Name of the Machine (also referred as topicName in GenericMachineCommandDTO)
+	 * Name of the Machine (also referred to as topicName in GenericMachineCommandDTO)
 	 */
     protected final String name;
-    
-	protected final Protocol protocol;
+
+	  protected final Protocol protocol;
 
     /**
-     * List of the command names defined in the command-placeholder.yml fot this machine
+     * List of the command names defined in the command-placeholder.yml for this machine
      */
     protected final List<String> rawCommandNames;
-    
+
+    protected final CommandIdGenerator commandIdGenerator;
+
+    public AbstractMachine(Parameters parameters) {
+        this.name = parameters.name;
+        this.protocol = parameters.protocol;
+        this.rawCommandNames = parameters.rawCommandNames;
+        this.commandIdGenerator = parameters.commandIdGenerator;
+    }
+
 
     public static String getType() {
         throw new UnsupportedOperationException("Subclasses must implement getType");
@@ -64,7 +73,7 @@ public abstract class AbstractMachine {
                     methodName, this.getClass().getName(), e);
         }
     }
-    
+
     public void executeRequest(@NotNull GenericMachineStatusRequestDTO<? extends AbstractMachine> parameter) {
     	ObjectMapper mapper = new ObjectMapper();
         Protocol protocol = this.getProtocol();
@@ -100,5 +109,7 @@ public abstract class AbstractMachine {
         return commandNames;
     }
 
-
+  public record Parameters(
+      String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
+  ) {}
 }

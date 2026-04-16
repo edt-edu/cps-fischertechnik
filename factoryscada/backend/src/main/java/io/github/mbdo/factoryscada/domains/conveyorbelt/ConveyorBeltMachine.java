@@ -1,14 +1,11 @@
 package io.github.mbdo.factoryscada.domains.conveyorbelt;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveNbStepsCommand;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveOutCommand;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveToSensor;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.StopCommand;
-import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConveyorBeltMachine extends AbstractMachine {
 
-    public ConveyorBeltMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-        super(name, protocol, rawCommandNames);
+    public ConveyorBeltMachine(Parameters parameters) {
+        super(parameters);
     }
 
     public static String getType() {
