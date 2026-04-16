@@ -93,6 +93,7 @@ public class FactoryScada {
         this.template = template;
         this.webSocketPublisher = webSocketPublisher;
         this.webSocketPublisher.factoryscada = this;
+        this.commandIdGenerator = new CommandIdGenerator();
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
@@ -108,8 +109,6 @@ public class FactoryScada {
             }
         }
         this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto, this.template);
-
-        this.commandIdGenerator = new CommandIdGenerator();
     }
 
     @EventListener(ApplicationReadyEvent.class)
