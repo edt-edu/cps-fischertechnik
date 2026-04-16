@@ -10,6 +10,7 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
@@ -18,6 +19,11 @@ public class SysmlMissionGeneratorTest {
 	@TempDir
     Path tempDir;
 
+    @BeforeAll
+    static void checkEnvironment() {
+        TestUtils.assertNodeAvailable();
+    }
+	
     @Test
     void import_CB_from_CBVGRMission() throws Exception {
         SysmlMissionGenerator generator = new SysmlMissionGenerator();
@@ -29,7 +35,7 @@ public class SysmlMissionGeneratorTest {
         assertTrue(sysmlFile.exists());
 
         ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-        
+        System.out.println(System.getenv("PATH"));
         generator.importSysml(sysmlFile, resourceSet);
         
         //generator.generate(sysmlFile.getAbsolutePath(), targetDir);
@@ -47,7 +53,7 @@ public class SysmlMissionGeneratorTest {
         assertTrue(sysmlFile.exists());
 
         ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-        
+        System.out.println(System.getenv("PATH"));
         generator.importSysml(sysmlFile, resourceSet);
         
         assertTrue(resourceSet.getResources().size() == 3);
