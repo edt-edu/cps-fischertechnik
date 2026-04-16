@@ -78,7 +78,7 @@ public class Demo {
     var slState = island1State.getSortingLine01();
 
     while (active) {
-      if (!slState.isInputLightBarrier() && slState.isIdle() && false) {
+      if (!slState.isInputLightBarrier() && slState.isIdle()) {
         sortingLine.eject(Color.AUTO);
       }
     }
