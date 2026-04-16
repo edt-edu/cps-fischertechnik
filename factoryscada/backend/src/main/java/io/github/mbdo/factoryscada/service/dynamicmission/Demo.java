@@ -1,9 +1,9 @@
-package io.github.mbdo.factoryscada.service.dynamicMission;
+package io.github.mbdo.factoryscada.service.dynamicmission;
 
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.service.FactoryScada;
-import io.github.mbdo.factoryscada.service.dynamicMission.machine_state.Island1MqttGateway;
-import io.github.mbdo.factoryscada.service.dynamicMission.machine_state.Island1State;
+import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1MqttGateway;
+import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1State;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -54,7 +54,7 @@ public class Demo {
     if (active) return;
 
     active = true;
-    island1State = new Island1State();
+    island1State = new Island1State(factoryScada);
     try {
       // TODO: configurable
       mqttClient = new MqttClient("tcp://localhost:1883", "client" + new Random().nextInt());
@@ -74,33 +74,11 @@ public class Demo {
 
   private void run() {
     while (active) {
-      if (!island1State.getSortingLine01().isInputLightBarrier() && isMachineIdle(SORTING_LINE_TOPIC)) {
+      var sortingLine = island1State.getSortingLine01();
+      if (!sortingLine.isInputLightBarrier() && sortingLine.isIdle()) {
         //TODO sort token to red, later sort it to random
 
       }
     }
-  }
-
-  // TODO: not typesafe enough, please instead add new fields to Island1State, SortingLineState, ...
-  @SuppressWarnings("SameParameterValue")
-  private boolean getInputStatus(String machineName, String inputName) {
-    //TODO this method currently mocks the input status which is published in mqtt
-    //noinspection SwitchStatementWithTooFewBranches
-    return switch (machineName) {
-      case "I1SortingLine01" -> switch (inputName) {
-        case "sortingLineSensRedLightBarrier" -> false;
-        case "sortingLineSensWhiteLightBarrier", "sortingLineSensBlueLightBarrier" -> true;
-        default -> throw new IllegalArgumentException("Unknown input: " + inputName);
-      };
-      default -> throw new IllegalArgumentException("Unknown machine: " + machineName);
-    };
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  private boolean isMachineIdle(String machineName) {
-    var status = factoryScada.getMachineLastMachineStatusMap().get(machineName);
-    if (status == null) return true;
-
-    return status.getMachineFeedbackStatus().contains("IDLE");
   }
 }

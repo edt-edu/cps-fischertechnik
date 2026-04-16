@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.service.dynamicMission.machine_state;
+package io.github.mbdo.factoryscada.service.dynamicmission.machinestate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,7 @@ public class Island1MqttGateway {
 
       @Override
       public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        System.out.println("Got message on topic " + topic);
+        log.info("Got message on topic {}", topic);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode n = mapper.readTree(mqttMessage.getPayload());
         if(!n.isObject()){
@@ -61,13 +61,14 @@ public class Island1MqttGateway {
   }
 
   private void messageToState(String topic, JsonNode n) {
+    //noinspection SwitchStatementWithTooFewBranches
     switch (topic){
       case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensInputLightBarrier"
           -> {
         state.getSortingLine01().setInputLightBarrier(n.get("value").asBoolean());
         log.warn("Got value for sortingLineSensInputLightBarrier: {}", state.getSortingLine01().isInputLightBarrier());
       }
-      default -> log.trace("Ignoring unknown MQTT topic: " + topic);
+      default -> log.trace("Ignoring unknown MQTT topic: {}", topic);
     }
   }
 
