@@ -74,12 +74,15 @@ public class Demo {
   }
 
   private void run() {
+    log.info("Demo started");
     var slState = island1State.getSortingLine01();
 
     while (active) {
-      if (!slState.isInputLightBarrier() && slState.isIdle()) {
+      if (!slState.isInputLightBarrier() && slState.isIdle() && false) {
         sortingLine.eject(Color.AUTO);
       }
     }
+
+    log.info("Demo stopped");
   }
 }
