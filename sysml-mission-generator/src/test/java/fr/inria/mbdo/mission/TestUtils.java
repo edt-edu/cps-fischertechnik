@@ -15,7 +15,7 @@ public class TestUtils {
 			Process process = new ProcessBuilder("node", "-v").redirectErrorStream(true).start();
 
 			int exitCode = process.waitFor();
-			LOGGER.error("Node.js is not available in PATH or returned non-zero exit code");
+			if(exitCode != 0) LOGGER.error("Node.js is not available in PATH or returned non-zero exit code");
 			Assertions.assertEquals(0, exitCode, "Node.js is not available in PATH or returned non-zero exit code");
 
 		} catch (IOException e) {
