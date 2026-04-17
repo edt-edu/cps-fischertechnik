@@ -298,10 +298,14 @@ class RevPiPyMachineController(ABC):
                                               machine)
 
         logging.debug("Determining machine class")
-        machine_class = self.__get_machine_class(message_type)
-        if machine_class is None:
-            logging.warning(f"invalid JSON command: unsupported machine "
-                            f"type: {message_type}")
+        try:
+            machine_class = self.__get_machine_class(message_type)
+            if machine_class is None:
+                logging.warning(f"invalid JSON command: unsupported machine "
+                                f"type: {message_type}")
+                return
+        except Exception as e:
+            logging.error("This is bad", exc_info=e)
             return
 
         logging.debug(f"Determined machine class to be {machine_class}")
