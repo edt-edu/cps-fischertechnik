@@ -40,6 +40,7 @@ public abstract class AbstractCommand<T extends AbstractMachine> implements Comm
         Protocol protocol = this.machine.getProtocol();
         try {
             protocol.send(mapper.writeValueAsString(abstractDTO));
+            machine.setIdle(false);
             log.info("Command sent to controller");
         } catch (JsonProcessingException e) {
             log.error("Cannot send command to controller; Conversion error {}", e.getMessage());

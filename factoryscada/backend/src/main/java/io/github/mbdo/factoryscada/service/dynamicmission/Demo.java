@@ -82,12 +82,12 @@ public class Demo {
   private void run() {
     log.info("Demo started");
 
-    island1State = new Island1State(factoryScada); //reset island state
+    island1State = new Island1State(); //reset island state
     startMQTTGateway();
     var slState = island1State.getSortingLine01();
 
     while (active) {
-      if (!slState.isInputLightBarrier() && slState.isIdle()) {
+      if (!slState.isInputLightBarrier() && sortingLine.isIdle()) {
         sortingLine.eject(Color.AUTO);
       }
     }

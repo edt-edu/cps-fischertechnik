@@ -247,7 +247,8 @@ public class FactoryScada {
                     MachineStatus machineStatus = this.machineLastMachineStatusMap.getOrDefault(machineName,
                             new MachineStatus());
 
-                    machineStatus.setMachineFeedbackStatus(feedback.getMessage().getStatus());
+                    var status = feedback.getMessage().getStatus();
+                    machineStatus.setMachineFeedbackStatus(status);
                     machineStatus.setMachineFeedbackTimestamp(feedback.getTimestamp());
                     machineStatus.setMachineFeedbackInfo(feedback.getMessage().getInfo());
                     machineStatus.setMachineFeedbackRawJSON(feedbackMsg);
@@ -255,6 +256,11 @@ public class FactoryScada {
                     this.machineLastMachineStatusMap.put(machineName, machineStatus);
                     // publish changes to frontend
                     webSocketPublisher.sendMachineStatus(machineName, machineStatus);
+
+                    //update idle status of machine
+                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        machine.setIdle(status.contains("IDLE"));
+                    });
 
                     break;
                 default:

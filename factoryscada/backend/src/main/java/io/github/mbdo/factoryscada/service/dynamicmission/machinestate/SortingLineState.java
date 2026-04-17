@@ -1,6 +1,5 @@
 package io.github.mbdo.factoryscada.service.dynamicmission.machinestate;
 
-import io.github.mbdo.factoryscada.service.FactoryScada;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,8 +7,4 @@ import lombok.Setter;
 @Setter
 public class SortingLineState extends MachineState {
   private boolean inputLightBarrier = true;
-
-  public SortingLineState(FactoryScada factoryScada, String machineName) {
-    super(factoryScada, machineName);
-  }
 }

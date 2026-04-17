@@ -10,6 +10,8 @@ import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,6 +38,10 @@ public abstract class AbstractMachine {
 
     protected final CommandIdGenerator commandIdGenerator;
 
+    @Getter
+    @Setter
+    protected boolean idle = true;
+
     public AbstractMachine(Parameters parameters) {
         this.name = parameters.name;
         this.protocol = parameters.protocol;
@@ -59,6 +65,7 @@ public abstract class AbstractMachine {
       }
     }
 
+    @SuppressWarnings("SameParameterValue")
     protected <T extends AbstractMachine> GenericMachineCommandDTO<T> createCommandDTO(String commandName,
                                                                                        Parameter... parameters) {
         var outputId = commandIdGenerator.generateId();
