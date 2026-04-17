@@ -90,6 +90,13 @@ public class Demo {
       if (!slState.isInputLightBarrier() && sortingLine.isIdle()) {
         sortingLine.eject(Color.AUTO);
       }
+
+      try {
+        //noinspection BusyWait
+        Thread.sleep(5);
+      } catch (InterruptedException e) {
+        log.warn("Event loop was interrupted");
+      }
     }
 
     log.info("Demo stopped");
