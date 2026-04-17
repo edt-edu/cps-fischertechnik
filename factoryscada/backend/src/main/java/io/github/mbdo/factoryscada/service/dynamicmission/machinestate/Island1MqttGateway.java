@@ -66,13 +66,20 @@ public class Island1MqttGateway {
     };
   }
 
-  @SuppressWarnings("SwitchStatementWithTooFewBranches")
   private void messageToState(String topic, JsonNode n) {
     switch (topic) {
-      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensInputLightBarrier" -> {
-        state.getSortingLine01().setInputLightBarrier(n.get("value").asBoolean());
-        log.trace("Got value for sortingLineSensInputLightBarrier: {}", state.getSortingLine01().isInputLightBarrier());
-      }
+      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensInputLightBarrier" ->
+          state.getSortingLine01().setInputLightBarrier(n.get("value").asBoolean());
+      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensWhiteLightBarrier" ->
+          state.getSortingLine01().setOutputWhiteLightBarrier(n.get("value").asBoolean());
+      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensRedLightBarrier" ->
+          state.getSortingLine01().setOutputRedLightBarrier(n.get("value").asBoolean());
+      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensBlueLightBarrier" ->
+          state.getSortingLine01().setOutputBlueLightBarrier(n.get("value").asBoolean());
+      case "PLC/Island 1/ConveyorBelt/I1ConveyorBelt01/measurements/input/conveyorSensFeed" ->
+          state.getConveyorBelt01().setFeedLightBarrier(n.get("value").asBoolean());
+      case "PLC/Island 1/ConveyorBelt/I1ConveyorBelt01/measurements/input/conveyorSensSwap" ->
+          state.getConveyorBelt01().setSwapLightBarrier(n.get("value").asBoolean());
       default -> log.trace("Ignoring unknown MQTT topic: {}", topic);
     }
   }

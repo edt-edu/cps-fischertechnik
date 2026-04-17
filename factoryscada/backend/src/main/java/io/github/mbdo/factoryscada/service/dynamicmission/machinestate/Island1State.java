@@ -4,9 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class Island1State {
-  private final SortingLineState sortingLine01;
-
-  public Island1State() {
-    sortingLine01 = new SortingLineState();
-  }
+  private final SortingLineState sortingLine01 = new SortingLineState();
+  private final ConveyorBeltState conveyorBelt01 = new ConveyorBeltState();
 }
