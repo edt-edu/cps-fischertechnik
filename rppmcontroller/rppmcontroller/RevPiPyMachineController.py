@@ -293,13 +293,11 @@ class RevPiPyMachineController(ABC):
         logging.debug(f'Handling command: {message_type} {message_name}')
         logging.debug(f"message: {message!r}")
 
-        try:
-            self.__publish_received_message_event("command",
-                                                  message,
-                                                  machine)
-        except Exception as e:
-            logging.error(f"Failed to publish message-received-event", exc_info=e)
+        self.__publish_received_message_event("command",
+                                              message,
+                                              machine)
 
+        logging.debug("Determining machine class")
         machine_class = self.__get_machine_class(message_type)
         if machine_class is None:
             logging.warning(f"invalid JSON command: unsupported machine "
