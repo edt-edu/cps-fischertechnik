@@ -45,7 +45,7 @@ public class SysmlMissionGenerator {
 
         Resource res= this.importSysml( sysmlFile, resourceSet);
         
-        MachineInterfaceGenerator interfaceGenerator = new MachineInterfaceGenerator();        
+        MachineInterfaceGenerator interfaceGenerator = new MachineInterfaceGenerator("fr.inria.factoryscada.sysmlbaseddomain");        
 		interfaceGenerator.generate(res.getContents().getFirst()); // TODO deal with multiple root
         
 	}

@@ -96,6 +96,13 @@
       <artifactId>syson-sysml-validation</artifactId>
       <version>${syson.version}</version>
     </dependency>
+    <!-- code generation -->
+    <dependency>
+	    <groupId>com.palantir.javapoet</groupId>
+	    <artifactId>javapoet</artifactId>
+	    <version>0.14.0</version>
+	</dependency>
+    
     <!-- Optionally: parameterized tests support -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
