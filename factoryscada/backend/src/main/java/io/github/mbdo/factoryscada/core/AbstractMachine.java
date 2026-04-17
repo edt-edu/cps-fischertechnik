@@ -77,7 +77,7 @@ public abstract class AbstractMachine {
                                                                                        Parameter... parameters) {
         var outputId = commandIdGenerator.generateId();
         var commandMessage = new CommandMessage("COMMAND",
-                                                type().toUpperCase(),
+                                                getCommandMachineType(),
                                                 Long.toString(outputId),
                                                 commandName,
                                                 List.of(parameters));
