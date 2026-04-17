@@ -37,26 +37,26 @@ public class Island1MqttGateway {
       }
 
       @Override
-      public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-        log.info("Got message on topic {}", topic);
+      public void messageArrived(String topic, MqttMessage mqttMessage) {
+        log.trace("Got message on topic {}", topic);
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode n = null;
+        JsonNode node;
         try {
-          n = mapper.readTree(mqttMessage.getPayload());
+          node = mapper.readTree(mqttMessage.getPayload());
         } catch (IOException e) {
-          log.warn("Got invalid json, ignoring", e);
+          log.warn("Got invalid json on topic {}", topic, e);
           return;
         }
-        if(!n.isObject()){
-          log.warn("Got non object json, ignoring");
+        if (!node.isObject()) {
+          log.warn("Got non object json on topic {}: {}", topic, node);
           return;
         }
 
-        if(n.has("value")){
-          log.warn("Got json object without value field, ignoring");
+        if (node.has("value")) {
+          log.warn("Got json object without value field on topic {}: {}", topic, node);
         }
 
-        messageToState(topic, n);
+        messageToState(topic, node);
       }
 
       @Override
@@ -66,13 +66,12 @@ public class Island1MqttGateway {
     };
   }
 
+  @SuppressWarnings("SwitchStatementWithTooFewBranches")
   private void messageToState(String topic, JsonNode n) {
-    //noinspection SwitchStatementWithTooFewBranches
-    switch (topic){
-      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensInputLightBarrier"
-          -> {
+    switch (topic) {
+      case "PLC/Island 1/SortingLine/I1SortingLine01/measurements/input/sortingLineSensInputLightBarrier" -> {
         state.getSortingLine01().setInputLightBarrier(n.get("value").asBoolean());
-        log.warn("Got value for sortingLineSensInputLightBarrier: {}", state.getSortingLine01().isInputLightBarrier());
+        log.trace("Got value for sortingLineSensInputLightBarrier: {}", state.getSortingLine01().isInputLightBarrier());
       }
       default -> log.trace("Ignoring unknown MQTT topic: {}", topic);
     }
