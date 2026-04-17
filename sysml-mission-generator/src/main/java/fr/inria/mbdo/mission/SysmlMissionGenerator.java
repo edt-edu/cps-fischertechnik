@@ -5,27 +5,25 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.syson.sysml.util.SysmlResourceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.xmi.XMIResource;
-import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.syson.sysml.ASTTransformer;
 import org.eclipse.syson.sysml.AstParsingResult;
 import org.eclipse.syson.sysml.SysmlToAst;
 import org.eclipse.syson.sysml.textual.utils.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import fr.inria.mbdo.mission.generators.MachineInterfaceGenerator;
 
 public class SysmlMissionGenerator {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SysmlMissionGenerator.class);
+	
+	// TODO deal with multiple files to be loaded
 	
 	public void generate(String sysmlFilePath, String targetFolderPath) throws FileNotFoundException, IOException {
 		File sysmlFile = new File(sysmlFilePath);
@@ -45,11 +43,15 @@ public class SysmlMissionGenerator {
         
         System.out.println("Parsing SysML file: " + sysmlFilePath);
 
-        this.importSysml( sysmlFile, resourceSet);
+        Resource res= this.importSysml( sysmlFile, resourceSet);
+        
+        MachineInterfaceGenerator interfaceGenerator = new MachineInterfaceGenerator();        
+		interfaceGenerator.generate(res.getContents().getFirst()); // TODO deal with multiple root
         
 	}
 	
-	public void importSysml(File sysmlFile, ResourceSet resourceSet) throws FileNotFoundException, IOException {
+	public Resource importSysml(File sysmlFile, ResourceSet resourceSet) throws FileNotFoundException, IOException {
+		Resource result = null;
 		SysmlToAst sysmlToAst = new SysmlToAst(null);
         ASTTransformer astTransformer = new ASTTransformer();
         try (InputStream inputStream = new FileInputStream(sysmlFile)) {
@@ -68,6 +70,7 @@ public class SysmlMissionGenerator {
                 if (resource != null && !resource.getContents().isEmpty()) {                	                	
                 	resource.setURI(URI.createURI("sysml://"+sysmlFile.getCanonicalPath()));
                 	LOGGER.info("Model parsed successfully.");
+                	result = resource;
 //                    XMIResource resourceToSave = new XMIResourceImpl(URI.createFileURI(targetFilePath));
 //                    resourceToSave.getContents().addAll(resource.getContents());
 //                    resourceToSave.save(Collections.emptyMap());
@@ -86,6 +89,7 @@ public class SysmlMissionGenerator {
                 LOGGER.error("Error while parsing input file : " + errorMessage);
             }
         }
+        return result;
     }
 	
 
