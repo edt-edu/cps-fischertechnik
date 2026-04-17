@@ -23,7 +23,8 @@ import java.util.Random;
 @Getter
 public class Demo {
 
-  public static final String SORTING_LINE_TOPIC = "I1SortingLine01";
+  private static final String SORTING_LINE_TOPIC = "I1SortingLine01";
+
   private final FactoryScada factoryScada;
   private final SimpMessagingTemplate template;
   private volatile boolean active = false;
@@ -55,26 +56,34 @@ public class Demo {
     if (active) return;
 
     active = true;
-    island1State = new Island1State(factoryScada);
+    new Thread(this::run).start();
+  }
+
+  private void startMQTTGateway() {
     try {
       // TODO: configurable
       mqttClient = new MqttClient("tcp://localhost:1883", "client" + new Random().nextInt());
     } catch (MqttException e) {
-      throw new IOException(e);
+      log.error("Failed to create MQTT client", e);
+      return;
     }
     island1MqttGateway = new Island1MqttGateway(island1State, mqttClient);
-    island1MqttGateway.start();
-
-    new Thread(this::run).start();
+    try {
+      island1MqttGateway.start();
+    } catch (IOException e) {
+      log.error("Failed to start MQTT gateway", e);
+    }
   }
 
   public void stop() throws IOException {
     active = false;
-    island1MqttGateway.stop();
   }
 
   private void run() {
     log.info("Demo started");
+
+    island1State = new Island1State(factoryScada); //reset island state
+    startMQTTGateway();
     var slState = island1State.getSortingLine01();
 
     while (active) {
@@ -84,5 +93,14 @@ public class Demo {
     }
 
     log.info("Demo stopped");
+    stopMQTTGateway();
+  }
+
+  private void stopMQTTGateway() {
+    try {
+      island1MqttGateway.stop();
+    } catch (IOException e) {
+      log.error("Failed to stop MQTT gateway", e);
+    }
   }
 }
