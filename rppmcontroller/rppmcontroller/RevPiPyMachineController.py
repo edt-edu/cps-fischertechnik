@@ -303,6 +303,8 @@ class RevPiPyMachineController(ABC):
                             f"type: {message_type}")
             return
 
+        logging.debug(f"Determined machine class to be {machine_class}")
+
         if not isinstance(machine, machine_class):
             # the machine is determined by the topic name, so it is better to
             # log the topic name here instead of the selected machine
@@ -330,6 +332,7 @@ class RevPiPyMachineController(ABC):
             return
 
         # apply parameter modifications
+        logging.debug("Applying parameter modifications")
         try:
             self.__replace_named_positions(machine, parameters)
         except UnknownNamedPosition as e:
@@ -341,9 +344,12 @@ class RevPiPyMachineController(ABC):
                 f"Unknown named position: {named_position}"))
             return
 
+        logging.debug("Applying machine-specific parameter modifications")
         self.__apply_machine_specific_parameter_modifications(message_type,
                                                               parameters)
+
         # call command function
+        logging.debug("Calling command function")
         command_function_return_value = self.__call_command_function(
             command_function,
             command_function_name,
@@ -371,6 +377,7 @@ class RevPiPyMachineController(ABC):
 
         # send interruption feedback for the previously running
         # command on the machine
+        logging.debug("Interrupting currently running command")
         self.__interrupt_currently_running_command(machine, message)
 
         # store the new command on the machine
