@@ -21,6 +21,11 @@ public class ConveyorBeltMachine extends AbstractMachine {
         return "conveyorBelt";
     }
 
+    @Override
+    public String getCommandMachineType() {
+        return "CONVEYOR";
+    }
+
     public void moveToSensor(@Valid @NotNull final GenericMachineCommandDTO<ConveyorBeltMachine> forwardLeaveDTO) {
         log.info("Forward leave conveyor {}", forwardLeaveDTO);
         new MoveToSensor(this, forwardLeaveDTO).execute();

@@ -21,6 +21,11 @@ public class SortingLineMachine extends AbstractMachine {
         return "sortingLine";
     }
 
+    @Override
+    public String getCommandMachineType() {
+        return "SORTING";
+    }
+
     public void eject(Color color) {
         eject(createCommandDTO("eject", Parameter.color(color)));
     }

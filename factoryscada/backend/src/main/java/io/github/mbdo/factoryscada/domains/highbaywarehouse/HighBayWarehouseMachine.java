@@ -18,6 +18,11 @@ public class HighBayWarehouseMachine extends AbstractMachine {
         return "highBayWarehouse";
     }
 
+    @Override
+    public String getCommandMachineType() {
+        return "WAREHOUSE";
+    }
+
     public void cantilever_backward(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Cantilever Backward HighBayWarehouse {}", dto);
         new CantileverBackwardCommand(this, dto).execute();

@@ -18,6 +18,11 @@ public class PunchingMachine extends AbstractMachine {
     return "punchingMachine";
   }
 
+  @Override
+  public String getCommandMachineType() {
+    return "PUNCHING";
+  }
+
   public void stop(@Valid @NotNull final GenericMachineCommandDTO<PunchingMachine> stopDTO) {
     log.info("Stop punching machine {}", stopDTO);
     new StopCommand(this, stopDTO).execute();

@@ -65,6 +65,13 @@ public abstract class AbstractMachine {
       }
     }
 
+    /**
+     * Gets the machine type which is used in a command payload.
+     *
+     * <p>Those type names are usually uppercase. E.g., for the SortingLine it would be {@code SORTING}.
+     */
+    public abstract String getCommandMachineType();
+
     @SuppressWarnings("SameParameterValue")
     protected <T extends AbstractMachine> GenericMachineCommandDTO<T> createCommandDTO(String commandName,
                                                                                        Parameter... parameters) {

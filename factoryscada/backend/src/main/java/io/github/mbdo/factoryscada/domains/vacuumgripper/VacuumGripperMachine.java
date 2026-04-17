@@ -18,6 +18,11 @@ public class VacuumGripperMachine extends AbstractMachine {
         return "vacuumGripper";
     }
 
+    @Override
+    public String getCommandMachineType() {
+        return "VACUUM";
+    }
+
     public void go_to_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> goToPositionDTO) {
         log.info("GoToPosition vacuum gripper {}", goToPositionDTO);
         new GoToPositionCommand(this, goToPositionDTO).execute();

@@ -17,6 +17,11 @@ public class IndexedLineMachine extends AbstractMachine {
     return "indexedLine";
   }
 
+  @Override
+  public String getCommandMachineType() {
+    return "INDEXEDLINE";
+  }
+
   public void process(@Valid @NotNull GenericMachineCommandDTO<IndexedLineMachine> processDTO) {
     log.info("Process indexedLine {}", processDTO);
     new ProcessCommand(this, processDTO).execute();
