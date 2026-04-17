@@ -52,7 +52,7 @@ public class Island1MqttGateway {
           return;
         }
 
-        if (node.has("value")) {
+        if (!node.has("value")) {
           log.warn("Got json object without value field on topic {}: {}", topic, node);
         }
 
