@@ -17,11 +17,14 @@ package ConveyorBeltSystem {
       BACKWARD;
     }
 
+
     action def MoveToSensor {
+      doc /* Moves the conveyor in the given direction until the conveyed object reaches the sensor */
       in direction : DirectionKind;
     }
 
     action def MoveOut {
+      doc /* Moves the conveyor in the given direction until the conveyed object reaches the sensor and is ejected of the Conveyor belt*/
       in direction : DirectionKind;
     }
 
@@ -42,7 +45,8 @@ package ConveyorBeltSystem {
     private import ConveyorBeltSystem::ConveyorBeltCommands::*;
 
     part def ConveyorBeltMachine {
-
+      doc /* Definition of Conveyor Belt Machine */
+      
       perform action moveToSensor : MoveToSensor;
       perform action moveOut : MoveOut;
       perform action moveNbSteps : MoveNbSteps;
