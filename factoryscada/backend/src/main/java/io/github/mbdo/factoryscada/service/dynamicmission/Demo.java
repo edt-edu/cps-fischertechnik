@@ -158,7 +158,7 @@ public class Demo {
 
       //move token to mps
       if (!cbState.isSwapLightBarrier() && vacuumGripper1.isIdle() && multiProcessingStation.isIdle()) {
-        vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS"));
+        vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
       }
 
       //move vgr1 out of the way
