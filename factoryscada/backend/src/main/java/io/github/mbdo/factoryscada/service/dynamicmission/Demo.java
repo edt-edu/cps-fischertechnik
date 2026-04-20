@@ -175,6 +175,7 @@ public class Demo {
         processingState = ProcessingState.GOTO_SAFETY;
       }
 
+      //this may happen in parallel with the vgr going to safety
       if (!mpsState.isInputLightBarrier() && multiProcessingStation.isIdle() && processingState == ProcessingState.GOTO_SAFETY) {
         multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
         processingState = ProcessingState.PROCESSING;
