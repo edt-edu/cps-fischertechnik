@@ -215,6 +215,7 @@ public class FactoryScada {
      * @param feedbackMsg
      */
     private void updateMachineLastCommandStatusFeedback(String feedbackMsg) {
+        log.info("Received feedback message: {}", feedbackMsg);
         ObjectMapper mapper = new ObjectMapper();
         try {
             CommandFeedbackDTO feedback = mapper.readValue(feedbackMsg, CommandFeedbackDTO.class);
