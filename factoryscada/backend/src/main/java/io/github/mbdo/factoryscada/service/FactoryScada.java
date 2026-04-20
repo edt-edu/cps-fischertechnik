@@ -215,7 +215,6 @@ public class FactoryScada {
      * @param feedbackMsg
      */
     private void updateMachineLastCommandStatusFeedback(String feedbackMsg) {
-        log.info("Received feedback message: {}", feedbackMsg);
         ObjectMapper mapper = new ObjectMapper();
         try {
             CommandFeedbackDTO feedback = mapper.readValue(feedbackMsg, CommandFeedbackDTO.class);
@@ -243,13 +242,6 @@ public class FactoryScada {
                     webSocketPublisher.sendCommandStatus(machineName, commandStatus);
                     // notify ExecuterVisitor
                     this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
-                    //update idle status of machine
-                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
-                        var status = commandStatus.getCommandFeedbackStatus().toUpperCase();
-                        log.info("Received command feedback for machine {} : {}", machineName, status);
-                        machine.setIdle(!status.equalsIgnoreCase("MUST_CONTINUE"));
-                    });
-
                     break;
                 case "MACHINE_FEEDBACK":
                     MachineStatus machineStatus = this.machineLastMachineStatusMap.getOrDefault(machineName,
