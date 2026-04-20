@@ -50,6 +50,5 @@ test_and_package:
     reports:
       junit:
         - sysml-mission-generator/target/surefire-reports/TEST-*.xml
-  artifacts:
     paths:
       - sysml-mission-generator/target/*.jar
