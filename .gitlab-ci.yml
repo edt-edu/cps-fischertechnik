@@ -40,6 +40,7 @@ test_and_package:
     #- if: $CI_COMMIT_BRANCH != "main"
     - if: $CI_COMMIT_BRANCH
   script:
+    - apk add --update nodejs npm
     - cd sysml-mission-generator
     - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS
       clean verify
