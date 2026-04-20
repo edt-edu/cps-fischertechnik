@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.palantir.javapoet.JavaFile;
 import com.palantir.javapoet.MethodSpec;
+import com.palantir.javapoet.TypeName;
 import com.palantir.javapoet.TypeSpec;
 
 public class MachineInterfaceGenerator {
@@ -108,11 +109,12 @@ public class MachineInterfaceGenerator {
 				Type attributeType = ownedAttribute.getType().getFirst();
 				// possibly asks to generate the java class for the type
 				addIndirectTypesToGenerate(attributeType);
-
-				getterBuilder.returns(typeSwitch.doSwitch(attributeType));
+				TypeName typeName = typeSwitch.doSwitch(attributeType);
+				getterBuilder.returns(typeName);
 
 				MethodSpec.Builder setterBuilder = MethodSpec.methodBuilder("set" + toUpperFirst(ownedAttribute.getName()))
-						.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
+						.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+						.addParameter(typeName, ownedAttribute.getName());
 
 				partDefInterfaceBuilder.addMethod(setterBuilder.build());
 				partDefInterfaceBuilder.addMethod(getterBuilder.build());
