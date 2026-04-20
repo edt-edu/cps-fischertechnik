@@ -113,12 +113,21 @@ public class Demo {
 
     while (active) {
       //sort token if one is present at sl input
-      if (!slState.isInputLightBarrier() && sortingLine.isIdle()) {
+
+      var slInputTokenPresent = !slState.isInputLightBarrier();
+      var slIdle = sortingLine.isIdle();
+      log.debug("slInputTokenPresent: {}, slIdle: {}", slInputTokenPresent, slIdle);
+      if (slInputTokenPresent && slIdle) {
+        log.info("Sorting token");
         sortingLine.eject(Color.AUTO);
       }
 
       //move token from sl out to cb if there is room
-      if (vacuumGripper2.isIdle() && conveyorBelt.isIdle() && !cbState.isFeedLightBarrier() && conveyorBeltOwner == null) {
+      var vgr2Idle = vacuumGripper2.isIdle();
+      var cbIdle = conveyorBelt.isIdle();
+      var cbFeedTokenPresent = !cbState.isFeedLightBarrier();
+      log.debug("vgr2Idle: {}, cbIdle: {}, cbFeedTokenPresent: {}, conveyorBeltOwner: {}", vgr2Idle, cbIdle, cbFeedTokenPresent, conveyorBeltOwner);
+      if (vgr2Idle && cbIdle && cbFeedTokenPresent && conveyorBeltOwner == null) {
         String originName;
         if (!slState.isOutputWhiteLightBarrier()) {
           originName = "SL_OUTPUT_WHITE";
@@ -129,19 +138,24 @@ public class Demo {
         } else {
           originName = null;
         }
+        log.debug("originName: {}", originName);
         if (originName != null) {
+          log.info("Moving token from {} to CB", originName);
           conveyorBeltOwner = vacuumGripper2;
           vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
         }
       }
 
       //release conveyor belt lock
-      if (vacuumGripper2.isIdle() && conveyorBeltOwner == vacuumGripper2) {
+      vgr2Idle = vacuumGripper2.isIdle();
+      log.debug("vgr2Idle: {}, conveyorBeltOwner: {}", vgr2Idle, conveyorBeltOwner);
+      if (vgr2Idle && conveyorBeltOwner == vacuumGripper2) {
+        log.info("Releasing CB lock");
         conveyorBeltOwner = null;
         vacuumGripper2.setup();
       }
 
-      sleep(5);
+      sleep(3000);
     }
 
     log.info("Demo stopped");
