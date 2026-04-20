@@ -2,6 +2,7 @@ package io.github.mbdo.factoryscada.domains.vacuumgripper;
 
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.core.passable.Position;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -28,6 +29,10 @@ public class VacuumGripperMachine extends AbstractMachine {
         new GoToPositionCommand(this, goToPositionDTO).execute();
     }
 
+    public void move(Position origin, Position destination) {
+        move(createCommandDTO("move", origin.toParameter(), destination.toParameter()));
+    }
+
     public void move(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> moveDTO) {
         log.info("Moving vacuum gripper {}", moveDTO);
         new MoveCommand(this, moveDTO).execute();
@@ -41,6 +46,10 @@ public class VacuumGripperMachine extends AbstractMachine {
     public void place(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> placeDTO) {
         log.info("Placing with vacuum gripper {}", placeDTO);
         new PlaceCommand(this, placeDTO).execute();
+    }
+
+    public void setup() {
+        setup(createCommandDTO("setup"));
     }
 
     public void setup(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> setupDTO) {

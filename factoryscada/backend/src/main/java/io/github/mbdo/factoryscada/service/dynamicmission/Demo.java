@@ -1,6 +1,7 @@
 package io.github.mbdo.factoryscada.service.dynamicmission;
 
 import io.github.mbdo.factoryscada.core.enums.Color;
+import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
@@ -107,13 +108,38 @@ public class Demo {
     island1State = new Island1State(); //reset island state
     startMQTTGateway();
     var slState = island1State.getSortingLine01();
+    var cbState = island1State.getConveyorBelt01();
+    Object conveyorBeltOwner = null;
 
     while (active) {
+      //sort token if one is present at sl input
       if (!slState.isInputLightBarrier() && sortingLine.isIdle()) {
         sortingLine.eject(Color.AUTO);
       }
 
+      //move token from sl out to cb if there is room
+      if (vacuumGripper2.isIdle() && conveyorBelt.isIdle() && !cbState.isFeedLightBarrier() && conveyorBeltOwner == null) {
+        String originName;
+        if (!slState.isOutputWhiteLightBarrier()) {
+          originName = "SL_OUTPUT_WHITE";
+        } else if (!slState.isOutputRedLightBarrier()) {
+          originName = "SL_OUTPUT_RED";
+        } else if (!slState.isOutputBlueLightBarrier()) {
+          originName = "SL_OUTPUT_BLUE";
+        } else {
+          originName = null;
+        }
+        if (originName != null) {
+          conveyorBeltOwner = vacuumGripper2;
+          vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
+        }
+      }
 
+      //release conveyor belt lock
+      if (vacuumGripper2.isIdle() && conveyorBeltOwner == vacuumGripper2) {
+        conveyorBeltOwner = null;
+        vacuumGripper2.setup();
+      }
 
       sleep(5);
     }
