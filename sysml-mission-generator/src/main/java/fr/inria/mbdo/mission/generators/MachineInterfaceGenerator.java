@@ -21,6 +21,7 @@ import org.eclipse.syson.sysml.util.SysmlSwitch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.palantir.javapoet.JavaFile;
 import com.palantir.javapoet.MethodSpec;
 import com.palantir.javapoet.TypeSpec;
 
@@ -32,10 +33,16 @@ public class MachineInterfaceGenerator {
 	MachineInterfaceGeneratorSwitch traversalSwitch;
 	SymlToJavaTypeSwitch typeSwitch;
 
+	TransformationContext context;
+	
+	public TransformationContext getContext() {
+		return context;
+	}
+
 	public MachineInterfaceGenerator(String packagePrefix) {
-		TransformationContext context = new TransformationContext();
-		traversalSwitch = new MachineInterfaceGeneratorSwitch(context);
-		typeSwitch = new SymlToJavaTypeSwitch(packagePrefix);
+		this.context = new TransformationContext();
+		this.traversalSwitch = new MachineInterfaceGeneratorSwitch(context);
+		this.typeSwitch = new SymlToJavaTypeSwitch(packagePrefix);
 		this.packagePrefix = packagePrefix;
 	}
 
@@ -56,7 +63,8 @@ public class MachineInterfaceGenerator {
 		// sysml source root
 		// sysmlrtd target root (returned as result
 		
-		public Map<PartDefinition, TypeSpec.Builder> partDefToJavaInterface = new HashMap<>(); 
+		public Map<PartDefinition, JavaFile> partDefToJavaFile = new HashMap<>();
+		public Map<PartDefinition, JavaFile> enumToJavaFile = new HashMap<>(); 
 	}
 
 	public class MachineInterfaceGeneratorSwitch extends SysmlSwitch<List<String>> {
@@ -103,7 +111,9 @@ public class MachineInterfaceGenerator {
 				partDefInterfaceBuilder.addMethod(getterBuilder.build());
 			}
 			
-			transformationContext.partDefToJavaInterface.put(object, partDefInterfaceBuilder);
+			// store javafile created for this partdef
+			JavaFile javaFile = JavaFile.builder(packagePrefix, partDefInterfaceBuilder.build()).build();
+			transformationContext.partDefToJavaFile.put(object, javaFile);
 			
 			result.addAll(doSwitchForAllOwnedElements(object)); // look into children
 
@@ -130,9 +140,6 @@ public class MachineInterfaceGenerator {
 	}
 
 	public List<String> generate(EObject rootSource) {
-		
-		
-		
 		return traversalSwitch.doSwitch(rootSource);
 	}
 

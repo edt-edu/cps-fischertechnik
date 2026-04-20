@@ -3,21 +3,19 @@ package fr.inria.mbdo.mission;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.nio.file.Path;
 
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SysmlMissionGeneratorTest {
-	private static final Logger logger = LoggerFactory.getLogger(SysmlMissionGeneratorTest.class);
-	@TempDir
-	Path tempDir;
+import fr.inria.mbdo.mission.importer.SysmlImporter;
+
+public class SysmlImporterTest {
+	private static final Logger logger = LoggerFactory.getLogger(SysmlImporterTest.class);
 
 	@BeforeAll
 	static void checkEnvironment() {
@@ -38,33 +36,16 @@ public class SysmlMissionGeneratorTest {
 	void import_VGR_from_CBVGRMission() throws Exception {
 		importTest("CBVGRMission/VGR.sysml");
 	}
-
-	@Test
-	void generateMachineInterfaces()  throws Exception {
-		
-		var sysmlFileName = "CBVGRMission/CB.sysml";
-		String destDir = tempDir.toFile().getAbsolutePath();
-		SysmlMissionGenerator generator = new SysmlMissionGenerator();
-
-		// files from /src/test/resources
-		File sysmlFile = new File(getClass().getClassLoader().getResource(sysmlFileName).toURI());
-		assertTrue(sysmlFile.exists());
-		
-		generator.generate(sysmlFile.getAbsolutePath(), destDir);
-
-		
-	}
-	
 	
 	void importTest(String sysmlFileName) throws Exception {
-		SysmlMissionGenerator generator = new SysmlMissionGenerator();
+		SysmlImporter generator = new SysmlImporter();
 
 		// files from /src/test/resources
 		File sysmlFile = new File(getClass().getClassLoader().getResource(sysmlFileName).toURI());
 		assertTrue(sysmlFile.exists());
 
 		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-		generator.importSysml(sysmlFile, resourceSet);
+		generator.importSysmlText(sysmlFile, resourceSet);
 
 		assertTrue(
 				resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
