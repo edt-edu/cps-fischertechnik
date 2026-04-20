@@ -91,16 +91,20 @@ public class Demo {
         sortingLine.eject(Color.AUTO);
       }
 
-      try {
-        //noinspection BusyWait
-        Thread.sleep(5);
-      } catch (InterruptedException e) {
-        log.warn("Event loop was interrupted");
-      }
+      sleep(5);
     }
 
     log.info("Demo stopped");
     stopMQTTGateway();
+  }
+
+  @SuppressWarnings("SameParameterValue")
+  private static void sleep(int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      log.warn("Event loop was interrupted");
+    }
   }
 
   private void stopMQTTGateway() {
