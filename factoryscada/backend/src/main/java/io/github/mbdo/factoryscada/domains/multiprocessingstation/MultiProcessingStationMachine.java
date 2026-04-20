@@ -25,6 +25,10 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         return "MULTIPROCESSING";
     }
 
+    public void setup() {
+        setup(createCommandDTO("setup"));
+    }
+
     public void setup(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Setting up MultiProcessingStation {}", dto);
         new SetupCommand(this, dto).execute();

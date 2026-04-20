@@ -166,6 +166,7 @@ public class Demo {
           multiProcessingStation.isIdle() &&
           processingState == ProcessingState.IDLE) {
         vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
+        multiProcessingStation.setup(); //ensure the mps is in a state where we can actually place the token
         processingState = ProcessingState.DELIVERING_TOKEN;
       }
 
