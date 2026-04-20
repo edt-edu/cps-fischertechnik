@@ -1,7 +1,10 @@
 package io.github.mbdo.factoryscada.service.dynamicmission;
 
 import io.github.mbdo.factoryscada.core.enums.Color;
+import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
+import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1MqttGateway;
 import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1State;
@@ -24,11 +27,20 @@ import java.util.Random;
 public class Demo {
 
   private static final String SORTING_LINE_TOPIC = "I1SortingLine01";
+  private static final String VGR2_TOPIC = "I1VacuumGripper02";
+  private static final String CONVEYOR_TOPIC = "I1ConveyorBelt01";
+  private static final String VGR1_TOPIC = "I1VacuumGripper01";
+  private static final String MPS_TOPIC = "I1MultiProcessing01";
 
   private final FactoryScada factoryScada;
   private final SimpMessagingTemplate template;
   private volatile boolean active = false;
+
   private SortingLineMachine sortingLine;
+  private VacuumGripperMachine vacuumGripper2;
+  private ConveyorBeltMachine conveyorBelt;
+  private VacuumGripperMachine vacuumGripper1;
+  private MultiProcessingStationMachine multiProcessingStation;
 
   private Island1State island1State;
   private MqttClient mqttClient;
@@ -42,14 +54,24 @@ public class Demo {
 
   @EventListener(ApplicationReadyEvent.class)
   public void initAfterStartup() throws IOException {
-    if (factoryScada.getFactoryScadaInstance().machines().get(SORTING_LINE_TOPIC) instanceof SortingLineMachine sl) {
-      this.sortingLine = sl;
-    } else {
-      throw new IllegalStateException("Sorting line machine not found");
-    }
+    this.sortingLine = getMachine(SortingLineMachine.class, SORTING_LINE_TOPIC);
+    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, VGR2_TOPIC);
+    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, CONVEYOR_TOPIC);
+    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
+    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
 
     //TODO add a button in the frontend to start and stop this service
     start();
+  }
+
+  private <T> T getMachine(Class<T> machineClass, String machineName) throws IllegalArgumentException {
+    var machine = getFactoryScada().getFactoryScadaInstance().machines().get(machineName);
+    //isInstance check is null-safe
+    if (!machineClass.isInstance(machine)) {
+      throw new IllegalArgumentException("Cannot find machine " + machineName);
+    }
+
+    return machineClass.cast(machine);
   }
 
   public synchronized void start() throws IOException {
@@ -90,6 +112,8 @@ public class Demo {
       if (!slState.isInputLightBarrier() && sortingLine.isIdle()) {
         sortingLine.eject(Color.AUTO);
       }
+
+
 
       sleep(5);
     }
