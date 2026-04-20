@@ -6,4 +6,5 @@ import lombok.Getter;
 public class Island1State {
   private final SortingLineState sortingLine01 = new SortingLineState();
   private final ConveyorBeltState conveyorBelt01 = new ConveyorBeltState();
+  private final MultiProcessingState multiProcessing01 = new MultiProcessingState();
 }

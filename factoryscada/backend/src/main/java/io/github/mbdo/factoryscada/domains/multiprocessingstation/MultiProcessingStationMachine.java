@@ -2,6 +2,8 @@ package io.github.mbdo.factoryscada.domains.multiprocessingstation;
 
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.core.dtos.Parameter;
+import io.github.mbdo.factoryscada.core.enums.MPSOutput;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -31,6 +33,13 @@ public class MultiProcessingStationMachine extends AbstractMachine {
     public void process1(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Process1 MultiProcessingStation {}", dto);
         new Process1Command(this, dto).execute();
+    }
+
+    public void process(int ovenTime, int sawTime, MPSOutput output) {
+        process(createCommandDTO("process",
+                                 Parameter.numberNatural(ovenTime),
+                                 Parameter.numberNatural(sawTime),
+                                 Parameter.mpsOutput(output)));
     }
 
     public void process(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {

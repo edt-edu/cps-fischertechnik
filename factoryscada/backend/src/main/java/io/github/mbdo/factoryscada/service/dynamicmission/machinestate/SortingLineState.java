@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SortingLineState extends MachineState {
+public class SortingLineState {
   private boolean inputLightBarrier = true;
   private boolean outputWhiteLightBarrier = true;
   private boolean outputRedLightBarrier = true;

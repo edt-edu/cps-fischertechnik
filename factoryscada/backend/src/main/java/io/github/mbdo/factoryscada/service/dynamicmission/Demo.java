@@ -2,6 +2,7 @@ package io.github.mbdo.factoryscada.service.dynamicmission;
 
 import io.github.mbdo.factoryscada.core.enums.Color;
 import io.github.mbdo.factoryscada.core.enums.DirectionKind;
+import io.github.mbdo.factoryscada.core.enums.MPSOutput;
 import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
@@ -110,6 +111,7 @@ public class Demo {
     startMQTTGateway();
     var slState = island1State.getSortingLine01();
     var cbState = island1State.getConveyorBelt01();
+    var mpsState = island1State.getMultiProcessing01();
     Object conveyorBeltOwner = null;
 
     while (active) {
@@ -146,12 +148,26 @@ public class Demo {
       if (vacuumGripper2.isIdle() && conveyorBeltOwner == vacuumGripper2) {
         log.info("Releasing CB lock");
         conveyorBeltOwner = null;
-        vacuumGripper2.setup();
+        //vacuumGripper2.setup();
       }
 
       //move token to swap on cb
       if (conveyorBelt.isIdle() && !cbState.isFeedLightBarrier() && cbState.isSwapLightBarrier() && conveyorBeltOwner == null) {
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
+      }
+
+      //move token to mps
+      if (!cbState.isSwapLightBarrier() && vacuumGripper1.isIdle() && multiProcessingStation.isIdle()) {
+        vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS"));
+      }
+
+      //move vgr1 out of the way
+      if (vacuumGripper1.isIdle()) {
+        vacuumGripper1.move_to_safe_position();
+      }
+
+      if (!mpsState.isInputLightBarrier() && multiProcessingStation.isIdle()) {
+        multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
       }
 
       sleep(5);

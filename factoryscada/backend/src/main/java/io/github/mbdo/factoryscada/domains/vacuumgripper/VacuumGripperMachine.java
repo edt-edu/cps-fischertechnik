@@ -77,6 +77,10 @@ public class VacuumGripperMachine extends AbstractMachine {
         new GripCommand(this, stopDTO).execute();
     }
 
+    public void move_to_safe_position() {
+        move_to_safe_position(createCommandDTO("move_to_safe_position"));
+    }
+
     public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> dto) {
         log.info("Move To Safe Position {}", dto);
         new MoveToSafePositionCommand(this, dto).execute();

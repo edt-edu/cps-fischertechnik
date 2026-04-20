@@ -80,6 +80,8 @@ public class Island1MqttGateway {
           state.getConveyorBelt01().setFeedLightBarrier(n.get("value").asBoolean());
       case "PLC/Island 1/ConveyorBelt/I1ConveyorBelt01/measurements/input/conveyorSensSwap" ->
           state.getConveyorBelt01().setSwapLightBarrier(n.get("value").asBoolean());
+      case "PLC/Island 1/MultiProcessing/I1MultiProcessing01/measurements/input/multiProcessingSensOven" ->
+          state.getMultiProcessing01().setInputLightBarrier(n.get("value").asBoolean());
       default -> log.trace("Ignoring unknown MQTT topic: {}", topic);
     }
   }
