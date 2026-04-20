@@ -112,7 +112,6 @@ public class Demo {
     var slState = island1State.getSortingLine01();
     var cbState = island1State.getConveyorBelt01();
     var mpsState = island1State.getMultiProcessing01();
-    Object conveyorBeltOwner = null;
     var processingState = ProcessingState.IDLE;
 
     while (active) {
@@ -126,8 +125,7 @@ public class Demo {
       //move token from sl out to cb if there is room
       if (vacuumGripper2.isIdle() &&
           conveyorBelt.isIdle() &&
-          cbState.isFeedLightBarrier() &&
-          conveyorBeltOwner == null) {
+          cbState.isFeedLightBarrier()) {
         String originName;
         if (!slState.isOutputWhiteLightBarrier()) {
           originName = "SL_OUTPUT_WHITE";
@@ -140,23 +138,15 @@ public class Demo {
         }
         if (originName != null) {
           log.info("Moving token from {} to CB", originName);
-          conveyorBeltOwner = vacuumGripper2;
           vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
         }
       }
 
-      //release conveyor belt lock
-      if (vacuumGripper2.isIdle() && conveyorBeltOwner == vacuumGripper2) {
-        log.info("Releasing CB lock");
-        conveyorBeltOwner = null;
-        //vacuumGripper2.setup();
-      }
 
       //move token to swap on cb
       if (conveyorBelt.isIdle() &&
           !cbState.isFeedLightBarrier() &&
-          cbState.isSwapLightBarrier() &&
-          conveyorBeltOwner == null) {
+          cbState.isSwapLightBarrier()) {
         log.info("Moving token from feed to swap");
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
       }
