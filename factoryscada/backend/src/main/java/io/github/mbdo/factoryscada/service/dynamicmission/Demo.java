@@ -180,7 +180,12 @@ public class Demo {
       }
 
       //this may happen in parallel with the vgr going to safety
-      if (!mpsState.isInputLightBarrier() && multiProcessingStation.isIdle() && processingState == ProcessingState.GOTO_SAFETY) {
+      log.debug("mpsInputTokenPresent: {}", !mpsState.isInputLightBarrier());
+      log.debug("mpsIdle: {}", multiProcessingStation.isIdle());
+      log.debug("processingState: {}", processingState);
+      if (!mpsState.isInputLightBarrier() &&
+          multiProcessingStation.isIdle() &&
+          processingState == ProcessingState.GOTO_SAFETY) {
         log.info("Processing token");
         multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
         processingState = ProcessingState.PROCESSING;
