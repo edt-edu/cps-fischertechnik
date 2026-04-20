@@ -2,6 +2,8 @@ package io.github.mbdo.factoryscada.domains.conveyorbelt;
 
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
+import io.github.mbdo.factoryscada.core.dtos.Parameter;
+import io.github.mbdo.factoryscada.core.enums.DirectionKind;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveNbStepsCommand;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveOutCommand;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveToSensor;
@@ -24,6 +26,10 @@ public class ConveyorBeltMachine extends AbstractMachine {
     @Override
     public String getCommandMachineType() {
         return "CONVEYOR";
+    }
+
+    public void moveToSensor(DirectionKind direction) {
+        moveToSensor(createCommandDTO("move_to_sensor", Parameter.direction(direction)));
     }
 
     public void moveToSensor(@Valid @NotNull final GenericMachineCommandDTO<ConveyorBeltMachine> forwardLeaveDTO) {

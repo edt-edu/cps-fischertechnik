@@ -1,6 +1,7 @@
 package io.github.mbdo.factoryscada.service.dynamicmission;
 
 import io.github.mbdo.factoryscada.core.enums.Color;
+import io.github.mbdo.factoryscada.core.enums.DirectionKind;
 import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
@@ -146,6 +147,11 @@ public class Demo {
         log.info("Releasing CB lock");
         conveyorBeltOwner = null;
         vacuumGripper2.setup();
+      }
+
+      //move token to swap on cb
+      if (conveyorBelt.isIdle() && !cbState.isFeedLightBarrier() && cbState.isSwapLightBarrier() && conveyorBeltOwner == null) {
+        conveyorBelt.moveToSensor(DirectionKind.FORWARD);
       }
 
       sleep(5);

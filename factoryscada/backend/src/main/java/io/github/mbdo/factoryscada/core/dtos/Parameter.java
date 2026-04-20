@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.github.mbdo.factoryscada.core.Passable;
 import io.github.mbdo.factoryscada.core.enums.Color;
+import io.github.mbdo.factoryscada.core.enums.DirectionKind;
 import io.github.mbdo.factoryscada.core.enums.PassableType;
 import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import lombok.AllArgsConstructor;
@@ -28,5 +29,9 @@ public class Parameter {
 
     public static Parameter namedPosition(String name) {
         return new Parameter(PassableType.NAMEDPOSITION, new NamedPosition(name));
+    }
+
+    public static Parameter direction(DirectionKind direction) {
+        return new Parameter(PassableType.DIRECTION, new io.github.mbdo.factoryscada.core.passable.Direction(direction));
     }
 }
