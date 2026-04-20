@@ -481,7 +481,9 @@ class RevPiPyMachineController(ABC):
 
         for parameter_index, parameter in enumerate(parameters):
             if isinstance(parameter, NamedPosition):
-                resolved = named_positions[parameter.name]
+                resolved = named_positions[parameter.name] \
+                    if parameter.name in named_positions \
+                    else None
                 if resolved is None:
                     raise UnknownNamedPosition(parameter)
 
