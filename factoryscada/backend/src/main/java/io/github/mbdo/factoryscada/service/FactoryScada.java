@@ -259,6 +259,7 @@ public class FactoryScada {
 
                     //update idle status of machine
                     Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        log.info("Received status for machine {} : {}", machineName, status);
                         machine.setIdle(status.contains("IDLE"));
                     });
 
