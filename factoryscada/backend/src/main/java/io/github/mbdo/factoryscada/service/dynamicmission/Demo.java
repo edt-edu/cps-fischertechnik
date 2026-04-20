@@ -113,6 +113,7 @@ public class Demo {
     var cbState = island1State.getConveyorBelt01();
     var mpsState = island1State.getMultiProcessing01();
     Object conveyorBeltOwner = null;
+    var processingState = ProcessingState.IDLE;
 
     while (active) {
       //sort token if one is present at sl input
@@ -152,22 +153,35 @@ public class Demo {
       }
 
       //move token to swap on cb
-      if (conveyorBelt.isIdle() && !cbState.isFeedLightBarrier() && cbState.isSwapLightBarrier() && conveyorBeltOwner == null) {
+      if (conveyorBelt.isIdle() &&
+          !cbState.isFeedLightBarrier() &&
+          cbState.isSwapLightBarrier() &&
+          conveyorBeltOwner == null) {
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
       }
 
       //move token to mps
-      if (!cbState.isSwapLightBarrier() && vacuumGripper1.isIdle() && multiProcessingStation.isIdle()) {
+      if (!cbState.isSwapLightBarrier() &&
+          vacuumGripper1.isIdle() &&
+          multiProcessingStation.isIdle() &&
+          processingState == ProcessingState.IDLE) {
         vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
+        processingState = ProcessingState.DELIVERING_TOKEN;
       }
 
       //move vgr1 out of the way
-      if (vacuumGripper1.isIdle()) {
+      if (vacuumGripper1.isIdle() && processingState == ProcessingState.DELIVERING_TOKEN) {
         vacuumGripper1.move_to_safe_position();
+        processingState = ProcessingState.GOTO_SAFETY;
       }
 
-      if (!mpsState.isInputLightBarrier() && multiProcessingStation.isIdle()) {
+      if (!mpsState.isInputLightBarrier() && multiProcessingStation.isIdle() && processingState == ProcessingState.GOTO_SAFETY) {
         multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
+        processingState = ProcessingState.PROCESSING;
+      }
+
+      if (multiProcessingStation.isIdle() && processingState == ProcessingState.PROCESSING) {
+        processingState = ProcessingState.IDLE;
       }
 
       sleep(5);
@@ -192,5 +206,12 @@ public class Demo {
     } catch (IOException e) {
       log.error("Failed to stop MQTT gateway", e);
     }
+  }
+
+  enum ProcessingState {
+    IDLE,
+    DELIVERING_TOKEN,
+    GOTO_SAFETY,
+    PROCESSING,
   }
 }
