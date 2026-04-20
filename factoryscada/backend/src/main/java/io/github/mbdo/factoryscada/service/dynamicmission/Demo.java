@@ -127,7 +127,7 @@ public class Demo {
       var cbIdle = conveyorBelt.isIdle();
       var cbFeedTokenPresent = !cbState.isFeedLightBarrier();
       log.debug("vgr2Idle: {}, cbIdle: {}, cbFeedTokenPresent: {}, conveyorBeltOwner: {}", vgr2Idle, cbIdle, cbFeedTokenPresent, conveyorBeltOwner);
-      if (vgr2Idle && cbIdle && cbFeedTokenPresent && conveyorBeltOwner == null) {
+      if (vgr2Idle && cbIdle && !cbFeedTokenPresent && conveyorBeltOwner == null) {
         String originName;
         if (!slState.isOutputWhiteLightBarrier()) {
           originName = "SL_OUTPUT_WHITE";
