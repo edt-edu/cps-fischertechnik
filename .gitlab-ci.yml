@@ -1,0 +1,44 @@
+
+default:
+  image: docker:latest
+  tags:
+    - ci.inria.fr
+    - small
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+variables:
+  MAVEN_CLI_OPTS: '--batch-mode --errors --fail-at-end --show-version -Dstyle.color=always'
+  MAVEN_OPTS: '-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Djava.awt.headless=true -Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true'
+
+
+test_and_package:
+  stage: build
+  tags:
+    - ci.inria.fr
+    - medium
+  rules:
+    #- if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    #  when: never
+    - if: $CI_COMMIT_TAG
+    #  when: never
+    #- if: $CI_COMMIT_BRANCH != "main"
+    - if: $CI_COMMIT_BRANCH
+  script:
+    - cd sysml-mission-generator
+    - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS
+      clean verify
+      fr.jcgay.maven.plugins:buildplan-maven-plugin:list-phase
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - sysml-mission-generator/target/surefire-reports/TEST-*.xml
+  artifacts:
+    paths:
+      - sysml-mission-generator/target/*.jar
