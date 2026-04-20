@@ -157,6 +157,7 @@ public class Demo {
           !cbState.isFeedLightBarrier() &&
           cbState.isSwapLightBarrier() &&
           conveyorBeltOwner == null) {
+        log.info("Moving token from feed to swap");
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
       }
 
@@ -165,6 +166,7 @@ public class Demo {
           vacuumGripper1.isIdle() &&
           multiProcessingStation.isIdle() &&
           processingState == ProcessingState.IDLE) {
+        log.info("Moving token from CB to MPS");
         vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
         multiProcessingStation.setup(); //ensure the mps is in a state where we can actually place the token
         processingState = ProcessingState.DELIVERING_TOKEN;
@@ -172,17 +174,20 @@ public class Demo {
 
       //move vgr1 out of the way
       if (vacuumGripper1.isIdle() && processingState == ProcessingState.DELIVERING_TOKEN) {
-        vacuumGripper1.move_to_safe_position();
+        log.info("Going to safety");
+        vacuumGripper1.go_to_safe_position();
         processingState = ProcessingState.GOTO_SAFETY;
       }
 
       //this may happen in parallel with the vgr going to safety
       if (!mpsState.isInputLightBarrier() && multiProcessingStation.isIdle() && processingState == ProcessingState.GOTO_SAFETY) {
+        log.info("Processing token");
         multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
         processingState = ProcessingState.PROCESSING;
       }
 
       if (multiProcessingStation.isIdle() && processingState == ProcessingState.PROCESSING) {
+        log.info("Done processing, setting state to idle");
         processingState = ProcessingState.IDLE;
       }
 
