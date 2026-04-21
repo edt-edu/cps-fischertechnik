@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
@@ -22,6 +24,15 @@ public class SysmlImporter {
 
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SysmlImporter.class);
+	
+	/**
+	 * collect error messages to know if everything is ok or not
+	 */
+	public List<String> errorMessages = new ArrayList<String>(); 
+	
+	public void clearErrorMessages() {
+		errorMessages.clear();
+	}
 	
 	/**
 	 * Load the given sysml text into the resourceSet, will create a new resource to contain the sysml model
@@ -42,7 +53,9 @@ public class SysmlImporter {
                 final String errorMessage = astResult.reports().stream()
                         .map(Status::toString)
                         .collect(Collectors.joining(System.lineSeparator(), System.lineSeparator(), System.lineSeparator()));
-                LOGGER.error("[AST] while parsing input file : " + errorMessage);
+                String msg = "[AST Error] while parsing input file "+ sysmlFile.getAbsolutePath()+ ":\n" + errorMessage;
+                errorMessages.add(msg);
+                LOGGER.error(msg);
             }
 
             if (astResult.ast().isPresent()) {
@@ -56,10 +69,14 @@ public class SysmlImporter {
 //                    resourceToSave.getContents().addAll(resource.getContents());
 //                    resourceToSave.save(Collections.emptyMap());
                 } else {
-                	LOGGER.error("Failed to parse resource or resource is empty.");
+                	String msg = "[AST Error]  input file "+ sysmlFile.getAbsolutePath()+ " returned an empty Resource";
+                    errorMessages.add(msg);
+                    LOGGER.error(msg);
                 }
             } else {
-            	LOGGER.error("Failed convert resource. Returned an empty AST");
+            	String msg = "[AST Error]  input file "+ sysmlFile.getAbsolutePath()+ " returned an empty AST";
+                errorMessages.add(msg);
+                LOGGER.error(msg);
             }
             
 
@@ -67,9 +84,29 @@ public class SysmlImporter {
                 final String errorMessage = astTransformer.getTransformationMessages().stream()
                         .map(message -> message.level().toString() + " - " + message.body())
                         .collect(Collectors.joining(System.lineSeparator(), System.lineSeparator(), System.lineSeparator()));
-                LOGGER.error("Error while parsing input file : " + errorMessage);
+                String msg = "[Transformer Error] while transforming input file "+ sysmlFile.getAbsolutePath()+ ":\n" + errorMessage;
+                errorMessages.add(msg);
+                LOGGER.error(msg);
             }
         }
         return result;
     }
+	
+	/**
+	 * Load the given sysml text files in the provided order. Each file will be located in its own resource
+	 * The load order might be important and files should not contains cyclic dependencies
+	 * @param sysmlFiles
+	 * @param resourceSet
+	 * @return the list of created resources
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public List<Resource> importSysmlTexts(List<File> sysmlFiles, ResourceSet resourceSet) throws FileNotFoundException, IOException {
+		List<Resource> result = new ArrayList<Resource>();
+		for(File sysmlFile : sysmlFiles) {
+			result.add(importSysmlText(sysmlFile, resourceSet));
+		}
+		return result;
+	}
+	
 }
