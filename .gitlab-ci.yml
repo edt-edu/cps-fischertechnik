@@ -45,10 +45,17 @@ test_and_package:
     - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS
       clean verify
       fr.jcgay.maven.plugins:buildplan-maven-plugin:list-phase
+    - echo "Code coverage:"
+    - cat target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>//' || true
   artifacts:
     when: always
     reports:
       junit:
         - sysml-mission-generator/target/surefire-reports/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: sysml-mission-generator/target/site/jacoco/jacoco.xml
     paths:
-      - sysml-mission-generator/target/*.jar
+      - sysml-mission-generator/target/*.jar- sysml
+      - mission-generator/target/site/jacoco/ # allow to look at the HTML report
+  coverage: '/Total.*?([0-9]{1,3})%/'
