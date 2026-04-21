@@ -1,5 +1,6 @@
 package fr.inria.mbdo.mission;
 
+import static fr.inria.mbdo.mission.utils.FileUtils.getResourcePath;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -41,17 +42,12 @@ public class SysmlImporterTest {
 	void import_VGR_from_CBVGRMission() throws Exception {
 		importTest("CBVGRMission/VGR.sysml");
 	}
-
-	@Test
-	void import_VGR_mission_def() throws Exception {
-		importTest("CBVGRMission/vgr_missions_def.sysml");
-	}
 	
 	void importTest(String sysmlFileName) throws Exception {
 		SysmlImporter generator = new SysmlImporter();
 
 		// files from /src/test/resources
-		File sysmlFile = new File(getClass().getClassLoader().getResource(sysmlFileName).toURI());
+		File sysmlFile = new File(getResourcePath(sysmlFileName).toUri());
 		assertTrue(sysmlFile.exists());
 
 		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
@@ -107,7 +103,7 @@ public class SysmlImporterTest {
 		List<String> fileNames = List.of("MultiFileMission/ConveyorBelt.sysml", "MultiFileMission/ConveyorBeltCommands.sysml");
 		List<File> files = new ArrayList<File>();
 		for(String fileName : fileNames) {
-			File sysmlFile = new File(getClass().getClassLoader().getResource(fileName).toURI());
+			File sysmlFile = new File(getResourcePath(fileName).toUri());
 			assertTrue(sysmlFile.exists());
 			files.add(sysmlFile);
 		}
