@@ -41,6 +41,11 @@ public class SysmlImporterTest {
 	void import_VGR_from_CBVGRMission() throws Exception {
 		importTest("CBVGRMission/VGR.sysml");
 	}
+
+	@Test
+	void import_VGR_mission_def() throws Exception {
+		importTest("CBVGRMission/vgr_missions_def.sysml");
+	}
 	
 	void importTest(String sysmlFileName) throws Exception {
 		SysmlImporter generator = new SysmlImporter();
