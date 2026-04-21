@@ -41,12 +41,11 @@ test_and_package:
     - if: $CI_COMMIT_BRANCH
   script:
     - apk add --update nodejs npm
-    - cd sysml-mission-generator
-    - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS
+    - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS -f sysml-mission-generator/pom.xml
       clean verify
       fr.jcgay.maven.plugins:buildplan-maven-plugin:list-phase
     - echo "Code coverage:"
-    - cat target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>//' || true
+    - cat sysml-mission-generator/target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>//' || true
   artifacts:
     when: always
     reports:
