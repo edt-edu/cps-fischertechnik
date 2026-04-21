@@ -41,7 +41,7 @@ test_and_package:
     - if: $CI_COMMIT_BRANCH
   script:
     - apk add --update nodejs npm
-    - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS -f sysml-mission-generator/pom.xml
+    - mvn $CI_MAVEN_OPTS $MAVEN_CLI_OPTS
       clean verify
       fr.jcgay.maven.plugins:buildplan-maven-plugin:list-phase
     - echo "Code coverage:"
