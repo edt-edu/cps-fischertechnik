@@ -3,6 +3,8 @@ package fr.inria.mbdo.mission;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,6 +111,39 @@ public class SysmlImporterTest {
 		assertTrue(resources.size() == 2);
 		assertTrue(resourceSet.getResources().size() == nbLibResources+2);
 		assertTrue(generator.errorMessages.size() == 1);
+		for(String sysmlFileName : fileNames) {
+			assertTrue(
+					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
+					() -> "Cannot find resource relative to " + sysmlFileName);
+		}
+	}
+	
+	@Test
+	void import_all_files_from_missionsDesignModels() throws Exception {
+		SysmlImporter generator = new SysmlImporter();
+
+		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
+		int nbLibResources = resourceSet.getResources().size();
+		
+
+		// files from ../missions-design-models relatively to the folder containing pom.xml
+		Path projectPath = Paths.get(System.getProperty("user.dir"))
+			    .resolve("../missions-design-models")
+			    .normalize();
+		List<String> fileNames = List.of("common/messages_def.sysml"/*, "common/zones_def.sysml"*/);
+		
+		List<File> files = new ArrayList<File>();
+		for(String fileName : fileNames) {
+			
+			File sysmlFile = projectPath.resolve(fileName).toFile();
+			assertTrue(sysmlFile.exists());
+			files.add(sysmlFile);
+		}
+
+		List<Resource> resources = generator.importSysmlTexts(files, resourceSet);
+		assertTrue(resources.size() == fileNames.size());
+		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
+		assertTrue(generator.errorMessages.isEmpty());
 		for(String sysmlFileName : fileNames) {
 			assertTrue(
 					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
