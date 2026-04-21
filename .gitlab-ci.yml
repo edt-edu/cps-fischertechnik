@@ -55,6 +55,6 @@ test_and_package:
         coverage_format: cobertura
         path: sysml-mission-generator/target/site/jacoco/jacoco.xml
     paths:
-      - sysml-mission-generator/target/*.jar- sysml
-      - mission-generator/target/site/jacoco/ # allow to look at the HTML report
+      - sysml-mission-generator/target/*.jar
+      - sysml-mission-generator/target/site/jacoco/ # allow to look at the HTML report
   coverage: '/Total.*?([0-9]{1,3})%/'
