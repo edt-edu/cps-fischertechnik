@@ -1,3 +1,18 @@
+package Common {
+    part def Machine;
+
+    package Messages {
+        item def BufferedMessage;
+        item def EventMessage;
+    }
+
+    metadata def Workaround {
+        doc /* This metadata indicates that the related element is part of a workaround for current limitation (usually in SysOn or in SysIDE).
+             */
+        attribute description : ScalarValues::String;
+    }
+}
+
 package ZonesSystem {
     private import Common::Messages::*;
     private import Common::*;
@@ -25,8 +40,8 @@ package ZonesSystem {
 
         state IdleFree;
         accept request : AcquireRequestBufferedMessage
-            // do send new AcquireResponseEventMessage() to request.sender
-            do send new AcquireResponseEventMessage() to GetMachine(request)            
+            do send new AcquireResponseEventMessage() to request.sender // fail on this line
+            //do send new AcquireResponseEventMessage() to GetMachine(request)            
             then IdleBusy;
 
         state IdleBusy;
