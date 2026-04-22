@@ -14,11 +14,6 @@ package VacuumGripperMissions {
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
         in zoneCB : ZonesSystem::Zone;
 
-        calc def GetTokenAvailableBufferedMessageColor {
-            in value : TokenAvailableBufferedMessage;
-            return : Color = value.color;
-        }
-
         action goToStandby : GoToPosition {
             perform vacuumGripper.goToPosition : GoToPosition {
                 in targetPosition : Position3D {
@@ -69,7 +64,7 @@ package VacuumGripperMissions {
             }
         }
 
-        entry vacuumGripper.setup;
+        entry action setup;
         then SetupCMD;
 
         state SetupCMD;
@@ -82,15 +77,13 @@ package VacuumGripperMissions {
 
         state Idle;
         accept tokenAvailableMessage : TokenAvailableBufferedMessage
-            do action {
-                then decide;
-                    if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::BLUE
-                        then pickBlue;
-                    if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::WHITE
-                        then pickWhite;
-                    if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::RED
-                        then pickRed;
-            }
+            if tokenAvailableMessage.color == Color::BLUE do pickBlue
+            then PickColorCMD;
+        accept tokenAvailableMessage : TokenAvailableBufferedMessage
+            if tokenAvailableMessage.color == Color::WHITE do pickWhite
+            then PickColorCMD;
+        accept tokenAvailableMessage : TokenAvailableBufferedMessage
+            if tokenAvailableMessage.color == Color::RED do pickRed
             then PickColorCMD;
 
         state PickColorCMD;
@@ -143,7 +136,7 @@ package VacuumGripperMissions {
             }
         }
 
-        entry vacuumGripper.setup;
+        entry;
         then SetupIdle;
 
         state SetupIdle;
