@@ -19,7 +19,7 @@ public class ImportUtils {
         // Rule definitions here:
         content = content.replace(" send new ", " send ");
 
-        Path temp = Files.createTempFile("modified-", ".sysml");
+        Path temp = Files.createTempFile("modified-"+inputFile.getName(), ".sysml");
         Files.writeString(temp, content);
         File file = temp.toFile();
         file.deleteOnExit();
