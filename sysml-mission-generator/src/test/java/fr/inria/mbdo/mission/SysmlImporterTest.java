@@ -233,7 +233,9 @@ public class SysmlImporterTest {
 				"MPS/mps_def.sysml", 
 				"SL/sl_def.sysml",
 				"VGR/vgr_missions_def.sysml", 
-				"SL/sl_missions_def.sysml");
+				"SL/sl_missions_def.sysml", 
+				"CB/cb_missions_def.sysml", 
+				"MPS/mps_missions_def.sysml");
 		
 		List<File> files = new ArrayList<File>();
 		for(String fileName : fileNames) {
