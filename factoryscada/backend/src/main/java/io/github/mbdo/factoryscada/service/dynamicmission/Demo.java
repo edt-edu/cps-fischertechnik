@@ -16,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -55,17 +53,11 @@ public class Demo {
     this.template = template;
   }
 
-  @EventListener(ApplicationReadyEvent.class)
-  public void initAfterStartup() throws IOException {
-    this.sortingLine = getMachine(SortingLineMachine.class, SORTING_LINE_TOPIC);
-    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, VGR2_TOPIC);
-    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, CONVEYOR_TOPIC);
-    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
-    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
-
-    //TODO add a button in the frontend to start and stop this service
-    start();
-  }
+//  @EventListener(ApplicationReadyEvent.class)
+//  public void initAfterStartup() {
+//    //TODO add a button in the frontend to start and stop this service
+//    start();
+//  }
 
   private <T> T getMachine(Class<T> machineClass, String machineName) throws IllegalArgumentException {
     var machine = getFactoryScada().getFactoryScadaInstance().machines().get(machineName);
@@ -77,7 +69,8 @@ public class Demo {
     return machineClass.cast(machine);
   }
 
-  public synchronized void start() throws IOException {
+  //TODO abstract start and stop into DynamicMission interface
+  public synchronized void start() {
     if (active) return;
 
     active = true;
@@ -100,14 +93,21 @@ public class Demo {
     }
   }
 
-  public void stop() throws IOException {
+  public void stop() {
     active = false;
   }
 
   private void run() {
-    log.info("Demo started");
+    log.info("Starting Demo");
 
-    island1State = new Island1State(); //reset island state
+    //TODO extract machine names into config
+    this.sortingLine = getMachine(SortingLineMachine.class, SORTING_LINE_TOPIC);
+    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, VGR2_TOPIC);
+    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, CONVEYOR_TOPIC);
+    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
+    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
+
+    this.island1State = new Island1State(); //reset island state
     startMQTTGateway();
     var slState = island1State.getSortingLine01();
     var cbState = island1State.getConveyorBelt01();

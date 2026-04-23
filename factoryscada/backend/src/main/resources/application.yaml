@@ -16,7 +16,7 @@ logging:
     console: UTF-8
   level:
     root: INFO
-    io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
+#    io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
 
 log:
   limit: 1000

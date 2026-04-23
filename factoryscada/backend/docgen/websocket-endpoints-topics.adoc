@@ -944,6 +944,21 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
               "type" : "string"
             }
           },
+          "commandIdGenerator" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:utilities:CommandIdGenerator",
+            "properties" : {
+              "counter" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "idle" : {
+            "type" : "boolean"
+          },
+          "commandMachineType" : {
+            "type" : "string"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
@@ -5870,6 +5885,21 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
             "items" : {
               "type" : "string"
             }
+          },
+          "commandIdGenerator" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:utilities:CommandIdGenerator",
+            "properties" : {
+              "counter" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "idle" : {
+            "type" : "boolean"
+          },
+          "commandMachineType" : {
+            "type" : "string"
           },
           "commandNames" : {
             "type" : "array",
