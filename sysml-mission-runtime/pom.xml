@@ -4,10 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>fr.inria.mbdo.mission</groupId>
-  <artifactId>sysml-mission-generator</artifactId>
+  <artifactId>sysml-mission-runtime</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>sysml-mission-generator</name>
+  <name>sysml-mission-runtime</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
@@ -51,65 +51,18 @@
 
   <dependencies>
     <dependency>
-	      <groupId>fr.inria.mbdo.mission</groupId>
-		  <artifactId>sysml-mission-runtime</artifactId>
-		  <version>1.0-SNAPSHOT</version>
-	</dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
 	    <groupId>ch.qos.logback</groupId>
 	    <artifactId>logback-classic</artifactId>
 	    <version>1.5.6</version>
 	</dependency>
-    <!-- syson -->
-    <dependency>
-	  <groupId>org.eclipse.syson</groupId>
-	  <artifactId>syson-application</artifactId>
-      <version>${syson.version}</version>
-	</dependency>
-    <dependency>
-      <groupId>org.eclipse.syson</groupId>
-      <artifactId>syson-sysml-metamodel</artifactId>
-      <version>${syson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.syson</groupId>
-      <artifactId>syson-sysml-metamodel-edit</artifactId>
-      <version>${syson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.syson</groupId>
-      <artifactId>syson-services</artifactId>
-      <version>${syson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.syson</groupId>
-      <artifactId>syson-sysml-import</artifactId>
-      <version>${syson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.syson</groupId>
-      <artifactId>syson-sysml-export</artifactId>
-      <version>${syson.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.syson</groupId>
-      <artifactId>syson-sysml-validation</artifactId>
-      <version>${syson.version}</version>
-    </dependency>
-    <!-- code generation -->
-    <dependency>
-	    <groupId>com.palantir.javapoet</groupId>
-	    <artifactId>javapoet</artifactId>
-	    <version>0.14.0</version>
-	</dependency>
     
-    <!-- Tests -->
+    
     <!-- Optionally: parameterized tests support -->
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>

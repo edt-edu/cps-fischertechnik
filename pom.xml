@@ -11,6 +11,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<module>sysml-mission-runtime</module>
 		<module>sysml-mission-generator</module>
 	</modules>
 </project>
