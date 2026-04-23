@@ -1,24 +1,18 @@
 package fr.inria.mbdo.mission;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.URI;
+import fr.inria.mbdo.mission.generators.GlobalGenerator;
+import fr.inria.mbdo.mission.generators.TransformationContext;
+import org.aspectj.weaver.tools.Trace;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.syson.sysml.ASTTransformer;
-import org.eclipse.syson.sysml.AstParsingResult;
-import org.eclipse.syson.sysml.SysmlToAst;
-import org.eclipse.syson.sysml.textual.utils.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.inria.mbdo.mission.generators.MachineInterfaceGenerator;
 import fr.inria.mbdo.mission.generators.SysmlAstDotGenerator;
 import fr.inria.mbdo.mission.importer.SysmlImporter;
 
@@ -53,9 +47,10 @@ public class SysmlMissionGenerator {
         SysmlImporter importer = new SysmlImporter();
         Resource res = importer.importSysmlText(sysmlFile, resourceSet);
 
-        MachineInterfaceGenerator interfaceGenerator = new MachineInterfaceGenerator(
-                "fr.inria.factoryscada.sysmlbaseddomain");
-        interfaceGenerator.generate(res.getContents().getFirst()); // TODO deal with multiple root
+        TransformationContext context = new TransformationContext("fr.inria.factoryscada.sysmlbaseddomain");
+
+        GlobalGenerator interfaceGenerator = new GlobalGenerator(context);
+        interfaceGenerator.generate(res.getContents().getFirst()); // TODO deal with multiple roots
 
         String dotFileName = sysmlFile.getName().replaceFirst("\\.[^.]+$", "") + ".dot";
         new SysmlAstDotGenerator().generate(res.getContents().getFirst(), targetFolder.toPath().resolve(dotFileName),

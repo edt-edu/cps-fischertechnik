@@ -26,11 +26,6 @@ public class TransformationContext {
     }
 
     /**
-     * map containing the sysml element as key and the created JavaFile
-     */
-    public Map<Element, JavaFile> elementToJavaFile = new HashMap<>();
-
-    /**
      * list of indirect type used in the element that need to be generated too
      */
     public Map<String, TypeName> indirectTypesToGenerate = new HashMap<>();
@@ -66,7 +61,10 @@ public class TransformationContext {
                 if(indirectTypesToGenerate.containsKey(type.getQualifiedName())) {
                     return indirectTypesToGenerate.get(type.getQualifiedName());
                 }
-                String msg = "Type mapping not implemented for: " + type.getQualifiedName() + ". An example is "+type.getQualifiedName();
+
+
+
+                String msg = "Type mapping not implemented for: " + type.getQualifiedName() + ". An example is "+type.getQualifiedName() + "\nExisting types are:\n" + indirectTypesToGenerate.keySet();
                 throw new UnsupportedOperationException(msg);
         }
     }

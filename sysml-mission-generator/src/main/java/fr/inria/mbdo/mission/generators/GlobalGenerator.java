@@ -1,31 +1,34 @@
 package fr.inria.mbdo.mission.generators;
 
-import fr.inria.mbdo.mission.switchs.InterfaceGeneratorSwitch;
-import fr.inria.mbdo.mission.switchs.MissionGeneratorSwitch;
+import com.palantir.javapoet.JavaFile;
+import fr.inria.mbdo.mission.switchs.FieldSpecGeneratorSwitch;
+import fr.inria.mbdo.mission.switchs.GeneratorSwitch;
+import fr.inria.mbdo.mission.switchs.MethodSpecGeneratorSwitch;
+import fr.inria.mbdo.mission.switchs.TypeSpecGeneratorSwitch;
 import org.eclipse.emf.ecore.EObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+
 public class GlobalGenerator {
     private static final Logger logger = LoggerFactory.getLogger(GlobalGenerator.class);
 
-    MissionGeneratorSwitch missionsGeneratorSwitch;
-    InterfaceGeneratorSwitch interfaceGeneratorSwitch;
-    TransformationContext context;
+    private final TransformationContext context;
+
+    private static GeneratorSwitch generatorSwitch;
+//    private static TypeSpecGeneratorSwitch typeSpecGeneratorSwitch;
+//    private static FieldSpecGeneratorSwitch fieldSpecGeneratorSwitch;
+//    private static MethodSpecGeneratorSwitch methodSpecGeneratorSwitch;
+
 
     public GlobalGenerator(TransformationContext sharedContext) {
         this.context = sharedContext;
-
-        this.missionsGeneratorSwitch = new MissionGeneratorSwitch(context);
-        this.interfaceGeneratorSwitch = new InterfaceGeneratorSwitch(context);
+        generatorSwitch = new GeneratorSwitch(context);
     }
 
-    public TransformationContext getContext() {
-        return context;
-    }
-
-    public void generate(EObject rootSource) {
-        interfaceGeneratorSwitch.doSwitch(rootSource);
-        missionsGeneratorSwitch.doSwitch(rootSource);
+    public List<JavaFile> generate(EObject rootSource) {
+        return generatorSwitch.doSwitch(rootSource);
     }
 }

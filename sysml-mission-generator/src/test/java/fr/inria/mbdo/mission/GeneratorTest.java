@@ -1,5 +1,6 @@
 package fr.inria.mbdo.mission;
 
+import com.palantir.javapoet.JavaFile;
 import fr.inria.mbdo.mission.generators.GlobalGenerator;
 import fr.inria.mbdo.mission.generators.TransformationContext;
 import fr.inria.mbdo.mission.importer.SysmlImporter;
@@ -20,12 +21,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MachineMissionsGeneratorTest {
-	private static final Logger logger = LoggerFactory.getLogger(MachineMissionsGeneratorTest.class);
+public class GeneratorTest {
+	private static final Logger logger = LoggerFactory.getLogger(GeneratorTest.class);
 	@TempDir
 	Path tempDir;
 
@@ -78,18 +78,16 @@ public class MachineMissionsGeneratorTest {
 		assertTrue(resources.size() == fileNames.size());
 		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
 
-		TransformationContext sharedContext = new TransformationContext("fr.inria.factoryscada.sysmlbaseddomain");
+        TransformationContext context = new TransformationContext("fr.inria.factoryscada.sysmlbaseddomain");
 
 		for (Resource resource : resources) {
-			GlobalGenerator generator = new GlobalGenerator(sharedContext);
+			GlobalGenerator generator = new GlobalGenerator(context);
 
-			generator.generate(resource.getContents().getFirst());
+			List<JavaFile> generatedFiles = generator.generate(resource.getContents().getFirst());
 
-			sharedContext.elementToJavaFile.forEach((k, v) -> {
-				logger.info("Generated class for {}:\n{}", k.effectiveName(), v.toString());
-			});
-
-			sharedContext.elementToJavaFile = new HashMap<>();
+			generatedFiles.forEach((f ->
+				logger.info("Generated class for {}:\n{}", f.packageName(), f))
+			);
 		}
 
 	}

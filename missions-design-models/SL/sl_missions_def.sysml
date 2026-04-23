@@ -19,15 +19,15 @@ package SortingLineMissions {
         state SortCMD;
         accept CommandSuccessEventMessage
             if sortingLine.sensor_SL_blue == true
-                do send new TokenAvailableBufferedMessage(color=Color::BLUE) to vacuumGripper
+                do send new BlueTokenAvailableBufferedMessage() to vacuumGripper
             then Idle;
         accept CommandSuccessEventMessage
             if sortingLine.sensor_SL_white == true
-                do send new TokenAvailableBufferedMessage(color=Color::WHITE) to vacuumGripper
+                do send new WhiteTokenAvailableBufferedMessage() to vacuumGripper
             then Idle;
         accept CommandSuccessEventMessage
             if sortingLine.sensor_SL_red == true
-                do send new TokenAvailableBufferedMessage(color=Color::RED) to vacuumGripper
+                do send new RedTokenAvailableBufferedMessage() to vacuumGripper
             then Idle;
     }
 }
