@@ -29,6 +29,15 @@ package VacuumGripperMissions {
             }
         }
 
+        action pickColor {
+            in color : Color;
+
+            then decide;
+                if (color == Color::BLUE) then pickBlue;
+                if (color == Color::WHITE) then pickWhite;
+                if (color == Color::RED) then pickRed;
+        }
+
         action pickBlue : Pick {
             perform vacuumGripper.pick : Pick {
                 in targetPosition : Position3D {
@@ -81,17 +90,26 @@ package VacuumGripperMissions {
             then Idle;
 
         state Idle;
+
         accept tokenAvailableMessage : TokenAvailableBufferedMessage
-            do action {
+            do action { 
                 then decide;
-                    if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::BLUE
-                        then pickBlue;
-                    if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::WHITE
-                        then pickWhite;
-                    if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::RED
-                        then pickRed;
+                    if (GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::BLUE) then pickBlue;
+                    if (GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::WHITE) then pickWhite;
+                    if (GetTokenAvailableBufferedMessageColor(tokenAvailableMessage) == Color::RED) then pickRed;
             }
             then PickColorCMD;
+       /* syntax not supported by syson importer as of 2026/04/22
+        accept tokenAvailableMessage1 : TokenAvailableBufferedMessage
+            if tokenAvailableMessage1.color == Color::BLUE  do pickBlue
+            //if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage1) == Color::BLUE  do pickBlue
+            then PickColorCMD;
+        accept tokenAvailableMessage2 : TokenAvailableBufferedMessage
+            if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage2) == Color::WHITE do pickWhite
+            then PickColorCMD;
+        accept tokenAvailableMessage3 : TokenAvailableBufferedMessage
+            if GetTokenAvailableBufferedMessageColor(tokenAvailableMessage3) == Color::RED do pickRed
+            then PickColorCMD; */
 
         state PickColorCMD;
         accept CommandSuccessEventMessage

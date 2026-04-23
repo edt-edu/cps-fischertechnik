@@ -1,5 +1,7 @@
 package fr.inria.mbdo.mission;
 
+import static fr.inria.mbdo.mission.utils.FileUtils.getResourcePath;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.mbdo.mission.importer.SysmlImporter;
+import fr.inria.mbdo.mission.utils.ImportUtils;
 
 public class SysmlImporterTest {
 	private static final Logger logger = LoggerFactory.getLogger(SysmlImporterTest.class);
@@ -46,16 +49,23 @@ public class SysmlImporterTest {
 		SysmlImporter generator = new SysmlImporter();
 
 		// files from /src/test/resources
-		File sysmlFile = new File(getClass().getClassLoader().getResource(sysmlFileName).toURI());
+		File sysmlFile = new File(getResourcePath(sysmlFileName).toUri());
 		assertTrue(sysmlFile.exists());
 
 		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-		generator.importSysmlText(sysmlFile, resourceSet);
+		int nbLibResources = resourceSet.getResources().size();
+		Resource res = generator.importSysmlText(sysmlFile, resourceSet);
 
-		assertTrue(
+		assertNotNull(res);
+		assertTrue(resourceSet.getResources().size() == nbLibResources+1);
+
+		assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
+		
+		/* assertion disabled until we can remove ImportUtils.applyFileTransformations() workaround 
+		 assertTrue(
 				resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
 				() -> "Cannot find resource relative to " + sysmlFileName);
-
+		 */
 	}
 	
 	
@@ -79,11 +89,18 @@ public class SysmlImporterTest {
 		assertTrue(resources.size() == 2);
 		assertTrue(resourceSet.getResources().size() == nbLibResources+2);
 		assertTrue(generator.errorMessages.isEmpty());
+		
+		for(Resource res : resources) {
+			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
+		}
+		
+		/* assertion disabled until we can remove ImportUtils.applyFileTransformations() workaround 
 		for(String sysmlFileName : fileNames) {
 			assertTrue(
 					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
 					() -> "Cannot find resource relative to " + sysmlFileName);
 		}
+		*/
 		
 	}
 	
@@ -102,20 +119,99 @@ public class SysmlImporterTest {
 		List<String> fileNames = List.of("MultiFileMission/ConveyorBelt.sysml", "MultiFileMission/ConveyorBeltCommands.sysml");
 		List<File> files = new ArrayList<File>();
 		for(String fileName : fileNames) {
-			File sysmlFile = new File(getClass().getClassLoader().getResource(fileName).toURI());
+			File sysmlFile = new File(getResourcePath(fileName).toUri());
 			assertTrue(sysmlFile.exists());
 			files.add(sysmlFile);
 		}
 
 		List<Resource> resources = generator.importSysmlTexts(files, resourceSet);
-		assertTrue(resources.size() == 2);
-		assertTrue(resourceSet.getResources().size() == nbLibResources+2);
+		assertTrue(resources.size() == fileNames.size());
+		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
 		assertTrue(generator.errorMessages.size() == 1);
+		for(Resource res : resources) {
+			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
+		}
+		/* assertion disabled until we can remove ImportUtils.applyFileTransformations() workaround 
 		for(String sysmlFileName : fileNames) {
 			assertTrue(
 					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
 					() -> "Cannot find resource relative to " + sysmlFileName);
 		}
+		*/
+	}
+	
+	@Test
+	/**
+	 * this test verifies if the limitation in syson importer is still active, the test currently pass if the importer reports an error.
+	 * If after a version bump of syson, this test fails because it doesn't report error anymore, this means that we can remove the workaround and simplify  our models
+	 * @throws Exception
+	 */
+	void testSysonImportLimitationStillActive1() throws Exception {
+		SysmlImporter generator = new SysmlImporter();
+
+		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
+		int nbLibResources = resourceSet.getResources().size();
+		
+		// files from /src/test/resources
+		List<String> fileNames = List.of("TestMemberAccessImport/TestMemberAccessSendTo.sysml");
+		List<File> files = new ArrayList<File>();
+		for(String fileName : fileNames) {
+			File sysmlFile = new File(getResourcePath(fileName).toUri());
+			assertTrue(sysmlFile.exists());
+			files.add(sysmlFile);
+		}
+
+		List<Resource> resources = generator.importSysmlTexts(files, resourceSet);
+		assertTrue(resources.size() == fileNames.size());
+		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
+		assertTrue(generator.errorMessages.size() == 1,() -> "this test fails because it doesn't report error anymore, this probably means that we can remove the workaround and simplify our models and remove this test 🙂");
+		for(Resource res : resources) {
+			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
+		}
+		/* assertion disabled until we can remove ImportUtils.applyFileTransformations() workaround 
+		for(String sysmlFileName : fileNames) {
+			assertTrue(
+					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
+					() -> "Cannot find resource relative to " + sysmlFileName);
+		}
+		*/
+	}
+	
+	@Test
+	/**
+	 * this test verifies if the limitation in syson importer is still active, the test currently pass if the importer reports an error.
+	 * If after a version bump of syson, this test fails because it doesn't report error anymore, this means that we can remove the workaround and simplify  our models
+	 * @throws Exception
+	 */
+	void testSysonImportLimitationStillActive2() throws Exception {
+		SysmlImporter generator = new SysmlImporter();
+
+		ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
+		int nbLibResources = resourceSet.getResources().size();
+		
+		// files from /src/test/resources
+		List<String> fileNames = List.of("TestMemberAccessImport/TestMemberAccessAcceptIf.sysml");
+		List<File> files = new ArrayList<File>();
+		for(String fileName : fileNames) {
+			File sysmlFile = new File(getResourcePath(fileName).toUri());
+			assertTrue(sysmlFile.exists());
+			files.add(sysmlFile);
+		}
+
+		List<Resource> resources = generator.importSysmlTexts(files, resourceSet);
+		assertTrue(resources.size() == fileNames.size());
+		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
+		assertTrue(generator.errorMessages.size() == 1,() -> "this test fails because it doesn't report error anymore, this probably means that we can remove the workaround and simplify our models and remove this test 🙂");
+		for(Resource res : resources) {
+			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
+		}
+		/* assertion disabled until we can remove ImportUtils.applyFileTransformations() workaround 
+		for(String sysmlFileName : fileNames) {
+			assertTrue(
+					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
+					() -> "Cannot find resource relative to " + sysmlFileName);
+		}
+		*/
 	}
 	
 	@Test
@@ -130,7 +226,16 @@ public class SysmlImporterTest {
 		Path projectPath = Paths.get(System.getProperty("user.dir"))
 			    .resolve("../missions-design-models")
 			    .normalize();
-		List<String> fileNames = List.of("common/messages_def.sysml"/*, "common/zones_def.sysml"*/);
+		List<String> fileNames = List.of("common/messages_def.sysml", 
+				"common/zones_def.sysml", 
+				"VGR/vgr_def.sysml", 
+				"CB/cb_def.sysml",
+				"MPS/mps_def.sysml", 
+				"SL/sl_def.sysml",
+				"VGR/vgr_missions_def.sysml", 
+				"SL/sl_missions_def.sysml", 
+				"CB/cb_missions_def.sysml", 
+				"MPS/mps_missions_def.sysml");
 		
 		List<File> files = new ArrayList<File>();
 		for(String fileName : fileNames) {
@@ -144,11 +249,16 @@ public class SysmlImporterTest {
 		assertTrue(resources.size() == fileNames.size());
 		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
 		assertTrue(generator.errorMessages.isEmpty());
+		for(Resource res : resources) {
+			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
+		}
+		/* assertion disabled until we can remove ImportUtils.applyFileTransformations() workaround 
 		for(String sysmlFileName : fileNames) {
 			assertTrue(
 					resourceSet.getResources().stream().anyMatch(r -> r.getURI().toString().contains(sysmlFileName)),
 					() -> "Cannot find resource relative to " + sysmlFileName);
 		}
+		*/
 		
 	}
 	

@@ -19,6 +19,8 @@ import org.eclipse.syson.sysml.textual.utils.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.inria.mbdo.mission.utils.ImportUtils;
+
 
 public class SysmlImporter {
 
@@ -42,10 +44,15 @@ public class SysmlImporter {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public Resource importSysmlText(File sysmlFile, ResourceSet resourceSet) throws FileNotFoundException, IOException {
+	public Resource importSysmlText(File sysmlFileIn, ResourceSet resourceSet) throws FileNotFoundException, IOException {
 		Resource result = null;
 		SysmlToAst sysmlToAst = new SysmlToAst(null);
         ASTTransformer astTransformer = new ASTTransformer();
+        
+        // workaround issue in Syson Importer
+        LOGGER.warn("Apply Syson importer workaround on {}", sysmlFileIn.getName());
+        File sysmlFile = ImportUtils.applyFileTransformations(sysmlFileIn);
+        
         try (InputStream inputStream = new FileInputStream(sysmlFile)) {
             AstParsingResult astResult = sysmlToAst.convert(inputStream, "sysml");
 

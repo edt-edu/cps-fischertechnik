@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.syson.sysml.ActionDefinition;
 import org.eclipse.syson.sysml.ActionUsage;
 import org.eclipse.syson.sysml.AttributeUsage;
+import org.eclipse.syson.sysml.Classifier;
 import org.eclipse.syson.sysml.Documentation;
 import org.eclipse.syson.sysml.Element;
 import org.eclipse.syson.sysml.EnumerationDefinition;
@@ -64,8 +65,8 @@ public class MachineInterfaceGenerator {
 		/**
 		 * map containing the sysml element as key and the created JavaFile
 		 */
-		public Map<PartDefinition, JavaFile> partDefToJavaFile = new HashMap<>();
-		public Map<EnumerationDefinition, JavaFile> enumToJavaFile = new HashMap<>();
+		public Map<Classifier, JavaFile> classifierToJavaFile = new HashMap<>();
+		//public Map<EnumerationDefinition, JavaFile> enumToJavaFile = new HashMap<>();
 
 		/**
 		 * list of indirect type used in the element that need to be generated too
@@ -166,7 +167,7 @@ public class MachineInterfaceGenerator {
 			// store javafile created for this partdef
 			JavaFile javaFile = JavaFile.builder(packagePrefix + "." + getParentJavaPackageQualifiedName(object),
 					partDefInterfaceBuilder.build()).build();
-			transformationContext.partDefToJavaFile.put(object, javaFile);
+			transformationContext.classifierToJavaFile.put(object, javaFile);
 
 			result.addAll(doSwitchForAllOwnedElements(object)); // look into children
 
@@ -184,7 +185,7 @@ public class MachineInterfaceGenerator {
 			JavaFile javaFile = JavaFile
 					.builder(packagePrefix + "." + getParentJavaPackageQualifiedName(object), enumBuilder.build())
 					.build();
-			transformationContext.enumToJavaFile.put(object, javaFile);
+			transformationContext.classifierToJavaFile.put(object, javaFile);
 			return result;
 		}
 
@@ -237,8 +238,7 @@ public class MachineInterfaceGenerator {
 	protected void addIndirectTypesToGenerate(Type type) {
 
 		if (!this.getContext().indirectTypesToGenerate.contains(type)
-				&& !this.getContext().enumToJavaFile.containsKey(type)
-				&& !this.getContext().partDefToJavaFile.containsKey(type)) {
+				&& !this.getContext().classifierToJavaFile.containsKey(type)) {
 			logger.debug("add Type {} to the list of Types be processed", type.getQualifiedName());
 			this.getContext().indirectTypesToGenerate.add(type);
 		} else {
