@@ -5,6 +5,7 @@ import io.github.mbdo.factoryscada.core.enums.DirectionKind;
 import io.github.mbdo.factoryscada.core.enums.MPSOutput;
 import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
+import io.github.mbdo.factoryscada.domains.dynamicmission.DynamicMission;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
@@ -20,12 +21,14 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 @Slf4j
 @Service
 @Getter
-public class Demo {
+public class Demo implements DynamicMission {
 
   private static final String SORTING_LINE_TOPIC = "I1SortingLine01";
   private static final String VGR2_TOPIC = "I1VacuumGripper02";
@@ -53,7 +56,20 @@ public class Demo {
     this.template = template;
   }
 
-//  @EventListener(ApplicationReadyEvent.class)
+  @Override
+  public String getName() {
+    return "Demo";
+  }
+
+  @Override
+  public String getDescription() {
+    return """
+        A simple demo that sorts tokens at the sorting line as soon as they are present
+        and processes them at the multi-processing-station, using the conveyor belt as buffer.
+        """;
+  }
+
+  //  @EventListener(ApplicationReadyEvent.class)
 //  public void initAfterStartup() {
 //    //TODO add a button in the frontend to start and stop this service
 //    start();
@@ -69,7 +85,12 @@ public class Demo {
     return machineClass.cast(machine);
   }
 
-  //TODO abstract start and stop into DynamicMission interface
+  @Override
+  public Collection<String> getInvolvedMachineNames() {
+    return List.of(SORTING_LINE_TOPIC, VGR2_TOPIC, CONVEYOR_TOPIC, VGR1_TOPIC, MPS_TOPIC);
+  }
+
+  @Override
   public synchronized void start() {
     if (active) return;
 
@@ -93,6 +114,7 @@ public class Demo {
     }
   }
 
+  @Override
   public void stop() {
     active = false;
   }
