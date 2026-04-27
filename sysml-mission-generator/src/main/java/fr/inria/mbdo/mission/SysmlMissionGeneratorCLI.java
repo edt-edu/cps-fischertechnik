@@ -1,5 +1,6 @@
 package fr.inria.mbdo.mission;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -17,6 +18,11 @@ public class SysmlMissionGeneratorCLI implements Callable<Integer> {
 			arity = "1..*")
 	private List<String> sysmlFilePaths;
 
+	@Option(names = { "-p", "--package" }, 
+			required = true, 
+			description = "base âckage name")
+	private String basePackageName;
+	
 	@Option(names = { "-o", "--output" }, 
 			required = true, 
 			description = "Path to output folder")
@@ -38,16 +44,18 @@ public class SysmlMissionGeneratorCLI implements Callable<Integer> {
 	public Integer call() {
 		SysmlMissionGenerator generator = new SysmlMissionGenerator();
 
-		for (String sysmlFilePath : sysmlFilePaths) {
-			try {
-				generator.generate(sysmlFilePath, targetFolderPath);
+		List<File> inputFiles = sysmlFilePaths.stream()
+			    .map(File::new)
+			    .toList();
+		
+		try {
+				generator.generate(inputFiles, basePackageName, new File(targetFolderPath));
 			} catch (IOException e) {
-				System.err.println("Error while generating Sysml mission from input file: " + sysmlFilePath);
+				System.err.println("Error while generating Sysml mission from input files");
 				e.printStackTrace();
 				return 1;
 			}
-		}
-
+		
 		return 0;
 	}
 
