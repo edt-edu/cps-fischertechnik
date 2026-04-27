@@ -1,6 +1,6 @@
 package fr.inria.factoryscada.sysmlbaseddomain.multifilemission_conveyorbeltcommands;
 
-enum ConveyorCommandKind {
+public enum ConveyorCommandKind {
   MOVE_TO_SENSOR,
 
   MOVE_OUT,

@@ -178,7 +178,8 @@ public class MachineInterfaceGenerator {
 		public List<String> caseEnumerationDefinition(EnumerationDefinition object) {
 			List<String> result = new ArrayList<>();
 			logger.debug("traversing EnumerationDefinition {}", object.getName());
-			TypeSpec.Builder enumBuilder = TypeSpec.enumBuilder(object.getName());
+			TypeSpec.Builder enumBuilder = TypeSpec.enumBuilder(object.getName())
+					.addModifiers(Modifier.PUBLIC);
 			for (EnumerationUsage ev : object.getEnumeratedValue()) {
 				enumBuilder.addEnumConstant(ev.getName());
 			}
