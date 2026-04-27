@@ -51,7 +51,7 @@ test_and_package:
     reports:
       junit:
         - sysml-mission-generator/target/surefire-reports/TEST-*.xml
-		- sysml-mission-generator-maven-plugin/target/invoker-reports/TEST-*.xml
+        - sysml-mission-generator-maven-plugin/target/invoker-reports/TEST-*.xml
       coverage_report:
         coverage_format: cobertura
         path: sysml-mission-generator/target/site/jacoco/jacoco.xml
