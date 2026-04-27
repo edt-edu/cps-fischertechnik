@@ -1,28 +1,54 @@
 package fr.inria.mbdo.mission;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
 
-/**
- * Hello world!
- */
-public class SysmlMissionGeneratorCLI {
-    public static void main(String[] args) {
-    	if (args.length < 2) {
-            System.err.println("""
-                    Usage: SysmlMissionGenerator <sysmlFilePath> <targetFolderPath>
-                        <sysmlFilePath> : Path to the SysML file
-                        <targetFilePath> : Path to output folder
-                    """);
-            return;
-        }
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
-        String sysmlFilePath = args[0];
-        String targetFolderPath = args[1];
-        try {
-			new SysmlMissionGenerator().generate(sysmlFilePath, targetFolderPath);
-		} catch (IOException e) {
-			System.err.println("Error while generating Sysml mission from input file : " + sysmlFilePath);
-			e.printStackTrace();
+@Command(name = "SysmlMissionGenerator", 
+	description = "Generates missions java code from one or more SysML files.")
+public class SysmlMissionGeneratorCLI implements Callable<Integer> {
+	@Option(names = { "-i", "--input" }, 
+			required = true, 
+			description = "Path(s) to SysML file(s)", 
+			arity = "1..*")
+	private List<String> sysmlFilePaths;
+
+	@Option(names = { "-o", "--output" }, 
+			required = true, 
+			description = "Path to output folder")
+	private String targetFolderPath;
+
+    @CommandLine.Option(
+        names = {"-h", "--help"},
+        usageHelp = true,
+        description = "Display this help message"
+    )
+    boolean helpRequested;
+    
+	public static void main(String[] args) {
+		int exitCode = new CommandLine(new SysmlMissionGeneratorCLI()).execute(args);
+		System.exit(exitCode);
+	}
+
+	@Override
+	public Integer call() {
+		SysmlMissionGenerator generator = new SysmlMissionGenerator();
+
+		for (String sysmlFilePath : sysmlFilePaths) {
+			try {
+				generator.generate(sysmlFilePath, targetFolderPath);
+			} catch (IOException e) {
+				System.err.println("Error while generating Sysml mission from input file: " + sysmlFilePath);
+				e.printStackTrace();
+				return 1;
+			}
 		}
-    }
+
+		return 0;
+	}
+
 }
