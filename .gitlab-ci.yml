@@ -32,6 +32,10 @@ test_and_package:
   tags:
     - ci.inria.fr
     - medium
+  variables:
+	# map env variable for use by it test settings.xml
+	USERNAME: $GITHUB_USER 
+	PASSWORD: $GITHUB_ACCESSTOKEN
   rules:
     #- if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     #  when: never
