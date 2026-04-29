@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.domains.mission.dtos;
+package io.github.mbdo.factoryscada.domains.mission.dsl.dtos;
 
 import io.github.mbdo.factoryscada.service.Visitor.Visitor;
 import lombok.Data;
@@ -6,9 +6,9 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class EntryNode_dto extends Node_dto{
-    public EntryNode_dto(){
-        this.type = "EntryNode";
+public class Fork_dto extends ControlNode_dto{
+    public Fork_dto(){
+        this.type = "Fork";
     }
 
     public void accept(Visitor v){

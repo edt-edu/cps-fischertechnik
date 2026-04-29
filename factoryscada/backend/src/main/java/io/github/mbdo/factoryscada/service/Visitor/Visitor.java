@@ -1,10 +1,10 @@
 package io.github.mbdo.factoryscada.service.Visitor;
 
-import io.github.mbdo.factoryscada.domains.mission.dtos.EntryNode_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Fork_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Join_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.RawMachineCommand_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.WaitAction_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.EntryNode_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Fork_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Join_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.RawMachineCommand_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.WaitAction_dto;
 
 public abstract class Visitor {
 

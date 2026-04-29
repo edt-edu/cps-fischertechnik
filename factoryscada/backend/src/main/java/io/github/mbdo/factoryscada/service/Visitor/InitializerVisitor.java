@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
 
-import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.EntryNode_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Fork_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Join_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.RawMachineCommand_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.WaitAction_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.EntryNode_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Fork_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Join_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Node_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.RawMachineCommand_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.WaitAction_dto;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class InitializerVisitor extends Visitor {

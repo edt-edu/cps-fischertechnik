@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.domains.mission.dtos;
+package io.github.mbdo.factoryscada.domains.mission.dsl.dtos;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -17,19 +17,18 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
-import io.github.mbdo.factoryscada.domains.mission.dtos.EntryNode_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Fork_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Join_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.RawMachineCommand_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.WaitAction_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.EntryNode_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.FactoryMissionsParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Fork_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Join_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.MissionParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Node_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.RawMachineCommand_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.WaitAction_dto;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;

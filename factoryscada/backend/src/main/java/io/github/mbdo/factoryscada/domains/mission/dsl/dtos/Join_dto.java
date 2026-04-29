@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.domains.mission.dtos;
+package io.github.mbdo.factoryscada.domains.mission.dsl.dtos;
 
 import io.github.mbdo.factoryscada.service.Visitor.Visitor;
 import lombok.Data;
