@@ -1,5 +1,7 @@
 package Common {
-    part def Machine;
+    part def Machine {
+        metadata NoGeneration;
+    }
 
     package Messages {
         item def BufferedMessage;
@@ -7,8 +9,10 @@ package Common {
     }
 
     metadata def Workaround {
-        doc /* This metadata indicates that the related element is part of a workaround for current limitation (usually in SysOn or in SysIDE).
-             */
+        doc
+        /* This metadata indicates that the related element is part of a workaround for current limitation (usually in SysOn or in SysIDE). */
         attribute description : ScalarValues::String;
     }
+
+    metadata def NoGeneration {}
 }

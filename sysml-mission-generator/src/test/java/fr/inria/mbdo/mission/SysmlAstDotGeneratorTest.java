@@ -39,14 +39,16 @@ class SysmlAstDotGeneratorTest {
         List<String> fileNames = List.of(
                 "common/messages_def.sysml",
                 "common/zones_def.sysml",
-                "CB/cb_def.sysml",
-                "MPS/mps_def.sysml",
-                "SL/sl_def.sysml",
-                "VGR/vgr_def.sysml",
-                // "CB/cb_missions_def.sysml",
-                // "MPS/mps_missions_def.sysml",
-                "SL/sl_missions_def.sysml"//,
-                //"VGR/vgr_missions_def.sysml"
+//                "CB/cb_def.sysml",
+//                "MPS/mps_def.sysml",
+//                "SL/sl_def.sysml",
+//                "VGR/vgr_def.sysml",
+//                "CB/cb_missions_def.sysml",
+//                "MPS/mps_missions_def.sysml",
+//                "SL/sl_missions_def.sysml",
+                "VGR/vgr_missions_def.sysml",
+                "TEST-MACHINE/test-machine_def.sysml",
+                "TEST-MACHINE/test-machine_missions_def.sysml"
         );
         for (String fileName : fileNames) {
 
