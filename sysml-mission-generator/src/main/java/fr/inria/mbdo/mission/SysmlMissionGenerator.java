@@ -3,15 +3,18 @@ package fr.inria.mbdo.mission;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.util.List;
+import java.util.Map.Entry;
 
-import fr.inria.mbdo.mission.generators.GlobalGenerator;
-import fr.inria.mbdo.mission.generators.TransformationContext;
-import org.aspectj.weaver.tools.Trace;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.syson.sysml.Classifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.palantir.javapoet.JavaFile;
+
+import com.palantir.javapoet.JavaFile;
 
 import fr.inria.mbdo.mission.generators.SysmlAstDotGenerator;
 import fr.inria.mbdo.mission.importer.SysmlImporter;
@@ -19,43 +22,25 @@ import fr.inria.mbdo.mission.importer.SysmlImporter;
 public class SysmlMissionGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SysmlMissionGenerator.class);
-    private static final int AST_DOT_MAX_DEPTH = 4;
 
-    // TODO deal with multiple files to be loaded
-
-    public void generate(String sysmlFilePath, String targetFolderPath) throws FileNotFoundException, IOException {
-        File sysmlFile = new File(sysmlFilePath);
-        if (!sysmlFile.exists()) {
-
-            LOGGER.error("File not found: " + sysmlFilePath);
-            return;
-        }
-
-        File targetFolder = new File(targetFolderPath);
-        if (!targetFolder.exists()) {
-            Files.createDirectories(targetFolder.toPath());
-        }
-        if (!targetFolder.isDirectory()) {
-            LOGGER.error("target folder must be a directory: " + targetFolderPath);
-            return;
-        }
-
+    public void generate(List<File> inputFiles, String basePackageName, File targetFolder)
+            throws FileNotFoundException, IOException {
+        LOGGER.debug("generating code for {} sysml files into {}", inputFiles.size(), targetFolder.toPath());
         ResourceSet resourceSet = new SysMLResourceSetProvider().createSysMLResourceSet(true);
-
-        System.out.println("Parsing SysML file: " + sysmlFilePath);
-
         SysmlImporter importer = new SysmlImporter();
-        Resource res = importer.importSysmlText(sysmlFile, resourceSet);
+        List<Resource> resources = importer.importSysmlTexts(inputFiles, resourceSet);
 
-        TransformationContext context = new TransformationContext("fr.inria.factoryscada.sysmlbaseddomain");
+        MachineInterfaceGenerator interfaceGenerator = new MachineInterfaceGenerator(basePackageName);
+        for (Resource res : resources) {
+            interfaceGenerator.generate(res.getContents().getFirst()); // TODO deal with multiple root
+        }
+        writeToFile(interfaceGenerator, targetFolder);
+    }
 
-        GlobalGenerator interfaceGenerator = new GlobalGenerator(context);
-        interfaceGenerator.generate(res.getContents().getFirst()); // TODO deal with multiple roots
-
-        String dotFileName = sysmlFile.getName().replaceFirst("\\.[^.]+$", "") + ".dot";
-        new SysmlAstDotGenerator().generate(res.getContents().getFirst(), targetFolder.toPath().resolve(dotFileName),
-                AST_DOT_MAX_DEPTH);
-
+    public void writeToFile(MachineInterfaceGenerator interfaceGenerator, File targetFolder) throws IOException {
+        for (Entry<Classifier, JavaFile> entry : interfaceGenerator.getContext().classifierToJavaFile.entrySet()) {
+            entry.getValue().writeToFile(targetFolder);
+        }
     }
 
 }

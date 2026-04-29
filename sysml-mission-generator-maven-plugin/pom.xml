@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+	    <groupId>fr.inria.mbdo.mission</groupId>
+	    <artifactId>sysml-mission-generator-root</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+	<artifactId>sysml-mission-generator-maven-plugin</artifactId>
+	<packaging>maven-plugin</packaging>
+
+	<repositories>
+		<!-- From <groupId>org.eclipse.sirius</groupId>
+		<artifactId>sirius-web-parent</artifactId>
+		<version>2026.3.0</version> -->
+		<repository>
+			<id>Eclipse-Acceleo</id>
+			<url>https://download.eclipse.org/acceleo/updates/releases/4.2/R202510230846/</url>
+		</repository>
+	</repositories>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>sysml-mission-generator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<version>${maven.plugin.tools.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>${maven.plugin.tools.version}</version>
+				<executions>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin> <!-- used to run integration test -->
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-invoker-plugin</artifactId>
+	            <version>3.6.0</version>
+	            <configuration>
+					<!--<debug>true</debug>-->
+		            <streamLogs>true</streamLogs>
+	                <showErrors>true</showErrors>
+	                <debug>true</debug>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <postBuildHookScript>verify.groovy</postBuildHookScript>
+                    <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                    <settingsFile>src/it/settings.xml</settingsFile>
+                    <writeJunitReport>true</writeJunitReport>
+                    <streamLogsOnFailures>true</streamLogsOnFailures>
+                    <goals>
+				        <goal>clean</goal>
+				        <goal>compile</goal>
+				    </goals>
+	            </configuration>
+	          <executions>
+	                <execution>
+						<id>integration-test</id>
+						<phase>verify</phase>
+	                    <goals>
+	                        <goal>install</goal>
+	                        <goal>run</goal>
+	                    </goals>
+	                </execution>
+	            </executions>
+	        </plugin>
+		</plugins>
+	</build>
+</project>
+
+

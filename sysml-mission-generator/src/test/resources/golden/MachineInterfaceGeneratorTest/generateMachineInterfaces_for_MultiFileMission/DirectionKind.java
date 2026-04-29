@@ -1,6 +1,6 @@
 package fr.inria.factoryscada.sysmlbaseddomain.multifilemission_conveyorbeltcommands;
 
-enum DirectionKind {
+public enum DirectionKind {
   FORWARD,
 
   BACKWARD

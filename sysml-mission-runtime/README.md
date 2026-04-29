@@ -1,0 +1,1 @@
+Project containing the API interfaces that the generator uses in its generated code
