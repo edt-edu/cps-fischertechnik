@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
     id 'org.springframework.boot' version '3.3.0'
     id 'io.spring.dependency-management' version '1.1.5'
     // Allow configuration calls for setting up the eclipse annotation processing configuration.
@@ -43,7 +44,23 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+jar {
+    enabled = true
+}
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+        	artifact("$buildDir/libs/${project.name}-${project.version}-plain.jar") {
+                builtBy tasks.jar
+            }
+            
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+        }
+    }
+}
 
 tasks.named('test') {
     useJUnitPlatform()
