@@ -43,21 +43,30 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
-
+/*bootJar {
+    enabled = false
+}
 jar {
     enabled = true
-}
+}*/
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+        
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+            
+            // ensure correct pom.xml
+        	from components.java
+        	
+        	// force deployment of "plain" jar without the "plain" keyword in the name 
         	artifact("$buildDir/libs/${project.name}-${project.version}-plain.jar") {
                 builtBy tasks.jar
             }
             
-            groupId = project.group
-            artifactId = project.name
-            version = project.version
+            
         }
     }
 }
