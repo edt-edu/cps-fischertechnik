@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.service.Visitor;
+package io.github.mbdo.factoryscada.mission.dsl.visitor;
 
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.EntryNode_dto;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Fork_dto;

@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.service.Visitor;
+package io.github.mbdo.factoryscada.mission.dsl.visitor;
 
 import java.time.Instant;
 import java.util.ArrayList;

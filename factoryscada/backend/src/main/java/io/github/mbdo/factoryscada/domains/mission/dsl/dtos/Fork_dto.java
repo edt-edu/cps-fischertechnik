@@ -1,6 +1,6 @@
 package io.github.mbdo.factoryscada.domains.mission.dsl.dtos;
 
-import io.github.mbdo.factoryscada.service.Visitor.Visitor;
+import io.github.mbdo.factoryscada.mission.dsl.visitor.Visitor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

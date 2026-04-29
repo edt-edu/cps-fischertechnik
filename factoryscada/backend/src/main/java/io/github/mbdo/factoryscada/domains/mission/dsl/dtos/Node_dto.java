@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import io.github.mbdo.factoryscada.service.Visitor.Visitor;
+import io.github.mbdo.factoryscada.mission.dsl.visitor.Visitor;
 
 import java.util.List;
 
