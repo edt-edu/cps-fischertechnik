@@ -2,9 +2,11 @@ package fr.inria.mbdo.mission;
 
 import fr.inria.mbdo.mission.utils.ImportUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,8 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SysmlMissionGeneratorTest {
 
-    @TempDir
-    File tempDir;
+    Logger logger = LoggerFactory.getLogger(SysmlMissionGeneratorTest.class);
+
+    private static final String OUTPUT_DIR = "target/generated-sysml";
 
     @Test
     void shouldGenerateFilesFromSysml() throws Exception {
@@ -55,20 +58,20 @@ class SysmlMissionGeneratorTest {
             inputFiles.add(ImportUtils.applyFileTransformations(sysmlFile));
         }
 
-
         String basePackageName = "com.example.generated";
 
         // when
-        generator.generate(inputFiles, basePackageName, tempDir);
+        File outputDir = ensureOutputDir();
+        generator.generate(inputFiles, basePackageName, outputDir);
 
         // then
-        List<File> allFiles = Files.walk(tempDir.toPath())
-        	    .filter(Files::isRegularFile)
-        	    .map(path -> path.toFile())
-        	    .toList();
+        List<File> allFiles = Files.walk(outputDir.toPath())
+                .filter(Files::isRegularFile)
+                .map(Path::toFile)
+                .toList();
 
         assertNotNull(allFiles, "Generated files should not be null");
-        assertTrue(allFiles.size() > 0, "At least one file should be generated");
+        assertFalse(allFiles.isEmpty(), "At least one file should be generated");
 
         // check file content is not empty
         boolean hasNonEmptyFile = false;
@@ -77,8 +80,15 @@ class SysmlMissionGeneratorTest {
                 hasNonEmptyFile = true;
                 break;
             }
+            logger.info("File {}:\n{}", f.getAbsolutePath(), "tmp");
         }
 
         assertTrue(hasNonEmptyFile, "At least one generated file should be non-empty");
+    }
+
+    private File ensureOutputDir() throws IOException {
+        Path outputPath = Paths.get(System.getProperty("user.dir"), OUTPUT_DIR);
+        Files.createDirectories(outputPath);
+        return outputPath.toFile();
     }
 }
