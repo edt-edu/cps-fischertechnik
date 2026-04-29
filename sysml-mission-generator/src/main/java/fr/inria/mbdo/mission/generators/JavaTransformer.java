@@ -1,8 +1,8 @@
 package fr.inria.mbdo.mission.generators;
 
 import com.palantir.javapoet.*;
-import fr.inria.mbdo.mission.common.MachineMissionStrategy;
 import fr.inria.mbdo.mission.ir.*;
+import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

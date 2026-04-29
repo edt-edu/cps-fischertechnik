@@ -14,13 +14,12 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.junit.jupiter.api.Test;
 
-import fr.inria.mbdo.mission.generators.SysmlAstDotGenerator;
 import fr.inria.mbdo.mission.importer.SysmlImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SysmlAstDotGeneratorTest {
-    private static final Logger logger = LoggerFactory.getLogger(SysmlAstDotGeneratorTest.class);
+class SysmlAbstractSyntaxTreeGeneratorTest {
+    private static final Logger logger = LoggerFactory.getLogger(SysmlAbstractSyntaxTreeGeneratorTest.class);
 
     @Test
     void generateAstDotFile() throws Exception {
@@ -39,17 +38,16 @@ class SysmlAstDotGeneratorTest {
         List<String> fileNames = List.of(
                 "common/messages_def.sysml",
                 "common/zones_def.sysml",
-//                "CB/cb_def.sysml",
-//                "MPS/mps_def.sysml",
-//                "SL/sl_def.sysml",
-//                "VGR/vgr_def.sysml",
-//                "CB/cb_missions_def.sysml",
-//                "MPS/mps_missions_def.sysml",
-//                "SL/sl_missions_def.sysml",
+                // "CB/cb_def.sysml",
+                // "MPS/mps_def.sysml",
+                // "SL/sl_def.sysml",
+                // "VGR/vgr_def.sysml",
+                // "CB/cb_missions_def.sysml",
+                // "MPS/mps_missions_def.sysml",
+                // "SL/sl_missions_def.sysml",
                 "VGR/vgr_missions_def.sysml",
                 "TEST-MACHINE/test-machine_def.sysml",
-                "TEST-MACHINE/test-machine_missions_def.sysml"
-        );
+                "TEST-MACHINE/test-machine_missions_def.sysml");
         for (String fileName : fileNames) {
 
             File sysmlFile = projectPath.resolve(fileName).toFile();
@@ -58,7 +56,8 @@ class SysmlAstDotGeneratorTest {
             Resource resource = importer.importSysmlText(ImportUtils.applyFileTransformations(sysmlFile), resourceSet);
 
             Path outputFile = persistedOutputRoot.resolve(fileName + "-ast.dot");
-            Path generatedFile = new SysmlAstDotGenerator().generate(resource.getContents().getFirst(), outputFile);
+            Path generatedFile = new SysmlAbstractSyntaxTreeGenerator()
+                    .generateAstDot(resource.getContents().getFirst(), outputFile);
             String dot = Files.readString(generatedFile);
 
             assertFalse(dot.contains("OwningMembership"));
