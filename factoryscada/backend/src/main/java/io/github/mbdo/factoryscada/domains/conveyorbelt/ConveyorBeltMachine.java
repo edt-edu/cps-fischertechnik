@@ -47,6 +47,11 @@ public class ConveyorBeltMachine extends AbstractMachine {
         new MoveOutCommand(this, moveDTO).execute();
     }
 
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
+    }
+
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<ConveyorBeltMachine> stopDTO) {
         log.info("Stop conveyor {}", stopDTO);
         new StopCommand(this, stopDTO).execute();

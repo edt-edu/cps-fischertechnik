@@ -35,6 +35,11 @@ public class SortingLineMachine extends AbstractMachine {
         new EjectCommand(this, ejectDTO).execute();
     }
 
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
+    }
+
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<SortingLineMachine> stopDTO) {
         log.info("Stop sortingLine {}", stopDTO);
         new StopCommand(this, stopDTO).execute();

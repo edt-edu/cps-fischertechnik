@@ -32,6 +32,11 @@ public class IndexedLineMachine extends AbstractMachine {
     new Process1Command(this, process1DTO).execute();
   }
 
+  @Override
+  public void stop() {
+    stop(createCommandDTO("stop"));
+  }
+
   public void stop(@Valid @NotNull final GenericMachineCommandDTO<IndexedLineMachine> stopDTO) {
     log.info("Stop indexedLine {}", stopDTO);
     new StopCommand(this, stopDTO).execute();

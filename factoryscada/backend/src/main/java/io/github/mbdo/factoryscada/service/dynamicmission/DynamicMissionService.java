@@ -1,7 +1,9 @@
 package io.github.mbdo.factoryscada.service.dynamicmission;
 
+import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.domains.dynamicmission.DynamicMission;
 import io.github.mbdo.factoryscada.domains.dynamicmission.dtos.DynamicMissionDTO;
+import io.github.mbdo.factoryscada.service.FactoryScada;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +18,14 @@ import java.util.Optional;
 public class DynamicMissionService {
   private final List<DynamicMission> missions;
   private final List<DynamicMissionDTO> missionDTOs;
+  private final FactoryScada factoryScada;
 
   @Autowired
-  public DynamicMissionService(Demo demo) {
-    missions = List.of(demo);
-    missionDTOs = missions
+  public DynamicMissionService(Demo demo, FactoryScada factoryScada) {
+    this.factoryScada = factoryScada;
+
+    this.missions = List.of(demo);
+    this.missionDTOs = missions
         .stream()
         .map(mission -> new DynamicMissionDTO(mission.getName(),
                                               mission.getDescription(),
@@ -45,7 +50,15 @@ public class DynamicMissionService {
 
   public void stopActiveMission() {
     log.info("Stopping active mission...");
-    getMissions().forEach(DynamicMission::stop);
+    //just stop all missions and their machines; should be fine for now
+    for (DynamicMission dynamicMission : getMissions()) {
+      dynamicMission.stop();
+      dynamicMission
+          .getInvolvedMachineNames()
+          .forEach(machineName -> Optional
+              .ofNullable(getFactoryScada().getFactoryScadaInstance().machines().get(machineName))
+              .ifPresent(AbstractMachine::stop));
+    }
   }
 
   public Optional<DynamicMission> getMissionByName(String name) {

@@ -72,6 +72,11 @@ public class VacuumGripperMachine extends AbstractMachine {
         new GripCommand(this, releaseDTO).execute();
     }
 
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
+    }
+
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> stopDTO) {
         log.info("Stopping vacuum gripper {}", stopDTO);
         new GripCommand(this, stopDTO).execute();

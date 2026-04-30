@@ -148,7 +148,9 @@ public abstract class AbstractMachine {
         return commandNames;
     }
 
-  public record Parameters(
-      String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
-  ) {}
+    public abstract void stop();
+
+    public record Parameters(
+        String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
+    ) {}
 }

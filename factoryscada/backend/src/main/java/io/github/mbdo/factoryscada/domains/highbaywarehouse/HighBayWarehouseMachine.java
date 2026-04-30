@@ -73,6 +73,11 @@ public class HighBayWarehouseMachine extends AbstractMachine {
         new SetupCommand(this, dto).execute();
     }
 
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
+    }
+
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Stop HighBayWarehouse {}", dto);
         new StopCommand(this, dto).execute();

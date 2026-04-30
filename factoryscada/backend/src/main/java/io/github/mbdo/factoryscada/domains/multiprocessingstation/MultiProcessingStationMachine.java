@@ -51,6 +51,11 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         new ProcessCommand(this, dto).execute();
     }
 
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
+    }
+
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Stop MultiProcessingStation {}", dto);
         new StopCommand(this, dto).execute();
