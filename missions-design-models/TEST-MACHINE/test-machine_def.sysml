@@ -17,8 +17,8 @@ package TestMachineSystem {
     package TestMachineMessages {
         private import TestMachineSystem::TestMachineCommands::*;
 
-        item def BufferedMessage1 :> BufferedMessage;
         item def EventMessage1 :> EventMessage;
+        item def EventMessage2 :> EventMessage;
 
         item def CommandSuccessEventMessage :> EventMessage;
     }

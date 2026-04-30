@@ -36,7 +36,7 @@ class SysmlAbstractSyntaxTreeGeneratorTest {
                 .normalize();
 
         List<String> fileNames = List.of(
-                "common/messages_def.sysml",
+                "common/common_def.sysml",
                 "common/zones_def.sysml",
                 // "CB/cb_def.sysml",
                 // "MPS/mps_def.sysml",

@@ -226,7 +226,7 @@ public class SysmlImporterTest {
 		Path projectPath = Paths.get(System.getProperty("user.dir"))
 			    .resolve("../missions-design-models")
 			    .normalize();
-		List<String> fileNames = List.of("common/messages_def.sysml", 
+		List<String> fileNames = List.of("common/common_def.sysml",
 				"common/zones_def.sysml", 
 				"VGR/vgr_def.sysml", 
 				"CB/cb_def.sysml",

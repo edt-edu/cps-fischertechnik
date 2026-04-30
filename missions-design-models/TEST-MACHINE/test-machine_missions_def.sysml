@@ -6,28 +6,31 @@ package TestMachineMissions {
     doc
     /* Mission Alpha drives command A and signals Mission Beta on success. */
     state def TestMissionAlpha {
-        in testMachine : TestMachineSystem::TestMachine::TestMachineMachine;
+        in testMachine1 : TestMachineSystem::TestMachine::TestMachineMachine;
+        in testMachine2 : TestMachineSystem::TestMachine::TestMachineMachine;
 
-        entry testMachine.actionB;
-        then Idle;
+        entry testMachine1.actionA;
+        then Setup;
+
+        state Setup;
+        accept CommandSuccessEventMessage then Idle;
 
         state Idle;
-        accept when testMachine.currentCommand == TestCommandKind::A
-            do testMachine.actionA
+        accept when testMachine1.attA > 10
+            do action {
+                send new EventMessage1() to testMachine2;
+            }
             then WaitingForB;
 
         state WaitingForB;
-        accept CommandSuccessEventMessage
-            do action {
-                send new EventMessage1() to testMachine;
-            }
-            then Idle;
+        accept EventMessage2 then Idle;
     }
 
     doc
     /* Mission Beta reacts to Alpha's event and drives command B. */
     state def TestMissionBeta {
-        in testMachine : TestMachineSystem::TestMachine::TestMachineMachine;
+        in testMachine1 : TestMachineSystem::TestMachine::TestMachineMachine;
+        in testMachine2 : TestMachineSystem::TestMachine::TestMachineMachine;
 
         action def testAction {
             doc
@@ -40,12 +43,12 @@ package TestMachineMissions {
         then Standby;
 
         state Standby;
-        accept EventMessage1 do action testAction then WaitingForA;
+        accept EventMessage1 do testMachine1.actionB then WaitingForA;
 
         state WaitingForA;
         accept CommandSuccessEventMessage
             do action {
-                send new BufferedMessage1() to testMachine;
+                send new EventMessage2() to testMachine2;
             }
             then Standby;
     }
