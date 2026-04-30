@@ -87,7 +87,7 @@ export class DynamicMissionComponent implements OnInit {
   private requestInitialData(): void {
     this.myRxStompService.publish({destination: '/app/factory/configuration'});
     this.myRxStompService.publish({destination: '/app/factory/instance'});
-    this.myRxStompService.publish({destination: '/dynamic-mission/missions'})
+    this.myRxStompService.publish({destination: '/app/dynamic-mission/missions'})
   }
 
   private subscribeToTopics(): void {
@@ -99,7 +99,7 @@ export class DynamicMissionComponent implements OnInit {
       this.configuration = this.parseMessage(message);
     });
 
-    this.subscribeToTopic('/topic/dynamic-mission/missions', (message: Message)=> {
+    this.subscribeToTopic('/topic/dynamic-missions', (message: Message)=> {
       this.missions = this.parseMessage(message);
     })
   }

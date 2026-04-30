@@ -4,10 +4,7 @@ import io.github.mbdo.factoryscada.domains.dynamicmission.dtos.DynamicMissionDTO
 import io.github.mbdo.factoryscada.service.dynamicmission.DynamicMissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.util.UriUtils;
 
@@ -26,7 +23,8 @@ public class DynamicMissionOrchestratorController {
     this.dynamicMissionService = dynamicMissionService;
   }
 
-  @MessageMapping("/topic/missions")
+  @MessageMapping("/missions")
+  @SendTo("/topic/dynamic-missions")
   public List<DynamicMissionDTO> getMissions() {
     return dynamicMissionService.getMissionDTOs();
   }

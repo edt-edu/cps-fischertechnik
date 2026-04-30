@@ -183,8 +183,8 @@
 |  
 
 |DynamicMissionOrchestratorController.getMissions()
-|<<incoming_dynamic-mission-topic-missions,/dynamic-mission/topic/missions>>
-|  
+|<<incoming_dynamic-mission-missions,/dynamic-mission/missions>>
+|<<outgoing_topic-dynamic-missions,/topic/dynamic-missions>>
 
 |IndexedLineController.receiveMoveToMillCommand()
 |<<incoming_indexedline-machinename-command-move-to-mill,/indexedLine/{machineName}/command/move_to_mill>>
@@ -821,15 +821,24 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_dynamic-mission-topic-missions]]
-===  Incoming Topic: `/dynamic-mission/topic/missions`
+[[incoming_dynamic-mission-missions]]
+===  Incoming Topic: `/dynamic-mission/missions`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
+
+*Send To:* `/topic/dynamic-missions`
 
 ==== Parameters
 
 
-NOTE: This endpoint does not send a response back via a topic.
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
+}
+----
 
 [[incoming_dynamic-mission-command-start-missionname]]
 ===  Incoming Topic: `/dynamic-mission/command/start/{missionName}`
@@ -4957,15 +4966,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_vacuumgripper-machinename-command-place]]
-===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
+[[incoming_vacuumgripper-machinename-command-pick]]
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePlaceCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePickCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `placeDTO` (GenericMachineCommandDTO)
+- `pickDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -5023,15 +5032,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_vacuumgripper-machinename-command-pick]]
-===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
+[[incoming_vacuumgripper-machinename-command-place]]
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePickCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePlaceCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `pickDTO` (GenericMachineCommandDTO)
+- `placeDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -5797,6 +5806,27 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
       "type" : "string"
     }
   }
+}
+----
+
+[[outgoing_topic-dynamic-missions]]
+=== Outgoing Topic: `/topic/dynamic-missions`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
+
+*Request Mapping:* `@MessageMapping("/dynamic-mission/missions")`
+
+*Send To:* `/topic/dynamic-missions`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
 }
 ----
 
