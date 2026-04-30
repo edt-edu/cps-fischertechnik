@@ -10,4 +10,5 @@ public interface DynamicMission {
 
   void start();
   void stop();
+  boolean isActive();
 }

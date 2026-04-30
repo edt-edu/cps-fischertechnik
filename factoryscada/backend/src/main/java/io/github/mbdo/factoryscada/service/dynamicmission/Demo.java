@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -37,7 +36,6 @@ public class Demo implements DynamicMission {
   private static final String MPS_TOPIC = "I1MultiProcessing01";
 
   private final FactoryScada factoryScada;
-  private final SimpMessagingTemplate template;
   private volatile boolean active = false;
 
   private SortingLineMachine sortingLine;
@@ -51,9 +49,8 @@ public class Demo implements DynamicMission {
   private Island1MqttGateway island1MqttGateway;
 
   @Autowired
-  public Demo(FactoryScada factoryScada, SimpMessagingTemplate template) {
+  public Demo(FactoryScada factoryScada) {
     this.factoryScada = factoryScada;
-    this.template = template;
   }
 
   @Override
@@ -68,12 +65,6 @@ public class Demo implements DynamicMission {
         and processes them at the multi-processing-station, using the conveyor belt as buffer.
         """;
   }
-
-  //  @EventListener(ApplicationReadyEvent.class)
-//  public void initAfterStartup() {
-//    //TODO add a button in the frontend to start and stop this service
-//    start();
-//  }
 
   private <T> T getMachine(Class<T> machineClass, String machineName) throws IllegalArgumentException {
     var machine = getFactoryScada().getFactoryScadaInstance().machines().get(machineName);
