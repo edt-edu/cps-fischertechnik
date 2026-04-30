@@ -2682,7 +2682,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -2691,7 +2691,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -2703,7 +2703,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -2712,7 +2712,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
@@ -2786,7 +2786,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -2795,7 +2795,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -2807,7 +2807,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -2816,7 +2816,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
@@ -6086,7 +6086,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -6095,7 +6095,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -6107,7 +6107,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -6116,7 +6116,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
@@ -6201,7 +6201,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -6210,7 +6210,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -6222,7 +6222,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -6231,7 +6231,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
