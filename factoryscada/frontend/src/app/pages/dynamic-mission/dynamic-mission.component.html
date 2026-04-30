@@ -31,7 +31,7 @@
   <div class="flex flex-wrap wrap">
     <div class="form-group flex-grow-0">
       <label>Mission</label>
-      <p-dropdown [options]="getMissions(missionConfiguration)" [(ngModel)]="selectedMission" optionLabel="name"
+      <p-dropdown [options]="getMissions()" [(ngModel)]="selectedMission" optionLabel="name"
         (onClick)="onMissionSelected()" [style]="{'width':'15rem'}" />
     </div>
     <div class="form-group  flex-grow-1" style="padding-left: 20px;width: 100%;">
@@ -41,7 +41,7 @@
   </div>
 
   <div style="display: flex; flex-wrap: wrap;">
-    @for (machine of getMachinesInMission(configuration, selectedMission); track machine) {
+    @for (machine of getMachinesInMission(); track machine) {
     <p-fieldset legend="{{machine.name}}">
       <app-machine-status-widget [machine]="machine"></app-machine-status-widget><br>
       <app-command-status-widget [machine]="machine"></app-command-status-widget>

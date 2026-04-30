@@ -1,16 +1,10 @@
-import {Component, DestroyRef, ElementRef, inject, OnInit, ViewChild} from '@angular/core';
+import {Component, DestroyRef, inject, OnInit} from '@angular/core';
 import {MyRxStompService} from "../../services/my-rx-stomp.service";
 import {Message} from "@stomp/stompjs";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {IFactoryInstance} from "../../models/i-factory-instance";
-import {
-  IFactoryParallelizedMissionsConfiguration,
-  MissionParallelized,
-  Nodes
-} from "../../models/i-factory-paralelized_missions";
-import {IConfiguration} from "../../models/i-factory-configuration";
-import {ICommandPlaceholder} from "../../models/i-command-placeholder";
+import {IConfiguration, Machine} from "../../models/i-factory-configuration";
 import {ButtonModule} from 'primeng/button';
 import {InputTextModule} from 'primeng/inputtext';
 import {OverlayPanelModule} from 'primeng/overlaypanel';
@@ -22,7 +16,7 @@ import {ScrollPanelModule} from 'primeng/scrollpanel';
 import {MachineStatusWidgetComponent} from "../../widgets/machine-status-widget/machine-status-widget.component";
 import {CommandStatusWidgetComponent} from "../../widgets/command-status-widget/command-status-widget.component";
 import {LogTableWidgetComponent} from "../../widgets/log-table-widget/log-table-widget.component";
-import {getMachinesInMission, getMissions} from "../../utilities/utils";
+import {DynamicMission} from "../../models/i-factory-dynamic_missions";
 
 @Component({
   selector: 'app-dynamic-mission',
@@ -46,18 +40,10 @@ import {getMachinesInMission, getMissions} from "../../utilities/utils";
   styleUrls: ['./dynamic-mission.component.scss']
 })
 export class DynamicMissionComponent implements OnInit {
-  @ViewChild('commandExecuteLog', {static: true}) commandExecuteLog!: ElementRef<HTMLDivElement>;
-
-  selectedMission?: MissionParallelized;
-  placeholder?: ICommandPlaceholder;
+  selectedMission?: DynamicMission;
   configuration?: IConfiguration;
-  missionConfiguration?: IFactoryParallelizedMissionsConfiguration;
   instance?: IFactoryInstance;
-
-  actualMissionsExecuted: Nodes[] = [];
-
-  protected readonly getMissions = getMissions;
-  protected readonly getMachinesInMission = getMachinesInMission;
+  missions?: DynamicMission[];
 
   missionDescription: string = '';
 
@@ -70,49 +56,41 @@ export class DynamicMissionComponent implements OnInit {
   }
 
   onMissionSelected(): void {
-    if (this.selectedMission) {
-      this.missionDescription = this.selectedMission?.description;
+    if (!this.selectedMission) {
+      return;
     }
+
+    this.missionDescription = this.selectedMission?.description;
   }
 
   onStartMission(): void {
-    if (this.selectedMission) {
-      const destination = `/app/factoryMission/command/start/${encodeURIComponent(this.selectedMission.name)}`;
-      const body = "";
-      let publishParams = {destination, body};
-      if (publishParams) {
-        this.myRxStompService.publish(publishParams);
-      } else {
-        console.error('Error processing stop mission', publishParams);
-      }
+    if (!this.selectedMission) {
+      return;
     }
+
+    const destination = `/app/dynamic-mission/command/start/${encodeURIComponent(this.selectedMission.name)}`;
+    this.myRxStompService.publish({destination, body: ""});
   }
 
   /**
-   * Call backend to stop any runnning mission
+   * Call backend to stop any running mission
    */
   onStopMission(): void {
-    if (this.selectedMission) {
-      const destination = `/app/factoryMission/command/stop`;
-      const body = "";
-      let publishParams = {destination, body};
-      if (publishParams) {
-        this.myRxStompService.publish(publishParams);
-      } else {
-        console.error('Error processing stop mission', publishParams);
-      }
+    if (!this.selectedMission) {
+      return;
     }
+
+    const destination = `/app/dynamic-mission/command/stop`;
+    this.myRxStompService.publish({destination, body: ""});
   }
 
   private requestInitialData(): void {
     this.myRxStompService.publish({destination: '/app/factory/configuration'});
     this.myRxStompService.publish({destination: '/app/factory/instance'});
-    this.myRxStompService.publish({destination: '/app/factoryMission/mission-configuration'});
-    this.myRxStompService.publish({destination: '/app/factoryMission/actual-command-executing'});
+    this.myRxStompService.publish({destination: '/dynamic-mission/missions'})
   }
 
   private subscribeToTopics(): void {
-
     this.subscribeToTopic('/topic/factory-instance', (message: Message) => {
       this.instance = this.parseMessage(message);
     });
@@ -121,17 +99,27 @@ export class DynamicMissionComponent implements OnInit {
       this.configuration = this.parseMessage(message);
     });
 
-    this.subscribeToTopic('/topic/mission-configuration', (message: Message) => {
-      this.missionConfiguration = this.parseMessage(message);
-    });
-
-    this.subscribeToTopic('/topic/actual-command-executing', (message: Message) => {
-      this.actualMissionsExecuted = this.parseMessage(message);
-    });
+    this.subscribeToTopic('/topic/dynamic-mission/missions', (message: Message)=> {
+      this.missions = this.parseMessage(message);
+    })
   }
 
   canStartMission(): boolean {
     return this.selectedMission != undefined;
+  }
+
+  getMissions(): DynamicMission[] {
+    return this.missions ?? [];
+  }
+
+  getMachinesInMission(): Machine[] {
+    if (!this.selectedMission) {
+      return [];
+    }
+
+    return (this.configuration?.controllers ?? [])
+      .flatMap(controller => controller.machines)
+      .filter(machine => this.selectedMission?.involvedMachineNames?.includes(machine.name));
   }
 
   private subscribeToTopic(destination: string, callback: (message: Message) => void): void {
