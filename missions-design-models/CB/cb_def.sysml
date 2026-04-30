@@ -50,11 +50,11 @@ package ConveyorBeltSystem {
         private import ConveyorBeltSystem::ConveyorBeltCommands::*;
 
         part def ConveyorBeltMachine specializes Machine {
-            action moveToSensor : MoveToSensor;
-            action moveOut : MoveOut;
-            action moveNbSteps : MoveNbSteps;
-            action stop : Stop;
-            action statusRequest : StatusRequest;
+            perform action moveToSensor : MoveToSensor;
+            perform action moveOut : MoveOut;
+            perform action moveNbSteps : MoveNbSteps;
+            perform action stop : Stop;
+            perform action statusRequest : StatusRequest;
 
             attribute currentCommand : ConveyorCommandKind;
             attribute direction : DirectionKind;

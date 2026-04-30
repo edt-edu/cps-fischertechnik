@@ -7,7 +7,7 @@ package VacuumGripperMissions {
     private import ZonesSystem::Zone;
     private import ZonesSystem::ZonesMessages::*;
     private import MultiProcessingStationSystem::MultiProcessingStationMessages::*;
-    private import ScalarValues::*;
+
     doc
     /* Nominal mission scenario for VacuumGripper n°1 */
     state def VacuumGripper1NominalMission {
@@ -22,15 +22,6 @@ package VacuumGripperMissions {
                     rot = 0.0;
                 }
             }
-        }
-
-        action pickColor {
-            in color : Color;
-
-            then decide;
-                if color == Color::BLUE then pickBlue;
-                if color == Color::WHITE then pickWhite;
-                if color == Color::RED then pickRed;
         }
 
         action pickBlue : Pick {
@@ -73,7 +64,7 @@ package VacuumGripperMissions {
             }
         }
 
-        entry vacuumGripper.setup;
+        entry action setup;
         then SetupCMD;
 
         state SetupCMD;
@@ -85,9 +76,15 @@ package VacuumGripperMissions {
             then Idle;
 
         state Idle;
-        accept BlueTokenAvailableBufferedMessage do pickBlue then PickColorCMD;
-        accept WhiteTokenAvailableBufferedMessage do pickWhite then PickColorCMD;
-        accept RedTokenAvailableBufferedMessage do pickRed then PickColorCMD;
+        accept tokenAvailableMessage : TokenAvailableBufferedMessage
+            if tokenAvailableMessage.color == Color::BLUE do pickBlue
+            then PickColorCMD;
+        accept tokenAvailableMessage : TokenAvailableBufferedMessage
+            if tokenAvailableMessage.color == Color::WHITE do pickWhite
+            then PickColorCMD;
+        accept tokenAvailableMessage : TokenAvailableBufferedMessage
+            if tokenAvailableMessage.color == Color::RED do pickRed
+            then PickColorCMD;
 
         state PickColorCMD;
         accept CommandSuccessEventMessage
@@ -139,7 +136,7 @@ package VacuumGripperMissions {
             }
         }
 
-        entry vacuumGripper.setup;
+        entry;
         then SetupIdle;
 
         state SetupIdle;
