@@ -21,10 +21,10 @@ public class DynamicMissionService {
   private final FactoryScada factoryScada;
 
   @Autowired
-  public DynamicMissionService(Demo demo, FactoryScada factoryScada) {
+  public DynamicMissionService(FactoryScada factoryScada, Demo demo, BrokenCBDemo brokenCBDemo) {
     this.factoryScada = factoryScada;
 
-    this.missions = List.of(demo);
+    this.missions = List.of(demo, brokenCBDemo);
     this.missionDTOs = missions
         .stream()
         .map(mission -> new DynamicMissionDTO(mission.getName(),

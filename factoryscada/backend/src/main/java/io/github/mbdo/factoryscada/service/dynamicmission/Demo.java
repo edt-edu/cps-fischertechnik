@@ -11,6 +11,7 @@ import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,8 @@ public class Demo implements DynamicMission {
 
   private final FactoryScada factoryScada;
   private volatile boolean active = false;
+  @Setter
+  private volatile boolean cbBroken = false; //TODO add a button in the frontend for this
 
   private SortingLineMachine sortingLine;
   private VacuumGripperMachine vacuumGripper2;
@@ -134,11 +137,23 @@ public class Demo implements DynamicMission {
         if (conveyorBelt.isTokenAtFeed()) log.debug("CB feed occupied");
       }
 
-
       //move token to swap on cb
       if (conveyorBelt.isIdle() && conveyorBelt.isTokenAtFeed() && !conveyorBelt.isTokenAtSwap()) {
-        log.info("Moving token from feed to swap");
-        conveyorBelt.moveToSensor(DirectionKind.FORWARD);
+        if (!cbBroken) {
+          log.info("Moving token from feed to swap");
+          conveyorBelt.moveToSensor(DirectionKind.FORWARD);
+        } else {
+          log.debug("CB is broken");
+          if (vacuumGripper1.isIdle()) {
+            log.info("Moving token from feed to swap with VGR1");
+            //TODO move with vgr1
+          } else if (vacuumGripper2.isIdle()) {
+            log.info("Moving token from feed to swap with VGR2");
+            //TODO move with vgr2
+          } else {
+            log.debug("Both VGRs busy, cannot move token");
+          }
+        }
       } else {
         log.debug("Not moving from feed to swap");
         if (!conveyorBelt.isIdle()) log.debug("CB busy");
