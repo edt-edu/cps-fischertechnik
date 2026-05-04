@@ -10,19 +10,13 @@ import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessin
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import io.github.mbdo.factoryscada.service.FactoryScada;
-import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1MqttGateway;
-import io.github.mbdo.factoryscada.service.dynamicmission.machinestate.Island1State;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 @Slf4j
 @Service
@@ -43,10 +37,6 @@ public class Demo implements DynamicMission {
   private ConveyorBeltMachine conveyorBelt;
   private VacuumGripperMachine vacuumGripper1;
   private MultiProcessingStationMachine multiProcessingStation;
-
-  private Island1State island1State;
-  private MqttClient mqttClient;
-  private Island1MqttGateway island1MqttGateway;
 
   @Autowired
   public Demo(FactoryScada factoryScada) {
@@ -89,22 +79,6 @@ public class Demo implements DynamicMission {
     new Thread(this::run).start();
   }
 
-  private void startMQTTGateway() {
-    try {
-      // TODO: configurable
-      mqttClient = new MqttClient("tcp://localhost:1883", "client" + new Random().nextInt());
-    } catch (MqttException e) {
-      log.error("Failed to create MQTT client", e);
-      return;
-    }
-    island1MqttGateway = new Island1MqttGateway(island1State, mqttClient);
-    try {
-      island1MqttGateway.start();
-    } catch (IOException e) {
-      log.error("Failed to start MQTT gateway", e);
-    }
-  }
-
   @Override
   public void stop() {
     active = false;
@@ -120,31 +94,23 @@ public class Demo implements DynamicMission {
     this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
     this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
 
-    this.island1State = new Island1State(); //reset island state
-    startMQTTGateway();
-    var slState = island1State.getSortingLine01();
-    var cbState = island1State.getConveyorBelt01();
-    var mpsState = island1State.getMultiProcessing01();
     var processingState = ProcessingState.IDLE;
 
     while (active) {
       //sort token if one is present at sl input
-
-      if (!slState.isInputLightBarrier() && sortingLine.isIdle()) {
+      if (sortingLine.isTokenAtFeed() && sortingLine.isIdle()) {
         log.info("Sorting token");
         sortingLine.eject(Color.AUTO);
       }
 
       //move token from sl out to cb if there is room
-      if (vacuumGripper2.isIdle() &&
-          conveyorBelt.isIdle() &&
-          cbState.isFeedLightBarrier()) {
+      if (vacuumGripper2.isIdle() && conveyorBelt.isIdle() && !conveyorBelt.isTokenAtFeed()) {
         String originName;
-        if (!slState.isOutputWhiteLightBarrier()) {
+        if (sortingLine.isTokenAtWhite()) {
           originName = "SL_OUTPUT_WHITE";
-        } else if (!slState.isOutputRedLightBarrier()) {
+        } else if (sortingLine.isTokenAtRed()) {
           originName = "SL_OUTPUT_RED";
-        } else if (!slState.isOutputBlueLightBarrier()) {
+        } else if (sortingLine.isTokenAtBlue()) {
           originName = "SL_OUTPUT_BLUE";
         } else {
           originName = null;
@@ -158,14 +124,14 @@ public class Demo implements DynamicMission {
 
       //move token to swap on cb
       if (conveyorBelt.isIdle() &&
-          !cbState.isFeedLightBarrier() &&
-          cbState.isSwapLightBarrier()) {
+          conveyorBelt.isTokenAtFeed() &&
+          !conveyorBelt.isTokenAtSwap()) {
         log.info("Moving token from feed to swap");
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
       }
 
       //move token to mps
-      if (!cbState.isSwapLightBarrier() &&
+      if (conveyorBelt.isTokenAtSwap() &&
           vacuumGripper1.isIdle() &&
           multiProcessingStation.isIdle() &&
           processingState == ProcessingState.IDLE) {
@@ -183,10 +149,7 @@ public class Demo implements DynamicMission {
       }
 
       //this may happen in parallel with the vgr going to safety
-      log.debug("mpsInputTokenPresent: {}", !mpsState.isInputLightBarrier());
-      log.debug("mpsIdle: {}", multiProcessingStation.isIdle());
-      log.debug("processingState: {}", processingState);
-      if (!mpsState.isInputLightBarrier() &&
+      if (multiProcessingStation.isTokenAtFeed() &&
           multiProcessingStation.isIdle() &&
           processingState == ProcessingState.GOTO_SAFETY) {
         log.info("Processing token");
@@ -203,7 +166,6 @@ public class Demo implements DynamicMission {
     }
 
     log.info("Demo stopped");
-    stopMQTTGateway();
   }
 
   @SuppressWarnings("SameParameterValue")
@@ -212,14 +174,6 @@ public class Demo implements DynamicMission {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
       log.warn("Event loop was interrupted");
-    }
-  }
-
-  private void stopMQTTGateway() {
-    try {
-      island1MqttGateway.stop();
-    } catch (IOException e) {
-      log.error("Failed to stop MQTT gateway", e);
     }
   }
 

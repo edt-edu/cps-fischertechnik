@@ -10,10 +10,17 @@ import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.MoveToSensor;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.commands.StopCommand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
+@Setter
 public class ConveyorBeltMachine extends AbstractMachine {
+
+    private boolean tokenAtFeed;
+    private boolean tokenAtSwap;
 
     public ConveyorBeltMachine(Parameters parameters) {
         super(parameters);

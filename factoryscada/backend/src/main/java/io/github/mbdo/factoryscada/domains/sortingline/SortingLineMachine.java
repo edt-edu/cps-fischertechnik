@@ -8,10 +8,19 @@ import io.github.mbdo.factoryscada.domains.sortingline.commands.EjectCommand;
 import io.github.mbdo.factoryscada.domains.sortingline.commands.StopCommand;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
+@Setter
 public class SortingLineMachine extends AbstractMachine {
+
+    private boolean tokenAtFeed;
+    private boolean tokenAtWhite;
+    private boolean tokenAtRed;
+    private boolean tokenAtBlue;
 
     public SortingLineMachine(Parameters parameters) {
         super(parameters);

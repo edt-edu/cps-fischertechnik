@@ -7,10 +7,17 @@ import io.github.mbdo.factoryscada.core.enums.MPSOutput;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
+@Setter
 public class MultiProcessingStationMachine extends AbstractMachine {
+
+    private boolean tokenAtFeed;
+    private boolean tokenAtSwap;
 
     public MultiProcessingStationMachine(Parameters parameters) {
         super(parameters);
