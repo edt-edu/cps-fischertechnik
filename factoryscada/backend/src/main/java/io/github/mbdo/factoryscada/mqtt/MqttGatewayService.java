@@ -2,6 +2,7 @@ package io.github.mbdo.factoryscada.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMachine;
 import io.github.mbdo.factoryscada.domains.indexedline.IndexedLineMachine;
@@ -15,13 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class MqttGatewayService {
-  //PLC/<island>/<type>/<machineName>/measurements/input/<inputName>
-  private static final Pattern TOPIC_PATTERN = Pattern.compile("PLC/([^/]+)/([^/]+)/([^/]+)/measurements/input/(.+)");
+  //PLC/<island>/<type>/<machineName>/measurements/<measurement kind>/<inputName>
+  private static final Pattern TOPIC_PATTERN = Pattern.compile("PLC/([^/]+)/([^/]+)/([^/]+)/measurements/([^/]+)/(.+)");
 
   private final MqttGateway mqttGateway;
   private final FactoryScada factoryScada;
@@ -70,23 +72,36 @@ public class MqttGatewayService {
     //group 1 is the island, we don't need that
     var machineType = matcher.group(2);
     var machineName = matcher.group(3);
-    var inputName = matcher.group(4);
+    var measurementKind = matcher.group(4);
+    var inputName = matcher.group(5);
 
-    try {
-      updateMachineState(machineType, machineName, inputName, value);
-    } catch (IllegalArgumentException e) {
-      log.warn("Failed to update machine state", e);
+    switch (measurementKind) {
+      case "internal" -> {
+        if (inputName.equals("isExecuting")) {
+          getMachine(machineName).ifPresent(machine -> {
+            log.debug("Updating idle state for machine {} to {}", machineName, !value.asBoolean());
+            machine.setIdle(!value.asBoolean());
+          });
+        }
+      }
+      case "input" -> {
+        try {
+          updateMachineInputState(machineType, machineName, inputName, value);
+        } catch (IllegalArgumentException e) {
+          log.warn("Failed to update machine state", e);
+        }
+      }
     }
   }
 
-  private void updateMachineState(String machineType, String machineName, String inputName, JsonNode value)
+  private void updateMachineInputState(String machineType, String machineName, String inputName, JsonNode value)
   throws IllegalArgumentException {
-    var machine = factoryScada.getFactoryScadaInstance().machines().get(machineName);
-    if (machine == null) {
+    var machine = getMachine(machineName);
+    if (machine.isEmpty()) {
       throw new IllegalArgumentException("Cannot find a machine with the name " + machineName);
     }
 
-    switch (machine) {
+    switch (machine.get()) {
       case ConveyorBeltMachine cb -> {
         switch (inputName) {
           case "conveyorSensFeed" -> cb.setTokenAtFeed(!value.asBoolean());
@@ -116,6 +131,10 @@ public class MqttGatewayService {
       case VacuumGripperMachine ignored -> logIgnoredInput(machineName, inputName);
       default -> throw new IllegalArgumentException("Unsupported machine type: " + machineType);
     }
+  }
+
+  public Optional<AbstractMachine> getMachine(String machineName) {
+    return Optional.ofNullable(factoryScada.getFactoryScadaInstance().machines().get(machineName));
   }
 
   private void logIgnoredInput(String machineName, String inputName) {
