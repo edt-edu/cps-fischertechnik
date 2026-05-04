@@ -84,6 +84,7 @@ public class Demo implements DynamicMission {
     active = false;
   }
 
+  @SuppressWarnings("LoggingSimilarMessage")
   private void run() {
     log.info("Starting Demo");
 
@@ -101,6 +102,9 @@ public class Demo implements DynamicMission {
       if (sortingLine.isTokenAtFeed() && sortingLine.isIdle()) {
         log.info("Sorting token");
         sortingLine.eject(Color.AUTO);
+      } else {
+        if (!sortingLine.isTokenAtFeed()) log.debug("No token at SL input");
+        if (!sortingLine.isIdle()) log.debug("SL busy");
       }
 
       //move token from sl out to cb if there is room
@@ -119,15 +123,21 @@ public class Demo implements DynamicMission {
           log.info("Moving token from {} to CB", originName);
           vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
         }
+      } else {
+        if (!vacuumGripper2.isIdle()) log.debug("VGR2 busy");
+        if (!conveyorBelt.isIdle()) log.debug("CB busy");
+        if (conveyorBelt.isTokenAtFeed()) log.debug("CB feed occupied");
       }
 
 
       //move token to swap on cb
-      if (conveyorBelt.isIdle() &&
-          conveyorBelt.isTokenAtFeed() &&
-          !conveyorBelt.isTokenAtSwap()) {
+      if (conveyorBelt.isIdle() && conveyorBelt.isTokenAtFeed() && !conveyorBelt.isTokenAtSwap()) {
         log.info("Moving token from feed to swap");
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
+      } else {
+        if (!conveyorBelt.isIdle()) log.debug("CB busy");
+        if (!conveyorBelt.isTokenAtFeed()) log.debug("CB feed empty");
+        if (conveyorBelt.isTokenAtSwap()) log.debug("CB swap occupied");
       }
 
       //move token to mps
@@ -139,6 +149,11 @@ public class Demo implements DynamicMission {
         vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
         multiProcessingStation.setup(); //ensure the mps is in a state where we can actually place the token
         processingState = ProcessingState.DELIVERING_TOKEN;
+      } else {
+        if (!conveyorBelt.isTokenAtSwap()) log.debug("CB swap empty");
+        if (!vacuumGripper1.isIdle()) log.debug("VGR1 busy");
+        if (!multiProcessingStation.isIdle()) log.debug("MPS busy");
+        if (processingState != ProcessingState.IDLE) log.debug("processingState: {}", processingState);
       }
 
       //move vgr1 out of the way
@@ -146,6 +161,9 @@ public class Demo implements DynamicMission {
         log.info("Going to safety");
         vacuumGripper1.go_to_safe_position();
         processingState = ProcessingState.GOTO_SAFETY;
+      } else {
+        if (!vacuumGripper1.isIdle()) log.debug("VGR1 busy");
+        if (processingState != ProcessingState.DELIVERING_TOKEN) log.debug("processingState: {}", processingState);
       }
 
       //this may happen in parallel with the vgr going to safety
@@ -155,6 +173,10 @@ public class Demo implements DynamicMission {
         log.info("Processing token");
         multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
         processingState = ProcessingState.PROCESSING;
+      } else {
+        if (!multiProcessingStation.isTokenAtFeed()) log.debug("MPS feed empty");
+        if (!multiProcessingStation.isIdle()) log.debug("MPS busy");
+        if (processingState != ProcessingState.GOTO_SAFETY) log.debug("processingState: {}", processingState);
       }
 
       if (multiProcessingStation.isIdle() && processingState == ProcessingState.PROCESSING) {

@@ -17,7 +17,7 @@ logging:
   level:
     root: INFO
     io.github.mbdo.factoryscada.mqtt.MqttGatewayService: DEBUG
-#    io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
+    io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
 
 log:
   limit: 1000
