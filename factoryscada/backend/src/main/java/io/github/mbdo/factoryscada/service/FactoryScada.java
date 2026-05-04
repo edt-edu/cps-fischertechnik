@@ -243,6 +243,15 @@ public class FactoryScada {
                     // notify ExecuterVisitor
                     this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
 
+                    //update idle status of machine
+                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        var feedbackMessage = commandStatus.getCommandFeedbackStatus();
+                        var isDone = !feedbackMessage.contains("MUST_CONTINUE");
+                        log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
+                        log.debug("Updating idle state for machine {} to {} (reason: command feedback)", machineName, isDone);
+                        machine.setIdle(isDone);
+                    });
+
                     break;
                 case "MACHINE_FEEDBACK":
                     MachineStatus machineStatus = this.machineLastMachineStatusMap.getOrDefault(machineName,
@@ -261,7 +270,7 @@ public class FactoryScada {
                     //update idle status of machine
                     Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
                         log.info("Received status for machine {} : {}", machineName, status);
-                        log.debug("Updating idle state for machine {} to {}", machineName, status.contains("IDLE"));
+                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
                         machine.setIdle(status.contains("IDLE"));
                     });
 
