@@ -254,7 +254,7 @@ public class Demo implements DynamicMission {
       cbFeedLocked = false;
     } else if (vgr1Activity == VGR1Activity.MOVE_FROM_FEED_TO_SWAP && vacuumGripper1.isIdle()) {
       cbFeedLocked = false;
-      vgr1Activity = VGR1Activity.RETRACT_FROM_FEED;
+      vgr1Activity = VGR1Activity.RETRACT_FROM_SWAP;
       vacuumGripper1.retract_arm();
     } else if (vgr2Activity == VGR2Activity.MOVE_FROM_FEED_TO_SWAP && vacuumGripper2.isIdle()) {
       cbFeedLocked = false;
