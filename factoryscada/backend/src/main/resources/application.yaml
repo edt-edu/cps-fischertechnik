@@ -15,9 +15,9 @@ logging:
   charset:
     console: UTF-8
   level:
-    root: DEBUG
+    root: INFO
 #    io.github.mbdo.factoryscada.mqtt.MqttGatewayService: DEBUG
-    io.github.mbdo.factoryscada.service.dynamicmission: INFO
+#    io.github.mbdo.factoryscada.service.dynamicmission: INFO
 
 log:
   limit: 1000
