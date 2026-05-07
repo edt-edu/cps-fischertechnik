@@ -268,11 +268,12 @@ public class FactoryScada {
                     webSocketPublisher.sendMachineStatus(machineName, machineStatus);
 
                     //update idle status of machine
-                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
-                        log.info("Received status for machine {} : {}", machineName, status);
-                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
-                        machine.setIdle(status.contains("IDLE"));
-                    });
+                    //TODO this might acutally cause problems, if commands are also used to measure the idle state
+//                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+//                        log.info("Received status for machine {} : {}", machineName, status);
+//                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
+//                        machine.setIdle(status.contains("IDLE"));
+//                    });
 
                     break;
                 default:
