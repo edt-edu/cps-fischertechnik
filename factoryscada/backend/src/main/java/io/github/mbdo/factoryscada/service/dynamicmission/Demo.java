@@ -146,10 +146,10 @@ public class Demo implements DynamicMission {
           log.debug("CB is broken");
           if (vacuumGripper1.isIdle()) {
             log.info("Moving token from feed to swap with VGR1");
-            //TODO move with vgr1
+            vacuumGripper1.move(new NamedPosition("ALT_CB"), new NamedPosition("CB"));
           } else if (vacuumGripper2.isIdle()) {
             log.info("Moving token from feed to swap with VGR2");
-            //TODO move with vgr2
+            vacuumGripper2.move(new NamedPosition("CB"), new NamedPosition("ALT_CB"));
           } else {
             log.debug("Both VGRs busy, cannot move token");
           }
