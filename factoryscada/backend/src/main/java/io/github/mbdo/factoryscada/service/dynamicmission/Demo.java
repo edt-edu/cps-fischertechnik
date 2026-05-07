@@ -180,9 +180,9 @@ public class Demo implements DynamicMission {
         if (processingState != ProcessingState.DELIVERING_TOKEN) log.debug("Not going to safety: processingState: {}", processingState);
       }
 
-      //this may happen in parallel with the vgr going to safety
       if (multiProcessingStation.isTokenAtFeed() &&
           multiProcessingStation.isIdle() &&
+          vacuumGripper1.isArmRetracted() && //needed since otherwise the light barrier detects the arm as token
           processingState == ProcessingState.GOTO_SAFETY) {
         log.info("Processing token");
         multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
