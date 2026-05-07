@@ -33,13 +33,42 @@ public class Demo implements DynamicMission {
   private final FactoryScada factoryScada;
   private volatile boolean active = false;
   @Setter
-  private volatile boolean cbBroken = false; //TODO add a button in the frontend for this
+  private volatile boolean cbBroken = false;
 
+  //machines
   private SortingLineMachine sortingLine;
   private VacuumGripperMachine vacuumGripper2;
   private ConveyorBeltMachine conveyorBelt;
   private VacuumGripperMachine vacuumGripper1;
   private MultiProcessingStationMachine multiProcessingStation;
+
+  //locks
+  private boolean cbFeedLocked;
+  private boolean cbSwapLocked;
+  private boolean mpsInputLocked;
+
+  //activity
+  private VGR2Activity vgr2Activity;
+  private VGR1Activity vgr1Activity;
+  private boolean cbActive;
+  private boolean mpsActive;
+
+  private enum VGR2Activity {
+    MOVE_FROM_SL_TO_CB,
+    MOVE_FROM_FEED_TO_SWAP,
+    RETRACT_FROM_FEED,
+    RETRACT_FROM_SWAP,
+    NONE,
+  }
+
+  private enum VGR1Activity {
+    MOVE_FROM_CB_TO_MPS,
+    MOVE_FROM_FEED_TO_SWAP,
+    RETRACT_FROM_FEED,
+    RETRACT_FROM_SWAP,
+    RETRACT_FROM_MPS,
+    NONE,
+  }
 
   @Autowired
   public Demo(FactoryScada factoryScada) {
@@ -87,9 +116,8 @@ public class Demo implements DynamicMission {
     active = false;
   }
 
-  private void run() {
-    log.info("Starting Demo");
-
+  private void setup() {
+    //machines
     //TODO extract machine names into config
     this.sortingLine = getMachine(SortingLineMachine.class, SORTING_LINE_TOPIC);
     this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, VGR2_TOPIC);
@@ -97,119 +125,195 @@ public class Demo implements DynamicMission {
     this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
     this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
 
-    var processingState = ProcessingState.IDLE;
+    //locks
+    cbFeedLocked = false;
+    cbSwapLocked = false;
+    mpsInputLocked = false;
+
+    //tasks
+    vgr1Activity = VGR1Activity.NONE;
+    vgr2Activity = VGR2Activity.NONE;
+    cbActive = false;
+    mpsActive = false;
+  }
+
+  private void run() {
+    log.info("Starting Demo");
+
+    setup();
 
     while (active) {
-      //sort token if one is present at sl input
-      if (sortingLine.isTokenAtFeed() && sortingLine.isIdle()) {
-        log.info("Sorting token");
-        sortingLine.eject(Color.AUTO);
-      } else {
-        if (!sortingLine.isTokenAtFeed()) log.debug("Not sorting token: No token at SL input");
-        if (!sortingLine.isIdle()) log.debug("Not sorting token: SL busy");
-      }
+      sortToken();
+      moveFromSLtoCB();
+      moveFromFeedToSwap();
+      moveTokenToMps();
+      process();
 
-      //move token from sl out to cb if there is room
-      if (vacuumGripper2.isIdle() && conveyorBelt.isIdle() && !conveyorBelt.isTokenAtFeed()) {
-        String originName;
-        if (sortingLine.isTokenAtWhite()) {
-          originName = "SL_OUTPUT_WHITE";
-        } else if (sortingLine.isTokenAtRed()) {
-          originName = "SL_OUTPUT_RED";
-        } else if (sortingLine.isTokenAtBlue()) {
-          originName = "SL_OUTPUT_BLUE";
-        } else {
-          originName = null;
-        }
-        if (originName != null) {
-          log.info("Moving token from {} to CB", originName);
-          vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
-        } else {
-          log.debug("Not moving from SL to CB: No token at SL output");
-        }
-      } else {
-        if (!vacuumGripper2.isIdle()) log.debug("Not moving from SL to CB: VGR2 busy");
-        if (!conveyorBelt.isIdle()) log.debug("Not moving from SL to CB: CB busy");
-        if (conveyorBelt.isTokenAtFeed()) log.debug("Not moving from SL to CB: CB feed occupied");
-      }
-
-      //move token to swap on cb
-      if (conveyorBelt.isIdle() && conveyorBelt.isTokenAtFeed() && !conveyorBelt.isTokenAtSwap()) {
-        if (!cbBroken) {
-          log.info("Moving token from feed to swap");
-          conveyorBelt.moveToSensor(DirectionKind.FORWARD);
-        } else {
-          log.debug("CB is broken");
-          if (vacuumGripper1.isIdle() && processingState != ProcessingState.DELIVERING_TOKEN) {
-            log.info("Moving token from feed to swap with VGR1");
-            vacuumGripper1.move(new NamedPosition("ALT_CB"), new NamedPosition("CB"));
-          } else {
-            if (!vacuumGripper1.isIdle()) log.debug("Not moving from feed to swap: VGR1 busy");
-            if (processingState == ProcessingState.DELIVERING_TOKEN) log.debug("Not moving from feed to swap: processingState: {}", processingState);
-          }
-        }
-      } else {
-        if (!conveyorBelt.isIdle()) log.debug("Not moving from feed to swap: CB busy");
-        if (!conveyorBelt.isTokenAtFeed()) log.debug("Not moving from feed to swap: CB feed empty");
-        if (conveyorBelt.isTokenAtSwap()) log.debug("Not moving from feed to swap: CB swap occupied");
-      }
-
-      //move token to mps
-      if (conveyorBelt.isTokenAtSwap() &&
-          vacuumGripper1.isIdle() &&
-          multiProcessingStation.isIdle() &&
-          processingState == ProcessingState.IDLE) {
-        log.info("Moving token from CB to MPS");
-        vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
-        multiProcessingStation.setup(); //ensure the mps is in a state where we can actually place the token
-        processingState = ProcessingState.DELIVERING_TOKEN;
-      } else {
-        if (!conveyorBelt.isTokenAtSwap()) log.debug("Not moving from CB to MPS: CB swap empty");
-        if (!vacuumGripper1.isIdle()) log.debug("Not moving from CB to MPS: VGR1 busy");
-        if (!multiProcessingStation.isIdle()) log.debug("Not moving from CB to MPS: MPS busy");
-        if (processingState != ProcessingState.IDLE) log.debug("Not moving from CB to MPS: processingState: {}", processingState);
-      }
-
-      //move vgr1 out of the way
-      if (vacuumGripper1.isIdle() && processingState == ProcessingState.DELIVERING_TOKEN) {
-        log.info("Going to safety");
-        vacuumGripper1.go_to_safe_position();
-        processingState = ProcessingState.GOTO_SAFETY;
-      } else {
-        if (!vacuumGripper1.isIdle()) log.debug("Not going to safety: VGR1 busy");
-        if (processingState != ProcessingState.DELIVERING_TOKEN) log.debug("Not going to safety: processingState: {}", processingState);
-      }
-
-      if (multiProcessingStation.isTokenAtFeed() &&
-          multiProcessingStation.isIdle() &&
-          vacuumGripper1.isArmRetracted() && //needed since otherwise the light barrier detects the arm as token
-          processingState == ProcessingState.GOTO_SAFETY) {
-        log.info("Processing token");
-        multiProcessingStation.process(2, 2, MPSOutput.CONVEYOR);
-        processingState = ProcessingState.PROCESSING;
-      } else {
-        if (!multiProcessingStation.isTokenAtFeed()) log.debug("Not processing token: MPS feed empty");
-        if (!multiProcessingStation.isIdle()) log.debug("Not processing token: MPS busy");
-        if (processingState != ProcessingState.GOTO_SAFETY) log.debug("Not processing token: processingState: {}", processingState);
-      }
-
-      if (multiProcessingStation.isIdle() && processingState == ProcessingState.PROCESSING) {
-        log.info("Done processing, setting state to idle");
-        processingState = ProcessingState.IDLE;
-      }
-
-      //retract vgr arms if one of them is idle!
-      if (vacuumGripper1.isIdle() && !vacuumGripper1.isArmRetracted()) {
-        vacuumGripper1.retract_arm();
-      }
-      if (vacuumGripper2.isIdle() && !vacuumGripper2.isArmRetracted()) {
-        vacuumGripper2.retract_arm();
-      }
-
-      sleep(5);
+      sleep(100);
     }
 
     log.info("Demo stopped");
+  }
+
+  private void process() {
+    if (multiProcessingStation.isTokenAtFeed() &&
+        multiProcessingStation.isIdle() &&
+        !mpsInputLocked) {
+      log.info("Processing token");
+      mpsActive = true;
+      mpsInputLocked = true;
+      multiProcessingStation.process(1, 1, MPSOutput.CONVEYOR);
+    } else {
+      if (!multiProcessingStation.isTokenAtFeed()) log.debug("Not processing token: MPS feed empty");
+      if (!multiProcessingStation.isIdle()) log.debug("Not processing token: MPS busy");
+      if (mpsInputLocked) log.debug("Not processing token: MPS input locked");
+    }
+
+    //cleanup
+    if (mpsActive && multiProcessingStation.isIdle()) {
+      mpsActive = false;
+      mpsInputLocked = false;
+    }
+  }
+
+  private void moveTokenToMps() {
+    //move token to mps
+    if (conveyorBelt.isTokenAtSwap() &&
+        vacuumGripper1.isIdle() &&
+        multiProcessingStation.isIdle() &&
+        !mpsInputLocked &&
+        !cbSwapLocked) {
+      log.info("Moving token from CB to MPS");
+      mpsInputLocked = true;
+      cbSwapLocked = true;
+      vgr1Activity = VGR1Activity.MOVE_FROM_CB_TO_MPS;
+      vacuumGripper1.move(new NamedPosition("CB"), new NamedPosition("MPS_INPUT"));
+      multiProcessingStation.setup(); //ensure the mps is in a state where we can actually place the token
+    } else {
+      if (!conveyorBelt.isTokenAtSwap()) log.debug("Not moving from CB to MPS: CB swap empty");
+      if (!vacuumGripper1.isIdle()) log.debug("Not moving from CB to MPS: VGR1 busy");
+      if (!multiProcessingStation.isIdle()) log.debug("Not moving from CB to MPS: MPS busy");
+      if (mpsInputLocked) log.debug("Not moving from CB to MPS: MPS input locked");
+      if (cbSwapLocked) log.debug("Not moving from CB to MPS: CB swap locked");
+    }
+
+    //cleanup
+    if (vgr1Activity == VGR1Activity.MOVE_FROM_CB_TO_MPS && vacuumGripper1.isIdle()) {
+      cbSwapLocked = false;
+      vgr1Activity = VGR1Activity.RETRACT_FROM_MPS;
+      vacuumGripper1.go_to_safe_position();
+    } else if (vgr1Activity == VGR1Activity.RETRACT_FROM_MPS && vacuumGripper1.isIdle()) {
+      vgr1Activity = VGR1Activity.NONE;
+      mpsInputLocked = false;
+    }
+  }
+
+  private void moveFromFeedToSwap() {
+    //move token to swap on cb
+    if (conveyorBelt.isIdle() &&
+        conveyorBelt.isTokenAtFeed() &&
+        !conveyorBelt.isTokenAtSwap() &&
+        !cbFeedLocked &&
+        !cbSwapLocked) {
+      if (!cbBroken) {
+        log.info("Moving token from feed to swap");
+        cbFeedLocked = true;
+        cbSwapLocked = true;
+        cbActive = true;
+        conveyorBelt.moveToSensor(DirectionKind.FORWARD);
+      } else {
+        log.debug("CB is broken");
+        if (vacuumGripper1.isIdle()) {
+          log.info("Moving token from feed to swap with VGR1");
+          cbFeedLocked = true;
+          cbSwapLocked = true;
+          vgr1Activity = VGR1Activity.MOVE_FROM_FEED_TO_SWAP;
+          vacuumGripper1.move(new NamedPosition("ALT_CB"), new NamedPosition("CB"));
+        } else if (vacuumGripper2.isIdle()) {
+          log.info("Moving token from feed to swap with VGR2");
+          cbFeedLocked = true;
+          cbSwapLocked = true;
+          vgr2Activity = VGR2Activity.MOVE_FROM_FEED_TO_SWAP;
+          vacuumGripper2.move(new NamedPosition("CB"), new NamedPosition("ALT_CB"));
+        } else {
+          log.debug("Not moving from feed to swap: VGRs busy");
+        }
+      }
+    } else {
+      if (!conveyorBelt.isIdle()) log.debug("Not moving from feed to swap: CB busy");
+      if (!conveyorBelt.isTokenAtFeed()) log.debug("Not moving from feed to swap: CB feed empty");
+      if (conveyorBelt.isTokenAtSwap()) log.debug("Not moving from feed to swap: CB swap occupied");
+      if (cbFeedLocked) log.debug("Not moving from feed to swap: CB feed locked");
+      if (cbSwapLocked) log.debug("Not moving from feed to swap: CB swap locked");
+    }
+
+    //cleanup
+    if (cbActive && conveyorBelt.isIdle()) {
+      cbActive = false;
+      cbSwapLocked = false;
+      cbFeedLocked = false;
+    } else if (vgr1Activity == VGR1Activity.MOVE_FROM_FEED_TO_SWAP && vacuumGripper1.isIdle()) {
+      cbFeedLocked = false;
+      vgr1Activity = VGR1Activity.RETRACT_FROM_FEED;
+      vacuumGripper1.retract_arm();
+    } else if (vgr2Activity == VGR2Activity.MOVE_FROM_FEED_TO_SWAP && vacuumGripper2.isIdle()) {
+      cbFeedLocked = false;
+      vgr2Activity = VGR2Activity.RETRACT_FROM_SWAP;
+      vacuumGripper2.retract_arm();
+    } else if (vgr1Activity == VGR1Activity.RETRACT_FROM_SWAP && vacuumGripper1.isIdle()) {
+      cbSwapLocked = false;
+      vgr1Activity = VGR1Activity.NONE;
+    } else if (vgr2Activity == VGR2Activity.RETRACT_FROM_SWAP && vacuumGripper2.isIdle()) {
+      cbSwapLocked = false;
+      vgr2Activity = VGR2Activity.NONE;
+    }
+  }
+
+  private void moveFromSLtoCB() {
+    //move token from sl out to cb if there is room
+    if (vacuumGripper2.isIdle() && conveyorBelt.isIdle() && !conveyorBelt.isTokenAtFeed() && !cbFeedLocked) {
+      String originName;
+      if (sortingLine.isTokenAtWhite()) {
+        originName = "SL_OUTPUT_WHITE";
+      } else if (sortingLine.isTokenAtRed()) {
+        originName = "SL_OUTPUT_RED";
+      } else if (sortingLine.isTokenAtBlue()) {
+        originName = "SL_OUTPUT_BLUE";
+      } else {
+        originName = null;
+      }
+      if (originName != null) {
+        log.info("Moving token from {} to CB", originName);
+        cbFeedLocked = true;
+        vgr2Activity = VGR2Activity.MOVE_FROM_SL_TO_CB;
+        vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
+      } else {
+        log.debug("Not moving from SL to CB: No token at SL output");
+      }
+    } else {
+      if (!vacuumGripper2.isIdle()) log.debug("Not moving from SL to CB: VGR2 busy");
+      if (!conveyorBelt.isIdle()) log.debug("Not moving from SL to CB: CB busy");
+      if (conveyorBelt.isTokenAtFeed()) log.debug("Not moving from SL to CB: CB feed occupied");
+    }
+
+    //cleanup
+    if (vgr2Activity == VGR2Activity.MOVE_FROM_SL_TO_CB && vacuumGripper2.isIdle()) {
+      vgr2Activity = VGR2Activity.RETRACT_FROM_FEED;
+      vacuumGripper2.retract_arm();
+    } else if (vgr2Activity == VGR2Activity.RETRACT_FROM_FEED && vacuumGripper2.isIdle()) {
+      vgr2Activity = VGR2Activity.NONE;
+      cbFeedLocked = false;
+    }
+  }
+
+  private void sortToken() {
+    if (sortingLine.isTokenAtFeed() && sortingLine.isIdle()) {
+      log.info("Sorting token");
+      sortingLine.eject(Color.AUTO);
+    } else {
+      if (!sortingLine.isTokenAtFeed()) log.debug("Not sorting token: No token at SL input");
+      if (!sortingLine.isIdle()) log.debug("Not sorting token: SL busy");
+    }
   }
 
   @SuppressWarnings("SameParameterValue")
@@ -217,14 +321,7 @@ public class Demo implements DynamicMission {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
-      log.warn("Event loop was interrupted");
+      log.warn("Event loop was interrupted", e);
     }
-  }
-
-  enum ProcessingState {
-    IDLE,
-    DELIVERING_TOKEN,
-    GOTO_SAFETY,
-    PROCESSING,
   }
 }
