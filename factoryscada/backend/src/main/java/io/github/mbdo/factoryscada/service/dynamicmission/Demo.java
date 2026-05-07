@@ -193,6 +193,7 @@ public class Demo implements DynamicMission {
 
     //cleanup
     if (mpsActive && multiProcessingStation.isIdle()) {
+      log.info("[MPS/process] Releasing mpsInputLock");
       mpsActive = false;
       mpsInputLocked = false;
     }
@@ -221,10 +222,12 @@ public class Demo implements DynamicMission {
 
     //cleanup
     if (vgr1Activity == VGR1Activity.MOVE_FROM_CB_TO_MPS && vacuumGripper1.isIdle()) {
+      log.info("[VGR1/cb2mps] Releasing cbSwapLock");
       cbSwapLocked = false;
       vgr1Activity = VGR1Activity.RETRACT_FROM_MPS;
       vacuumGripper1.go_to_safe_position();
     } else if (vgr1Activity == VGR1Activity.RETRACT_FROM_MPS && vacuumGripper1.isIdle()) {
+      log.info("[VGR1/cb2mps] Releasing mpsInputLock");
       vgr1Activity = VGR1Activity.NONE;
       mpsInputLocked = false;
     }
@@ -271,21 +274,26 @@ public class Demo implements DynamicMission {
 
     //cleanup
     if (cbActive && conveyorBelt.isIdle()) {
+      log.info("[CB/feed2swap] Releasing CB locks");
       cbActive = false;
       cbSwapLocked = false;
       cbFeedLocked = false;
     } else if (vgr1Activity == VGR1Activity.MOVE_FROM_FEED_TO_SWAP && vacuumGripper1.isIdle()) {
+      log.info("[VGR1/feed2swap] Releasing cbFeedLock");
       cbFeedLocked = false;
       vgr1Activity = VGR1Activity.RETRACT_FROM_SWAP;
       vacuumGripper1.retract_arm();
     } else if (vgr2Activity == VGR2Activity.MOVE_FROM_FEED_TO_SWAP && vacuumGripper2.isIdle()) {
+      log.info("[VGR2/feed2swap] Releasing cbFeedLock");
       cbFeedLocked = false;
       vgr2Activity = VGR2Activity.RETRACT_FROM_SWAP;
       vacuumGripper2.retract_arm();
     } else if (vgr1Activity == VGR1Activity.RETRACT_FROM_SWAP && vacuumGripper1.isIdle()) {
+      log.info("[VGR1/feed2swap] Releasing cbSwapLock");
       cbSwapLocked = false;
       vgr1Activity = VGR1Activity.NONE;
     } else if (vgr2Activity == VGR2Activity.RETRACT_FROM_SWAP && vacuumGripper2.isIdle()) {
+      log.info("[VGR2/feed2swap] Releasing cbSwapLock");
       cbSwapLocked = false;
       vgr2Activity = VGR2Activity.NONE;
     }
@@ -324,6 +332,7 @@ public class Demo implements DynamicMission {
       vgr2Activity = VGR2Activity.RETRACT_FROM_FEED;
       vacuumGripper2.retract_arm();
     } else if (vgr2Activity == VGR2Activity.RETRACT_FROM_FEED && vacuumGripper2.isIdle()) {
+      log.info("[VGR2/sl2cb] Releasing cbFeedLock");
       vgr2Activity = VGR2Activity.NONE;
       cbFeedLocked = false;
     }
