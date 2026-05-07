@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.extensions.ren_mission_01;
+package fr.inria.mbdo.mission.extensions.ren_mission_01;
 
 import io.github.mbdo.factoryscada.mission.extension.MissionSpringExtension;
 

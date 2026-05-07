@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.extensions.ren_mission_01;
+package fr.inria.mbdo.mission.extensions.ren_mission_01;
 
 
 import org.springframework.context.annotation.Bean;
