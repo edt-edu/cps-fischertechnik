@@ -94,6 +94,7 @@ public class MqttGatewayService {
     }
   }
 
+  @SuppressWarnings("SwitchStatementWithTooFewBranches")
   private void updateMachineInputState(String machineType, String machineName, String inputName, JsonNode value)
   throws IllegalArgumentException {
     var machine = getMachine(machineName);
@@ -128,7 +129,12 @@ public class MqttGatewayService {
           default -> logIgnoredInput(machineName, inputName);
         }
       }
-      case VacuumGripperMachine ignored -> logIgnoredInput(machineName, inputName);
+      case VacuumGripperMachine vgr -> {
+        switch (inputName) {
+          case "vacuumSensArmEndIn" -> vgr.setArmRetracted(value.asBoolean());
+          default -> logIgnoredInput(machineName, inputName);
+        }
+      }
       default -> throw new IllegalArgumentException("Unsupported machine type: " + machineType);
     }
   }

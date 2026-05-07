@@ -6,10 +6,16 @@ import io.github.mbdo.factoryscada.core.passable.Position;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
+@Setter
 public class VacuumGripperMachine extends AbstractMachine {
+
+    private boolean armRetracted;
 
     public VacuumGripperMachine(Parameters parameters) {
         super(parameters);

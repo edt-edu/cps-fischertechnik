@@ -200,10 +200,10 @@ public class Demo implements DynamicMission {
       }
 
       //retract vgr arms if one of them is idle!
-      if (vacuumGripper1.isIdle()) {
+      if (vacuumGripper1.isIdle() && !vacuumGripper1.isArmRetracted()) {
         vacuumGripper1.retract_arm();
       }
-      if (vacuumGripper2.isIdle()) {
+      if (vacuumGripper2.isIdle() && !vacuumGripper2.isArmRetracted()) {
         vacuumGripper2.retract_arm();
       }
 
