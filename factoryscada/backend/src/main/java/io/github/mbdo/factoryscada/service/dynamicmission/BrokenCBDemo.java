@@ -15,7 +15,6 @@ public class BrokenCBDemo implements DynamicMission {
   @Autowired
   public BrokenCBDemo(Demo demo) {
     this.demo = demo;
-    demo.setCbBroken(true);
   }
 
   @Override
@@ -35,12 +34,14 @@ public class BrokenCBDemo implements DynamicMission {
 
   @Override
   public void start() {
+    demo.setCbBroken(true);
     demo.start();
   }
 
   @Override
   public void stop() {
     demo.stop();
+    demo.setCbBroken(false);
   }
 
   @Override
