@@ -246,7 +246,7 @@ public class FactoryScada {
                     //update idle status of machine
                     Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
                         var feedbackMessage = commandStatus.getCommandFeedbackStatus();
-                        var isDone = !feedbackMessage.contains("MUST_CONTINUE");
+                        var isDone = feedbackMessage.contains("DONE");
                         log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
                         log.debug("Updating idle state for machine {} to {} (reason: command feedback)", machineName, isDone);
                         machine.setIdle(isDone);
