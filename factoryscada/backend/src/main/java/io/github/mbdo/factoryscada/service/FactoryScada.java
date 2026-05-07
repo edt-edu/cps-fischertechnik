@@ -244,13 +244,13 @@ public class FactoryScada {
                     this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
 
                     //update idle status of machine
-                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
-                        var feedbackMessage = commandStatus.getCommandFeedbackStatus();
-                        var isDone = feedbackMessage.contains("DONE");
-                        log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
-                        log.debug("Updating idle state for machine {} to {} (reason: command feedback)", machineName, isDone);
-                        machine.setIdle(isDone);
-                    });
+//                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+//                        var feedbackMessage = commandStatus.getCommandFeedbackStatus();
+//                        var isDone = feedbackMessage.contains("DONE");
+//                        log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
+//                        log.debug("Updating idle state for machine {} to {} (reason: command feedback)", machineName, isDone);
+//                        machine.setIdle(isDone);
+//                    });
 
                     break;
                 case "MACHINE_FEEDBACK":
@@ -268,12 +268,11 @@ public class FactoryScada {
                     webSocketPublisher.sendMachineStatus(machineName, machineStatus);
 
                     //update idle status of machine
-                    //TODO this might acutally cause problems, if commands are also used to measure the idle state
-//                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
-//                        log.info("Received status for machine {} : {}", machineName, status);
-//                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
-//                        machine.setIdle(status.contains("IDLE"));
-//                    });
+                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        log.info("Received status for machine {} : {}", machineName, status);
+                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
+                        machine.setIdle(status.contains("IDLE"));
+                    });
 
                     break;
                 default:

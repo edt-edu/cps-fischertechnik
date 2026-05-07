@@ -20,7 +20,7 @@ logging:
     io.github.mbdo.factoryscada.core.AbstractCommand: DEBUG
     io.github.mbdo.factoryscada.mqtt.MqttGatewayService: DEBUG
     io.github.mbdo.factoryscada.service.FactoryScada: DEBUG
-#    io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
+    io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
 
 log:
   limit: 1000
