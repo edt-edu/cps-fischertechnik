@@ -148,11 +148,33 @@ public class Demo implements DynamicMission {
       moveFromFeedToSwap();
       moveTokenToMps();
       process();
+      dumpState();
 
       sleep(100);
     }
 
     log.info("Demo stopped");
+  }
+
+  private void dumpState() {
+    if (sortingLine.isIdle() && conveyorBelt.isIdle() && vacuumGripper1.isIdle() && vacuumGripper2.isIdle() && multiProcessingStation.isIdle()) {
+      //locks
+      if (cbFeedLocked || cbSwapLocked || mpsInputLocked) {
+        log.warn("All machines are idle but some positions are still logged:");
+        log.warn("CB feed locked: {}", cbFeedLocked);
+        log.warn("CB swap locked: {}", cbSwapLocked);
+        log.warn("MPS input locked: {}", mpsInputLocked);
+      }
+
+      //activity
+      if (vgr1Activity != VGR1Activity.NONE || vgr2Activity != VGR2Activity.NONE || cbActive || mpsActive) {
+        log.warn("All machines are idle but some activities are still not over:");
+        log.warn("VGR1 activity: {}", vgr1Activity);
+        log.warn("VGR2 activity: {}", vgr2Activity);
+        log.warn("CB active: {}", cbActive);
+        log.warn("MPS active: {}", mpsActive);
+      }
+    }
   }
 
   private void process() {
