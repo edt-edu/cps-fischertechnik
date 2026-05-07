@@ -105,9 +105,8 @@ public class Demo implements DynamicMission {
         log.info("Sorting token");
         sortingLine.eject(Color.AUTO);
       } else {
-        log.debug("Not sorting token");
-        if (!sortingLine.isTokenAtFeed()) log.debug("No token at SL input");
-        if (!sortingLine.isIdle()) log.debug("SL busy");
+        if (!sortingLine.isTokenAtFeed()) log.debug("Not sorting token: No token at SL input");
+        if (!sortingLine.isIdle()) log.debug("Not sorting token: SL busy");
       }
 
       //move token from sl out to cb if there is room

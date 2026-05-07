@@ -231,10 +231,13 @@ public class FactoryScada {
                     commandStatus.setCommandFeedbackInfo(feedback.getMessage().getInfo());
                     commandStatus.setCommandFeedbackRawJSON(feedbackMsg);
                     // log warning if feedback id doesn't correspond to current command id
-                    if (commandStatus.getCurrentCommandId() != null
-                            && !commandStatus.getCurrentCommandId().equals(feedback.getMessage().getCommandId())) {
+                    var currentCommandId = commandStatus.getCurrentCommandId();
+                    var feedbackCommandId = feedback.getMessage().getCommandId();
+                    var feedbackIdMatchingCommandId = currentCommandId == null ||
+                                                      currentCommandId.equals(feedbackCommandId);
+                    if (!feedbackIdMatchingCommandId) {
                         log.warn("Received Feedback CommandId {} doesn't match current Command CommandId {}",
-                                feedback.getMessage().getCommandId(), commandStatus.getCurrentCommandId());
+                                 feedbackCommandId, currentCommandId);
                     }
 
                     this.machineLastCommandStatusMap.put(machineName, commandStatus);
@@ -244,13 +247,14 @@ public class FactoryScada {
                     this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
 
                     //update idle status of machine
-//                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
-//                        var feedbackMessage = commandStatus.getCommandFeedbackStatus();
-//                        var isDone = feedbackMessage.contains("DONE");
-//                        log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
-//                        log.debug("Updating idle state for machine {} to {} (reason: command feedback)", machineName, isDone);
-//                        machine.setIdle(isDone);
-//                    });
+                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        var feedbackMessage = commandStatus.getCommandFeedbackStatus();
+                        var isDone = feedbackMessage.contains("DONE");
+                        log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
+                        log.debug("Updating idle state for machine {} to {} (reason: command feedback {})", machineName, isDone,
+                                  feedbackCommandId);
+                        machine.setIdle(isDone);
+                    });
 
                     break;
                 case "MACHINE_FEEDBACK":
