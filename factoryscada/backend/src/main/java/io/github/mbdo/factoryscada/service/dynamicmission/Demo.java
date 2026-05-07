@@ -141,11 +141,11 @@ public class Demo implements DynamicMission {
           conveyorBelt.moveToSensor(DirectionKind.FORWARD);
         } else {
           log.debug("CB is broken");
-          if (vacuumGripper2.isIdle()) {
-            log.info("Moving token from feed to swap with VGR2");
-            vacuumGripper2.move(new NamedPosition("CB"), new NamedPosition("ALT_CB"));
+          if (vacuumGripper1.isIdle()) {
+            log.info("Moving token from feed to swap with VGR1");
+            vacuumGripper1.move(new NamedPosition("ALT_CB"), new NamedPosition("CB"));
           } else {
-            log.debug("VGR2 is busy, cannot move token");
+            log.debug("VGR1 is busy, cannot move token");
           }
         }
       } else {
@@ -196,6 +196,14 @@ public class Demo implements DynamicMission {
       if (multiProcessingStation.isIdle() && processingState == ProcessingState.PROCESSING) {
         log.info("Done processing, setting state to idle");
         processingState = ProcessingState.IDLE;
+      }
+
+      //retract vgr arms if one of them is idle!
+      if (vacuumGripper1.isIdle()) {
+        vacuumGripper1.retract_arm();
+      }
+      if (vacuumGripper2.isIdle()) {
+        vacuumGripper2.retract_arm();
       }
 
       sleep(5);

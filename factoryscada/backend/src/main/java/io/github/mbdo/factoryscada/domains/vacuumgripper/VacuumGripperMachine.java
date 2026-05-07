@@ -91,6 +91,10 @@ public class VacuumGripperMachine extends AbstractMachine {
         new MoveToSafePositionCommand(this, dto).execute();
     }
 
+    public void retract_arm() {
+        retract_arm(createCommandDTO("retract_arm"));
+    }
+
     public void retract_arm(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> retract_armDTO) {
         log.info("Retracting vacuum gripper's arm {}", retract_armDTO);
         new RetractArmCommand(this, retract_armDTO).execute();
