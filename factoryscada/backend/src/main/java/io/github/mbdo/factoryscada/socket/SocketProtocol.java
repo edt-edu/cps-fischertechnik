@@ -1,5 +1,9 @@
 package io.github.mbdo.factoryscada.socket;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,11 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class to handle socket communication using threads for sending and receiving messages.
@@ -168,7 +167,7 @@ public class SocketProtocol implements Protocol {
             log.error("Thread interrupted while waiting for {} on {}: {}: {}", action, hostname, port, e.getMessage());
             Thread.currentThread().interrupt();
         } else {
-            log.error("Failed while {} message on {}:{} : {}", action, hostname, port, e.getMessage());
+            log.warn("Failed while {} message on {}:{} : {}", action, hostname, port, e.getMessage());
             try {
                 Thread.sleep(RECONNECT_DELAY_MS);
             } catch (InterruptedException ex) {
