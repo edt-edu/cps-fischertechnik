@@ -160,7 +160,7 @@ public class Demo implements DynamicMission {
     if (sortingLine.isIdle() && conveyorBelt.isIdle() && vacuumGripper1.isIdle() && vacuumGripper2.isIdle() && multiProcessingStation.isIdle()) {
       //locks
       if (cbFeedLocked || cbSwapLocked || mpsInputLocked) {
-        log.warn("All machines are idle but some positions are still logged:");
+        log.warn("All machines are idle but some positions are still locked:");
         log.warn("CB feed locked: {}", cbFeedLocked);
         log.warn("CB swap locked: {}", cbSwapLocked);
         log.warn("MPS input locked: {}", mpsInputLocked);
@@ -179,7 +179,7 @@ public class Demo implements DynamicMission {
 
   private void process() {
     if (multiProcessingStation.isTokenAtFeed() &&
-        multiProcessingStation.isIdle() &&
+        !mpsActive &&
         !mpsInputLocked) {
       log.info("Processing token");
       mpsActive = true;
@@ -187,7 +187,7 @@ public class Demo implements DynamicMission {
       multiProcessingStation.process(1, 1, MPSOutput.CONVEYOR);
     } else {
       if (!multiProcessingStation.isTokenAtFeed()) log.debug("Not processing token: MPS feed empty");
-      if (!multiProcessingStation.isIdle()) log.debug("Not processing token: MPS busy");
+      if (mpsActive) log.debug("Not processing token: MPS active");
       if (mpsInputLocked) log.debug("Not processing token: MPS input locked");
     }
 
@@ -201,8 +201,8 @@ public class Demo implements DynamicMission {
   private void moveTokenToMps() {
     //move token to mps
     if (conveyorBelt.isTokenAtSwap() &&
-        vacuumGripper1.isIdle() &&
-        multiProcessingStation.isIdle() &&
+        vgr1Activity == VGR1Activity.NONE &&
+        !mpsActive &&
         !mpsInputLocked &&
         !cbSwapLocked) {
       log.info("Moving token from CB to MPS");
@@ -213,8 +213,8 @@ public class Demo implements DynamicMission {
       multiProcessingStation.setup(); //ensure the mps is in a state where we can actually place the token
     } else {
       if (!conveyorBelt.isTokenAtSwap()) log.debug("Not moving from CB to MPS: CB swap empty");
-      if (!vacuumGripper1.isIdle()) log.debug("Not moving from CB to MPS: VGR1 busy");
-      if (!multiProcessingStation.isIdle()) log.debug("Not moving from CB to MPS: MPS busy");
+      if (vgr1Activity != VGR1Activity.NONE) log.debug("Not moving from CB to MPS: VGR1 activity: {}", vgr1Activity);
+      if (mpsActive) log.debug("Not moving from CB to MPS: MPS active");
       if (mpsInputLocked) log.debug("Not moving from CB to MPS: MPS input locked");
       if (cbSwapLocked) log.debug("Not moving from CB to MPS: CB swap locked");
     }
@@ -232,7 +232,7 @@ public class Demo implements DynamicMission {
 
   private void moveFromFeedToSwap() {
     //move token to swap on cb
-    if (conveyorBelt.isIdle() &&
+    if (!cbActive &&
         conveyorBelt.isTokenAtFeed() &&
         !conveyorBelt.isTokenAtSwap() &&
         !cbFeedLocked &&
@@ -245,13 +245,13 @@ public class Demo implements DynamicMission {
         conveyorBelt.moveToSensor(DirectionKind.FORWARD);
       } else {
         log.debug("CB is broken");
-        if (vacuumGripper1.isIdle()) {
+        if (vgr1Activity == VGR1Activity.NONE) {
           log.info("Moving token from feed to swap with VGR1");
           cbFeedLocked = true;
           cbSwapLocked = true;
           vgr1Activity = VGR1Activity.MOVE_FROM_FEED_TO_SWAP;
           vacuumGripper1.move(new NamedPosition("ALT_CB"), new NamedPosition("CB"));
-        } else if (vacuumGripper2.isIdle()) {
+        } else if (vgr2Activity == VGR2Activity.NONE) {
           log.info("Moving token from feed to swap with VGR2");
           cbFeedLocked = true;
           cbSwapLocked = true;
@@ -262,7 +262,7 @@ public class Demo implements DynamicMission {
         }
       }
     } else {
-      if (!conveyorBelt.isIdle()) log.debug("Not moving from feed to swap: CB busy");
+      if (cbActive) log.debug("Not moving from feed to swap: CB active");
       if (!conveyorBelt.isTokenAtFeed()) log.debug("Not moving from feed to swap: CB feed empty");
       if (conveyorBelt.isTokenAtSwap()) log.debug("Not moving from feed to swap: CB swap occupied");
       if (cbFeedLocked) log.debug("Not moving from feed to swap: CB feed locked");
@@ -293,7 +293,7 @@ public class Demo implements DynamicMission {
 
   private void moveFromSLtoCB() {
     //move token from sl out to cb if there is room
-    if (vacuumGripper2.isIdle() && conveyorBelt.isIdle() && !conveyorBelt.isTokenAtFeed() && !cbFeedLocked) {
+    if (vgr2Activity == VGR2Activity.NONE && !cbActive && !conveyorBelt.isTokenAtFeed() && !cbFeedLocked) {
       String originName;
       if (sortingLine.isTokenAtWhite()) {
         originName = "SL_OUTPUT_WHITE";
@@ -313,9 +313,10 @@ public class Demo implements DynamicMission {
         log.debug("Not moving from SL to CB: No token at SL output");
       }
     } else {
-      if (!vacuumGripper2.isIdle()) log.debug("Not moving from SL to CB: VGR2 busy");
-      if (!conveyorBelt.isIdle()) log.debug("Not moving from SL to CB: CB busy");
+      if (vgr2Activity != VGR2Activity.NONE) log.debug("Not moving from SL to CB: VGR2 activity: {}", vgr2Activity);
+      if (cbActive) log.debug("Not moving from SL to CB: CB active");
       if (conveyorBelt.isTokenAtFeed()) log.debug("Not moving from SL to CB: CB feed occupied");
+      if (cbFeedLocked) log.debug("Not moving from SL to CB: CB feed locked");
     }
 
     //cleanup
