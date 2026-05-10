@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-integration'
     implementation 'org.springframework.integration:spring-integration-mqtt'
-    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime'
+    // implementation 'fr.inria.mbdo.mission:sysml-mission-runtime'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
@@ -54,20 +54,20 @@ jar {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-        
+
             groupId = project.group
             artifactId = project.name
             version = project.version
-            
+
             // ensure correct pom.xml
         	from components.java
-        	
-        	// force deployment of "plain" jar without the "plain" keyword in the name 
+
+        	// force deployment of "plain" jar without the "plain" keyword in the name
         	artifact("$buildDir/libs/${project.name}-${project.version}-plain.jar") {
                 builtBy tasks.jar
             }
-            
-            
+
+
         }
     }
 }

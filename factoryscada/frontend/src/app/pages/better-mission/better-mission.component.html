@@ -1,0 +1,105 @@
+<p-panel header="Better Missions (State Machines)">
+  <ng-template pTemplate="icons">
+    <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
+    <p-overlayPanel #helpOP>
+      <p-accordion [activeIndex]="0">
+        <p-accordionTab header="Panel Description">
+          <p>
+            This page executes backend state machines as missions. Choose a global mission to orchestrate all machines,
+            then override individual machine missions as needed.
+          </p>
+        </p-accordionTab>
+      </p-accordion>
+    </p-overlayPanel>
+  </ng-template>
+
+  <!-- Global Missions Section -->
+  <div class="mission-controls">
+    <h3>Global Missions (Orchestration)</h3>
+    <div class="field">
+      <label for="globalMission">Global Mission</label>
+      <p-dropdown inputId="globalMission" [options]="globalMissions" [(ngModel)]="selectedGlobalMissionName"
+        optionLabel="name" optionValue="name" (onChange)="onGlobalMissionSelected()" [style]="{ width: '18rem' }"
+        [showClear]="true" placeholder="Select a global mission" />
+    </div>
+
+    @if (selectedGlobalMission) {
+    <div class="field mission-details">
+      <label>Description</label>
+      <p>{{ selectedGlobalMission.description }}</p>
+      <p><b>Active:</b> {{ isGlobalMissionActive ? 'YES' : 'NO' }}</p>
+    </div>
+
+    <div class="actions">
+      <p-button label="Start Global Mission" (click)="onStartGlobalMission()"
+        [disabled]="isGlobalMissionActive"></p-button>
+      <p-button label="Stop Global Mission" severity="secondary" (click)="onStopGlobalMission()"
+        [disabled]="!isGlobalMissionActive"></p-button>
+    </div>
+    }
+  </div>
+
+  <!-- Machine Mission Overrides (Details Panel) - shown when global mission is active -->
+  @if (isGlobalMissionActive) {
+  <p-divider></p-divider>
+  <div class="mission-controls">
+    <h3>Machine Mission Overrides</h3>
+    <p-accordion>
+      @for (machine of machines; track machine.name) {
+      <p-accordionTab [header]="'Machine: ' + machine.name + ' (' + machine.type + ')'">
+        <div class="field">
+          <label>Mission Override</label>
+          <p-dropdown [options]="machine.missions" [(ngModel)]="globalMissionMachineOverrides[machine.name]"
+            optionLabel="name" optionValue="name" (onChange)="onGlobalMissionMachineOverride(machine.name)"
+            [style]="{ width: '18rem' }" />
+          <small style="display: block; color: #666; margin-top: 4px;">
+            <b>Default:</b> {{ selectedGlobalMission!.machineDefaultMissions[machine.name] || 'N/A' }}
+            @if (machine.activeMissionName) {
+            | <b>Currently Running:</b> {{ machine.activeMissionName }}
+            }
+          </small>
+        </div>
+
+        <ng-container *ngIf="getMachineCurrentMission(machine.name) as currentMission">
+          <div class="field mission-details">
+            <label>Mission Description</label>
+            <p>{{ currentMission.description }}</p>
+            @if (currentMission.activeState) {
+            <p><b>Current State:</b> {{ currentMission.activeState }}</p>
+            }
+
+            <p-accordion>
+              <p-accordionTab header="State list">
+                <table>
+                  @for (node of currentMission.nodes; track node.id) {
+                  <tr>
+                    <td><b>{{ node.id }}</b></td>
+                    <td>{{ node.description }}</td>
+                    <td>@if (node.active) { <b>(active)</b> }</td>
+                  </tr>
+                  }
+                </table>
+              </p-accordionTab>
+            </p-accordion>
+
+            <p-accordion>
+              <p-accordionTab header="State machine graph">
+                <app-parralelized-missions-graph
+                  [diagramSource]="buildMermaidDiagramFromMission(currentMission)"></app-parralelized-missions-graph>
+              </p-accordionTab>
+            </p-accordion>
+          </div>
+        </ng-container>
+      </p-accordionTab>
+      }
+    </p-accordion>
+  </div>
+  }
+</p-panel>
+
+<div class="block-container">
+  <div class="form-group">
+    <label>Recent messages log</label>
+    <app-log-table-widget></app-log-table-widget>
+  </div>
+</div>

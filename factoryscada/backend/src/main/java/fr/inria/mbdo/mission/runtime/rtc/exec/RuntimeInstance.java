@@ -70,6 +70,10 @@ public final class RuntimeInstance {
         return active;
     }
 
+    public synchronized RuntimeState initialState() {
+        return def == null ? null : def.initialState();
+    }
+
     public void setInitialState(RuntimeState init) {
         this.def = new SimpleRuntimeDefinition(init);
     }

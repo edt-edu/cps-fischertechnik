@@ -38,7 +38,7 @@ export class DashboardLayoutComponent {
           {
             label: 'Machine Command',
             icon: 'pi pi-cog',
-          //  icon: 'pi pi-sliders-h',
+            //  icon: 'pi pi-sliders-h',
             routerLink: 'direct-command'
           },
           {
@@ -51,7 +51,18 @@ export class DashboardLayoutComponent {
       {
         label: 'Mission',
         icon: 'pi pi-sitemap',
-        routerLink: 'mission'
+        items: [
+          {
+            label: 'Legacy Mission',
+            icon: 'pi pi-sitemap',
+            routerLink: 'mission'
+          },
+          {
+            label: 'Better Missions',
+            icon: 'pi pi-share-alt',
+            routerLink: 'better-mission'
+          }
+        ]
       }
     ];
   }

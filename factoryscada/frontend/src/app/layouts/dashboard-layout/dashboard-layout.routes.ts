@@ -10,9 +10,12 @@ export const dashboardLayoutRoutes: Routes = [
     loadComponent: () => import('../../pages/debug-command/debug-command.component').then(c => c.DebugCommandComponent)
   }, {
     path: 'direct-command',
-    loadComponent: () => import ('../../pages/direct-command/direct-command.component' ).then(c => c.DirectCommandComponent)
+    loadComponent: () => import('../../pages/direct-command/direct-command.component').then(c => c.DirectCommandComponent)
   }, {
     path: 'mission',
-    loadComponent: () => import ('../../pages/mission/mission.component' ).then(c => c.MissionComponent)
+    loadComponent: () => import('../../pages/mission/mission.component').then(c => c.MissionComponent)
+  }, {
+    path: 'better-mission',
+    loadComponent: () => import('../../pages/better-mission/better-mission.component').then(c => c.BetterMissionComponent)
   }
 ]

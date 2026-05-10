@@ -386,6 +386,34 @@
 |<<incoming_factorymission-status,/factoryMission/status>>
 |<<outgoing_topic-mission-status,/topic/mission-status>>
 
+|BetterMissionController.getConfigurationStomp()
+|<<incoming_better-missions-configuration,/better-missions/configuration>>
+|  
+
+|BetterMissionController.stopGlobalMissionStomp()
+|<<incoming_better-missions-global-stop,/better-missions/global/stop>>
+|  
+
+|BetterMissionController.stopMissionStomp()
+|<<incoming_better-missions-stop,/better-missions/stop>>
+|  
+
+|BetterMissionController.startMissionStomp()
+|<<incoming_better-missions-start,/better-missions/start>>
+|  
+
+|BetterMissionController.stopActiveMissionStomp()
+|<<incoming_better-missions-stop-active,/better-missions/stop-active>>
+|  
+
+|BetterMissionController.startGlobalMissionStomp()
+|<<incoming_better-missions-global-start,/better-missions/global/start>>
+|  
+
+|BetterMissionController.setGlobalMissionMachineOverrideStomp()
+|<<incoming_better-missions-global-override,/better-missions/global/override>>
+|  
+
 |PunchingMachineController.handleUnmappedMessage()
 |<<incoming_punchingmachine,/punchingMachine**>>
 |  
@@ -428,6 +456,159 @@
 |===
 
 == Incoming Topics
+
+[[incoming_better-missions-configuration]]
+===  Incoming Topic: `/better-missions/configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.getConfigurationStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_better-missions-start]]
+===  Incoming Topic: `/better-missions/start`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.startMissionStomp()`
+
+==== Parameters
+
+- `command` (MissionExecutionCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExecutionCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_better-missions-stop]]
+===  Incoming Topic: `/better-missions/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.stopMissionStomp()`
+
+==== Parameters
+
+- `command` (MissionExecutionCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExecutionCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_better-missions-stop-active]]
+===  Incoming Topic: `/better-missions/stop-active`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.stopActiveMissionStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_better-missions-global-start]]
+===  Incoming Topic: `/better-missions/global/start`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.startGlobalMissionStomp()`
+
+==== Parameters
+
+- `command` (GlobalMissionStartCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:GlobalMissionStartCommandDTO",
+  "properties" : {
+    "globalMissionName" : {
+      "type" : "string"
+    },
+    "machineOverrides" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_better-missions-global-override]]
+===  Incoming Topic: `/better-missions/global/override`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.setGlobalMissionMachineOverrideStomp()`
+
+==== Parameters
+
+- `command` (GlobalMissionMachineOverrideCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:GlobalMissionMachineOverrideCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_better-missions-global-stop]]
+===  Incoming Topic: `/better-missions/global/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.BetterMissionController.stopGlobalMissionStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_conveyorbelt-machinename-command-move-to-sensor]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
