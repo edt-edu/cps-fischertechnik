@@ -5,24 +5,24 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
 import lombok.extern.slf4j.Slf4j;
 
-
 /**
- * Stores the MissionSpringExtension declared in the application
+ * Stores the MachineMissionStrategy declared in the application
  */
 @Service
 @Slf4j
 public class MissionExtensionRegistry {
-	
-	private final List<MissionSpringExtension> extensions;
-	
-	public MissionExtensionRegistry(List<MissionSpringExtension> extensions) {
-		log.info("Discovered {} MissionSpringExtension(s): ",extensions.size(), extensions.stream().map(e -> e.getName()).collect(Collectors.joining(", ")));
-		this.extensions = extensions;
-	}
+    private final List<MachineMissionStrategy> extensions;
 
-	public List<MissionSpringExtension> getExtensions() {
-		return extensions;
-	}
+    public MissionExtensionRegistry(List<MachineMissionStrategy> extensions) {
+        this.extensions = extensions;
+        log.info("Registered mission extensions: {}",
+                extensions.stream().map(ext -> ext.getClass().getSimpleName()).collect(Collectors.joining(", ")));
+    }
+
+    public List<MachineMissionStrategy> getExtensions() {
+        return extensions;
+    }
 }
