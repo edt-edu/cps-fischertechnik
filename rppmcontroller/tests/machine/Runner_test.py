@@ -878,10 +878,21 @@ class RunnerTestSuite(TestCase):
                          self.machine.value,
                          "Final value should have been reached")
 
+    def test_run_zero_step_routine(self):
+        """Tests that a routine with zero steps doesn't fail"""
+        runner = self.runner
+        self.run_post_config_checks(expected_routine_length=0)
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+
+
     # TODO Add test cases for:
-    #  run zero step routine
     #  run single step routine
-    #  run multi step routine
+    #  run multistep routine
     #  run after done
     #  run after termination
     #  bool
