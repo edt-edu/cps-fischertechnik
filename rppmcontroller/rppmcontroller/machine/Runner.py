@@ -363,6 +363,11 @@ class Runner(CycleStepResult):
         if not self.must_continue():
             raise RuntimeError(f"runner shouldn't be used anymore: {self}")
 
+        if len(self.__routine) < self.__routine_index:
+            self.__on_finish()
+            self.subCycleStepResult = None
+            return self.__to_cycle_step_result()
+
         self.__running = True
         self.result = CycleStepResultEnum.MUST_CONTINUE
         sub_routine = self.__routine[self.__routine_index]
@@ -384,12 +389,18 @@ class Runner(CycleStepResult):
         elif not res.must_continue():
             self.__routine_index += 1
             if self.__routine_index >= len(self.__routine):
-                self.__running = False
-                self.result = CycleStepResultEnum.DONE
-                self.info = "routine finished"
+                self.__on_finish()
             else:
                 self.run()  # directly start the next routine to avoid idling
 
+        return self.__to_cycle_step_result()
+
+    def __on_finish(self):
+        self.__running = False
+        self.result = CycleStepResultEnum.DONE
+        self.info = "routine finished"
+
+    def __to_cycle_step_result(self) -> CycleStepResult:
         return CycleStepResult(self.result, self.info, self.subCycleStepResult)
 
     @property

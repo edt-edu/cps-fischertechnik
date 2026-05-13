@@ -888,6 +888,9 @@ class RunnerTestSuite(TestCase):
                          result.result,
                          "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(None,
+                         runner.subCycleStepResult,
+                         "Runner shouldn't have been running anything")
 
 
     # TODO Add test cases for:
