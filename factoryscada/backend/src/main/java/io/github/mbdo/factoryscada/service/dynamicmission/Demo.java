@@ -200,8 +200,9 @@ public class Demo implements DynamicMission {
   }
 
   private void moveTokenToMps() {
-    //move token to mps
+    //move token from cb swap to mps
     if (conveyorBelt.isTokenAtSwap() &&
+        !multiProcessingStation.isTokenAtFeed() &&
         vgr1Activity == VGR1Activity.NONE &&
         !mpsActive &&
         !mpsInputLocked &&
