@@ -29,7 +29,7 @@ public class DynamicMissionService {
         .stream()
         .map(mission -> new DynamicMissionDTO(mission.getName(),
                                               mission.getDescription(),
-                                              mission.getInvolvedMachineNames().stream().toList()))
+                                              List.copyOf(mission.getInvolvedMachineNames())))
         .toList();
   }
 

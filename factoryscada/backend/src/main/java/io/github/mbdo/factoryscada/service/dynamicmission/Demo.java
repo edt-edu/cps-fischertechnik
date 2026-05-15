@@ -29,6 +29,7 @@ public class Demo implements DynamicMission {
   private static final String CONVEYOR_TOPIC = "I1ConveyorBelt01";
   private static final String VGR1_TOPIC = "I1VacuumGripper01";
   private static final String MPS_TOPIC = "I1MultiProcessing01";
+  private static final int POLL_DELAY_MILLIS = 100;
 
   private final FactoryScada factoryScada;
   private volatile boolean active = false;
@@ -150,7 +151,7 @@ public class Demo implements DynamicMission {
       process();
       dumpState();
 
-      sleep(100);
+      sleep(POLL_DELAY_MILLIS);
     }
 
     log.info("Demo stopped");
@@ -349,7 +350,7 @@ public class Demo implements DynamicMission {
     }
   }
 
-  @SuppressWarnings("SameParameterValue")
+  @SuppressWarnings("SameParameterValue") //needed since we always sleep for the same amount of millis
   private static void sleep(int millis) {
     try {
       Thread.sleep(millis);

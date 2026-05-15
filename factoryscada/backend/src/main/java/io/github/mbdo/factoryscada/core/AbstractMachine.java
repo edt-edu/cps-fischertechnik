@@ -72,7 +72,6 @@ public abstract class AbstractMachine {
      */
     public abstract String getCommandMachineType();
 
-    @SuppressWarnings("SameParameterValue")
     protected <T extends AbstractMachine> GenericMachineCommandDTO<T> createCommandDTO(String commandName,
                                                                                        Parameter... parameters) {
         var outputId = commandIdGenerator.generateId();

@@ -94,7 +94,7 @@ public class MqttGatewayService {
     }
   }
 
-  @SuppressWarnings("SwitchStatementWithTooFewBranches")
+  @SuppressWarnings("SwitchStatementWithTooFewBranches") //needed for the vgr case
   private void updateMachineInputState(String machineType, String machineName, String inputName, JsonNode value)
   throws IllegalArgumentException {
     var machine = getMachine(machineName);
