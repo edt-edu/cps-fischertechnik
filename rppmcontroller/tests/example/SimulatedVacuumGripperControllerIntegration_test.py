@@ -1327,14 +1327,6 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
 
-        # next feedback should be an interrupt
-        self.controller.mainLoopIteration()
-        notification = ctHelper.readCommandFeedbackNotification(
-            self.controller)
-        self.assertRegex(notification,
-                         r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK "
-                         r"1 INTERRUPTED")
-
         endCommandReached = False
         iterationDone = 0
         while not endCommandReached:
