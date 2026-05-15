@@ -935,8 +935,22 @@ class RunnerTestSuite(TestCase):
         with self.assertRaises(RuntimeError):
             runner.run()
 
+    def test_run_after_abort(self):
+        """Validates that running a runner again after it was aborted, yields an error"""
+        runner = self.runner
+        runner.then_run(lambda: ABORT_RESULT)
+        self.run_post_config_checks(expected_routine_length=1)
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.ABORTED_ERROR,
+                         result.result,
+                         "Runner should be aborted")
+        self.assertEqual(False, runner.running, "Runner is aborted")
+
+        with self.assertRaises(RuntimeError):
+            runner.run()
+
     # TODO Add test cases for:
-    #  run after termination
     #  bool
     #  call
     #  as_result
