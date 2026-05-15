@@ -896,8 +896,7 @@ class RunnerTestSuite(TestCase):
                          "Runner shouldn't have been running anything")
 
     def test_run_single_step_routine(self):
-        """Tests that a routine with a single one-cycle-step finishes after
-        one cycle"""
+        """Tests that a routine with a single one-cycle-step finishes immediatelly"""
         runner = self.runner
         runner.then_run(lambda: CycleStepResult.done())
         self.run_post_config_checks(expected_routine_length=1)
@@ -908,8 +907,20 @@ class RunnerTestSuite(TestCase):
                          "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
 
+    def test_multi_step_routine(self):
+        """Tests that a routine with multiple one-cycle-steps finishes immediatelly"""
+        runner = self.runner
+        for i in range(5):
+            runner.then_run(lambda: CycleStepResult.done(), info=f"step {i}")
+        self.run_post_config_checks(expected_routine_length=5)
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+
     # TODO Add test cases for:
-    #  run multistep routine
     #  run after done
     #  run after termination
     #  bool
