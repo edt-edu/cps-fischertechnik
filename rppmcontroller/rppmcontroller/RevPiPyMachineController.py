@@ -750,7 +750,10 @@ class RevPiPyMachineController(ABC):
         logging.debug('all threads started')
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "Main"))
         while True:
-            self.mainLoopIteration()
+            try:
+                self.mainLoopIteration()
+            except Exception as e:
+                logging.error("Encountered an unexpected error during the main loop iteration", exc_info=e)
 
     def mainLoopIteration(self):
         logging.log(TRACE, "[main loop] Processing json...")
