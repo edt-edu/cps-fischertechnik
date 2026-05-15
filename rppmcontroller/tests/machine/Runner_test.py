@@ -920,8 +920,22 @@ class RunnerTestSuite(TestCase):
                          "Runner should be done")
         self.assertEqual(False, runner.running, "Runner is done")
 
+    def test_run_after_done(self):
+        """Validates that running a runner again after it was done, yields an error"""
+        runner = self.runner
+        runner.then_run(lambda: CycleStepResult.done())
+        self.run_post_config_checks(expected_routine_length=1)
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+
+        with self.assertRaises(RuntimeError):
+            runner.run()
+
     # TODO Add test cases for:
-    #  run after done
     #  run after termination
     #  bool
     #  call
