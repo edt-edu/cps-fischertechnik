@@ -896,7 +896,8 @@ class RunnerTestSuite(TestCase):
                          "Runner shouldn't have been running anything")
 
     def test_run_single_step_routine(self):
-        """Tests that a routine with a single one-cycle-step finishes immediatelly"""
+        """Tests that a routine with a single one-cycle-step finishes
+        immediatelly"""
         runner = self.runner
         runner.then_run(lambda: CycleStepResult.done())
         self.run_post_config_checks(expected_routine_length=1)
@@ -908,7 +909,8 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is done")
 
     def test_multi_step_routine(self):
-        """Tests that a routine with multiple one-cycle-steps finishes immediatelly"""
+        """Tests that a routine with multiple one-cycle-steps finishes
+        immediatelly"""
         runner = self.runner
         for i in range(5):
             runner.then_run(lambda: CycleStepResult.done(), info=f"step {i}")
@@ -921,7 +923,8 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is done")
 
     def test_run_after_done(self):
-        """Validates that running a runner again after it was done, yields an error"""
+        """Validates that running a runner again after it was done, yields
+        an error"""
         runner = self.runner
         runner.then_run(lambda: CycleStepResult.done())
         self.run_post_config_checks(expected_routine_length=1)
@@ -936,7 +939,8 @@ class RunnerTestSuite(TestCase):
             runner.run()
 
     def test_run_after_abort(self):
-        """Validates that running a runner again after it was aborted, yields an error"""
+        """Validates that running a runner again after it was aborted,
+        yields an error"""
         runner = self.runner
         runner.then_run(lambda: ABORT_RESULT)
         self.run_post_config_checks(expected_routine_length=1)
@@ -950,8 +954,35 @@ class RunnerTestSuite(TestCase):
         with self.assertRaises(RuntimeError):
             runner.run()
 
+    def test_bool(self):
+        """Validates that a runner can be converted into a boolean as some
+        legacy runtime may expect it"""
+        runner = self.runner
+        counter = 2
+        def decrement_to_zero():
+            nonlocal counter
+            counter -= 1
+            return counter == 0
+        runner.then_run(decrement_to_zero)
+        self.run_post_config_checks(expected_routine_length=1)
+        self.assertEqual(False, bool(runner), "Runner shouldn't be finished yet")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.MUST_CONTINUE, result.result)
+        self.assertEqual(True, runner.running, "Runner is running")
+        self.assertEqual(False,
+                         bool(runner),
+                         "Runner shouldn't be finished yet")
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(True, bool(runner), "Runner should be finished")
+
+
     # TODO Add test cases for:
-    #  bool
     #  call
     #  as_result
 

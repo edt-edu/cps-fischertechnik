@@ -417,7 +417,7 @@ class Runner(CycleStepResult):
 
         :return: True if this is not running
         """
-        return not self.running
+        return not self.must_continue()
 
     def __call__(self, *args, **kwargs) -> CycleStepResult:
         """
