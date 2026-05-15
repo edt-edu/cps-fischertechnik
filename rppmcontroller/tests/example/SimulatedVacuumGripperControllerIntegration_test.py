@@ -1192,7 +1192,7 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
     def test_runner_list_cleanup(self):
         """
-        Ensure that the runners list gets cleaned up
+        Ensure that the runner-list gets cleaned up
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
         ctHelper.clearPendingNotifications()
@@ -1277,6 +1277,90 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
             self.assertLess(iterationDone, 30, "GO_TO_POSITION not reached in less than 30 iterations" )
 
+    def test_continue_after_error(self):
+        """Validates that machine and controller continue to operate correctly
+        after an aborted command"""
+        logging.debug(f'{inspect.stack()[0][3]} start')
+        ctHelper.clearPendingNotifications()
+
+        self.fakeSetupDoneAndSetPos()
+
+        # initial feedback
+        self.controller.mainLoopIteration()
+        self.assertRegex(ctHelper.readMachineFeedbackNotification(
+            self.controller),
+            r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK "
+            r"INITIALIZED_IDLE")
+
+        # controller is idle
+        self.controller.mainLoopIteration()
+        self.assertEqual(ctHelper.readMachineFeedbackNotification(
+            self.controller), "")
+
+        vgr = self.controller.machines[0]
+        self.assertIsInstance(vgr, VacuumGripper)
+
+        # go to invalid position
+        message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
+            Position("END",
+                     0,
+                     vgr.parameters.max_rotational_counter_value + 100,
+                     0),
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        # executing that command should cause an immediate abort
+        self.controller.mainLoopIteration()
+        notification = ctHelper.readCommandFeedbackNotification(
+            self.controller)
+        self.assertRegex(notification,
+                         r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 "
+                         r"ABORTED_ERROR")
+
+        # now go to valid position
+        target_rotation = vgr.parameters.max_rotational_counter_value - 100
+        message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
+            Position("END",
+                     0,
+                     target_rotation,
+                     0),
+        ])
+        ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
+
+        # next feedback should be an interrupt
+        self.controller.mainLoopIteration()
+        notification = ctHelper.readCommandFeedbackNotification(
+            self.controller)
+        self.assertRegex(notification,
+                         r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK "
+                         r"1 INTERRUPTED")
+
+        endCommandReached = False
+        iterationDone = 0
+        while not endCommandReached:
+            self.controller.mainLoopIteration()
+            notification = ctHelper.readCommandFeedbackNotification(
+                self.controller)
+            if notification == "":
+                iterationDone += 1
+            elif re.match(
+                r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE "
+                r".*",
+                notification):
+                pass
+            else:
+                self.assertRegex(notification,
+                                 r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK "
+                                 r"1 DONE")
+                logging.debug(f"GO_TO_POSITION reached in {iterationDone} "
+                              f"iterations")
+                endCommandReached = True
+                self.checkVGRPosition(0, target_rotation, 0)
+
+            self.assertLess(iterationDone,
+                            100,
+                            "GO_TO_POSITION not reached in less than 30 "
+                            "iterations")
 
     # TODO move to a test helper module
     def checkVGRPosition(self, expectedVerticalEncoder : int , expectedRotEncoder : int, expectedArmEncoder :int) -> None:
