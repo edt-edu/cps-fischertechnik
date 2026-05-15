@@ -10,7 +10,8 @@ from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 
 ABORT_RESULT = CycleStepResult(CycleStepResultEnum.ABORTED_ERROR)
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
-from rppmcontroller.machine.Runner import TransitioningMachine, Runner
+from rppmcontroller.machine.Runner import (TransitioningMachine,
+                                           Runner)
 from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
@@ -37,7 +38,9 @@ class RunnerTestSuite(TestCase):
         """
         runner = self.runner
 
-        self.assertEqual(expected_routine_length, len(runner._routine))
+        self.assertEqual(expected_routine_length,
+                         len(runner._routine),
+                         "missmatch in routine length")
         self.assertEqual(False,
                          runner.running,
                          "Runner hasn't been started yet")
@@ -892,9 +895,20 @@ class RunnerTestSuite(TestCase):
                          runner.subCycleStepResult,
                          "Runner shouldn't have been running anything")
 
+    def test_run_single_step_routine(self):
+        """Tests that a routine with a single one-cycle-step finishes after
+        one cycle"""
+        runner = self.runner
+        runner.then_run(lambda: CycleStepResult.done())
+        self.run_post_config_checks(expected_routine_length=1)
+
+        result = runner.run()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
 
     # TODO Add test cases for:
-    #  run single step routine
     #  run multistep routine
     #  run after done
     #  run after termination
