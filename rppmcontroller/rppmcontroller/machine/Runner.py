@@ -363,7 +363,7 @@ class Runner(CycleStepResult):
         if not self.must_continue():
             raise RuntimeError(f"runner shouldn't be used anymore: {self}")
 
-        if len(self.__routine) < self.__routine_index:
+        if len(self.__routine) <= self.__routine_index:
             self.__on_finish()
             self.subCycleStepResult = None
             return self.__to_cycle_step_result()
