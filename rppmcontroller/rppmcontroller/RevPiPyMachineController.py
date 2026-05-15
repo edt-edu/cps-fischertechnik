@@ -609,12 +609,14 @@ class RevPiPyMachineController(ABC):
                 #logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
                 try:
                     ret = cycleStepCommand.cycleStep()
-                except Exception:
-                    logging.exception("Error while executing cycleStepCommand")
+                except Exception as e:
+                    logging.exception("Error while executing cycleStepCommand", exc_info=e)
+                    continue
 
                 # removes currentlyExecuting function once it indicates it is finished
                 # logging.debug(f"{ret}")
-                if ret.is_done():
+                # we use "not must continue" since is_done() wouldn't handle the abort case
+                if not ret.must_continue():
                     self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
                     self.currentlyExecuting[key] = None
