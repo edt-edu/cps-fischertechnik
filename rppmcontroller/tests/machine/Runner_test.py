@@ -11,7 +11,7 @@ from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 ABORT_RESULT = CycleStepResult(CycleStepResultEnum.ABORTED_ERROR)
 from rppmcontroller.machine.MachineConfiguration import MachineConfiguration
 from rppmcontroller.machine.Runner import (TransitioningMachine,
-                                           Runner)
+                                           Runner, as_result)
 from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
@@ -959,13 +959,17 @@ class RunnerTestSuite(TestCase):
         legacy runtime may expect it"""
         runner = self.runner
         counter = 2
+
         def decrement_to_zero():
             nonlocal counter
             counter -= 1
             return counter == 0
+
         runner.then_run(decrement_to_zero)
         self.run_post_config_checks(expected_routine_length=1)
-        self.assertEqual(False, bool(runner), "Runner shouldn't be finished yet")
+        self.assertEqual(False,
+                         bool(runner),
+                         "Runner shouldn't be finished yet")
 
         result = runner.run()
         self.assertEqual(CycleStepResultEnum.MUST_CONTINUE, result.result)
@@ -981,10 +985,43 @@ class RunnerTestSuite(TestCase):
         self.assertEqual(False, runner.running, "Runner is done")
         self.assertEqual(True, bool(runner), "Runner should be finished")
 
+    def test_call(self):
+        """Validates that calling a runner invokes its run-function"""
+        runner = self.runner
+        runner.then_run(lambda: self.goto_step(2))
+        self.run_post_config_checks(expected_routine_length=1)
 
-    # TODO Add test cases for:
-    #  call
-    #  as_result
+        for step in range(2):
+            result = runner()
+            self.assertEqual(CycleStepResultEnum.MUST_CONTINUE,
+                             result.result,
+                             f"Unexpected result in step {step}")
+            self.assertEqual(True, runner.running, "Runner is running")
+
+        result = runner()
+        self.assertEqual(CycleStepResultEnum.DONE,
+                         result.result,
+                         "Runner should be done")
+        self.assertEqual(False, runner.running, "Runner is done")
+        self.assertEqual(2,
+                         self.machine.value,
+                         "Final value should have been reached")
+
+    def test_true_as_result(self):
+        """Validates conversion of True to CycleStepResult.done()"""
+        self.assertEqual(CycleStepResult.done(), as_result(True))
+
+    def test_false_as_result(self):
+        """Validates conversion of False to a must-continue result"""
+        self.assertEqual(MUST_CONTINUE_RESULT, as_result(False))
+
+    def test_result_as_result(self):
+        """Validates that any CycleStepResult is returned as-is by
+        as_result()"""
+        for result in [CycleStepResult.done(),
+                       MUST_CONTINUE_RESULT,
+                       ABORT_RESULT]:
+            self.assertEqual(result, as_result(result))
 
     def goto_step(self, target_value: int = 5) -> CycleStepResult:
         return self.machine.goto_config_CycleStep(TestConfig(
