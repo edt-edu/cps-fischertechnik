@@ -17,7 +17,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
     def setUp(self):
         script_path = os.path.abspath(__file__)
         logging.info(f'script path : {script_path}')
-        dir_path = os.path.dirname(__file__)
+        dir_path = str(os.path.dirname(__file__))
         config_path = os.path.join(dir_path, "config.yml")
         logging.info(f'config file path : {config_path}')
 
@@ -27,9 +27,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
 
     ### ______ MOVE ________
     def test_moveForwardCommand(self):
-        '''
+        """
             Test the MOVE forward command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -57,7 +57,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
@@ -75,10 +75,10 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
-    def test_moveBackardCommand(self):
-        '''
+    def test_moveBackwardCommand(self):
+        """
             Test the MOVE backward command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -106,13 +106,13 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,True)
 
-            if (notification == "") :
+            if notification == "":
                 iterationDone += 1
             elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
@@ -124,11 +124,11 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
-    ### ______ MOVE LIGHT BASED ________
+    ### ______ MOVE LIGHT-BASED ________
     def test_moveLbForwardCommand(self):
-        '''
-            Test the MOVE light based command
-        '''
+        """
+            Test the MOVE light-based command
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -139,7 +139,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readNotification(self.controller), "")
 
-        # send a move light based command
+        # send a move light-based command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_TO_SENSOR", [
             Direction.FORWARD
           ] )
@@ -156,7 +156,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERSWAPSTATION,False)
             if iterationDone == 4:
@@ -174,10 +174,10 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
-    def test_moveLbBackardCommand(self):
-        '''
-            Test the MOVE light based
-        '''
+    def test_moveLbBackwardCommand(self):
+        """
+            Test the MOVE light-based
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -188,7 +188,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a move light based command
+        # send a move light-based command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_TO_SENSOR", [
             Direction.BACKWARD
           ] )
@@ -205,7 +205,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.conveyorBeltSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERFEEDSTATION,False)
             if iterationDone == 4:
@@ -223,11 +223,11 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
                 endCommandReached = True
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
-    ### ______ GOTOCONFIG ________
+    ### ______ GOTO-CONFIG ________
     def test_GoToConfigForwardCommand(self):
-        '''
+        """
             Test the GoToConfig forward command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -238,7 +238,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a go to config command
+        # send a move-nb-steps command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_NB_STEPS", [
             3,
             Direction.FORWARD
@@ -257,7 +257,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
 
-            if (notification == "") :
+            if notification == "":
                 iterationDone += 1
             elif re.match(r"ConveyorBelt01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
@@ -270,9 +270,9 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
             self.assertLess(iterationDone, 30, "COMMAND not reached in less than 30 iterations" )
 
     def test_GoToConfigBackwardCommand(self):
-        '''
+        """
             Test the GOTOCONFIG backward command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -283,7 +283,7 @@ class SimulatedConveyorBeltControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a go to config command
+        # send a move-nb-steps command
         message = MachineCommand("COMMAND", "CONVEYOR", 1, "MOVE_NB_STEPS", [
             3,
             Direction.BACKWARD
