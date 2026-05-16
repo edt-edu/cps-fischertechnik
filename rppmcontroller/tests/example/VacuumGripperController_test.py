@@ -4,13 +4,12 @@ import logging
 import os
 import time
 import unittest
-from unittest.mock import patch, Mock
 
-from rppmcontroller.example.VacuumGripperController import VacuumGripperController
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.protocol.JSONReader import JSONReader
-from rppmcontroller.protocol.JSONOutput import JSONOutput
+from rppmcontroller.example.VacuumGripperController import \
+    VacuumGripperController
 from rppmcontroller.machine.Position import Position
+from rppmcontroller.protocol.JSONOutput import JSONOutput
+from rppmcontroller.protocol.JSONReader import JSONReader
 from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 
@@ -19,22 +18,19 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
     def setUp(self):
         script_path = os.path.abspath(__file__)
         logging.info(f'script path : {script_path}')
-        dir_path = os.path.dirname(__file__)
+        dir_path = str(os.path.dirname(__file__))
         config_path = os.path.join(dir_path, "config.yml")
         logging.info(f'config file path : {config_path}')
 
         logging.debug("setup called")
-        # pickupRobot1 = [2600,3550,25]
-        # placeConveyorRobot1 = [2000,100,100]
-        # placeRand = [2,3,4,5]
-        # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
         self.controller = VacuumGripperControllerMock(config_path)
 
-        
+
 
     def test_processJson_with_jsonTxtMsg(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
+        # noinspection SpellCheckingInspection
         jsonMessage = JSONReader.read("""{
           "topicName" : "VacuumGripper01",
           "timestamp" : 1677144787.891000000,
@@ -63,7 +59,7 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
           }
         }""")
         self.controller.inputBuffer.put(jsonMessage)
-        # we use a multithread Queue in a mono thread, makes sure the message is queued 
+        # we use a multithread Queue in a mono thread, makes sure the message is queued
         time.sleep(0.1)
         #logging.debug(self.controller.inputBuffer.qsize())
 
@@ -74,14 +70,14 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
 
         #logging.debug(self.controller.inputBuffer.qsize())
         self.controller.processJson(self.controller.inputBuffer)
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine) 
-        assert currentlyExecutting is not None
-        logging.debug("currently executing="+currentlyExecutting.displayName)
-        self.assertIsNotNone(currentlyExecutting)
-        self.assertEqual(currentlyExecutting._commandId, 77)
-        
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
+        assert currentlyExecuting is not None
+        logging.debug("currently executing=" + currentlyExecuting.displayName)
+        self.assertIsNotNone(currentlyExecuting)
+        self.assertEqual(currentlyExecuting._commandId, 77)
+
     def test_processJson_with_JSONOutputMsg(self):
-        
+
         logging.debug(f'{inspect.stack()[0][3]} start')
         # Create the equivalent JSONOutput command
         parameterList = [
@@ -90,20 +86,20 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         ]
         message = MachineCommand("COMMAND", "VACUUM", 77, "MOVE", parameterList)
         jsonOutput = JSONOutput("VacuumGripper01", 1677144787.891000000, message)
-        
+
         self.controller.inputBuffer.put(jsonOutput)
 
-        # we use a multithread Queue in a mono thread, makes sure the message is queued 
+        # we use a multithread Queue in a mono thread, makes sure the message is queued
         time.sleep(0.1)
-  
+
         self.controller.processJson(self.controller.inputBuffer)
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine) 
-        assert currentlyExecutting is not None
-        self.assertIsNotNone(currentlyExecutting.cycleStep)
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
+        assert currentlyExecuting is not None
+        self.assertIsNotNone(currentlyExecuting.cycleStep)
 
-  
-    
+
+
     def test_tryMockRead(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
         # self.assertEquals(self.controller.vacuumGripperMachine.vacuumSensVerticalEndUp, 0)
@@ -111,7 +107,7 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         self.controller.write()
         self.assertEqual(self.controller.vacuumGripperMachine.vacuumSensVerticalEndUp, 0)
 
-          
+
 
     def test_oneExLoop(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
@@ -121,44 +117,44 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
         ]
         message = MachineCommand("COMMAND", "VACUUM", 77, "MOVE", parameterList)
         jsonOutput = JSONOutput("VacuumGripper01", 1677144787.891000000, message)
-        
+
         self.controller.inputBuffer.put(jsonOutput)
 
-        # we use a multithread Queue in a mono thread, makes sure the message is queued 
+        # we use a multithread Queue in a mono thread, makes sure the message is queued
         time.sleep(0.1)
-  
+
         self.controller.processJson(self.controller.inputBuffer)
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
-        assert currentlyExecutting is not None
-        logging.debug("before loop: currently executing="+currentlyExecutting.displayName)
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
+        assert currentlyExecuting is not None
+        logging.debug("before loop: currently executing=" + currentlyExecuting.displayName)
 
         self.controller.read()
         self.controller.exLoop()
         self.controller.write()
         self.controller.createMachineFeedbackOnChange()
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
-        assert currentlyExecutting is not None
-        logging.debug("after loop: currently executing="+currentlyExecutting.displayName)
-        self.assertIsNotNone(currentlyExecutting.cycleStep)
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
+        assert currentlyExecuting is not None
+        logging.debug("after loop: currently executing=" + currentlyExecuting.displayName)
+        self.assertIsNotNone(currentlyExecuting.cycleStep)
 
         # Second loop
         self.controller.processJson(self.controller.inputBuffer)
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
-        assert currentlyExecutting is not None
-        logging.debug("before loop: currently executing="+currentlyExecutting.displayName)
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
+        assert currentlyExecuting is not None
+        logging.debug("before loop: currently executing=" + currentlyExecuting.displayName)
 
         self.controller.read()
         self.controller.exLoop()
         self.controller.write()
         self.controller.createMachineFeedbackOnChange()
 
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
-        assert currentlyExecutting is not None
-        logging.debug("after loop: currently executing="+currentlyExecutting.displayName)
-        self.assertIsNotNone(currentlyExecutting.cycleStep)
-    
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.vacuumGripperMachine)
+        assert currentlyExecuting is not None
+        logging.debug("after loop: currently executing=" + currentlyExecuting.displayName)
+        self.assertIsNotNone(currentlyExecuting.cycleStep)
+
 
 class VacuumGripperControllerMock(VacuumGripperController):
   def __init__(self, configurationFile : str = ""):

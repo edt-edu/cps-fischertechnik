@@ -12,19 +12,20 @@ class AxisTestCase(unittest.TestCase):
         self.axis = Axis(AxisType.Counter, tolerance)
 
     def testUpdate(self):
-        """tests, that setter for counterinput works"""
+        """tests, that setter for counterInput works"""
         self.assertEqual(0, self.axis.counterinput)
 
         self.axis.update(False, 10)
         self.assertEqual(10, self.axis.counterinput)
 
     def testCounter(self):
-        """Tests outputs of the goToConfig function in combination with counterinputs"""
+        """Tests outputs of the goToConfig function in combination with counterInputs"""
         self.assertEqual(0, self.axis.counterinput)
 
         self.axis.update(False, 10)
         # values for outputplus/minus first set (no execution of counter func here)
         t = self.axis.gotoConfig(False, 100)
+        self.assertIsInstance(t, tuple)
         self.assertEqual(False, t[0])
         self.assertEqual(0, self.axis.counterValueCurrent)
         self.assertEqual(True, self.axis.outputplus)
@@ -33,6 +34,7 @@ class AxisTestCase(unittest.TestCase):
         self.axis.update(False, 11)
         # first execution of counter func (11 set as zero point)
         t = self.axis.gotoConfig(False, 100)
+        self.assertIsInstance(t, tuple)
         self.assertEqual(False, t[0])
         self.assertEqual(0, self.axis.counterValueCurrent)
         self.assertEqual(True, self.axis.outputplus)
@@ -40,6 +42,7 @@ class AxisTestCase(unittest.TestCase):
 
         self.axis.update(False, 100)
         t = self.axis.gotoConfig(False, 100)
+        self.assertIsInstance(t, tuple)
         self.assertEqual(False, t[0])
         self.assertEqual(89, self.axis.counterValueCurrent)
         self.assertEqual(True, self.axis.outputplus)
@@ -47,6 +50,7 @@ class AxisTestCase(unittest.TestCase):
 
         self.axis.update(False, 130)
         t = self.axis.gotoConfig(False, 100)
+        self.assertIsInstance(t, tuple)
         self.assertEqual(False, t[0])
         self.assertEqual(119, self.axis.counterValueCurrent)
         self.assertEqual(False, self.axis.outputplus)
@@ -54,6 +58,7 @@ class AxisTestCase(unittest.TestCase):
 
         self.axis.update(False, 140)
         t = self.axis.gotoConfig(False, 100)
+        self.assertIsInstance(t, tuple)
         self.assertEqual(True, t[0])
         self.assertEqual(109, self.axis.counterValueCurrent)
         self.assertEqual(False, self.axis.outputplus)
