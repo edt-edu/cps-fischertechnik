@@ -21,6 +21,7 @@ from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import \
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
+from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
@@ -307,20 +308,16 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         return self.__rot_reset_helper
 
     def sensorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-
         # noinspection SpellCheckingInspection
         return f"CountVRH[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}], " + \
-               f"SensVRH[{s(self.vacuumSensVerticalEndUp)}, {s(self.vacuumSensRotEnd)}, {s(self.vacuumSensArmEndIn)}]"
+               f"SensVRH[{shortBoolStr(self.vacuumSensVerticalEndUp)}, {shortBoolStr(self.vacuumSensRotEnd)}, {shortBoolStr(self.vacuumSensArmEndIn)}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-
         # noinspection SpellCheckingInspection
-        return f"MoveVert[{s(self.vacuumActVerticalUp)}, {s(self.vacuumActVerticalDown)}], " + \
-               f"MoveRot[{s(self.vacuumActRotRight)}, {s(self.vacuumActRotLeft)}], " + \
-               f"MoveHor[{s(self.vacuumActArmOut)}, {s(self.vacuumActArmIn)}], " + \
-               f"CompValv[{s(self.vacuumActCompressorOn)}, {s(self.vacuumActValve)}], " + \
+        return f"MoveVert[{shortBoolStr(self.vacuumActVerticalUp)}, {shortBoolStr(self.vacuumActVerticalDown)}], " + \
+               f"MoveRot[{shortBoolStr(self.vacuumActRotRight)}, {shortBoolStr(self.vacuumActRotLeft)}], " + \
+               f"MoveHor[{shortBoolStr(self.vacuumActArmOut)}, {shortBoolStr(self.vacuumActArmIn)}], " + \
+               f"CompValv[{shortBoolStr(self.vacuumActCompressorOn)}, {shortBoolStr(self.vacuumActValve)}], " + \
                f"PWM_VHR[{self.pwmVertical}, {self.pwmHorizontal}, {self.pwmRotational}]"
 
 

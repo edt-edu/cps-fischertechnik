@@ -21,6 +21,7 @@ from rppmcontroller.machine.multiprocessing.TurnTablePosition import \
     TurnTablePosition
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
+from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
 class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
@@ -370,21 +371,17 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
             self.multiProcessingActRotCounterclockwise = True
 
     def sensorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-
-        return f"TurnTab[{s(self.multiProcessingSensTurntablePosVacuum)}, {s(self.multiProcessingSensTurntablePosBelt)}, {s(self.multiProcessingSensTurntablePosSaw)}], " + \
-               f"Sensors[{s(self.multiProcessingSensEndConveyor)}, {s(self.multiProcessingSensOven)}], " + \
-               f"VacGrip[{s(self.multiProcessingSensVacuumGripperAtTurntable)}, {s(self.multiProcessingSensVacuumGripperAtOven)}], " + \
-               f"OvenFeed[{s(self.multiProcessingSensOvenFeederIn)}, {s(self.multiProcessingSensOvenFeederOut)}]"
+        return f"TurnTab[{shortBoolStr(self.multiProcessingSensTurntablePosVacuum)}, {shortBoolStr(self.multiProcessingSensTurntablePosBelt)}, {shortBoolStr(self.multiProcessingSensTurntablePosSaw)}], " + \
+               f"Sensors[{shortBoolStr(self.multiProcessingSensEndConveyor)}, {shortBoolStr(self.multiProcessingSensOven)}], " + \
+               f"VacGrip[{shortBoolStr(self.multiProcessingSensVacuumGripperAtTurntable)}, {shortBoolStr(self.multiProcessingSensVacuumGripperAtOven)}], " + \
+               f"OvenFeed[{shortBoolStr(self.multiProcessingSensOvenFeederIn)}, {shortBoolStr(self.multiProcessingSensOvenFeederOut)}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-
-        return f"TurnTab[{s(self.multiProcessingActRotClockwise)}, {s(self.multiProcessingActRotCounterclockwise)}], " + \
-               f"ConvSaw[{s(self.multiProcessingActConveyorForward)}, {s(self.multiProcessingActSaw)}], " + \
-               f"Oven[{s(self.multiProcessingActOvenInward)}, {s(self.multiProcessingActOvenOutward)}, {s(self.__multiProcessingOvenLight)}], " + \
-               f"VacGrip[{s(self.__multiProcessingActGripperToOven)}, {s(self.__multiProcessingActGripperToTurntable)}], " + \
-               f"CompValv[{s(self.__multiProcessingCompressor)}, {s(self.__multiProcessingValveVacuum)}, {s(self.__multiProcessingActLowerValve)}, {s(self.__multiProcessingValveOvenDoor)}, {s(self.__multiProcessingValveFeeder)}]"
+        return f"TurnTab[{shortBoolStr(self.multiProcessingActRotClockwise)}, {shortBoolStr(self.multiProcessingActRotCounterclockwise)}], " + \
+               f"ConvSaw[{shortBoolStr(self.multiProcessingActConveyorForward)}, {shortBoolStr(self.multiProcessingActSaw)}], " + \
+               f"Oven[{shortBoolStr(self.multiProcessingActOvenInward)}, {shortBoolStr(self.multiProcessingActOvenOutward)}, {shortBoolStr(self.__multiProcessingOvenLight)}], " + \
+               f"VacGrip[{shortBoolStr(self.__multiProcessingActGripperToOven)}, {shortBoolStr(self.__multiProcessingActGripperToTurntable)}], " + \
+               f"CompValv[{shortBoolStr(self.__multiProcessingCompressor)}, {shortBoolStr(self.__multiProcessingValveVacuum)}, {shortBoolStr(self.__multiProcessingActLowerValve)}, {shortBoolStr(self.__multiProcessingValveOvenDoor)}, {shortBoolStr(self.__multiProcessingValveFeeder)}]"
 
     def inputStatus(self) -> Dict[str, Any]:
         status = {
