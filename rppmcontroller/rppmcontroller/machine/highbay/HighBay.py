@@ -19,6 +19,7 @@ from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 from rppmcontroller.machine.highbay.HighBayParameters import HighBayParameters
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
+from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
 class Column(Enum):
@@ -350,18 +351,16 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         return self.__vertical_reset_helper
 
     def sensorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
         return (f"Counter: [{self.highbaySensHorizontalEncoderCounter}, {self.highbaySensVerticalEncoderCounter}], "
-                f"Cantilev: [{s(self.highbaySensCantileverBack)}, {s(self.highbaySensCantileverFront)}], "
-                f"SensorHV: [{s(self.highbaySensHorizontal)}, {s(self.highbaySensVertical)}], "
-                f"SensConv: [{s(self.highbaySensInside)}, {s(self.highbaySensOutside)}]")
+                f"Cantilev: [{shortBoolStr(self.highbaySensCantileverBack)}, {shortBoolStr(self.highbaySensCantileverFront)}], "
+                f"SensorHV: [{shortBoolStr(self.highbaySensHorizontal)}, {shortBoolStr(self.highbaySensVertical)}], "
+                f"SensConv: [{shortBoolStr(self.highbaySensInside)}, {shortBoolStr(self.highbaySensOutside)}]")
 
     def actuatorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-        return (f"Vertical: [{s(self.highbayActUp)}, {s(self.highbayActDown)}], "
-                f"Horizont: [{s(self.highbayActHorizontalToRack)}, {s(self.highbayActHorizontalToConveyor)}], "
-                f"Cantilev: [{s(self.highbayActCantileverBackward)}, {s(self.highbayActCantileverForward)}], "
-                f"Conveyor: [{s(self.highbayActConveyorBackward)}, {s(self.highbayActConveyorForward)}], "
+        return (f"Vertical: [{shortBoolStr(self.highbayActUp)}, {shortBoolStr(self.highbayActDown)}], "
+                f"Horizont: [{shortBoolStr(self.highbayActHorizontalToRack)}, {shortBoolStr(self.highbayActHorizontalToConveyor)}], "
+                f"Cantilev: [{shortBoolStr(self.highbayActCantileverBackward)}, {shortBoolStr(self.highbayActCantileverForward)}], "
+                f"Conveyor: [{shortBoolStr(self.highbayActConveyorBackward)}, {shortBoolStr(self.highbayActConveyorForward)}], "
                 f"PWM_VHR[{self.pwmVertical}, {self.pwmHorizontal}]")
 
     def inputStatus(self) -> Dict[str, Any]:
