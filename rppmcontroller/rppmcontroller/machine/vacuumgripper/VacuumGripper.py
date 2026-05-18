@@ -46,9 +46,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumActRotLeft = False
         self.__vacuumActCompressorOn = False
         self.__vacuumActValve = False
-        self.__pwmVertical = 100
-        self.__pwmHorizontal = 100
-        self.__pwmRotational = 100
+        self.__pwmVertical = 0
+        self.__pwmHorizontal = 0
+        self.__pwmRotational = 0
+        self.reset_pwm_CycleStep()
 
         # encoders
         self.__vacuumSensRotEncoderCounter = 0
@@ -88,6 +89,13 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.configGoal = None
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
+
+    @cycle_step_function()
+    def reset_pwm_CycleStep(self) -> CycleStepResult:
+        self.__pwmVertical = 100
+        self.__pwmHorizontal = 100
+        self.__pwmRotational = 100
+        return CycleStepResult.done()
 
     @property
     def parameters(self) -> VacuumGripperParameters:
@@ -499,8 +507,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
         :return: A Runner performing the setup
         """
-        # when performing a setup, we want to horizontally retract the arm first, to avoid collision with other machines
         runner = self.create_runner()
+        runner.then_run(self.reset_pwm_CycleStep, info="resetting pwm")
+
+        # when performing a setup, we want to horizontally retract the arm first, to avoid collision with other machines
         config = self.get_current_config()
         config.horizontal_axis_config = AxisConfig.to_end_position()
         runner.then_goto(config, info="retracting arm")
