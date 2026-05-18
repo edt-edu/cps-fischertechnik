@@ -92,9 +92,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     @cycle_step_function()
     def reset_pwm_CycleStep(self) -> CycleStepResult:
-        self.__pwmVertical = 100
-        self.__pwmHorizontal = 100
-        self.__pwmRotational = 100
+        self.pwmVertical = self.parameters.pwm_standard_speed
+        self.pwmHorizontal = self.parameters.pwm_standard_speed
+        self.pwmRotational = self.parameters.pwm_standard_speed
         return CycleStepResult.done()
 
     @property
