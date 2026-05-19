@@ -1,8 +1,6 @@
-sysml-mission-generator/.idea/compiler.xml
-sysml-mission-generator/.idea/encodings.xml
-sysml-mission-generator/.idea/jarRepositories.xml
-sysml-mission-generator/.idea/misc.xml
-sysml-mission-generator/.idea/vcs.xml
-sysml-mission-generator/.idea/workspace.xml
-sysml-mission-generator/.settings/org.eclipse.jdt.apt.core.prefs
-sysml-mission-generator/.settings/org.eclipse.m2e.core.prefs
+*/.idea/*
+.vscode/
+.project
+.classpath
+*/.settings/*
+.vscode

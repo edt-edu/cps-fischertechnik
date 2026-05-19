@@ -4,8 +4,6 @@ import lombok.Getter;
 import org.eclipse.syson.sysml.Documentation;
 import org.eclipse.syson.sysml.Element;
 
-import fr.inria.mbdo.mission.utils.SymlUtils;
-
 import java.util.stream.Collectors;
 
 @Getter
@@ -21,7 +19,7 @@ public class ElementIR {
         this.qualifiedName = resolveQualifiedName(source);
         this.documentation = source.getDocumentation().stream().map(Documentation::getBody)
                 .collect(Collectors.joining("\n"));
-        this.javaPackage = SymlUtils.getParentJavaPackageQualifiedName(source);
+        this.javaPackage = resolveJavaPackage(source);
         this.sourceUri = source.eResource() != null ? source.eResource().getURI().toString() : null;
     }
 
@@ -49,5 +47,21 @@ public class ElementIR {
         String owner = source.getOwner() != null ? source.getOwner().getQualifiedName() : "";
         String name = resolveName(source);
         return owner == null || owner.isBlank() ? name : owner + "::" + name;
+    }
+
+    private static String resolveJavaPackage(Element source) {
+        String packageSource = null;
+        if (source.getOwner() != null) {
+            packageSource = resolveQualifiedName(source.getOwner());
+        }
+        if (packageSource == null || packageSource.isBlank()) {
+            packageSource = resolveQualifiedName(source);
+        }
+
+        if (packageSource == null || packageSource.isBlank()) {
+            return "";
+        }
+
+        return packageSource.replace("::", ".").toLowerCase();
     }
 }

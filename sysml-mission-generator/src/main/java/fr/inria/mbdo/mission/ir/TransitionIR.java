@@ -15,4 +15,12 @@ public class TransitionIR extends ElementIR {
         this.trigger = trigger;
         this.action = action;
     }
+
+    @Override
+    public String getQualifiedName() {
+        String baseKey = super.getQualifiedName();
+        String trigger = getTrigger() != null ? getTrigger().qName() : "implicit";
+        String target = getTo() != null ? getTo().qName() : "unknown";
+        return baseKey + "@" + trigger + "|" + target;
+    }
 }

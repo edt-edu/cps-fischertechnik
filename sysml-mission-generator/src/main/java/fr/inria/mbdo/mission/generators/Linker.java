@@ -2,8 +2,12 @@ package fr.inria.mbdo.mission.generators;
 
 import com.palantir.javapoet.ClassName;
 import fr.inria.mbdo.mission.ir.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Linker {
+    private static final Logger logger = LoggerFactory.getLogger(Linker.class);
+
     public TypeTable link(IrRepository repository, String packagePrefix) {
         TypeTable typeTable = new TypeTable();
 
@@ -19,17 +23,16 @@ public class Linker {
         repository.getMissions().values().forEach(mission -> {
             for (Ref<StateIR> stateRef : mission.getStates()) {
                 if (!repository.getStates().containsKey(stateRef.qName())) {
-                    throw new IllegalStateException("Mission references unknown state: " + stateRef.qName());
+                    logger.warn("Mission references unknown state: {}", stateRef.qName());
                 }
             }
             for (MachineRefIR machineRef : mission.getMachinesRefs()) {
                 if (machineRef.type() == null || machineRef.type().qualifiedName() == null) {
-                    throw new IllegalStateException(
-                            "Mission has machine reference with missing type: " + mission.getQualifiedName());
+                    logger.warn("Mission has machine reference with missing type: {}", mission.getQualifiedName());
+                    continue;
                 }
                 if (!repository.getMachines().containsKey(machineRef.type().qualifiedName())) {
-                    throw new IllegalStateException(
-                            "Mission references unknown machine: " + machineRef.type().qualifiedName());
+                    logger.warn("Mission references unknown machine: {}", machineRef.type().qualifiedName());
                 }
             }
         });
@@ -37,18 +40,18 @@ public class Linker {
         repository.getStates().values().forEach(state -> {
             for (Ref<TransitionIR> transitionRef : state.getTransitions()) {
                 if (!repository.getTransitions().containsKey(transitionRef.qName())) {
-                    throw new IllegalStateException("State references unknown transition: " + transitionRef.qName());
+                    logger.warn("State references unknown transition: {}", transitionRef.qName());
                 }
             }
         });
 
         repository.getTransitions().values().forEach(transition -> {
             if (transition.getTo() != null && !repository.getStates().containsKey(transition.getTo().qName())) {
-                throw new IllegalStateException("Transition target state not found: " + transition.getTo().qName());
+                logger.warn("Transition target state not found: {}", transition.getTo().qName());
             }
             if (transition.getTrigger() != null
                     && !repository.getTriggers().containsKey(transition.getTrigger().qName())) {
-                throw new IllegalStateException("Transition trigger not found: " + transition.getTrigger().qName());
+                logger.warn("Transition trigger not found: {}", transition.getTrigger().qName());
             }
         });
 

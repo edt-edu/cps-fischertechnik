@@ -13,6 +13,7 @@ public class IrRepository {
     protected Map<String, EnumerationIR> enumerations = new HashMap<>();
     protected Map<String, ActionIR> actions = new HashMap<>();
     protected Map<String, MachineMessageIR> messages = new HashMap<>();
+    protected Map<String, AcceptExprIR> acceptExprs = new HashMap<>();
     protected Map<String, StateIR> states = new HashMap<>();
     protected Map<String, TransitionIR> transitions = new HashMap<>();
     protected Map<String, TriggerIR> triggers = new HashMap<>();
@@ -29,6 +30,7 @@ public class IrRepository {
                 case EnumerationIR enumeration -> this.irRepository.enumerations.put(name, enumeration);
                 case ActionIR action -> this.irRepository.actions.put(name, action);
                 case MachineMessageIR message -> this.irRepository.messages.put(name, message);
+                case AcceptExprIR acceptExprIR -> this.irRepository.acceptExprs.put(name, acceptExprIR);
                 case StateIR state -> this.irRepository.states.put(name, state);
                 case TransitionIR transition -> this.irRepository.transitions.put(name, transition);
                 case TriggerIR trigger -> this.irRepository.triggers.put(name, trigger);

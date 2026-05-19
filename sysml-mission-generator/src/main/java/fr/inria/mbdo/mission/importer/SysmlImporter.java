@@ -38,7 +38,7 @@ public class SysmlImporter {
 	
 	/**
 	 * Load the given sysml text into the resourceSet, will create a new resource to contain the sysml model
-	 * @param sysmlFile
+	 * @param sysmlFileIn
 	 * @param resourceSet
 	 * @return
 	 * @throws FileNotFoundException

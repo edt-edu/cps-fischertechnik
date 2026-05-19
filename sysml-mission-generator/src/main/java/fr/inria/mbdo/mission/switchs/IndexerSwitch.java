@@ -48,6 +48,13 @@ public class IndexerSwitch extends SysmlSwitch<Void> {
     }
 
     @Override
+    public Void caseAttributeDefinition(AttributeDefinition object) {
+        logger.debug("[Attribute]\tTraversing attribute def: {}", object.getQualifiedName());
+        indexBuilder.addAttribute(object);
+        return null;
+    }
+
+    @Override
     public Void caseElement(Element object) {
         return doSwitchForAllOwnedElements(object);
     }

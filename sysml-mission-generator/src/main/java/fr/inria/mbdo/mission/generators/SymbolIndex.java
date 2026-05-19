@@ -15,6 +15,7 @@ public class SymbolIndex {
     private final Map<String, ItemDefinition> items = new HashMap<>();
     private final Map<String, StateDefinition> states = new HashMap<>();
     private final Map<String, ActionDefinition> actions = new HashMap<>();
+    private final Map<String, AttributeDefinition> attributes = new HashMap<>();
 
     public Optional<PartDefinition> resolvePart(String key) {
         return parts.containsKey(key) ? Optional.of(parts.get(key)) : Optional.empty();
@@ -36,6 +37,10 @@ public class SymbolIndex {
         return actions.containsKey(key) ? Optional.of(actions.get(key)) : Optional.empty();
     }
 
+    public Optional<AttributeDefinition> resolveAttribute(String key) {
+        return attributes.containsKey(key) ? Optional.of(attributes.get(key)) : Optional.empty();
+    }
+
     public Optional<Definition> resolveAny(String key) {
         if (parts.containsKey(key)) {
             return Optional.of(parts.get(key));
@@ -47,6 +52,8 @@ public class SymbolIndex {
             return Optional.of(states.get(key));
         } else if (actions.containsKey(key)) {
             return Optional.of(actions.get(key));
+        }else if (attributes.containsKey(key)) {
+            return Optional.of(attributes.get(key));
         }
         return Optional.empty();
     }
@@ -69,6 +76,10 @@ public class SymbolIndex {
                 + "\n"
                 + actions.entrySet().stream()
                         .map(entry -> "Action: " + entry.getKey() + " -> " + entry.getValue().getName())
+                        .collect(Collectors.joining("\n"))
+                + "\n"
+                + attributes.entrySet().stream()
+                        .map(entry -> "Attribute: " + entry.getKey() + " -> " + entry.getValue().getName())
                         .collect(Collectors.joining("\n"));
     }
 
@@ -101,6 +112,10 @@ public class SymbolIndex {
 
         public void addAction(ActionDefinition def) {
             putUnique(symbolIndex.actions, def.getQualifiedName(), def, "action");
+        }
+
+        public void addAttribute(AttributeDefinition def) {
+            putUnique(symbolIndex.attributes, def.getQualifiedName(), def, "action");
         }
 
         private <T extends Definition> void putUnique(Map<String, T> map, String key, T value, String kind) {

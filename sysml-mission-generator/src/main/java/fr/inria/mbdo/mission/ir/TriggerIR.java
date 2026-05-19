@@ -5,9 +5,9 @@ import org.eclipse.syson.sysml.Element;
 
 @Getter
 public class TriggerIR extends ElementIR {
-    private final String expr; // TODO
+    private final Ref<AcceptExprIR> expr;
 
-    public TriggerIR(Element element, String expr) {
+    public TriggerIR(Element element, Ref<AcceptExprIR> expr) {
         super(element);
         this.expr = expr;
     }
