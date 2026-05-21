@@ -20,6 +20,22 @@ class AxisMonitorTestSuite(unittest.TestCase):
                              f"Unexpected deviation in step {step}")
             counter += 50 + random.randint(-10, 10)
 
+    def test_record_pwm_change(self):
+        monitor = self.monitor
+        counter = 0
+
+        for step in range(50):
+            self.assertEqual(Deviation.NONE,
+                             monitor.record(counter, 100),
+                             f"Unexpected deviation in step {step}")
+            counter += 50 + random.randint(-10, 10)
+
+        for step in range(50, 100):
+            self.assertEqual(Deviation.NONE,
+                             monitor.record(counter, 50),
+                             f"Unexpected deviation in step {step}")
+            counter += 25 + random.randint(-10, 10)
+
 
 if __name__ == '__main__':
     unittest.main()
