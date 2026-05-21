@@ -50,19 +50,12 @@ public abstract class AbstractMachine {
     }
 
     /**
-     * @deprecated Static abuse. Use {@link #type()} instead.
+     * Used by {@link io.github.mbdo.factoryscada.utilities.Utilities} to map the string identifier to a concrete class.
+     * Do not use in other contexts.
      */
     @Deprecated
     public static String getType() {
         throw new UnsupportedOperationException("Subclasses must implement getType");
-    }
-
-    public String type() {
-      try {
-        return (String) getClass().getMethod("getType").invoke(null);
-      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-        throw new RuntimeException("Failed to invoke method getType on object " + this, e);
-      }
     }
 
     /**
