@@ -1,20 +1,17 @@
 package io.github.mbdo.factoryscada.service.dynamicmission;
 
-import io.github.mbdo.factoryscada.domains.dynamicmission.DynamicMission;
+import io.github.mbdo.factoryscada.service.FactoryScada;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-
 @Service
 @Slf4j
-public class BrokenCBDemo implements DynamicMission {
-  private final Demo demo;
+public class BrokenCBDemo extends Demo {
 
   @Autowired
-  public BrokenCBDemo(Demo demo) {
-    this.demo = demo;
+  public BrokenCBDemo(FactoryScada factoryScada) {
+    super(factoryScada);
   }
 
   @Override
@@ -28,24 +25,8 @@ public class BrokenCBDemo implements DynamicMission {
   }
 
   @Override
-  public Collection<String> getInvolvedMachineNames() {
-    return demo.getInvolvedMachineNames();
-  }
-
-  @Override
   public void start() {
-    demo.setCbBroken(true);
-    demo.start();
-  }
-
-  @Override
-  public void stop() {
-    demo.stop();
-    demo.setCbBroken(false);
-  }
-
-  @Override
-  public boolean isActive() {
-    return demo.isActive();
+    setCbBroken(true);
+    super.start();
   }
 }

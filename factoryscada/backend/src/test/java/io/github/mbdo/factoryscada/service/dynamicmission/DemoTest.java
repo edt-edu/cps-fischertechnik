@@ -70,11 +70,10 @@ class DemoTest {
   @Test
   void simpleProductionRunWithBrokenConveyorUsesVacuumGripperForBufferTransfer() throws InterruptedException {
     DemoFixture fixture = createDemoFixture();
-    fixture.demo.setCbBroken(true);
     configureBrokenConveyorTransfer(fixture);
 
     // Start with a token at the sorting line feed while the conveyor belt movement is unavailable.
-    fixture.startDemoAndWaitForProcessing();
+    fixture.startBrokenDemoAndWaitForProcessing();
 
     // The token is sorted, transferred to the conveyor feed, carried to swap by VGR1, then processed by MPS.
     verifyCommonProductionRun(fixture);
@@ -126,11 +125,12 @@ class DemoTest {
     VacuumGripperMachine vacuumGripper1 = mock(VacuumGripperMachine.class);
     MultiProcessingStationMachine multiProcessingStation = mock(MultiProcessingStationMachine.class);
     Demo demo = new Demo(factoryScada);
-    BrokenCBDemo brokenCBDemo = new BrokenCBDemo(demo);
+    BrokenCBDemo brokenCBDemo = new BrokenCBDemo(factoryScada);
     DynamicMissionService service = new DynamicMissionService(factoryScada, demo, brokenCBDemo);
     DemoFixture fixture = new DemoFixture(
         service,
         demo,
+        brokenCBDemo,
         sortingLine,
         vacuumGripper2,
         conveyorBelt,
@@ -304,6 +304,7 @@ class DemoTest {
   private static class DemoFixture {
     private final DynamicMissionService service;
     private final Demo demo;
+    private final BrokenCBDemo brokenCBDemo;
     private final SortingLineMachine sortingLine;
     private final VacuumGripperMachine vacuumGripper2;
     private final ConveyorBeltMachine conveyorBelt;
@@ -321,6 +322,7 @@ class DemoTest {
     private DemoFixture(
         DynamicMissionService service,
         Demo demo,
+        BrokenCBDemo brokenCBDemo,
         SortingLineMachine sortingLine,
         VacuumGripperMachine vacuumGripper2,
         ConveyorBeltMachine conveyorBelt,
@@ -329,6 +331,7 @@ class DemoTest {
     ) {
       this.service = service;
       this.demo = demo;
+      this.brokenCBDemo = brokenCBDemo;
       this.sortingLine = sortingLine;
       this.vacuumGripper2 = vacuumGripper2;
       this.conveyorBelt = conveyorBelt;
@@ -341,6 +344,13 @@ class DemoTest {
 
       assertTrue(processingStarted.await(2, TimeUnit.SECONDS), "The demo should process one token");
       demo.stop();
+    }
+
+    private void startBrokenDemoAndWaitForProcessing() throws InterruptedException {
+      brokenCBDemo.start();
+
+      assertTrue(processingStarted.await(2, TimeUnit.SECONDS), "The broken CB demo should process one token");
+      brokenCBDemo.stop();
     }
 
     private void startDemoAndWaitForConveyorToGetStuck() throws InterruptedException {
