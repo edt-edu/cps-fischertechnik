@@ -99,9 +99,11 @@ class AxisMonitor:
         Movement below the axis tolerance is considered high deviation, since
         the axis should've moved.
 
-        Movement below the standard deviation is considered a small deviation,
-        as long as a standard deviation and mean value can be calculated from
-        the available datapoints.
+        Movement below the double variance is considered a small
+        deviation, as long as a variance and mean value can be
+        calculated from the available datapoints.
+        If the double variance happens to be smaller than the axis-tolerance,
+        it is bumped to that value for the calculation.
 
         In all other cases no deviation is detected.
 
@@ -131,11 +133,12 @@ class AxisMonitor:
             [not_none(point.moved_distance) for point in relevant_data_points]
         mean = calculate_mean(moved_distance_data_points)
         variance = calculate_variance(moved_distance_data_points)
-        if variance == 0:
-            # without variance deviation cannot be calculated accurately
-            return Deviation.NONE
+        double_variance = 2 * variance
+        if double_variance < self.__axis_tolerance:
+            # a variance smaller than this tolerance is not really helpful
+            double_variance = self.__axis_tolerance
 
-        if moved_distance < mean - variance:
+        if moved_distance <= mean - double_variance:
             return Deviation.SMALL
         else:
             return Deviation.NONE
@@ -166,10 +169,9 @@ class AxisMonitor:
         """
         if len(self.__buffer) < self.__max_buffer_len:
             self.__buffer.append(data)
-            self.__buffer_head += 1
         else:
             self.__buffer[self.__buffer_head] = data
-            self.__advance_buffer_head()
+        self.__advance_buffer_head()
 
     def __advance_buffer_head(self) -> None:
         """
