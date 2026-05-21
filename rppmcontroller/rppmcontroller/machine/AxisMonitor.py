@@ -102,7 +102,7 @@ class AxisMonitor:
         Movement below the double variance is considered a small
         deviation, as long as a variance and mean value can be
         calculated from the available datapoints.
-        If the double variance happens to be smaller than the axis-tolerance,
+        If the variance happens to be smaller than the axis-tolerance,
         it is bumped to that value for the calculation.
 
         In all other cases no deviation is detected.
@@ -133,12 +133,11 @@ class AxisMonitor:
             [not_none(point.moved_distance) for point in relevant_data_points]
         mean = calculate_mean(moved_distance_data_points)
         variance = calculate_variance(moved_distance_data_points)
-        double_variance = 2 * variance
-        if double_variance < self.__axis_tolerance:
+        if variance < 2 * self.__axis_tolerance:
             # a variance smaller than this tolerance is not really helpful
-            double_variance = self.__axis_tolerance
+            variance = 2 * self.__axis_tolerance
 
-        if moved_distance <= mean - double_variance:
+        if moved_distance <= mean - 2 * variance:
             return Deviation.SMALL
         else:
             return Deviation.NONE
