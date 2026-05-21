@@ -39,6 +39,17 @@ class AxisMonitorTestSuite(unittest.TestCase):
                              f"Unexpected deviation in step {step}")
             counter += random.choice([-1, 1]) * 25 + random.randint(-10, 10)
 
+    def test_detect_small_deviation(self):
+        monitor = self.monitor
+        counter = 0
+
+        for step in range(100):
+            counter += random.choice([-1, 1]) * 50 + random.randint(-10, 10)
+            self.assertEqual(Deviation.NONE, monitor.record(counter, 100))
+
+        self.assertEqual(Deviation.SMALL, monitor.record(counter + 20, 100))
+
+
 
 if __name__ == '__main__':
     unittest.main()
