@@ -10,6 +10,9 @@ class AxisMonitorTestSuite(unittest.TestCase):
         self.monitor = AxisMonitor(10, 5, 10)
         random.seed("test_record")
 
+    def tearDown(self):
+        random.seed(None)
+
     def test_record(self):
         monitor = self.monitor
         counter = 0
