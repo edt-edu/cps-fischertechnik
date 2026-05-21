@@ -12,13 +12,9 @@ from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import \
 class VacuumGripperTestCase(unittest.TestCase):
 
     def setUp(self):
-        # pickupRobot1 = [2600,3550,25]
-        # placeConveyorRobot1 = [2000,100,100]
-        # placeRand = [2,3,4,5]
-        # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
         self.robot1 = VacuumGripper("1")
 
-    def test_GoToconfigGripUnGrip(self):
+    def test_GoToConfigGripUnGrip(self):
         """Tests that the grip ungrip acts on the correct actuators """
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.goto_config_CycleStep(
@@ -80,7 +76,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertTrue(self.robot1.vacuumActVerticalUp)
 
         # simulate move
-        # we suppose that it finish to touch the sensor
+        # we suppose that it finishes to touch the sensor
         self.robot1.vacuumSensRotEnd = True
         self.robot1.vacuumSensVerticalEndUp = True
         self.robot1.vacuumSensVerticalEncoderCounter = 0
@@ -91,7 +87,7 @@ class VacuumGripperTestCase(unittest.TestCase):
 
         self.assert_stopped()
 
-    def testGotoconfigIncrease(self):
+    def testGotoConfigIncrease(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = False
@@ -133,7 +129,7 @@ class VacuumGripperTestCase(unittest.TestCase):
 
         self.assert_stopped()
 
-    def testGotoconfigDecrease(self):
+    def testGotoConfigDecrease(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = False
@@ -176,7 +172,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assert_stopped()
 
     def testGotoConfigShouldNotRetractIfTouchingSensor(self):
-        """Test that even if the counter say it's possible to retract but the sensor is reached, do not activate engine toward the sensor"""
+        """Test that even if the counter say it's possible to retract but the sensor is reached, do not activate the engine toward the sensor"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = True
@@ -205,7 +201,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertTrue(self.robot1.vacuumActVerticalUp)
 
     def testGotoConfigShouldNotTurnRightIfTouchingSensor(self):
-        """Test that even if the counter say it's possible to turn right but the sensor is reached, do not activate engine toward the sensor"""
+        """Test that even if the counter say it's possible to turn right but the sensor is reached, do not activate the engine toward the sensor"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = True
         self.robot1.vacuumSensArmEndIn = False
@@ -234,7 +230,7 @@ class VacuumGripperTestCase(unittest.TestCase):
         self.assertTrue(self.robot1.vacuumActVerticalUp)
 
     def testGotoConfigShouldNotGoUpIfTouchingSensor(self):
-        """Test that even if the counter say it's possible to go up but the sensor is reached, do not activate engine toward the sensor"""
+        """Test that even if the counter say it's possible to go up but the sensor is reached, do not activate the engine toward the sensor"""
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.robot1.vacuumSensRotEnd = False
         self.robot1.vacuumSensArmEndIn = False

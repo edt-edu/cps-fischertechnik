@@ -1,24 +1,20 @@
 
 import inspect
 import logging
+import unittest
 
 from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
-from rppmcontroller.machine.conveyorbelt.ConveyorBeltConfig import ConveyorBeltConfig
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
-from rppmcontroller.machine.Position import Position
 
-import unittest
 
 class ConveyorBeltTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.conveyor1 = ConveyorBelt(1)
-    
+        self.conveyor1 = ConveyorBelt("1")
+
     def test_Stop(self):
-        '''
-            Test if stop fucntion stop the conveyor acting forward
-        '''
+        """
+            Test if the stop-function stops the conveyor acting forward
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
         self.conveyor1.conveyorActForward = True
         # stop

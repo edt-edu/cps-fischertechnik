@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.mqtt;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +17,9 @@ import org.springframework.messaging.MessageHandler;
 
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Configuration
 public class MqttConfig {
-
     @Value("${configuration.mqttHost:tcp://localhost:1883}")
     String mqttHost;
 
@@ -71,9 +72,14 @@ public class MqttConfig {
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
+        log.info("MQTT Connecting to {}", mqttHost);
         options.setServerURIs(new String[] { mqttHost });
         factory.setConnectionOptions(options);
         return factory;
+    }
+
+    public String getMqttHost() {
+        return mqttHost;
     }
 
     private static byte[] toBytes(Message<?> message) {

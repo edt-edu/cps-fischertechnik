@@ -3,14 +3,12 @@ import logging
 import os
 import re
 import unittest
-from unittest.mock import patch, Mock
-
-from rppmcontroller.example.SimulatedHighBayController import SimulatedHighBayController
-from rppmcontroller.machine.RequestedParameter import RequestedParameter
-from rppmcontroller.machine.Direction import Direction
-from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 import tests.controllerTestHelper as ctHelper
+from rppmcontroller.example.SimulatedHighBayController import \
+    SimulatedHighBayController
+from rppmcontroller.machine.RequestedParameter import RequestedParameter
+from rppmcontroller.protocol.MachineCommand import MachineCommand
 
 
 class SimulatedHighBayControllerIntegrationTestCase(unittest.TestCase):
@@ -18,7 +16,7 @@ class SimulatedHighBayControllerIntegrationTestCase(unittest.TestCase):
     def setUp(self):
         script_path = os.path.abspath(__file__)
         logging.info(f'script path : {script_path}')
-        dir_path = os.path.dirname(__file__)
+        dir_path = str(os.path.dirname(__file__))
         config_path = os.path.join(dir_path, "config.yml")
         logging.info(f'config file path : {config_path}')
 
@@ -29,9 +27,9 @@ class SimulatedHighBayControllerIntegrationTestCase(unittest.TestCase):
 
     ### ________ SETUP ___________
     def test_setup(self):
-        '''
+        """
             Test the setup_Command
-        '''
+        """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         # initial feedback
@@ -57,7 +55,7 @@ class SimulatedHighBayControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 4:
                 # retract cantilever
                 self.controller.highBaySimulator.fakeSensor(RequestedParameter.REFERENCESWITCHCANTILEVERBACK,True)

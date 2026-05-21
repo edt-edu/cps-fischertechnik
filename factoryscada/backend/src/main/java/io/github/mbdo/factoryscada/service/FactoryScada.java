@@ -12,6 +12,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParalleli
 import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
+import io.github.mbdo.factoryscada.mqtt.MqttConfig;
 import io.github.mbdo.factoryscada.mqtt.MqttGateway;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
@@ -81,17 +82,19 @@ public class FactoryScada {
     private List<String> frontendLogsList = new LinkedList<String>();
 
     // MQTT messages
+    private final MqttConfig mqttConfig;
     private final MqttGateway mqttGateway;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
-            ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
-            @Value("${log.limit:500}") int logLimit, MqttGateway mqttGateway) {
+                        ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
+                        @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
         this.webSocketPublisher = webSocketPublisher;
+        this.mqttConfig = mqttConfig;
         this.webSocketPublisher.factoryscada = this;
         this.commandIdGenerator = new CommandIdGenerator();
         this.factoryScadaInstance = factoryInstance();
@@ -412,7 +415,7 @@ public class FactoryScada {
         try {
             mqttGateway.sendToMqtt(payload, topic);
         } catch (Exception e) {
-            log.warn("MQTT not ready, retrying in 1s for topic {}", topic);
+            log.warn("Failed to publish MQTT message to broker={} topic={}, MQTT system may be not ready: retrying in 1s", mqttConfig.getMqttHost(), topic);
             scheduler.schedule(() -> sendWithRetry(payload, topic), 1, TimeUnit.SECONDS);
         }
     }
