@@ -1,14 +1,13 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterOutlet } from "@angular/router";
-import { MenubarModule } from 'primeng/menubar';
-import { MenuItem } from 'primeng/api';
+import {Component} from '@angular/core';
+import {RouterOutlet} from "@angular/router";
+import {MenubarModule} from 'primeng/menubar';
+import {MenuItem} from 'primeng/api';
 
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
   imports: [
     RouterOutlet,
-    RouterLink,
     MenubarModule
     //TabMenuModule
   ],
@@ -52,6 +51,11 @@ export class DashboardLayoutComponent {
         label: 'Mission',
         icon: 'pi pi-sitemap',
         routerLink: 'mission'
+      },
+      {
+        label: 'Dynamic Mission',
+        icon: 'pi pi-sitemap',
+        routerLink: 'dynamic-mission'
       }
     ];
   }

@@ -1,4 +1,4 @@
-import { Routes } from "@angular/router";
+import {Routes} from "@angular/router";
 
 export const dashboardLayoutRoutes: Routes = [
   {
@@ -14,5 +14,8 @@ export const dashboardLayoutRoutes: Routes = [
   }, {
     path: 'mission',
     loadComponent: () => import ('../../pages/mission/mission.component' ).then(c => c.MissionComponent)
+  }, {
+    path: 'dynamic-mission',
+    loadComponent: () => import ('../../pages/dynamic-mission/dynamic-mission.component' ).then(c => c.DynamicMissionComponent)
   }
 ]

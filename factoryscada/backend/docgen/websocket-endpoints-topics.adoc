@@ -170,6 +170,22 @@
 |<<incoming_plc,/plc**>>
 |  
 
+|DynamicMissionOrchestratorController.stopMission()
+|<<incoming_dynamic-mission-command-stop,/dynamic-mission/command/stop>>
+|  
+
+|DynamicMissionOrchestratorController.startMission()
+|<<incoming_dynamic-mission-command-start-missionname,/dynamic-mission/command/start/{missionName}>>
+|  
+
+|DynamicMissionOrchestratorController.handleUnmappedMessage()
+|<<incoming_dynamic-mission,/dynamic-mission**>>
+|  
+
+|DynamicMissionOrchestratorController.getMissions()
+|<<incoming_dynamic-mission-missions,/dynamic-mission/missions>>
+|<<outgoing_topic-dynamic-missions,/topic/dynamic-missions>>
+
 |IndexedLineController.receiveMoveToMillCommand()
 |<<incoming_indexedline-machinename-command-move-to-mill,/indexedLine/{machineName}/command/move_to_mill>>
 |  
@@ -805,6 +821,58 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_dynamic-mission-missions]]
+===  Incoming Topic: `/dynamic-mission/missions`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
+
+*Send To:* `/topic/dynamic-missions`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
+}
+----
+
+[[incoming_dynamic-mission-command-start-missionname]]
+===  Incoming Topic: `/dynamic-mission/command/start/{missionName}`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.startMission()`
+
+==== Parameters
+
+- `missionName` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_dynamic-mission-command-stop]]
+===  Incoming Topic: `/dynamic-mission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.stopMission()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_dynamic-mission]]
+===  Incoming Topic: `/dynamic-mission**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.handleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
 [[incoming_factory-placeholder]]
 ===  Incoming Topic: `/factory/placeholder`
 
@@ -944,11 +1012,26 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
               "type" : "string"
             }
           },
+          "commandIdGenerator" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:utilities:CommandIdGenerator",
+            "properties" : {
+              "counter" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "idle" : {
+            "type" : "boolean"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
+          },
+          "commandMachineType" : {
+            "type" : "string"
           }
         }
       }
@@ -2666,6 +2749,18 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_factorymission]]
+===  Incoming Topic: `/factoryMission**`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.handleUnmappedMessage()`
+
+==== Parameters
+
+- `destination` (String)
+- `messageContent` (String)
+
+NOTE: This endpoint does not send a response back via a topic.
+
 [[incoming_factorymission-mission-configuration]]
 ===  Incoming Topic: `/factoryMission/mission-configuration`
 
@@ -2840,18 +2935,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
   }
 }
 ----
-
-[[incoming_factorymission]]
-===  Incoming Topic: `/factoryMission**`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.handleUnmappedMessage()`
-
-==== Parameters
-
-- `destination` (String)
-- `messageContent` (String)
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_multiprocessingstation-machinename-command-stop]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/stop`
@@ -5726,6 +5809,27 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 }
 ----
 
+[[outgoing_topic-dynamic-missions]]
+=== Outgoing Topic: `/topic/dynamic-missions`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
+
+*Request Mapping:* `@MessageMapping("/dynamic-mission/missions")`
+
+*Send To:* `/topic/dynamic-missions`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "array"
+}
+----
+
 [[outgoing_topic-command-placeholder]]
 === Outgoing Topic: `/topic/command-placeholder`
 
@@ -5871,11 +5975,26 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
               "type" : "string"
             }
           },
+          "commandIdGenerator" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:utilities:CommandIdGenerator",
+            "properties" : {
+              "counter" : {
+                "type" : "integer"
+              }
+            }
+          },
+          "idle" : {
+            "type" : "boolean"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
+          },
+          "commandMachineType" : {
+            "type" : "string"
           }
         }
       }

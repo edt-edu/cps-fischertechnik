@@ -1,35 +1,7 @@
 package io.github.mbdo.factoryscada.service;
 
-import static io.github.mbdo.factoryscada.utilities.Utilities.convertYamlToObject;
-import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
-
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import io.github.mbdo.factoryscada.mqtt.MqttConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.CommandFeedbackDTO;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
@@ -40,6 +12,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParalleli
 import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
+import io.github.mbdo.factoryscada.mqtt.MqttConfig;
 import io.github.mbdo.factoryscada.mqtt.MqttGateway;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
@@ -48,10 +21,29 @@ import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.AppEnvironment;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
+import org.springframework.lang.NonNull;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static io.github.mbdo.factoryscada.utilities.Utilities.convertYamlToObject;
+import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
 
 @Slf4j
 @Getter
@@ -104,6 +96,7 @@ public class FactoryScada {
         this.webSocketPublisher = webSocketPublisher;
         this.mqttConfig = mqttConfig;
         this.webSocketPublisher.factoryscada = this;
+        this.commandIdGenerator = new CommandIdGenerator();
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
@@ -119,8 +112,6 @@ public class FactoryScada {
             }
         }
         this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto, this.template);
-
-        this.commandIdGenerator = new CommandIdGenerator();
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -243,10 +234,13 @@ public class FactoryScada {
                     commandStatus.setCommandFeedbackInfo(feedback.getMessage().getInfo());
                     commandStatus.setCommandFeedbackRawJSON(feedbackMsg);
                     // log warning if feedback id doesn't correspond to current command id
-                    if (commandStatus.getCurrentCommandId() != null
-                            && !commandStatus.getCurrentCommandId().equals(feedback.getMessage().getCommandId())) {
+                    var currentCommandId = commandStatus.getCurrentCommandId();
+                    var feedbackCommandId = feedback.getMessage().getCommandId();
+                    var feedbackIdMatchingCommandId = currentCommandId == null ||
+                                                      currentCommandId.equals(feedbackCommandId);
+                    if (!feedbackIdMatchingCommandId) {
                         log.warn("Received Feedback CommandId {} doesn't match current Command CommandId {}",
-                                feedback.getMessage().getCommandId(), commandStatus.getCurrentCommandId());
+                                 feedbackCommandId, currentCommandId);
                     }
 
                     this.machineLastCommandStatusMap.put(machineName, commandStatus);
@@ -254,12 +248,24 @@ public class FactoryScada {
                     webSocketPublisher.sendCommandStatus(machineName, commandStatus);
                     // notify ExecuterVisitor
                     this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
+
+                    //update idle status of machine
+                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        var feedbackMessage = commandStatus.getCommandFeedbackStatus();
+                        var isDone = feedbackMessage.contains("DONE");
+                        log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
+                        log.debug("Updating idle state for machine {} to {} (reason: command feedback {})", machineName, isDone,
+                                  feedbackCommandId);
+                        machine.setIdle(isDone);
+                    });
+
                     break;
                 case "MACHINE_FEEDBACK":
                     MachineStatus machineStatus = this.machineLastMachineStatusMap.getOrDefault(machineName,
                             new MachineStatus());
 
-                    machineStatus.setMachineFeedbackStatus(feedback.getMessage().getStatus());
+                    var status = feedback.getMessage().getStatus();
+                    machineStatus.setMachineFeedbackStatus(status);
                     machineStatus.setMachineFeedbackTimestamp(feedback.getTimestamp());
                     machineStatus.setMachineFeedbackInfo(feedback.getMessage().getInfo());
                     machineStatus.setMachineFeedbackRawJSON(feedbackMsg);
@@ -267,6 +273,13 @@ public class FactoryScada {
                     this.machineLastMachineStatusMap.put(machineName, machineStatus);
                     // publish changes to frontend
                     webSocketPublisher.sendMachineStatus(machineName, machineStatus);
+
+                    //update idle status of machine
+                    Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
+                        log.info("Received status for machine {} : {}", machineName, status);
+                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
+                        machine.setIdle(status.contains("IDLE"));
+                    });
 
                     break;
                 default:
@@ -294,25 +307,35 @@ public class FactoryScada {
         String machineType = machineConfiguration.type();
 
         try {
-            log.info("creating MachineInstance for " + machineConfiguration.name());
+            log.info("creating MachineInstance for {}", machineConfiguration.name());
             // Find the concrete machine class corresponding to the machine type
             Class<? extends AbstractMachine> machineClass = findMachineClass(machineType,
                     appEnvironment.getMachineDomainsPackageName());
 
             // Instantiate the machine using the found class, constructor that takes String,
             // Protocol and List<String> as parameters
-            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(String.class,
-                    Protocol.class, List.class);
+            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(AbstractMachine.Parameters.class);
             Map<String, String> machineRawCommandPlaceholder = this.commandPlaceholder().get(machineType);
-            List<String> rawCommandNames = machineRawCommandPlaceholder != null
-                    ? machineRawCommandPlaceholder.keySet().stream().collect(Collectors.toList())
-                    : new ArrayList<>();
-            return constructor.newInstance(machineConfiguration.name(), controllerInstance, rawCommandNames);
+            var parameters = createMachineParameters(machineConfiguration, controllerInstance, machineRawCommandPlaceholder);
+            return constructor.newInstance(parameters);
 
         } catch (Exception e) {
             log.error("Error during machine instantiation: {}", e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    @NonNull
+    private AbstractMachine.Parameters createMachineParameters(FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration machineConfiguration,
+                                                               Protocol controllerInstance,
+                                                               Map<String, String> machineRawCommandPlaceholder) {
+        List<String> rawCommandNames = machineRawCommandPlaceholder != null ?
+            new ArrayList<>(machineRawCommandPlaceholder.keySet()) :
+            new ArrayList<>();
+        return new AbstractMachine.Parameters(machineConfiguration.name(),
+                                              controllerInstance,
+                                              rawCommandNames,
+                                              commandIdGenerator);
     }
 
     /**

@@ -1,38 +1,42 @@
 package io.github.mbdo.factoryscada.domains.vacuumgripper;
 
-import java.util.List;
-
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GoToPositionCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.GripCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.MoveToSafePositionCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PickCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.PlaceCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.OrderedGoToCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.RetractArmCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.SetupCommand;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.StatusCommand;
-import io.github.mbdo.factoryscada.socket.Protocol;
+import io.github.mbdo.factoryscada.core.passable.Position;
+import io.github.mbdo.factoryscada.domains.vacuumgripper.commands.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
+@Setter
 public class VacuumGripperMachine extends AbstractMachine {
 
-    public VacuumGripperMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-        super(name, protocol, rawCommandNames);
+    private boolean armRetracted;
+
+    public VacuumGripperMachine(Parameters parameters) {
+        super(parameters);
     }
 
     public static String getType() {
         return "vacuumGripper";
     }
 
+    @Override
+    public String getCommandMachineType() {
+        return "VACUUM";
+    }
+
     public void go_to_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> goToPositionDTO) {
         log.info("GoToPosition vacuum gripper {}", goToPositionDTO);
         new GoToPositionCommand(this, goToPositionDTO).execute();
+    }
+
+    public void move(Position origin, Position destination) {
+        move(createCommandDTO("move", origin.toParameter(), destination.toParameter()));
     }
 
     public void move(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> moveDTO) {
@@ -48,6 +52,10 @@ public class VacuumGripperMachine extends AbstractMachine {
     public void place(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> placeDTO) {
         log.info("Placing with vacuum gripper {}", placeDTO);
         new PlaceCommand(this, placeDTO).execute();
+    }
+
+    public void setup() {
+        setup(createCommandDTO("setup"));
     }
 
     public void setup(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> setupDTO) {
@@ -70,14 +78,27 @@ public class VacuumGripperMachine extends AbstractMachine {
         new GripCommand(this, releaseDTO).execute();
     }
 
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
+    }
+
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> stopDTO) {
         log.info("Stopping vacuum gripper {}", stopDTO);
         new GripCommand(this, stopDTO).execute();
     }
 
+    public void go_to_safe_position() {
+        move_to_safe_position(createCommandDTO("move_to_safe_position"));
+    }
+
     public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> dto) {
         log.info("Move To Safe Position {}", dto);
         new MoveToSafePositionCommand(this, dto).execute();
+    }
+
+    public void retract_arm() {
+        retract_arm(createCommandDTO("retract_arm"));
     }
 
     public void retract_arm(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> retract_armDTO) {

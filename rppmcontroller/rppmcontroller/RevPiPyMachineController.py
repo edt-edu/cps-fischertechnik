@@ -297,11 +297,14 @@ class RevPiPyMachineController(ABC):
                                               message,
                                               machine)
 
+        logging.debug("Determining machine class")
         machine_class = self.__get_machine_class(message_type)
         if machine_class is None:
             logging.warning(f"invalid JSON command: unsupported machine "
                             f"type: {message_type}")
             return
+
+        logging.debug(f"Determined machine class to be {machine_class}")
 
         if not isinstance(machine, machine_class):
             # the machine is determined by the topic name, so it is better to
@@ -330,6 +333,7 @@ class RevPiPyMachineController(ABC):
             return
 
         # apply parameter modifications
+        logging.debug("Applying parameter modifications")
         try:
             self.__replace_named_positions(machine, parameters)
         except UnknownNamedPosition as e:
@@ -341,9 +345,12 @@ class RevPiPyMachineController(ABC):
                 f"Unknown named position: {named_position}"))
             return
 
+        logging.debug("Applying machine-specific parameter modifications")
         self.__apply_machine_specific_parameter_modifications(message_type,
                                                               parameters)
+
         # call command function
+        logging.debug("Calling command function")
         command_function_return_value = self.__call_command_function(
             command_function,
             command_function_name,
@@ -371,6 +378,7 @@ class RevPiPyMachineController(ABC):
 
         # send interruption feedback for the previously running
         # command on the machine
+        logging.debug("Interrupting currently running command")
         self.__interrupt_currently_running_command(machine, message)
 
         # store the new command on the machine
@@ -473,7 +481,9 @@ class RevPiPyMachineController(ABC):
 
         for parameter_index, parameter in enumerate(parameters):
             if isinstance(parameter, NamedPosition):
-                resolved = named_positions[parameter.name]
+                resolved = named_positions[parameter.name] \
+                    if parameter.name in named_positions \
+                    else None
                 if resolved is None:
                     raise UnknownNamedPosition(parameter)
 
@@ -546,7 +556,7 @@ class RevPiPyMachineController(ABC):
             "CONVEYOR": ConveyorBelt,
             "PUNCHING": PunchingMachine,
         }
-        return machine_type_to_class_mapping[machine_type]
+        return machine_type_to_class_mapping[machine_type] if machine_type in machine_type_to_class_mapping else None
 
     def __publish_received_message_event(self,
                                          event_group: str,

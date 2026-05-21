@@ -1,10 +1,17 @@
 package io.github.mbdo.factoryscada.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
+import io.github.mbdo.factoryscada.core.dtos.Parameter;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
+import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
@@ -12,29 +19,62 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @Data
 @Slf4j
 @AllArgsConstructor
 public abstract class AbstractMachine {
 
 	/**
-	 * Name of the Machine (also referred as topicName in GenericMachineCommandDTO)
+	 * Name of the Machine (also referred to as topicName in GenericMachineCommandDTO)
 	 */
     protected final String name;
-    
-	protected final Protocol protocol;
+
+	  protected final Protocol protocol;
 
     /**
-     * List of the command names defined in the command-placeholder.yml fot this machine
+     * List of the command names defined in the command-placeholder.yml for this machine
      */
     protected final List<String> rawCommandNames;
-    
 
+    protected final CommandIdGenerator commandIdGenerator;
+
+    @Getter
+    @Setter
+    protected boolean idle = true;
+
+    public AbstractMachine(Parameters parameters) {
+        this.name = parameters.name;
+        this.protocol = parameters.protocol;
+        this.rawCommandNames = parameters.rawCommandNames;
+        this.commandIdGenerator = parameters.commandIdGenerator;
+    }
+
+    /**
+     * Used by {@link io.github.mbdo.factoryscada.utilities.Utilities} to map the string identifier to a concrete class.
+     * Do not use in other contexts.
+     */
+    @Deprecated
     public static String getType() {
         throw new UnsupportedOperationException("Subclasses must implement getType");
+    }
+
+    /**
+     * Gets the machine type which is used in a command payload.
+     *
+     * <p>Those type names are usually uppercase. E.g., for the SortingLine it would be {@code SORTING}.
+     */
+    public abstract String getCommandMachineType();
+
+    protected <T extends AbstractMachine> GenericMachineCommandDTO<T> createCommandDTO(String commandName,
+                                                                                       Parameter... parameters) {
+        var outputId = commandIdGenerator.generateId();
+        var commandMessage = new CommandMessage("COMMAND",
+                                                getCommandMachineType(),
+                                                Long.toString(outputId),
+                                                commandName,
+                                                List.of(parameters));
+        var timestamp = System.currentTimeMillis();
+        return new GenericMachineCommandDTO<>(getName(), Long.toString(timestamp), commandMessage);
     }
 
     /**
@@ -64,7 +104,7 @@ public abstract class AbstractMachine {
                     methodName, this.getClass().getName(), e);
         }
     }
-    
+
     public void executeRequest(@NotNull GenericMachineStatusRequestDTO<? extends AbstractMachine> parameter) {
     	ObjectMapper mapper = new ObjectMapper();
         Protocol protocol = this.getProtocol();
@@ -100,5 +140,9 @@ public abstract class AbstractMachine {
         return commandNames;
     }
 
+    public abstract void stop();
 
+    public record Parameters(
+        String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
+    ) {}
 }
