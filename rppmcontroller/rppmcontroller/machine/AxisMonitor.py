@@ -133,9 +133,8 @@ class AxisMonitor:
             [not_none(point.moved_distance) for point in relevant_data_points]
         mean = calculate_mean(moved_distance_data_points)
         variance = calculate_variance(moved_distance_data_points)
-        if variance < self.__axis_tolerance:
-            # a variance smaller than this tolerance is not really helpful
-            variance = self.__axis_tolerance
+        # a variance smaller than the axis tolerance is not really helpful
+        variance = max(variance, self.__axis_tolerance)
 
         if moved_distance <= mean - 2 * variance:
             return Deviation.SMALL
