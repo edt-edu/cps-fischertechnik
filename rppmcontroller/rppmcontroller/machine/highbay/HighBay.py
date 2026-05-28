@@ -557,11 +557,13 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         the error
         """
         if self.__horizontal_axis_monitor.record_and_action_is_required(
-            self.pwmHorizontal):
+            self.pwmHorizontal if self.highbayActHorizontalToRack or
+                                  self.highbayActHorizontalToConveyor else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on horizontal axis")
         if self.__vertical_axis_monitor.record_and_action_is_required(
-            self.pwmVertical):
+            self.pwmVertical if self.highbayActUp or self.highbayActDown
+            else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on vertical axis")
         return None

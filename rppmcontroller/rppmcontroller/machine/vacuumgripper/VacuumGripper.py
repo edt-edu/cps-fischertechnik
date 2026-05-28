@@ -458,15 +458,18 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         :return: None if no error, otherwise a CycleStepResult with the error
         """
         if self.__horizontal_axis_monitor.record_and_action_is_required(
-            self.pwmVertical):
+            self.pwmVertical if self.vacuumActArmOut or self.vacuumActArmIn
+            else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on horizontal axis")
         if self.__vertical_axis_monitor.record_and_action_is_required(
-            self.pwmHorizontal):
+            self.pwmHorizontal if self.vacuumActVerticalUp or
+                                  self.vacuumActVerticalDown else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on vertical axis")
         if self.__rotational_axis_monitor.record_and_action_is_required(
-            self.pwmRotational):
+            self.pwmRotational if self.vacuumActRotLeft or
+                                  self.vacuumActRotRight else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on rotational axis")
         return None
