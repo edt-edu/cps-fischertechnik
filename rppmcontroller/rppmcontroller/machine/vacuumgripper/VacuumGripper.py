@@ -441,6 +441,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         error = self.__monitor_axis_values()
         if error is not None:
             self.stop_CycleStep()
+            self.__clear_axis_monitor_buffers()
             return error
 
         # vacuum valve
@@ -490,6 +491,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         else:
             return False
 
+    def __clear_axis_monitor_buffers(self):
+        self.__horizontal_axis_monitor.monitor.clear()
+        self.__vertical_axis_monitor.monitor.clear()
+        self.__rotational_axis_monitor.monitor.clear()
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 

@@ -206,6 +206,13 @@ class AxisMonitor:
         """
         return [data.deviation for data in self.__buffer]
 
+    def clear(self) -> None:
+        """
+        Drop all recorded data
+        :return: None
+        """
+        self.__buffer.clear()
+
     def __calculate_deviation(self,
                               moved_distance: int,
                               recorded_pwm_value: int) -> Deviation:

@@ -546,6 +546,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         error = self.__monitor_axis_values()
         if error is not None:
             self.stop_CycleStep()
+            self.__clear_axis_monitor_buffers()
             return error
         return res
 
@@ -572,6 +573,10 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on vertical axis")
         return None
+
+    def __clear_axis_monitor_buffers(self):
+        self.__horizontal_axis_monitor.monitor.clear()
+        self.__vertical_axis_monitor.monitor.clear()
 
     def internalStatus(self) -> Dict[str, Any]:
         return {"isExecuting": self.isExecuting}
