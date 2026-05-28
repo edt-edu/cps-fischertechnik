@@ -11,7 +11,7 @@ from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
-from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor)
+from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor, CycleData)
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -24,6 +24,7 @@ from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import \
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
+from rppmcontroller.utils.csv import CSVWriter
 from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
@@ -72,10 +73,14 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             parameters.vertical_axis_monitor_parameters,
             self.__axisVertical,
             f"{id1} vertical axis")
+        rot_writer = CSVWriter(f"{id1}_rot.csv")
+        CycleData.add_csv_header(rot_writer)
         self.__rotational_axis_monitor = NamedAxisMonitor.new(
             parameters.rotational_axis_monitor_parameters,
             self.__axisRot,
-            f"{id1} rotational axis")
+            f"{id1} rotational axis",
+            rot_writer,
+        )
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,
                    RequestedParameter.REFERENCESWITCHHORIZONTALAXIS: self.__vacuumSensArmEndIn,
