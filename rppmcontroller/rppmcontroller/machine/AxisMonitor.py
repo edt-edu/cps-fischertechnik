@@ -261,7 +261,7 @@ class AxisMonitor:
         # a variance smaller than the axis tolerance is not really helpful
         variance = max(variance, self.__movement_tolerance)
 
-        if moved_distance <= mean - 2 * variance:
+        if moved_distance < mean - 2 * variance:
             logging.debug(f"minor deviation detected: "
                           f"moved_distance={moved_distance}, "
                           f"mean={mean}, "
