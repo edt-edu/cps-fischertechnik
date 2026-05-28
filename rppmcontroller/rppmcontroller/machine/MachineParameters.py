@@ -41,4 +41,8 @@ class AxisMonitorParameters:
     """The amount of penalty points that needs to be reached for the controller
     to take action and abort the current command or consider it completed.
     The exact kind of action taken may be machine-specific."""
+    movement_tolerance: int = 3
+    """Any moved distance lower than this value will be considered to be a
+    major deviation"""
+
 

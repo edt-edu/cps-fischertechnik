@@ -37,7 +37,7 @@ class NamedAxisMonitor:
         :param axis_name: The name of the Axis, for debugging purposes
         :return: The created AxisContainingMonitor
         """
-        return NamedAxisMonitor(AxisMonitor.new(parameters, axis),
+        return NamedAxisMonitor(AxisMonitor.new(parameters),
                                 parameters,
                                 axis,
                                 axis_name)
@@ -97,25 +97,21 @@ class AxisMonitor:
     """
 
     @staticmethod
-    def new(parameters: AxisMonitorParameters,
-            axis: Axis) -> AxisMonitor:
+    def new(parameters: AxisMonitorParameters) -> AxisMonitor:
         """
         Create a new AxisMonitor from AxisMonitorParameters and an Axis
         :param parameters: The AxisMonitorParameters to configure the
             AxisMonitor
-        :param axis: The Axis to monitor
         :return: The created AxisMonitor
         """
-        # axis tolerance is internal tolerance + play
-        tolerance = axis.tolerance - axis.play
         return AxisMonitor(parameters.cycles_to_monitor,
                            parameters.required_cycles_to_average,
-                           tolerance)
+                           parameters.movement_tolerance)
 
     def __init__(self,
                  cycles_to_monitor: int,
                  required_cycles_to_average: int,
-                 axis_tolerance: int):
+                 movement_tolerance: int):
         """
         Create a new AxisMonitor
         :param cycles_to_monitor: Number of cycles for that will be stored,
@@ -127,7 +123,8 @@ class AxisMonitor:
             If not enough cycles provide data, then no small deviations can be
             detected, only high ones. This value must not exceed the number of
             cycles to monitor.
-        :param axis_tolerance: Maximum deviation of a target value for which
+        :param movement_tolerance: Maximum deviation of a target value for
+        which
             the axis will not be moving, or in other words: Movement below
             this threshold will be treated like the axis didn't move at all.
         """
@@ -145,9 +142,8 @@ class AxisMonitor:
         movement distance. If not enough cycles provide data, then no small
         deviations can be detected, only high ones. This value must not exceed
         the number of cycles to monitor."""
-        self.__axis_tolerance = axis_tolerance
-        """Maximum deviation of a target value for which the axis will not
-        be moving, or in other words: Movement below this threshold will be
+        self.__movement_tolerance = movement_tolerance
+        """Movement below this threshold will be
         treated like the axis didn't move at all."""
 
         if cycles_to_monitor < 1:
@@ -184,7 +180,8 @@ class AxisMonitor:
                                                    current_pwm_value) \
                 if direct_previous_data.current_pwm_value > 0 else None
             if deviation is not None and deviation is not Deviation.NONE:
-                logging.debug(f"got {deviation} for distance of {moved_distance}")
+                logging.debug(f"got {deviation} for distance of "
+                              f"{moved_distance}")
 
         deviation = deviation if deviation is not None else Deviation.NONE
 
@@ -236,7 +233,7 @@ class AxisMonitor:
 
         # movement below axis tolerance is treated as no movement and thus
         # implies high deviation, since we assume movement
-        if moved_distance < self.__axis_tolerance:
+        if moved_distance < self.__movement_tolerance:
             return Deviation.HIGH
 
         # check whether we have enough data points to detect small deviations
@@ -254,7 +251,7 @@ class AxisMonitor:
         mean = calculate_mean(moved_distance_data_points)
         variance = calculate_variance(moved_distance_data_points)
         # a variance smaller than the axis tolerance is not really helpful
-        variance = max(variance, self.__axis_tolerance)
+        variance = max(variance, self.__movement_tolerance)
 
         if moved_distance <= mean - 2 * variance:
             return Deviation.SMALL
