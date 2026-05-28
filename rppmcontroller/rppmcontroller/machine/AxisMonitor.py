@@ -183,6 +183,9 @@ class AxisMonitor:
             deviation = self.__calculate_deviation(moved_distance,
                                                    current_pwm_value) \
                 if direct_previous_data.current_pwm_value > 0 else None
+            if deviation is not Deviation.NONE:
+                logging.debug(f"got {deviation} for distance of {moved_distance}")
+
         deviation = deviation if deviation is not None else Deviation.NONE
 
         new_data = CycleData(current_counter_value,
