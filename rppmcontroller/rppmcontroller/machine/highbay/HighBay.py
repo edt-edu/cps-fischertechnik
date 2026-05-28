@@ -94,7 +94,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__highbaySensHorizontalEncoderCounter = 0
         self.__highbaySensVerticalEncoderCounter = 0
         self.__axisHorizontal = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
-        self.__axisVertical = Axis(AxisType.Encoder, 10, parameters.max_vertical_counter_value)
+        self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
         self.__horizontal_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
         self.__horizontal_axis_monitor = NamedAxisMonitor.new(

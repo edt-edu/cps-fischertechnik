@@ -59,7 +59,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumSensVerticalEncoderCounter = 0
         self.__vacuumSensArmEncoderCounter = 0
         self.__axisArm = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
-        self.__axisVertical = Axis(AxisType.Encoder, 10, parameters.max_vertical_counter_value)
+        self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
         self.__axisRot = Axis(AxisType.Encoder, 5, parameters.max_rotational_counter_value)
         self.__rot_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
