@@ -212,6 +212,7 @@ class AxisMonitor:
         :return: None
         """
         self.__buffer.clear()
+        self.__buffer_head = 0
 
     def __calculate_deviation(self,
                               moved_distance: int,
