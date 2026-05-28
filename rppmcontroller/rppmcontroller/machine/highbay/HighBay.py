@@ -556,6 +556,11 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         :return: None if no error, otherwise a CycleStepResult with
         the error
         """
+        if not self.isInitialized:
+            # we only get zero values if we are not initialized, which would
+            # cause mostly false high deviations.
+            return None
+
         if self.__horizontal_axis_monitor.record_and_action_is_required(
             self.pwmHorizontal if self.highbayActHorizontalToRack or
                                   self.highbayActHorizontalToConveyor else 0):
