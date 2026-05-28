@@ -32,7 +32,7 @@ class AxisMonitorParameters:
     movement distance. If not enough cycles provide data, then no small
     deviations can be detected, only high ones. This value must not exceed
     the number of cycles to monitor."""
-    minor_deviation_penalty: int = 5
+    minor_deviation_penalty: int = 1
     """The amount of penalty points for a movement that is smaller than the
     expected one"""
     major_deviation_penalty: int = 5
