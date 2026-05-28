@@ -5,16 +5,83 @@ from enum import Enum
 from math import sqrt
 from typing import TypeVar
 
+from rppmcontroller.machine.Axis import Axis
+from rppmcontroller.machine.MachineParameters import AxisMonitorParameters
+
+
+@dataclass
+class AxisContainingMonitor:
+    """
+    A wrapper around an AxisMonitor that also wraps the monitored Axis
+    """
+
+    monitor: AxisMonitor
+    """The AxisMonitor"""
+    axis: Axis
+    """The monitored Axis"""
+
+    @staticmethod
+    def new(parameters: AxisMonitorParameters,
+            axis: Axis) -> AxisContainingMonitor:
+        """
+        Create a new AxisContainingMonitor
+        :param parameters: Configuration for the AxisMonitor
+        :param axis: The Axis to monitor
+        :return: The created AxisContainingMonitor
+        """
+        return AxisContainingMonitor(AxisMonitor.new(parameters, axis), axis)
+
+    def record(self, current_pwm_value) -> Deviation:
+        """
+        Records the current counter-value of the axis for the given pwm value.
+        For more details see AxisMonitor.record()
+        :param current_pwm_value: The current pwm value with which the axis
+            is moved
+        :return: The recorded deviation
+        """
+        return self.monitor.record(self.axis.counterValueCurrent,
+                                   current_pwm_value)
+
 
 class AxisMonitor:
     """
     Monitors the movement of an Axis over time
     """
 
+    @staticmethod
+    def new(parameters: AxisMonitorParameters,
+            axis: Axis) -> AxisMonitor:
+        """
+        Create a new AxisMonitor from AxisMonitorParameters and an Axis
+        :param parameters: The AxisMonitorParameters to configure the
+            AxisMonitor
+        :param axis: The Axis to monitor
+        :return: The created AxisMonitor
+        """
+        return AxisMonitor(parameters.cycles_to_monitor,
+                           parameters.required_cycles_to_average,
+                           axis.tolerance)
+
     def __init__(self,
                  cycles_to_monitor: int,
                  required_cycles_to_average: int,
                  axis_tolerance: int):
+        """
+        Create a new AxisMonitor
+        :param cycles_to_monitor: Number of cycles for that will be stored,
+            whether axis movement was successful. Must be at least 1.
+        :param required_cycles_to_average: Number of cycles of the recorded
+            cycles, which must contain movement data for the current pwm
+            value,
+            that are required to create an average movement distance.
+            If not enough cycles provide data, then no small deviations can be
+            detected, only high ones. This value must not exceed the number of
+            cycles to monitor.
+        :param axis_tolerance: Maximum deviation of a target value for which
+            the axis will not be moving, or in other words: Movement below
+            this threshold will be treated like the axis didn't move at all.
+        """
+
         self.__buffer: list[CycleData] = []
         """Buffer containing the last cycle data"""
         self.__buffer_head = 0

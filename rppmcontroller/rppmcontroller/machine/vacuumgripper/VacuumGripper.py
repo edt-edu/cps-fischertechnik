@@ -9,6 +9,7 @@ from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
+from rppmcontroller.machine.AxisMonitor import (AxisContainingMonitor)
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -61,7 +62,15 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__rot_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
         self.__arm_reset_helper = ResetHelper()
-
+        self.__horizontal_axis_monitor = AxisContainingMonitor.new(
+            parameters.horizontal_axis_monitor_parameters,
+            self.__axisArm)
+        self.__vertical_axis_monitor = AxisContainingMonitor.new(
+            parameters.vertical_axis_monitor_parameters,
+            self.__axisVertical)
+        self.__rotational_axis_monitor = AxisContainingMonitor.new(
+            parameters.rotational_axis_monitor_parameters,
+            self.__axisRot)
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,
                    RequestedParameter.REFERENCESWITCHHORIZONTALAXIS: self.__vacuumSensArmEndIn,
@@ -377,7 +386,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.vacuumActArmOut = self.__axisArm.outputplus
             if self.__axisArm.isCloseFromEnd(config.horizontal_axis_config, self.parameters.pwm_approach_tolerance):
                 self.pwmHorizontal = self.parameters.pwm_horizontal_approach_speed
-            else :
+            else:
                 self.pwmHorizontal = self.parameters.pwm_standard_speed
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "extending or retracting arm")
         if self.vacuumActArmIn and self.vacuumSensArmEndIn:
@@ -423,6 +432,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if self.vacuumActRotRight and self.vacuumSensRotEnd:
             self.stop_CycleStep()
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
+        
+        self.__monitor_axis_values()
 
         # vacuum valve
         self.vacuumActValve = config.gripper_active
@@ -431,6 +442,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActCompressorOn = self.vacuumActValve
 
         return res
+
+    def __monitor_axis_values(self):
+        self.__horizontal_axis_monitor.record(self.pwmVertical)
+        self.__vertical_axis_monitor.record(self.pwmHorizontal)
+        self.__rotational_axis_monitor.record(self.pwmRotational)
 
     def resetHelper(self) -> bool:
         """ Returns whether the counters must be reset
