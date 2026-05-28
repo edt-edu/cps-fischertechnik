@@ -106,9 +106,11 @@ class AxisMonitor:
         :param axis: The Axis to monitor
         :return: The created AxisMonitor
         """
+        # axis tolerance is internal tolerance + play
+        tolerance = axis.tolerance - axis.play
         return AxisMonitor(parameters.cycles_to_monitor,
                            parameters.required_cycles_to_average,
-                           axis.tolerance)
+                           tolerance)
 
     def __init__(self,
                  cycles_to_monitor: int,
