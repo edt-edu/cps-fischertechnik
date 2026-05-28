@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from typing import Any, Callable, Dict, Optional, List
 
@@ -9,7 +11,7 @@ from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
-from rppmcontroller.machine.AxisMonitor import (AxisContainingMonitor)
+from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor)
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -62,15 +64,18 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__rot_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
         self.__arm_reset_helper = ResetHelper()
-        self.__horizontal_axis_monitor = AxisContainingMonitor.new(
+        self.__horizontal_axis_monitor = NamedAxisMonitor.new(
             parameters.horizontal_axis_monitor_parameters,
-            self.__axisArm)
-        self.__vertical_axis_monitor = AxisContainingMonitor.new(
+            self.__axisArm,
+            f"{id1} horizontal axis")
+        self.__vertical_axis_monitor = NamedAxisMonitor.new(
             parameters.vertical_axis_monitor_parameters,
-            self.__axisVertical)
-        self.__rotational_axis_monitor = AxisContainingMonitor.new(
+            self.__axisVertical,
+            f"{id1} vertical axis")
+        self.__rotational_axis_monitor = NamedAxisMonitor.new(
             parameters.rotational_axis_monitor_parameters,
-            self.__axisRot)
+            self.__axisRot,
+            f"{id1} rotational axis")
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,
                    RequestedParameter.REFERENCESWITCHHORIZONTALAXIS: self.__vacuumSensArmEndIn,
@@ -432,8 +437,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if self.vacuumActRotRight and self.vacuumSensRotEnd:
             self.stop_CycleStep()
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
-        
-        self.__monitor_axis_values()
+
+        error = self.__monitor_axis_values()
+        if error is not None:
+            self.stop_CycleStep()
+            return error
 
         # vacuum valve
         self.vacuumActValve = config.gripper_active
@@ -443,10 +451,25 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
         return res
 
-    def __monitor_axis_values(self):
-        self.__horizontal_axis_monitor.record(self.pwmVertical)
-        self.__vertical_axis_monitor.record(self.pwmHorizontal)
-        self.__rotational_axis_monitor.record(self.pwmRotational)
+    def __monitor_axis_values(self) -> CycleStepResult | None:
+        """
+        Monitors the movement of all axes and returns an error if the
+        deviations are too high.
+        :return: None if no error, otherwise a CycleStepResult with the error
+        """
+        if self.__horizontal_axis_monitor.record_and_action_is_required(
+            self.pwmVertical):
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
+                                   "too many deviations on horizontal axis")
+        if self.__vertical_axis_monitor.record_and_action_is_required(
+            self.pwmHorizontal):
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
+                                   "too many deviations on vertical axis")
+        if self.__rotational_axis_monitor.record_and_action_is_required(
+            self.pwmRotational):
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
+                                   "too many deviations on rotational axis")
+        return None
 
     def resetHelper(self) -> bool:
         """ Returns whether the counters must be reset

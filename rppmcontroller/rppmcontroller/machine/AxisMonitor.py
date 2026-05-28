@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from math import sqrt
@@ -10,26 +11,70 @@ from rppmcontroller.machine.MachineParameters import AxisMonitorParameters
 
 
 @dataclass
-class AxisContainingMonitor:
+class NamedAxisMonitor:
     """
-    A wrapper around an AxisMonitor that also wraps the monitored Axis
+    A wrapper around an AxisMonitor that also wraps the monitored Axis and
+    offers functionality for debugging and decision-making on action-taking.
     """
 
     monitor: AxisMonitor
     """The AxisMonitor"""
+    parameters: AxisMonitorParameters
+    """The configuration of the AxisMonitor"""
     axis: Axis
     """The monitored Axis"""
+    axis_name: str
+    """The name of the Axis, for debugging purposes"""
 
     @staticmethod
     def new(parameters: AxisMonitorParameters,
-            axis: Axis) -> AxisContainingMonitor:
+            axis: Axis,
+            axis_name: str) -> NamedAxisMonitor:
         """
         Create a new AxisContainingMonitor
         :param parameters: Configuration for the AxisMonitor
         :param axis: The Axis to monitor
+        :param axis_name: The name of the Axis, for debugging purposes
         :return: The created AxisContainingMonitor
         """
-        return AxisContainingMonitor(AxisMonitor.new(parameters, axis), axis)
+        return NamedAxisMonitor(AxisMonitor.new(parameters, axis),
+                                parameters,
+                                axis,
+                                axis_name)
+
+    def record_and_action_is_required(self, current_pwm_value: int) -> bool:
+        """
+        Records the current axis value for the given pwm value and checks
+        whether the controller should take action in response to the recorded
+        deviations.
+        :param current_pwm_value: The pwm value to record for the axis
+        :return: Whether action should be taken.
+        """
+        self.record(current_pwm_value)
+        return self.is_action_required()
+
+    def is_action_required(self) -> bool:
+        """
+        Determines whether the total penalty for all recorded deviations is
+        larger or equal to the penalty threshold.
+        :return: `True` if the controller should take action in response to the
+            recorded deviations
+        """
+        return (self.calculate_total_penalty() >=
+                self.parameters.penalty_threshold)
+
+    def calculate_total_penalty(self) -> int:
+        """
+        Calculates the total penalty for all recorded deviations.
+        :return: The total penalty
+        """
+        penalty = 0
+        for deviation in self.monitor.get_recorded_deviations():
+            if deviation == Deviation.SMALL:
+                penalty += self.parameters.minor_deviation_penalty
+            elif deviation == Deviation.HIGH:
+                penalty += self.parameters.major_deviation_penalty
+        return penalty
 
     def record(self, current_pwm_value) -> Deviation:
         """
@@ -39,8 +84,11 @@ class AxisContainingMonitor:
             is moved
         :return: The recorded deviation
         """
-        return self.monitor.record(self.axis.counterValueCurrent,
-                                   current_pwm_value)
+        deviation = self.monitor.record(self.axis.counterValueCurrent,
+                                        current_pwm_value)
+        if deviation != Deviation.NONE:
+            logging.debug(f"Recorded {deviation} on {self.axis_name}")
+        return deviation
 
 
 class AxisMonitor:
@@ -275,6 +323,9 @@ class Deviation(Enum):
     """Deviation which is bigger than the standard deviation"""
     HIGH = 2
     """Movement below what the axis tolerates as movement"""
+
+    def __str__(self) -> str:
+        return f"{self.name.lower()} deviation"
 
 
 def calculate_mean(values: list[float]) -> float:
