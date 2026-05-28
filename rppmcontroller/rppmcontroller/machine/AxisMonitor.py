@@ -74,6 +74,7 @@ class NamedAxisMonitor:
                 penalty += self.parameters.minor_deviation_penalty
             elif deviation == Deviation.HIGH:
                 penalty += self.parameters.major_deviation_penalty
+        logging.debug(f"Total penalty: {penalty}")
         return penalty
 
     def record(self, current_pwm_value) -> Deviation:
