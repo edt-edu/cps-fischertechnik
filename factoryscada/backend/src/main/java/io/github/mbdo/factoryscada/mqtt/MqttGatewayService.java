@@ -57,6 +57,7 @@ public class MqttGatewayService {
     try {
       node = mapper.readTree(payload);
     } catch (IOException e) {
+      log.debug("Failed readingTree in payload {} ",e.getMessage(), e);
       return;
     }
     if (!node.isObject() || !node.has("value")) {
@@ -99,7 +100,8 @@ public class MqttGatewayService {
   throws IllegalArgumentException {
     var machine = getMachine(machineName);
     if (machine.isEmpty()) {
-      throw new IllegalArgumentException("Cannot find a machine with the name " + machineName);
+      log.warn("Ignoring update of unknown machine {}, you may need to flush your mqtt broker date", machineName);
+      return;
     }
 
     switch (machine.get()) {
