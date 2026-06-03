@@ -42,21 +42,21 @@ public class FactoryScadaController {
     @MessageMapping("/placeholder")
     @SendTo("/topic/command-placeholder")
     public Map<String, Map<String, String>> getCommandPlaceholder() {
-        log.info("Received request on /factory/placeholder");
+        log.info("Received WS request on /factory/placeholder");
         return commandPlaceholder;
     }
 
     @MessageMapping("/configuration")
     @SendTo("/topic/factory-configuration")
     public FactoryScadaConfiguration getFactoryConfiguration() {
-        log.info("Received request on /factory/configuration");
+        log.info("Received WS request on /factory/configuration");
         return factoryScadaConfiguration;
     }
 
     @MessageMapping("/instance")
     @SendTo("/topic/factory-instance")
     public FactoryScadaInstance getFactoryInstance() {
-        log.info("Received request on /factory/factory/instance");
+        log.info("Received WS request on /factory/factory/instance");
         return factoryScadaInstance;
     }
     

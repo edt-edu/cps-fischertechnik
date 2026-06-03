@@ -134,7 +134,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     public CommandStatusDTO getCommandStatus ( 
     	@DestinationVariable("machineName") String machineName
     )  {
-        log.info("Received request on /"+machineName+"/command-status");
+        log.info("Received WS request on /"+machineName+"/command-status");
         CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName, new CommandStatus());
         return  CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status);
     }
@@ -144,7 +144,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     public MachineStatusDTO getMachineStatus ( 
     	@DestinationVariable("machineName") String machineName
     )  {
-        log.info("Received request on /"+machineName+"/machine-status");
+        log.info("Received WS request on /"+machineName+"/machine-status");
         MachineStatus status = this.factoryScada.getMachineLastMachineStatusMap().getOrDefault(machineName, new MachineStatus());
         return  MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(status);
     }

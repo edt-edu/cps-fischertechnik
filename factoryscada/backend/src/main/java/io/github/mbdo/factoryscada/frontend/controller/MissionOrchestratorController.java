@@ -51,14 +51,14 @@ public class MissionOrchestratorController {
     @MessageMapping("/mission-configuration")
     @SendTo("/topic/mission-configuration")
     public FactoryMissionsParallelized_dto getFactoryMissionsConfiguration() {
-        log.info("Received request on /factoryMission/mission-configuration");
+        log.info("Received WS request on /factoryMission/mission-configuration");
         return factoryScada.getMissionsParallelized_dto();
     }
 
     @MessageMapping("/actual-command-executing")
     @SendTo("/topic/actual-command-executing")
     public List<Node_dto> getFactoryActualMissions() {
-        log.info("Received request on /factoryMission/actual-command-executing");
+        log.info("Received WS request on /factoryMission/actual-command-executing");
         return factoryScada.getExecuterVisitor().getIsCurrentlyVisiting();
     }
 
@@ -68,7 +68,7 @@ public class MissionOrchestratorController {
             //@Valid @Payload MissionCommandDTO missionCommandDTO
     ) {
         String decodedMissionName = UriUtils.decode(missionName, StandardCharsets.UTF_8);
-        log.info("Received request on /factoryMission/command/start/"+missionName);
+        log.info("Received WS request on /factoryMission/command/start/"+missionName);
         return factoryScada.getExecuterVisitor().startMission(decodedMissionName);
     }
 
@@ -76,7 +76,7 @@ public class MissionOrchestratorController {
     public String stopMission(
             //@Valid @Payload MissionCommandDTO missionCommandDTO
     ) {
-        log.info("Received request on /factoryMission/command/stop/");
+        log.info("Received WS request on /factoryMission/command/stop/");
         return factoryScada.getExecuterVisitor().stopMission();
     }
     
@@ -92,6 +92,7 @@ public class MissionOrchestratorController {
     @MessageMapping("/list")
     @SendTo("/topic/mission-configuration")
     public FactoryMissionsParallelized_dto getMissionList() {
+        log.debug("Received WS request on /factoryMission/list/");
         return factoryScada.getExecuterVisitor().getFactoryMissions();
     }
 

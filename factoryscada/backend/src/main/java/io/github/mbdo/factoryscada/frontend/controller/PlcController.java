@@ -45,7 +45,7 @@ public class PlcController {
     @SendTo("/topic/{plcName}/plc-connection-status")
     public PlcConnectionStatusDto getPlcConnectionStatus(
         	@DestinationVariable("plcName") String plcName) {
-        log.info("Received request on /plc/"+plcName+"/plc-connection");
+        log.debug("Received WS request on /plc/"+plcName+"/plc-connection");
         Protocol controller = factoryScadaInstance.controllers().get(plcName);
         PlcConnectionStatusDto topicDto;
         if (controller != null) {
