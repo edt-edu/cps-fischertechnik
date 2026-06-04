@@ -52,15 +52,16 @@ You can mix all three in the same invocation.
 ``` bash
 ./scripts/generate-from-sysml.sh ./tmp/generated fr.inria.mbdo.mission.extensions.ren_mission_01 \
 ../missions-design-models/common/common_def.sysml \
-../missions-design-models/common/zones_def.sysml \
 ../missions-design-models/CB/cb_def.sysml \
 ../missions-design-models/SL/sl_def.sysml \
 ../missions-design-models/MPS/mps_def.sysml \
 ../missions-design-models/VGR/vgr_def.sysml \
+../missions-design-models/zones/zones_def.sysml \
 ../missions-design-models/CB/cb_missions_def.sysml \
 ../missions-design-models/SL/sl_missions_def.sysml \
 ../missions-design-models/MPS/mps_missions_def.sysml \
-../missions-design-models/VGR/vgr_missions_def.sysml
+../missions-design-models/VGR/vgr_missions_def.sysml \
+../missions-design-models/zones/zones_missions_def.sysml
 ```
 
 ### What it does
