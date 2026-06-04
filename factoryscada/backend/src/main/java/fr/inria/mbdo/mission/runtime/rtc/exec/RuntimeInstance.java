@@ -22,8 +22,14 @@ public final class RuntimeInstance {
         if (def == null) {
             throw new IllegalStateException("Initial state not set");
         }
-        this.active = def.initialState();
-        logger.info("RuntimeInstance started in state {}", active.name());
+        RuntimeTransition tr = def.entryTransition();
+        try {
+            tr.effect().execute(new CompletionEvent());
+        } catch (Exception ex) {
+            logger.warn("Transition effect threw", ex);
+        }
+        active = tr.targetState();
+        logger.info("RuntimeInstance started in state {}", active.getName());
         // run completion transitions if any
         processCompletions();
     }
@@ -33,20 +39,20 @@ public final class RuntimeInstance {
             logger.warn("Dispatch called before start(); dropping event {}", event.getClass().getSimpleName());
             return;
         }
-        logger.info("Dispatching event {} in state {}", event.getClass().getSimpleName(), active.name());
+        logger.info("Dispatching event {} in state {}", event.getClass().getSimpleName(), active.getName());
         Optional<RuntimeTransition> t = def.findTransition(active, event);
         if (t.isPresent()) {
             RuntimeTransition tr = t.get();
             try {
                 tr.effect().execute(event);
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 logger.warn("Transition effect threw", ex);
             }
             active = tr.targetState();
-            logger.info("Transitioned to {}", active.name());
+            logger.info("Transitioned to {}", active.getName());
             processCompletions();
         } else {
-            logger.debug("No transition for event {} in state {}", event.getClass().getSimpleName(), active.name());
+            logger.debug("No transition for event {} in state {}", event.getClass().getSimpleName(), active.getName());
         }
     }
 
@@ -57,12 +63,12 @@ public final class RuntimeInstance {
                 break;
             RuntimeTransition tr = c.get();
             try {
-                tr.effect().execute(CompletionEvent.now());
-            } catch (Throwable ex) {
+                tr.effect().execute(new CompletionEvent());
+            } catch (Exception ex) {
                 logger.warn("Completion effect threw", ex);
             }
             active = tr.targetState();
-            logger.info("Completion transitioned to {}", active.name());
+            logger.info("Completion transitioned to {}", active.getName());
         }
     }
 
@@ -70,11 +76,16 @@ public final class RuntimeInstance {
         return active;
     }
 
-    public synchronized RuntimeState initialState() {
-        return def == null ? null : def.initialState();
+    /**
+     * Returns the initial state (target of the entry transition) without starting
+     * the machine.
+     * Used for UI introspection of the state graph.
+     */
+    public RuntimeState initialState() {
+        return def != null ? def.entryTransition().targetState() : null;
     }
 
-    public void setInitialState(RuntimeState init) {
-        this.def = new SimpleRuntimeDefinition(init);
+    public void setEntryTransition(RuntimeTransition entryTransition) {
+        this.def = new SimpleRuntimeDefinition(entryTransition);
     }
 }

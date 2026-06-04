@@ -1,0 +1,73 @@
+package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions;
+
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.InputFreeEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippermessages.VGRCommandSuccessEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.ReleaseRequestEventMessage;
+import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
+import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
+import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
+import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
+import java.lang.Override;
+import java.lang.String;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * From VacuumGripperMissions::VacuumGripper2NominalMission
+ */
+public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
+  private static final Logger logger = LoggerFactory.getLogger(VacuumGripper2NominalMission.class);
+
+  private final VacuumGripper2NominalMissionActions actions;
+
+  private final VacuumGripperMachine vacuumGripper;
+
+  private final Zone zoneCB;
+
+  private final Zone zoneMPS;
+
+  public VacuumGripper2NominalMission(VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS,
+      VacuumGripper2NominalMissionActions actions) {
+    this.vacuumGripper = vacuumGripper;
+    this.zoneCB = zoneCB;
+    this.zoneMPS = zoneMPS;
+    this.actions = actions;
+
+    // States are built from the collected transitions.
+    RuntimeState setupIdle = new RuntimeState("SetupIdle");
+    RuntimeState gotoStandbyCMD = new RuntimeState("GotoStandbyCMD");
+    RuntimeState idle = new RuntimeState("Idle");
+    RuntimeState waitForCBZoneAcquisition = new RuntimeState("WaitForCBZoneAcquisition");
+    RuntimeState pickCBswapCMD = new RuntimeState("PickCBswapCMD");
+    RuntimeState releaseCBZone = new RuntimeState("ReleaseCBZone");
+    RuntimeState waitForMPSZoneAcquisition = new RuntimeState("WaitForMPSZoneAcquisition");
+    RuntimeState placeMPSInCMD = new RuntimeState("PlaceMPSInCMD");
+    RuntimeState releaseMPSZone = new RuntimeState("ReleaseMPSZone");
+
+    // Transitions connect triggers, runtime actions, and next-state targets.
+    this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupIdle));
+    setupIdle.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), gotoStandbyCMD));
+    gotoStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, idle));
+    idle.addTransition(new RuntimeTransition(InputFreeEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), waitForCBZoneAcquisition));
+    waitForCBZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.pickCBswap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), pickCBswapCMD));
+    pickCBswapCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseCBZone));
+    releaseCBZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.performActionUsage(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), waitForMPSZoneAcquisition));
+    waitForMPSZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), placeMPSInCMD));
+    placeMPSInCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseMPSZone));
+    releaseMPSZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneMPS.publish(new ReleaseRequestEventMessage()), gotoStandbyCMD));
+
+    // Subscribe each mission machine to trigger event types used by this mission.
+    vacuumGripper.subscribe(VGRCommandSuccessEventMessage.class, this::onEvent);
+    zoneCB.subscribe(AcquireResponseEventMessage.class, this::onEvent);
+    zoneMPS.subscribe(AcquireResponseEventMessage.class, this::onEvent);
+  }
+
+  @Override
+  public String getName() {
+    return "VacuumGripper2NominalMission";
+  }
+}
