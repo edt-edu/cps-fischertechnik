@@ -6,13 +6,11 @@ import org.eclipse.syson.sysml.Element;
 import java.util.List;
 
 @Getter
-public class ActionIR extends ElementIR {
+public class MachineActionIR extends ElementIR {
     private final List<ParameterIR> parameters;
-    private final List<String> bodyStatements;
 
-    public ActionIR(Element element, List<ParameterIR> parameters, List<String> bodyStatements) {
+    public MachineActionIR(Element element, List<ParameterIR> parameters) {
         super(element);
         this.parameters = parameters;
-        this.bodyStatements = bodyStatements;
     }
 }

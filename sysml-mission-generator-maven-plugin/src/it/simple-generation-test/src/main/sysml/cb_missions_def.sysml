@@ -21,9 +21,9 @@ package ConveyorBeltMission {
         state MovingToSensor;
         accept CommandSuccessEventMessage
             do action {
-                send new FeedFreeBufferedMessage() to vacuumGripper1;
-                send new SwapBusyBufferedMessage() to vacuumGripper2;
+                send new FeedFreeEventMessage() to vacuumGripper1;
+                send new SwapBusyEventMessage() to vacuumGripper2;
             }
             then Idle;
     }
-}
+} // package ConveyorBeltMission

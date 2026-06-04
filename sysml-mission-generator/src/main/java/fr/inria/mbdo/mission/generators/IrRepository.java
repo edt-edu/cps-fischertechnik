@@ -11,12 +11,12 @@ public class IrRepository {
     protected Map<String, MachineMissionIR> missions = new HashMap<>();
     protected Map<String, MachineIR> machines = new HashMap<>();
     protected Map<String, EnumerationIR> enumerations = new HashMap<>();
-    protected Map<String, ActionIR> actions = new HashMap<>();
+    protected Map<String, MachineActionIR> actions = new HashMap<>();
     protected Map<String, MachineMessageIR> messages = new HashMap<>();
-    protected Map<String, AcceptExprIR> acceptExprs = new HashMap<>();
     protected Map<String, StateIR> states = new HashMap<>();
     protected Map<String, TransitionIR> transitions = new HashMap<>();
-    protected Map<String, TriggerIR> triggers = new HashMap<>();
+    protected Map<String, TransitionTriggerIR> triggers = new HashMap<>();
+    protected Map<String, TransitionActionIR> transitionActions = new HashMap<>();
 
     public static class Builder {
 
@@ -28,12 +28,12 @@ public class IrRepository {
                 case MachineMissionIR mission -> this.irRepository.missions.put(name, mission);
                 case MachineIR machine -> this.irRepository.machines.put(name, machine);
                 case EnumerationIR enumeration -> this.irRepository.enumerations.put(name, enumeration);
-                case ActionIR action -> this.irRepository.actions.put(name, action);
+                case MachineActionIR action -> this.irRepository.actions.put(name, action);
                 case MachineMessageIR message -> this.irRepository.messages.put(name, message);
-                case AcceptExprIR acceptExprIR -> this.irRepository.acceptExprs.put(name, acceptExprIR);
                 case StateIR state -> this.irRepository.states.put(name, state);
                 case TransitionIR transition -> this.irRepository.transitions.put(name, transition);
-                case TriggerIR trigger -> this.irRepository.triggers.put(name, trigger);
+                case TransitionTriggerIR trigger -> this.irRepository.triggers.put(name, trigger);
+                case TransitionActionIR action -> this.irRepository.transitionActions.put(name, action);
                 default -> throw new IllegalStateException("Unexpected value: " + elementIR.getQualifiedName());
             }
             return this;

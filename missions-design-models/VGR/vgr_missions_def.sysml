@@ -1,17 +1,19 @@
 package VacuumGripperMissions {
     private import VacuumGripperSystem::*;
     private import VacuumGripperSystem::VacuumGripperCommands::*;
-    private import VacuumGripperSystem::VacuumGripperMessages::CommandSuccess;
+    private import VacuumGripperSystem::VacuumGripperMessages::*;
     private import SortingLineSystem::SortingLineCommands::*;
     private import SortingLineSystem::SortingLineMessages::*;
     private import ZonesSystem::Zone;
     private import ZonesSystem::ZonesMessages::*;
     private import MultiProcessingStationSystem::MultiProcessingStationMessages::*;
     private import ScalarValues::*;
+
     doc
     /* Nominal mission scenario for VacuumGripper n°1 */
     state def VacuumGripper1NominalMission {
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
+        in sortingLine : SortingLineSystem::SortingLine::SortingLineMachine;
         in zoneCB : ZonesSystem::Zone;
 
         action goToStandby : GoToPosition {
@@ -77,35 +79,38 @@ package VacuumGripperMissions {
         then SetupCMD;
 
         state SetupCMD;
-        accept CommandSuccessEventMessage do goToStandby then StandbyCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do goToStandby then StandbyCMD;
 
         state StandbyCMD;
-        accept CommandSuccessEventMessage
+        accept VGRCommandSuccessEventMessage via vacuumGripper
             do send new ReleaseRequestEventMessage() to zoneCB
             then Idle;
 
         state Idle;
-        accept BlueTokenAvailableBufferedMessage do pickBlue then PickColorCMD;
-        accept WhiteTokenAvailableBufferedMessage do pickWhite then PickColorCMD;
-        accept RedTokenAvailableBufferedMessage do pickRed then PickColorCMD;
+        accept BlueTokenAvailableEventMessage
+            if vacuumGripper.currentCommand == VacuumGripperCommandKind::MOVE do vacuumGripper.stop
+            then PickColorCMD;
+        accept WhiteTokenAvailableEventMessage do pickWhite then PickColorCMD;
+        accept RedTokenAvailableEventMessage do pickRed then PickColorCMD;
 
         state PickColorCMD;
-        accept CommandSuccessEventMessage
-            do send new AcquireRequestBufferedMessage(sender=vacuumGripper) to zoneCB
+        accept VGRCommandSuccessEventMessage via vacuumGripper
+            do send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneCB
             then IdlePicked;
 
         state IdlePicked;
-        accept AcquireResponseEventMessage do placeConveyoBeltFeed then PlaceConveyorBeltFeed;
+        accept AcquireResponseEventMessage via zoneCB
+            do placeConveyoBeltFeed
+            then PlaceConveyorBeltFeed;
 
         state PlaceConveyorBeltFeed;
-        accept CommandSuccessEventMessage do goToStandby then StandbyCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do goToStandby then StandbyCMD;
     }
 
     doc
     /* Nominal mission scenario for VacuumGripper n°2 */
     state def VacuumGripper2NominalMission {
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
-        in conveyorBelt : ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine;
         in zoneCB : ZonesSystem::Zone;
         in zoneMPS : ZonesSystem::Zone;
 
@@ -143,27 +148,27 @@ package VacuumGripperMissions {
         then SetupIdle;
 
         state SetupIdle;
-        accept CommandSuccessEventMessage do goToStandby then GotoStandbyCMD;
+        accept VGRCommandSuccessEventMessage do goToStandby then GotoStandbyCMD;
 
         state GotoStandbyCMD;
-        accept CommandSuccessEventMessage then Idle;
+        accept VGRCommandSuccessEventMessage then Idle;
 
         state Idle;
-        accept InputFreeBufferedMessage
-            do send new AcquireRequestBufferedMessage(sender=vacuumGripper) to zoneCB
+        accept InputFreeEventMessage
+            do send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneCB
             then WaitForCBZoneAcquisition;
 
         state WaitForCBZoneAcquisition;
-        accept AcquireResponseEventMessage do pickCBswap then PickCBswapCMD;
+        accept AcquireResponseEventMessage if true == false do pickCBswap then PickCBswapCMD;
 
         state PickCBswapCMD;
-        accept CommandSuccessEventMessage do goToStandby then ReleaseCBZone;
+        accept VGRCommandSuccessEventMessage do goToStandby then ReleaseCBZone;
 
         state ReleaseCBZone;
-        accept CommandSuccessEventMessage
+        accept VGRCommandSuccessEventMessage
             do action {
                 send new ReleaseRequestEventMessage() to zoneCB;
-                send new AcquireRequestBufferedMessage(sender=vacuumGripper) to zoneMPS;
+                send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneMPS;
             }
             then WaitForMPSZoneAcquisition;
 
@@ -171,11 +176,11 @@ package VacuumGripperMissions {
         accept AcquireResponseEventMessage do placeMPSin then PlaceMPSInCMD;
 
         state PlaceMPSInCMD;
-        accept CommandSuccessEventMessage do goToStandby then ReleaseMPSZone;
+        accept VGRCommandSuccessEventMessage do goToStandby then ReleaseMPSZone;
 
         state ReleaseMPSZone;
-        accept CommandSuccessEventMessage
+        accept VGRCommandSuccessEventMessage
             do send new ReleaseRequestEventMessage() to zoneMPS
             then GotoStandbyCMD;
     }
-}
+} // package VacuumGripperMissions

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 import com.example.runtime.rtc.event.Event;
-import com.example.runtime.rtc.time.RuntimeScheduler;
 import com.example.runtime.rtc.event.TimerFiredEvent;
 import java.util.function.Consumer;
 import java.util.Map;
@@ -31,12 +30,10 @@ public final class TestMachineAdapter implements TestMachineMachine {
   private volatile TestCommandKind currentCommand;
   private volatile int attA;
   private volatile int attB;
-  private final RuntimeScheduler scheduler;
   private static final Logger logger = LoggerFactory.getLogger(TestMachineAdapter.class);
 
-  public TestMachineAdapter(String id, RuntimeScheduler scheduler) {
+  public TestMachineAdapter(String id) {
     this.id = Objects.requireNonNull(id);
-    this.scheduler = Objects.requireNonNull(scheduler);
     this.currentCommand = null;
   }
 

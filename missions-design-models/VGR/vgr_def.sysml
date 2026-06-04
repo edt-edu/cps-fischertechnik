@@ -68,13 +68,13 @@ package VacuumGripperSystem {
         action def RetractArm {}
 
         action def StatusRequest {}
-    }
+    } // package VacuumGripperCommands
 
     package VacuumGripperMessages {
         private import VacuumGripperSystem::VacuumGripperCommands::*;
 
-        item def CommandSuccess;
-    }
+        item def VGRCommandSuccessEventMessage;
+    } // package VacuumGripperMessages
 
     package VacuumGripper {
         private import VacuumGripperSystem::VacuumGripperCommands::*;
@@ -106,5 +106,5 @@ package VacuumGripperSystem {
             attribute vacuumActCompressorOn : Boolean;
             attribute vacuumActValve : Boolean;
         }
-    }
-}
+    } // package VacuumGripper
+} // package VacuumGripperSystem

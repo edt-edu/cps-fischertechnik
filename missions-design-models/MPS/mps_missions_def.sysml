@@ -8,33 +8,34 @@ package MultiProcessingStationMissions {
     doc
     /* Nominal mission for the multi-processing station */
     state def MultiProcessingStationNominalMission {
+        action broadcastCompletion {
+            doc
+            /* This action is responsible for broadcasting the completion of the processing task to any interested parties. It can be used to trigger subsequent actions in other machines or to update the system state. */
+            // In a real implementation, this might involve sending specific messages or updating shared state to indicate that the processing is complete.
+
+            send new ReleaseRequestEventMessage() to zoneMPS;
+            send new InputFreeEventMessage() to multiProcessingStation;
+            send new OutputBusyEventMessage() to multiProcessingStation;
+        }
+
         in multiProcessingStation
             : MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine;
         in zoneMPS : ZonesSystem::Zone;
 
-        entry action setup;
-        then SetupCMD;
-
-        state SetupCMD;
-        accept CommandSuccessEventMessage then Idle;
+        entry multiProcessingStation.setup;
+        then Idle;
 
         state Idle;
         accept when
                 multiProcessingStation.sensor_MPS_in == true and
                 multiProcessingStation.sensor_MPS_out == false
-            do send new AcquireRequestBufferedMessage(sender=multiProcessingStation) to zoneMPS
+            do send new AcquireRequestEventMessage(sender=multiProcessingStation) to zoneMPS
             then ZoneAcquired;
 
         state ZoneAcquired;
         accept AcquireResponseEventMessage do multiProcessingStation.process then ProcessCMD;
 
         state ProcessCMD;
-        accept CommandSuccessEventMessage
-            do action {
-                send new ReleaseRequestEventMessage() to zoneMPS;
-                send new InputFreeBufferedMessage() to multiProcessingStation;
-                send new OutputBusyBufferedMessage() to multiProcessingStation;
-            }
-            then Idle;
+        accept MPSCommandSuccessEventMessage do action broadcastCompletion then Idle;
     }
 } // package MultiProcessingStationMissions

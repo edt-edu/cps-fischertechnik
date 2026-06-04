@@ -5,14 +5,18 @@ import org.eclipse.syson.sysml.Element;
 
 @Getter
 public class TransitionIR extends ElementIR {
-    private final Ref<StateIR> to;
-    private final Ref<TriggerIR> trigger;
-    private final Ref<ActionIR> action;
+    private final Ref<StateIR> fromState;
+    private final Ref<StateIR> toState;
+    private final Ref<TransitionTriggerIR> trigger;
+    private final Ref<TransitionGuardIR> guard;
+    private final Ref<TransitionActionIR> action;
 
-    public TransitionIR(Element element, Ref<StateIR> to, Ref<TriggerIR> trigger, Ref<ActionIR> action) {
+    public TransitionIR(Element element, Ref<StateIR> from, Ref<StateIR> to, Ref<TransitionTriggerIR> trigger, Ref<TransitionGuardIR> guard, Ref<TransitionActionIR> action) {
         super(element);
-        this.to = to;
+        this.fromState = from;
+        this.toState = to;
         this.trigger = trigger;
+        this.guard = guard;
         this.action = action;
     }
 
@@ -20,7 +24,8 @@ public class TransitionIR extends ElementIR {
     public String getQualifiedName() {
         String baseKey = super.getQualifiedName();
         String trigger = getTrigger() != null ? getTrigger().qName() : "implicit";
-        String target = getTo() != null ? getTo().qName() : "unknown";
-        return baseKey + "@" + trigger + "|" + target;
+        String source = getFromState() != null ? getFromState().qName() : "unknown";
+        String target = getToState() != null ? getToState().qName() : "unknown";
+        return baseKey + "@" + trigger + "|" + source + "|" + target;
     }
 }

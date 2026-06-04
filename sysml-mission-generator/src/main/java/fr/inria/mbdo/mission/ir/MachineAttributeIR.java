@@ -5,7 +5,7 @@ import org.eclipse.syson.sysml.Element;
 
 @Getter
 public class MachineAttributeIR extends ElementIR {
-    private TypeRef type;
+    private final TypeRef type;
 
     public MachineAttributeIR(Element element, TypeRef type) {
         super(element);

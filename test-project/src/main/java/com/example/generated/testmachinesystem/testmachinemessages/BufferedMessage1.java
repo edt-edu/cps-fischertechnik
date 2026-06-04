@@ -5,12 +5,12 @@ import java.util.Optional;
 import java.util.UUID;
 import com.example.runtime.rtc.event.DomainEvent;
 
-public record BufferedMessage1(
+public record EventMessage1(
     Instant timestamp,
     UUID correlationId,
     Optional<UUID> causationId
 ) implements DomainEvent {
-  public static BufferedMessage1 now() {
-    return new BufferedMessage1(Instant.now(), UUID.randomUUID(), Optional.empty());
+  public static EventMessage1 now() {
+    return new EventMessage1(Instant.now(), UUID.randomUUID(), Optional.empty());
   }
 }

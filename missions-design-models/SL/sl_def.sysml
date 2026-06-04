@@ -25,18 +25,18 @@ package SortingLineSystem {
         action def Eject {
             in color : Color;
         }
-    }
+    } // package SortingLineCommands
 
     package SortingLineMessages {
         private import Messages::*;
         private import SortingLineSystem::SortingLineCommands::*;
 
-        item def BlueTokenAvailableBufferedMessage :> BufferedMessage {}
-        item def WhiteTokenAvailableBufferedMessage :> BufferedMessage {}
-        item def RedTokenAvailableBufferedMessage :> BufferedMessage {}
+        item def BlueTokenAvailableEventMessage :> EventMessage {}
+        item def WhiteTokenAvailableEventMessage :> EventMessage {}
+        item def RedTokenAvailableEventMessage :> EventMessage {}
 
-        item def CommandSuccessEventMessage :> EventMessage;
-    }
+        item def SLCommandSuccessEventMessage :> EventMessage;
+    } // package SortingLineMessages
 
     package SortingLine {
         private import SortingLineSystem::SortingLineCommands::*;
@@ -50,5 +50,5 @@ package SortingLineSystem {
             attribute sensor_SL_white : Boolean = false;
             attribute sensor_SL_red : Boolean = false;
         }
-    }
-}
+    } // package SortingLine
+} // package SortingLineSystem

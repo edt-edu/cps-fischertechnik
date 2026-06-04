@@ -41,7 +41,7 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
     }
 
     public String getActiveStateName() {
-        return runtime.activeState().name();
+        return runtime.activeState().getName();
     }
 
     protected static final class StateBox {

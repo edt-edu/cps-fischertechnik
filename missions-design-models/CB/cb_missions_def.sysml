@@ -1,4 +1,4 @@
-package ConveyorBeltMission {
+package ConveyorBeltMissions {
     private import ConveyorBeltSystem::*;
     private import ConveyorBeltSystem::ConveyorBeltCommands::*;
     private import ConveyorBeltSystem::ConveyorBeltMessages::*;
@@ -19,11 +19,11 @@ package ConveyorBeltMission {
             then MovingToSensor;
 
         state MovingToSensor;
-        accept CommandSuccessEventMessage
+        accept CBCommandSuccessEventMessage
             do action {
-                send new FeedFreeBufferedMessage() to vacuumGripper1;
-                send new SwapBusyBufferedMessage() to vacuumGripper2;
+                send new FeedFreeEventMessage() to vacuumGripper1;
+                send new SwapBusyEventMessage() to vacuumGripper2;
             }
             then Idle;
     }
-}
+} // package ConveyorBeltMissions

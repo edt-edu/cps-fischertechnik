@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 
 @Getter
 public class ElementIR {
-    private String name;
-    private String qualifiedName;
-    private String documentation;
-    private String javaPackage;
-    private String sourceUri;
+    private final String name;
+    private final String qualifiedName;
+    private final String documentation;
+    private final String javaPackage;
+    private final String sourceUri;
 
     public ElementIR(Element source) {
         this.name = resolveName(source);

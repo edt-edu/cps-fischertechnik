@@ -17,17 +17,17 @@ package SortingLineMissions {
         accept when sortingLine.sensor_SL_in == true then SortCMD;
 
         state SortCMD;
-        accept CommandSuccessEventMessage then SendColorUpdate;
+        accept SLCommandSuccessEventMessage then SendColorUpdate;
 
         state SendColorUpdate;
         accept when sortingLine.sensor_SL_blue == true
-            do send new BlueTokenAvailableBufferedMessage() to vacuumGripper
+            do send new BlueTokenAvailableEventMessage() to vacuumGripper
             then Idle;
         accept when sortingLine.sensor_SL_white == true
-            do send new WhiteTokenAvailableBufferedMessage() to vacuumGripper
+            do send new WhiteTokenAvailableEventMessage() to vacuumGripper
             then Idle;
         accept when sortingLine.sensor_SL_red == true
-            do send new RedTokenAvailableBufferedMessage() to vacuumGripper
+            do send new RedTokenAvailableEventMessage() to vacuumGripper
             then Idle;
     }
-}
+} // package SortingLineMissions

@@ -57,18 +57,15 @@ package MultiProcessingStationSystem {
         action def ConveyorMoveOut {}
 
         action def SawCut {}
-
-        item def CommandSuccess;
-    }
+    } // package MultiProcessingStationCommands
 
     package MultiProcessingStationMessages {
         private import MultiProcessingStationSystem::MultiProcessingStationCommands::*;
 
-        item def InputFreeBufferedMessage :> BufferedMessage;
-        item def OutputBusyBufferedMessage :> BufferedMessage;
-
-        item def CommandSuccessEventMessage :> EventMessage;
-    }
+        item def InputFreeEventMessage :> EventMessage;
+        item def OutputBusyEventMessage :> EventMessage;
+        item def MPSCommandSuccessEventMessage :> EventMessage;
+    } // package MultiProcessingStationMessages
 
     package MultiProcessingStation {
         private import MultiProcessingStationSystem::MultiProcessingStationCommands::*;
@@ -97,5 +94,5 @@ package MultiProcessingStationSystem {
             attribute sensor_MPS_in : Boolean = false;
             attribute sensor_MPS_out : Boolean = true;
         }
-    }
-}
+    } // package MultiProcessingStation
+} // package MultiProcessingStationSystem

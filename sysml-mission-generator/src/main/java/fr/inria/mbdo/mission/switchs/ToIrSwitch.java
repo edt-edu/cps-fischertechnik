@@ -5,20 +5,18 @@ import fr.inria.mbdo.mission.generators.SymbolIndex;
 import fr.inria.mbdo.mission.ir.*;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.syson.sysml.*;
+import org.eclipse.syson.sysml.impl.FeatureChainingImpl;
 import org.eclipse.syson.sysml.util.SysmlSwitch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ToIrSwitch extends SysmlSwitch<Void> {
     private static final Logger logger = LoggerFactory.getLogger(ToIrSwitch.class);
+    private static final Pattern MACHINE_REF_TOKEN = Pattern.compile("\\b([A-Za-z_]\\w*)\\s*\\.");
 
     private final SymbolIndex index;
     private final IrRepository.Builder irRepositoryBuilder;
@@ -41,11 +39,15 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             attributes.add(new MachineAttributeIR(ownedAttribute, attributeType));
         }
 
-        List<ActionIR> actions = new ArrayList<>();
+        Map<String, Ref<MachineActionIR>> actions = new HashMap<>();
         for (ActionUsage ownedAction : object.getOwnedAction()) {
-            actions.add(buildActionIR(ownedAction, ownedAction.getParameter()));
+            MachineActionIR action = buildMachineActionIR(ownedAction);
+            irRepositoryBuilder.add(action);
+            logger.info("Traversing action: {} of type {}", ownedAction.getQualifiedName(), action.getQualifiedName());
+            actions.put(ownedAction.getQualifiedName(), new Ref<>(action.getQualifiedName()));
         }
 
+        // TODO define messages sent by this machine ?
         irRepositoryBuilder.add(new MachineIR(object, actions, attributes, List.of()));
         return null;
     }
@@ -67,29 +69,37 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             return null;
         }
 
+        TransitionIR defaultTransitionIR = null;
         List<MachineRefIR> machinesRefs = collectMachineRefs(object);
-        Map<String, List<Ref<TransitionIR>>> stateTransitions = initializeStateTransitions(object);
-        List<Ref<StateIR>> stateRefs = collectStateRefs(object);
+        List<Ref<StateIR>> statesRefs = collectStatesRefs(object.getOwnedState());
+        Map<String, List<Ref<TransitionIR>>> transitionsRefs = new HashMap<>();
 
-        TransitionIR defaultTransition = null;
         for (TransitionUsage transition : object.getOwnedTransition()) {
-            TransitionIR transitionIR = buildTransitionIR(transition, stateTransitions);
-            if (transitionIR.getTrigger() == null && defaultTransition == null) {
-                defaultTransition = transitionIR;
+            TransitionIR transitionIR = buildTransitionIR(transition, statesRefs, machinesRefs);
+            irRepositoryBuilder.add(transitionIR);
+            if (defaultTransitionIR == null && transitionIR.getFromState() == null) {
+                defaultTransitionIR = transitionIR;
+                continue;
             }
+            String sourceQName = transitionIR.getFromState().qName();
+            Ref<TransitionIR> transitionRef = new Ref<>(transitionIR.getQualifiedName());
+
+            transitionsRefs
+                    .computeIfAbsent(sourceQName, k -> new ArrayList<>())
+                    .add(transitionRef);
         }
 
         for (StateUsage state : object.getOwnedState()) {
-            String stateQName = elementQualifiedName(object, state);
-            List<Ref<TransitionIR>> transitions = stateTransitions.getOrDefault(stateQName, List.of());
-            irRepositoryBuilder.add(new StateIR(state, transitions));
+            StateIR stateIR = new StateIR(state, transitionsRefs.get(state.getQualifiedName()));
+            irRepositoryBuilder.add(stateIR);
         }
 
-        irRepositoryBuilder.add(new MachineMissionIR(object,
-                defaultTransition != null ? new Ref<>(defaultTransition.getQualifiedName()) : null,
-                stateRefs,
-                machinesRefs,
-                List.of()));
+        if (defaultTransitionIR == null) {
+            throw new IllegalStateException("No default transition found for state " + object.getQualifiedName());
+        }
+
+        irRepositoryBuilder.add(new MachineMissionIR(object, new Ref<>(defaultTransitionIR.getQualifiedName()), statesRefs, machinesRefs));
+
         return null;
     }
 
@@ -111,8 +121,6 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         if (shouldSkipGeneration(object)) {
             return null;
         }
-
-        irRepositoryBuilder.add(buildActionIR(object, object.getParameter()));
         return null;
     }
 
@@ -130,263 +138,114 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         List<MachineRefIR> machinesRefs = new ArrayList<>();
         for (ReferenceUsage ref : object.getOwnedReference()) {
             TypeRef machineType = toTypeRef(ref.getType(), ref.getQualifiedName());
+            logger.info("[State] Machine ref {} : id={}", ref.getName(), ref.getElementId());
             if (machineType.kind() != TypeRef.TypeKind.USER) {
                 throw new IllegalStateException("Machine reference must target a user type: " + ref.getQualifiedName());
             }
-            String refName = ref.getName();
-            if (refName == null || refName.isBlank()) {
-                refName = "machine" + machinesRefs.size();
-            }
-            machinesRefs.add(new MachineRefIR(refName, machineType));
+            machinesRefs.add(new MachineRefIR(ref.getName(), machineType));
         }
         return machinesRefs;
     }
 
-    private Map<String, List<Ref<TransitionIR>>> initializeStateTransitions(StateDefinition object) {
-        Map<String, List<Ref<TransitionIR>>> stateTransitions = new HashMap<>();
-        for (StateUsage state : object.getOwnedState()) {
-            String key = state.getQualifiedName();
-            if (key == null || key.isBlank()) {
-                key = elementQualifiedName(object, state);
-            }
-            stateTransitions.put(key, new ArrayList<>());
-        }
-        return stateTransitions;
-    }
-
-    private List<Ref<StateIR>> collectStateRefs(StateDefinition object) {
+    private List<Ref<StateIR>> collectStatesRefs(List<StateUsage> stateUsages) {
         List<Ref<StateIR>> stateRefs = new ArrayList<>();
-        for (StateUsage state : object.getOwnedState()) {
-            String key = state.getQualifiedName();
-            if (key == null || key.isBlank()) {
-                key = elementQualifiedName(object, state);
-            }
-            stateRefs.add(new Ref<>(key));
+        for (StateUsage state : stateUsages) {
+            stateRefs.add(new Ref<>(state.getQualifiedName()));
         }
         return stateRefs;
     }
 
-    private TransitionIR buildTransitionIR(TransitionUsage transition,
-            Map<String, List<Ref<TransitionIR>>> stateTransitions) {
+    private TransitionIR buildTransitionIR(TransitionUsage transition, List<Ref<StateIR>> statesRefs,
+                                           List<MachineRefIR> machineRefs) {
         String sourceQName = transition.getSource() != null ? transition.getSource().getQualifiedName() : null;
         String targetQName = transition.getTarget().getQualifiedName();
+        TransitionActionIR transitionAction = buildTransitionAction(transition, machineRefs);
+        Ref<TransitionActionIR> transitionActionRef = transitionAction != null
+                ? new Ref<>(transitionAction.getQualifiedName())
+                : null;
+        if (transitionAction != null) {
+            irRepositoryBuilder.add(transitionAction);
+        }
+        logger.debug("[State]\t\tFound transition: {} -> {} : {}", sourceQName, targetQName, transitionActionRef);
 
-        Ref<ActionIR> transitionActionRef = extractTransitionAction(transition);
-        if (transitionActionRef == null && transition.getSource() instanceof PerformActionUsage performActionUsage) {
-            ActionIR performAction = buildActionIR(performActionUsage, performActionUsage.getParameter());
-            irRepositoryBuilder.add(performAction);
-            transitionActionRef = new Ref<>(performAction.getQualifiedName());
+        if (sourceQName == null) {
+            logger.warn("[State]\t\t\tFound null source for transition, what should I do ?");
+        } else if (transition.getSource() instanceof PerformActionUsage) {
+            logger.warn("[State]\t\t\tFound action source for transition");
+            sourceQName = null; // Set to null to avoid referencing action as source state
+        } else {
+            String finalSourceQName = sourceQName;
+            if (statesRefs.stream().noneMatch(r -> r.qName().equals(finalSourceQName))) {
+                logger.warn("Transition source state not found in index ({})", sourceQName);
+                throw new IllegalStateException("Transition source state not found: " + sourceQName);
+            }
         }
 
-        if (sourceQName == null || transition.getSource() instanceof PerformActionUsage) {
-            logger.debug("[State]\t\tFound default transition: {} -> {}", transition.getSource(), targetQName);
-            TransitionIR defaultTransition = new TransitionIR(transition, new Ref<>(targetQName), null,
-                    transitionActionRef);
-            irRepositoryBuilder.add(defaultTransition);
-            return defaultTransition;
-        }
-
-        logger.debug("[State]\t\tFound transition: {} -> {}", sourceQName, targetQName);
-
-        String resolvedSourceKey = resolveStateKey(stateTransitions, sourceQName);
-        if (resolvedSourceKey == null) {
-            logger.warn("Transition source state not found (attempted {}): available states={}", sourceQName,
-                    stateTransitions.keySet());
-            throw new IllegalStateException("Transition source state not found: " + sourceQName);
-        }
-
-        String resolvedTargetKey = resolveStateKey(stateTransitions, targetQName);
-        if (resolvedTargetKey == null) {
-            logger.warn("Transition target state not found (attempted {}): available states={}", targetQName,
-                    stateTransitions.keySet());
+        if (statesRefs.stream().noneMatch(r -> r.qName().equals(targetQName))) {
+            logger.warn("Transition target state not found in index ({})", targetQName);
             throw new IllegalStateException("Transition target state not found: " + targetQName);
         }
 
-        AcceptActionUsage triggerElement = extractTriggerElement(transition);
-        AcceptExprIR accept = extractTriggerAcceptExpression(triggerElement);
-        if (accept != null) {
-            irRepositoryBuilder.add(accept);
-        }
-        TriggerIR trigger = new TriggerIR(triggerElement, accept != null ? new Ref<>(accept.getQualifiedName()) : null);
-        irRepositoryBuilder.add(trigger);
+        TransitionTriggerIR trigger = null;
+        List<AcceptActionUsage> accepts = transition.getTriggerAction();
 
-        TransitionIR transitionIR = new TransitionIR(transition, new Ref<>(resolvedTargetKey),
-                new Ref<>(trigger.getQualifiedName()), transitionActionRef);
-        irRepositoryBuilder.add(transitionIR);
-        stateTransitions.get(resolvedSourceKey).add(new Ref<>(transitionIR.getQualifiedName()));
-        return transitionIR;
-    }
-
-    private String resolveStateKey(Map<String, List<Ref<TransitionIR>>> stateTransitions, String candidate) {
-        if (candidate == null) {
-            return null;
-        }
-        if (stateTransitions.containsKey(candidate)) {
-            return candidate;
-        }
-
-        // try to match by suffix (local name)
-        int last = Math.max(candidate.lastIndexOf("::"), candidate.lastIndexOf('.'));
-        String local = last >= 0 ? candidate.substring(last + 2) : candidate;
-        for (String key : stateTransitions.keySet()) {
-            if (key.endsWith("::" + local) || key.endsWith("." + local) || key.equals(local)) {
-                return key;
-            }
-            // also try last segment of key
-            int klast = Math.max(key.lastIndexOf("::"), key.lastIndexOf('.'));
-            String kLocal = klast >= 0 ? key.substring(klast + 2) : key;
-            if (kLocal.equals(local)) {
-                return key;
+        if (accepts != null && !accepts.isEmpty()) {
+            AcceptActionUsage aau = accepts.getFirst();
+            if (aau.isTriggerAction()) {
+                trigger = buildTriggerIR(transition, aau, sourceQName, targetQName, machineRefs);
+                irRepositoryBuilder.add(trigger);
+            } else {
+                logger.debug("[State]\t\t\tNo trigger action found for transition");
             }
         }
 
-        return null;
-    }
+        TransitionGuardIR guard = null;
 
-    private Ref<ActionIR> extractTransitionAction(TransitionUsage transition) {
-        if (transition.getEffectAction() == null || transition.getEffectAction().isEmpty()) {
-            return null;
+        for (Expression e : transition.getGuardExpression()) {
+            for (TextualRepresentation tr : e.getTextualRepresentation()) {
+                logger.info("[State]\t\t\tFound guard expression: {}", tr.getBody());
+            }
         }
 
-        ActionUsage effectActionUsage = transition.getEffectAction().getFirst();
-        ActionIR effectAction = buildActionIR(effectActionUsage, effectActionUsage.getParameter());
-        irRepositoryBuilder.add(effectAction);
-        return new Ref<>(effectAction.getQualifiedName());
+        // TODO build Guard ?
+        Ref<StateIR> sourceStateRef = sourceQName != null ? new Ref<>(sourceQName) : null;
+        Ref<StateIR> targetStateRef = new Ref<>(targetQName);
+        Ref<TransitionTriggerIR> triggerRef = trigger != null ? new Ref<>(trigger.getQualifiedName()) : null;
+        Ref<TransitionGuardIR> guardRef = guard != null ? new Ref<>(guard.getQualifiedName()) : null;
+
+        logger.debug("[State]\t\t\tBuilt transition IR: {} -> {} [trigger={}, guard={}, action={}]",
+                sourceQName, targetQName, triggerRef, guardRef, transitionActionRef);
+
+        return new TransitionIR(transition, sourceStateRef, targetStateRef, triggerRef, guardRef, transitionActionRef);
     }
 
-    private ActionIR buildActionIR(Element element, EList<? extends Feature> parameters) {
+    private MachineActionIR buildMachineActionIR(ActionUsage actionUsage) {
+
+        ActionUsage performedAction;
+
+        if (actionUsage instanceof PerformActionUsage pau && (performedAction = pau.getPerformedAction()) != null) {
+
+            Feature feat = performedAction.referencedFeatureTarget();
+            if (feat instanceof ActionUsage) {
+                performedAction = (ActionUsage) feat;
+                logger.warn("Feature {} is of type ActionUsage: {}", feat.getQualifiedName(),
+                        feat.getOwner().getQualifiedName());
+                for (Behavior beh : ((ActionUsage) feat).getActionDefinition()) {
+                    logger.warn("Behavior def {} owned by {}", beh.getQualifiedName(), beh.getOwner());
+                }
+            }
+            logger.info("PerformedAction: {} // {} -> {}", performedAction.getQualifiedName(),
+                    feat == null ? "feat is null" : feat.getQualifiedName(), actionUsage.getTextualRepresentation()
+                            .stream().map(TextualRepresentation::getBody).collect(Collectors.joining(", ")));
+        }
+
         List<ParameterIR> parameterIRs = new ArrayList<>();
-        for (Feature param : parameters) {
-            TypeRef paramType = toParameterTypeRef(param, element.getQualifiedName());
+        for (Feature param : actionUsage.getParameter()) {
+            TypeRef paramType = toParameterTypeRef(param, actionUsage.getQualifiedName());
             parameterIRs.add(new ParameterIR(param, paramType));
         }
 
-        return new ActionIR(element, parameterIRs, extractActionBodyStatements(element));
-    }
-
-    private List<String> extractActionBodyStatements(Element element) {
-        List<String> statements = new ArrayList<>();
-        Set<Element> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        collectActionBodyStatements(element, statements, visited);
-        return statements;
-    }
-
-    private void collectActionBodyStatements(Element element, List<String> statements, Set<Element> visited) {
-        if (!visited.add(element)) {
-            return;
-        }
-
-        if (element instanceof PerformActionUsage performActionUsage) {
-            String statement = renderPerformActionStatement(performActionUsage);
-            if (statement != null) {
-                statements.add(statement);
-            }
-        } else if (element instanceof SendActionUsage sendActionUsage) {
-            String statement = renderSendActionStatement(sendActionUsage);
-            if (statement != null) {
-                statements.add(statement);
-            }
-        }
-
-        for (Element ownedElement : element.getOwnedElement()) {
-            collectActionBodyStatements(ownedElement, statements, visited);
-        }
-
-        for (var ownedRelationship : element.getOwnedRelationship()) {
-            for (Element relatedElement : ownedRelationship.getOwnedRelatedElement()) {
-                collectActionBodyStatements(relatedElement, statements, visited);
-            }
-            for (Element relatedElement : ownedRelationship.getSource()) {
-                collectActionBodyStatements(relatedElement, statements, visited);
-            }
-        }
-    }
-
-    private String renderPerformActionStatement(PerformActionUsage performActionUsage) {
-        ActionUsage performedAction = performActionUsage.getPerformedAction();
-        if (performedAction == null || performedAction.inputParameters() != null
-                && !performedAction.inputParameters().isEmpty()) {
-            return null;
-        }
-
-        logger.debug("[Action] render perform usage name={} performed={} args={} inputs={}",
-                performActionUsage.getName(),
-                performedAction.getQualifiedName(),
-                performActionUsage.getOwnedElement().stream().map(Element::getName).toList(),
-                performedAction.inputParameters().stream().map(Feature::getName).toList());
-
-        String performedQualifiedName = performedAction.getQualifiedName();
-        if (performedQualifiedName == null || performedQualifiedName.isBlank()) {
-            return null;
-        }
-
-        String[] segments = performedQualifiedName.split("::");
-        if (segments.length < 2) {
-            return null;
-        }
-
-        String receiverName = segments[segments.length - 2];
-        String actionName = segments[segments.length - 1];
-        if (receiverName.isBlank() || actionName.isBlank()) {
-            return null;
-        }
-
-        return receiverName + "." + actionName + "()";
-    }
-
-    private String renderSendActionStatement(SendActionUsage sendActionUsage) {
-        String receiver = renderExpression(sendActionUsage.getReceiverArgument());
-        String payload = renderSendPayload(sendActionUsage.getPayloadArgument());
-        if (receiver == null || payload == null) {
-            return null;
-        }
-
-        return receiver + ".publish(" + payload + ")";
-    }
-
-    private String renderSendPayload(org.eclipse.syson.sysml.Expression expression) {
-        if (expression instanceof InvocationExpression invocationExpression) {
-            if (invocationExpression.getFunction() == null
-                    || invocationExpression.getFunction().getQualifiedName() == null) {
-                return null;
-            }
-            return terminalName(invocationExpression.getFunction().getQualifiedName()) + ".now()";
-        }
-
-        if (expression instanceof FeatureReferenceExpression featureReferenceExpression) {
-            if (featureReferenceExpression.getReferent() == null
-                    || featureReferenceExpression.getReferent().getQualifiedName() == null) {
-                return null;
-            }
-            return terminalName(featureReferenceExpression.getReferent().getQualifiedName()) + ".now()";
-        }
-
-        return null;
-    }
-
-    private String renderExpression(org.eclipse.syson.sysml.Expression expression) {
-        if (expression instanceof FeatureReferenceExpression featureReferenceExpression) {
-            if (featureReferenceExpression.getReferent() == null
-                    || featureReferenceExpression.getReferent().getQualifiedName() == null) {
-                return null;
-            }
-            return terminalName(featureReferenceExpression.getReferent().getQualifiedName());
-        }
-
-        return null;
-    }
-
-    private String terminalName(String qualifiedName) {
-        if (qualifiedName == null || qualifiedName.isBlank()) {
-            return null;
-        }
-
-        int separatorIndex = qualifiedName.lastIndexOf("::");
-        if (separatorIndex < 0) {
-            return qualifiedName;
-        }
-
-        return qualifiedName.substring(separatorIndex + 2);
+        return new MachineActionIR(actionUsage, parameterIRs);
     }
 
     private TypeRef toParameterTypeRef(Feature parameter, String ownerQualifiedName) {
@@ -397,59 +256,101 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         return toTypeRef(types, ownerQualifiedName);
     }
 
-    private AcceptActionUsage extractTriggerElement(TransitionUsage transition) {
-        if (transition.getTriggerAction() == null || transition.getTriggerAction().isEmpty()) {
-            return null;
+    private TransitionTriggerIR buildTriggerIR(TransitionUsage transition, AcceptActionUsage accept, String sourceQName,
+                                               String targetQName, List<MachineRefIR> machineRefs) {
+        String explicitMessageTypeQName = resolveExplicitAcceptMessageTypeQName(accept);
+        if (explicitMessageTypeQName != null) {
+            return new TransitionTriggerSimpleIR(accept, new Ref<>(explicitMessageTypeQName));
         }
-        return transition.getTriggerAction().getFirst();
+
+        String sourceToken = simpleToken(sourceQName, "Init");
+        String targetToken = simpleToken(targetQName, "Target");
+        String acceptEventName = "AcceptWhen" + sourceToken + "To" + targetToken + "Event";
+        String acceptEventQualifiedName = transition.getQualifiedName() + "::" + acceptEventName;
+        String machineRefName = "TODO";
+        String machineTypeQualifiedName = machineRefs.stream()
+                .filter(machineRef -> machineRef.name().equals(machineRefName))
+                .map(machineRef -> machineRef.type().qualifiedName())
+                .findFirst()
+                .orElse(null);
+
+        String conditionMethodName = "isAcceptWhenEventConditionMet";
+        String triggerMethodName = "checkAndTriggerAcceptWhenEvent";
+        String sysmlSource = "accept when // TODO boolean expression";
+
+        return new TransitionTriggerWhenIR(
+                accept,
+                acceptEventName,
+                acceptEventQualifiedName,
+                machineRefName,
+                machineTypeQualifiedName,
+                conditionMethodName,
+                triggerMethodName,
+                sysmlSource);
     }
 
-    private AcceptExprIR extractTriggerAcceptExpression(AcceptActionUsage accept) {
+    private String resolveExplicitAcceptMessageTypeQName(AcceptActionUsage accept) {
         if (accept == null) {
             return null;
         }
 
-        String acceptBaseName = "AcceptEventExpr";
-        String acceptQualifiedName = buildUniqueAcceptExprQualifiedName(accept);
-
-        // accept Event / accept evt : Event
-        ReferenceUsage payload = accept.getPayloadParameter();
-        if (payload != null) {
-            EList<Type> payloadTypes = payload.getType();
-            if (payloadTypes != null && !payloadTypes.isEmpty()) {
-                TypeRef eventType = toTypeRef(payloadTypes, accept.getQualifiedName());
-                logger.debug("[Trigger] accept payload param '{}' typed as {}",
-                        payload.getName(), eventType.qualifiedName());
-                return new AcceptEventExprIR(accept, eventType, acceptBaseName, acceptQualifiedName);
+        if (accept.getNestedReference() != null && !accept.getNestedReference().isEmpty()) {
+            ReferenceUsage nestedReference = accept.getNestedReference().getFirst();
+            if (nestedReference != null && nestedReference.getType() != null && !nestedReference.getType().isEmpty()) {
+                String qualifiedName = nestedReference.getType().getFirst().getQualifiedName();
+                if (qualifiedName != null && !qualifiedName.isBlank()) {
+                    return qualifiedName;
+                }
             }
         }
 
-        // fallback: some models expose event type via payload argument reference
+        ReferenceUsage payloadParameter = accept.getPayloadParameter();
+        if (payloadParameter != null && payloadParameter.getType() != null && !payloadParameter.getType().isEmpty()) {
+            String qualifiedName = payloadParameter.getType().getFirst().getQualifiedName();
+            if (qualifiedName != null && !qualifiedName.isBlank() && !qualifiedName.equals("ScalarValues::Boolean")) {
+                return qualifiedName;
+            }
+        }
+
         if (accept.getPayloadArgument() instanceof FeatureReferenceExpression featureReferenceExpression
                 && featureReferenceExpression.getReferent() != null
                 && featureReferenceExpression.getReferent().getQualifiedName() != null) {
-            String qName = featureReferenceExpression.getReferent().getQualifiedName();
-            logger.debug("[Trigger] accept payload argument referent type {}", qName);
-            return new AcceptEventExprIR(accept, TypeRef.user(qName), acceptBaseName, acceptQualifiedName);
+            return featureReferenceExpression.getReferent().getQualifiedName();
         }
 
-        logger.debug("[Trigger] unresolved accept expression for {}", accept.getQualifiedName());
         return null;
     }
 
-    private String buildUniqueAcceptExprQualifiedName(AcceptActionUsage accept) {
-        String ownerQName = accept.getOwner() != null ? accept.getOwner().getQualifiedName() : null;
-        String base = accept.getQualifiedName();
-        if (base == null || base.isBlank()) {
-            base = (ownerQName == null || ownerQName.isBlank())
-                    ? "AcceptActionUsage"
-                    : ownerQName + "::AcceptActionUsage";
+    private String simpleToken(String qualifiedName, String fallback) {
+        if (qualifiedName == null || qualifiedName.isBlank()) {
+            return fallback;
         }
-        String elementId = accept.getElementId();
-        if (elementId == null || elementId.isBlank()) {
-            elementId = Integer.toHexString(System.identityHashCode(accept));
+        String token = qualifiedName;
+        int separator = qualifiedName.lastIndexOf("::");
+        if (separator >= 0 && separator + 2 < qualifiedName.length()) {
+            token = qualifiedName.substring(separator + 2);
         }
-        return base + "#" + elementId;
+        return toUpperCamel(token, fallback);
+    }
+
+    private String toUpperCamel(String value, String fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+
+        String[] parts = value.split("[^A-Za-z0-9]+");
+        StringBuilder builder = new StringBuilder();
+        for (String part : parts) {
+            if (part == null || part.isBlank()) {
+                continue;
+            }
+            builder.append(part.substring(0, 1).toUpperCase(Locale.ROOT));
+            if (part.length() > 1) {
+                builder.append(part.substring(1));
+            }
+        }
+
+        return builder.isEmpty() ? fallback : builder.toString();
     }
 
     private TypeRef toTypeRef(EList<Type> types, String ownerQualifiedName) {
@@ -473,20 +374,6 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         };
     }
 
-    private String elementQualifiedName(Definition owner, Usage usage) {
-        String ownerName = owner.getQualifiedName();
-        String usageName = usage.getName();
-        if (usageName == null || usageName.isBlank()) {
-            return ownerName + "::" + usage.eClass().getName();
-        }
-
-        String result = ownerName + "::" + usageName;
-        if (!result.equals(usage.getQualifiedName())) {
-            throw new IllegalStateException(result + " != " + usage.getQualifiedName());
-        }
-        return result;
-    }
-
     private boolean shouldSkipGeneration(Definition object) {
         for (MetadataUsage metadataUsage : object.getOwnedMetadata()) {
             if (metadataUsage.getType().stream().map(Type::getQualifiedName).anyMatch("Common::NoGeneration"::equals)) {
@@ -494,6 +381,81 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
                 return true;
             }
         }
+
         return false;
+    }
+
+    private TransitionActionIR buildTransitionAction(TransitionUsage transition, List<MachineRefIR> machineRefs) {
+        TransitionActionIR action = null;
+        ActionUsage actionUsage = extractTransitionAction(transition);
+
+        if (actionUsage instanceof SendActionUsage sau) {
+            Type messageType = sau.getPayloadArgument().getType().getFirst();
+            Optional<MachineRefIR> senderMachine = Optional.empty();
+            if (sau.getSenderArgument() != null) {
+                senderMachine = machineRefs.stream()
+                        .filter(ref -> ref.name().equals(sau.getSenderArgument().getResult().getName())).findFirst();
+            }
+            logger.warn("SendActionUsage called message={} to={}", messageType.getQualifiedName(),
+                    senderMachine.orElse(null));
+            action = new TransitionActionSendToIR(sau, List.of(), new Ref<>(messageType.getQualifiedName()),
+                    senderMachine.orElse(null));
+            // Event qName: sau.getPayloadArgument().getType().getFirst().getQualifiedName
+            // Sender: sau.getSenderArgument().getResult()
+            // Receiver:
+        } else if (actionUsage instanceof PerformActionUsage pea) {
+            logger.debug("Building transition action: {} with class {}", actionUsage, actionUsage.getClass());
+
+            Feature feat = pea.referencedFeatureTarget();
+            if (feat == null) {
+                feat = pea;
+            }
+
+            List<String> featuredChainingReferences = extractChainingReferencesFromAction(actionUsage);
+            List<MachineRefIR> featuredMachinesRefs = machineRefs.stream()
+                    .filter(ref -> featuredChainingReferences.contains(ref.name())).toList();
+            if (featuredMachinesRefs.size() > 1) {
+                throw new IllegalStateException("More than 1 machine ref for transition");
+            }
+
+            MachineRefIR machineRef = !featuredMachinesRefs.isEmpty() ? featuredMachinesRefs.getFirst() : null;
+            if (featuredMachinesRefs.isEmpty()) {
+                action = new TransitionActionCustomIR(feat, List.of(), List.of());
+            } else {
+                action = new TransitionActionMachineIR(feat, List.of(), machineRef);
+            }
+        } else if (actionUsage != null) {
+            logger.info("ActionUsage {} is of type {}", actionUsage, actionUsage.getClass());
+        }
+
+        return action;
+    }
+
+    private ActionUsage extractTransitionAction(TransitionUsage transition) {
+        ActionUsage actionUsage = null;
+        if (transition.getSource() instanceof PerformActionUsage pau) {
+            actionUsage = pau.getPerformedAction();
+        } else if (transition.getEffectAction() != null && !transition.getEffectAction().isEmpty()) {
+            actionUsage = transition.getEffectAction().getFirst();
+        }
+
+        return actionUsage;
+    }
+
+    private List<String> extractChainingReferencesFromAction(ActionUsage actionUsage) {
+        List<String> result = new ArrayList<>();
+        if (actionUsage != null) {
+            for (Relationship rel : actionUsage.getOwnedRelationship()) {
+                for (Element element : rel.getOwnedRelatedElement()) {
+                    for (Relationship rel2 : element.getOwnedRelationship()) {
+                        if (rel2 instanceof FeatureChainingImpl featChaining) {
+                            result.add(featChaining.getChainingFeature().getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }

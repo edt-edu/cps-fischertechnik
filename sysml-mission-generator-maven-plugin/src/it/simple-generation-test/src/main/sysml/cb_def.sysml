@@ -35,16 +35,16 @@ package ConveyorBeltSystem {
         action def StatusRequest {}
 
         item def CommandSuccess;
-    }
+    } // package ConveyorBeltCommands
 
     package ConveyorBeltMessages {
         private import ConveyorBeltSystem::ConveyorBeltCommands::*;
 
-        item def FeedFreeBufferedMessage :> BufferedMessage;
-        item def SwapBusyBufferedMessage :> BufferedMessage;
+        item def FeedFreeEventMessage :> EventMessage;
+        item def SwapBusyEventMessage :> EventMessage;
 
-        item def CommandSuccessEventMessage :> EventMessage;
-    }
+        item def CBCommandSuccessEventMessage :> EventMessage;
+    } // package ConveyorBeltMessages
 
     package ConveyorBelt {
         private import ConveyorBeltSystem::ConveyorBeltCommands::*;
@@ -66,5 +66,5 @@ package ConveyorBeltSystem {
             attribute conveyorSensSwap : Boolean;
             attribute conveyorSensImpulse : Integer;
         }
-    }
-}
+    } // package ConveyorBelt
+} // package ConveyorBeltSystem

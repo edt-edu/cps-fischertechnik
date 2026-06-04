@@ -46,8 +46,8 @@ public class Linker {
         });
 
         repository.getTransitions().values().forEach(transition -> {
-            if (transition.getTo() != null && !repository.getStates().containsKey(transition.getTo().qName())) {
-                logger.warn("Transition target state not found: {}", transition.getTo().qName());
+            if (transition.getToState() != null && !repository.getStates().containsKey(transition.getToState().qName())) {
+                logger.warn("Transition target state not found: {}", transition.getToState().qName());
             }
             if (transition.getTrigger() != null
                     && !repository.getTriggers().containsKey(transition.getTrigger().qName())) {

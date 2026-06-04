@@ -33,17 +33,14 @@ package ConveyorBeltSystem {
         action def Stop {}
 
         action def StatusRequest {}
-
-        item def CommandSuccess;
     } // package ConveyorBeltCommands
 
     package ConveyorBeltMessages {
         private import ConveyorBeltSystem::ConveyorBeltCommands::*;
 
-        item def FeedFreeBufferedMessage :> BufferedMessage;
-        item def SwapBusyBufferedMessage :> BufferedMessage;
-
-        item def CommandSuccessEventMessage :> EventMessage;
+        item def FeedFreeEventMessage :> EventMessage;
+        item def SwapBusyEventMessage :> EventMessage;
+        item def CBCommandSuccessEventMessage :> EventMessage;
     } // package ConveyorBeltMessages
 
     package ConveyorBelt {
@@ -65,14 +62,6 @@ package ConveyorBeltSystem {
             attribute conveyorSensFeed : Boolean;
             attribute conveyorSensSwap : Boolean;
             attribute conveyorSensImpulse : Integer;
-        }
-
-        part CB : ConveyorBeltMachine {
-            exhibit ConveyorBeltNominalMission {
-                in conveyorBelt : ConveyorBeltMachine;
-                in vacuumGripper1 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
-                in vacuumGripper2 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
-            }
         }
     } // package ConveyorBelt
 } // package ConveyorBeltSystem
