@@ -7,13 +7,19 @@ import java.util.List;
 
 @Getter
 public class TransitionActionSendToIR extends TransitionActionIR {
-    private final Ref<MachineMessageIR> message;
+    private final MachineMessageRefIR message;
     private final MachineRefIR to;
 
-    public TransitionActionSendToIR(Element element, List<ParameterIR> parameters, Ref<MachineMessageIR> message, MachineRefIR to) {
+    public TransitionActionSendToIR(Element element, List<ParameterIR> parameters, MachineMessageRefIR message,
+                                    MachineRefIR to) {
         super(element, parameters);
         this.message = message;
         this.to = to;
+    }
+
+    @Override
+    public String getQualifiedName() {
+        return getClass().getName() + ":" + message.name() + "->" + to.name();
     }
 
     @Override

@@ -60,8 +60,6 @@ package MultiProcessingStationSystem {
     } // package MultiProcessingStationCommands
 
     package MultiProcessingStationMessages {
-        private import MultiProcessingStationSystem::MultiProcessingStationCommands::*;
-
         item def InputFreeEventMessage :> EventMessage;
         item def OutputBusyEventMessage :> EventMessage;
         item def MPSCommandSuccessEventMessage :> EventMessage;

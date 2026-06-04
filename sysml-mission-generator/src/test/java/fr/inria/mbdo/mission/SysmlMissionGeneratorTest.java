@@ -30,11 +30,12 @@ class SysmlMissionGeneratorTest {
 
         List<String> fileNames = List.of(
                 "common/common_def.sysml",
-                "common/zones_def.sysml",
+                "zones/zones_def.sysml",
                 "CB/cb_def.sysml",
                 "MPS/mps_def.sysml",
                 "SL/sl_def.sysml",
                 "VGR/vgr_def.sysml",
+                "zones/zones_missions_def.sysml",
                 "CB/cb_missions_def.sysml",
                 "MPS/mps_missions_def.sysml",
                 "SL/sl_missions_def.sysml",

@@ -87,15 +87,13 @@ package VacuumGripperMissions {
             then Idle;
 
         state Idle;
-        accept BlueTokenAvailableEventMessage
-            if vacuumGripper.currentCommand == VacuumGripperCommandKind::MOVE do vacuumGripper.stop
-            then PickColorCMD;
+        accept BlueTokenAvailableEventMessage do pickBlue then PickColorCMD;
         accept WhiteTokenAvailableEventMessage do pickWhite then PickColorCMD;
         accept RedTokenAvailableEventMessage do pickRed then PickColorCMD;
 
         state PickColorCMD;
         accept VGRCommandSuccessEventMessage via vacuumGripper
-            do send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneCB
+            do send new AcquireRequestEventMessage() to zoneCB
             then IdlePicked;
 
         state IdlePicked;

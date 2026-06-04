@@ -1,6 +1,7 @@
 package VacuumGripperSystem {
     private import ScalarValues::*;
     private import Common::*;
+    private import Common::Messages::*;
 
     package VacuumGripperCommands {
         enum def VacuumGripperCommandKind {
@@ -71,9 +72,7 @@ package VacuumGripperSystem {
     } // package VacuumGripperCommands
 
     package VacuumGripperMessages {
-        private import VacuumGripperSystem::VacuumGripperCommands::*;
-
-        item def VGRCommandSuccessEventMessage;
+        item def VGRCommandSuccessEventMessage :> EventMessage;
     } // package VacuumGripperMessages
 
     package VacuumGripper {

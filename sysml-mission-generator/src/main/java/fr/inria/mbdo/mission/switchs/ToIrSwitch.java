@@ -35,7 +35,7 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
 
         List<MachineAttributeIR> attributes = new ArrayList<>();
         for (AttributeUsage ownedAttribute : object.getOwnedAttribute()) {
-            TypeRef attributeType = toTypeRef(ownedAttribute.getType(), ownedAttribute.getQualifiedName());
+            TypeRef attributeType = toTypeRef(ownedAttribute.getType());
             attributes.add(new MachineAttributeIR(ownedAttribute, attributeType));
         }
 
@@ -58,7 +58,9 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         if (shouldSkipGeneration(object) || index.resolvePart(object.getQualifiedName()).isPresent()) {
             return null;
         }
-        irRepositoryBuilder.add(new MachineMessageIR(object));
+        if (object.supertypes(true).stream().anyMatch(t -> t.getName().equals("EventMessage"))) {
+            irRepositoryBuilder.add(new MachineMessageIR(object));
+        }
         return null;
     }
 
@@ -137,7 +139,7 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
     private List<MachineRefIR> collectMachineRefs(StateDefinition object) {
         List<MachineRefIR> machinesRefs = new ArrayList<>();
         for (ReferenceUsage ref : object.getOwnedReference()) {
-            TypeRef machineType = toTypeRef(ref.getType(), ref.getQualifiedName());
+            TypeRef machineType = toTypeRef(ref.getType());
             logger.info("[State] Machine ref {} : id={}", ref.getName(), ref.getElementId());
             if (machineType.kind() != TypeRef.TypeKind.USER) {
                 throw new IllegalStateException("Machine reference must target a user type: " + ref.getQualifiedName());
@@ -240,9 +242,11 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         }
 
         List<ParameterIR> parameterIRs = new ArrayList<>();
-        for (Feature param : actionUsage.getParameter()) {
-            TypeRef paramType = toParameterTypeRef(param, actionUsage.getQualifiedName());
-            parameterIRs.add(new ParameterIR(param, paramType));
+        for (Feature parameter : actionUsage.getParameter()) {
+            EList<Type> types = parameter.getType();
+            TypeRef paramType = (types == null || types.isEmpty()) ?
+                    TypeRef.unknown(actionUsage.getQualifiedName() + "::" + parameter.getName()) : toTypeRef(types);
+            parameterIRs.add(new ParameterIR(parameter, paramType));
         }
 
         return new MachineActionIR(actionUsage, parameterIRs);
@@ -253,7 +257,7 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         if (types == null || types.isEmpty()) {
             return TypeRef.unknown(ownerQualifiedName + "::" + parameter.getName());
         }
-        return toTypeRef(types, ownerQualifiedName);
+        return toTypeRef(types);
     }
 
     private TransitionTriggerIR buildTriggerIR(TransitionUsage transition, AcceptActionUsage accept, String sourceQName,
@@ -353,14 +357,14 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         return builder.isEmpty() ? fallback : builder.toString();
     }
 
-    private TypeRef toTypeRef(EList<Type> types, String ownerQualifiedName) {
+    private TypeRef toTypeRef(EList<Type> types) {
         if (types == null || types.isEmpty()) {
-            throw new IllegalStateException("Missing type for " + ownerQualifiedName);
+            throw new IllegalArgumentException("Missing type");
         }
 
         String qualifiedName = types.getFirst().getQualifiedName();
         if (qualifiedName == null) {
-            throw new IllegalStateException("Type without qualified name for " + ownerQualifiedName);
+            throw new IllegalArgumentException("Type without qualified name");
         }
 
         return switch (qualifiedName) {
@@ -370,7 +374,7 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             default -> index.resolveAny(qualifiedName)
                     .map(def -> TypeRef.user(qualifiedName))
                     .orElseThrow(() -> new IllegalStateException(
-                            "Cannot resolve type: " + qualifiedName + " for " + ownerQualifiedName));
+                            "Cannot resolve type: " + qualifiedName));
         };
     }
 
@@ -390,16 +394,15 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         ActionUsage actionUsage = extractTransitionAction(transition);
 
         if (actionUsage instanceof SendActionUsage sau) {
-            Type messageType = sau.getPayloadArgument().getType().getFirst();
-            Optional<MachineRefIR> senderMachine = Optional.empty();
-            if (sau.getSenderArgument() != null) {
-                senderMachine = machineRefs.stream()
-                        .filter(ref -> ref.name().equals(sau.getSenderArgument().getResult().getName())).findFirst();
-            }
-            logger.warn("SendActionUsage called message={} to={}", messageType.getQualifiedName(),
-                    senderMachine.orElse(null));
-            action = new TransitionActionSendToIR(sau, List.of(), new Ref<>(messageType.getQualifiedName()),
-                    senderMachine.orElse(null));
+            String receiverName = sau.getSenderArgument().getResult().getName();
+            TypeRef messageTypeRef = toTypeRef(sau.getPayloadArgument().getType());
+            MachineRefIR senderMachine = machineRefs.stream()
+                    .filter(ref -> ref.name().equals(receiverName)).findFirst().orElseThrow(() -> new IllegalStateException("Receiver was not specified for message " + messageTypeRef.qualifiedName()));
+
+            logger.warn("SendActionUsage called message={} to={}", messageTypeRef.qualifiedName(), senderMachine);
+            MachineMessageRefIR messageRef = new MachineMessageRefIR(sau.getPayloadArgument().getType().getFirst().getQualifiedName(), messageTypeRef);
+
+            action = new TransitionActionSendToIR(sau, List.of(), messageRef, senderMachine);
             // Event qName: sau.getPayloadArgument().getType().getFirst().getQualifiedName
             // Sender: sau.getSenderArgument().getResult()
             // Receiver:

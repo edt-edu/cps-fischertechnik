@@ -36,8 +36,6 @@ package ConveyorBeltSystem {
     } // package ConveyorBeltCommands
 
     package ConveyorBeltMessages {
-        private import ConveyorBeltSystem::ConveyorBeltCommands::*;
-
         item def FeedFreeEventMessage :> EventMessage;
         item def SwapBusyEventMessage :> EventMessage;
         item def CBCommandSuccessEventMessage :> EventMessage;
@@ -45,7 +43,6 @@ package ConveyorBeltSystem {
 
     package ConveyorBelt {
         private import ConveyorBeltSystem::ConveyorBeltCommands::*;
-        private import ConveyorBeltMission::*;
         part def ConveyorBeltMachine specializes Machine {
             perform action moveToSensor : MoveToSensor;
             perform action moveOut : MoveOut;

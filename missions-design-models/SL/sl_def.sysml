@@ -1,6 +1,7 @@
 package SortingLineSystem {
     private import ScalarValues::*;
     private import Common::*;
+    private import Common::Messages::*;
 
     package SortingLineCommands {
         enum def SortingLineCommandKind {
@@ -28,13 +29,9 @@ package SortingLineSystem {
     } // package SortingLineCommands
 
     package SortingLineMessages {
-        private import Messages::*;
-        private import SortingLineSystem::SortingLineCommands::*;
-
-        item def BlueTokenAvailableEventMessage :> EventMessage {}
-        item def WhiteTokenAvailableEventMessage :> EventMessage {}
-        item def RedTokenAvailableEventMessage :> EventMessage {}
-
+        item def BlueTokenAvailableEventMessage :> EventMessage;
+        item def WhiteTokenAvailableEventMessage :> EventMessage;
+        item def RedTokenAvailableEventMessage :> EventMessage;
         item def SLCommandSuccessEventMessage :> EventMessage;
     } // package SortingLineMessages
 
