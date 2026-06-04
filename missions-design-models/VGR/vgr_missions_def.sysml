@@ -142,6 +142,11 @@ package VacuumGripperMissions {
             }
         }
 
+        action releaseCBZoneAndAcquireMPSZone {
+            send new ReleaseRequestEventMessage() to zoneCB;
+            send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneMPS;
+        }
+
         entry vacuumGripper.setup;
         then SetupIdle;
 
@@ -164,10 +169,7 @@ package VacuumGripperMissions {
 
         state ReleaseCBZone;
         accept VGRCommandSuccessEventMessage
-            do action {
-                send new ReleaseRequestEventMessage() to zoneCB;
-                send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneMPS;
-            }
+            do releaseCBZoneAndAcquireMPSZone
             then WaitForMPSZoneAcquisition;
 
         state WaitForMPSZoneAcquisition;
