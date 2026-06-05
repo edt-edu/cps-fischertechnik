@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from rppmcontroller.machine.MachineParameters import (MachineParameters,
@@ -67,11 +67,11 @@ class HighBayParameters(MachineParameters):
     The maximum encoder counter value for the horizontal axis.
     This value is limited by the physical setup.
     """
-    vertical_axis_monitor_parameters: AxisMonitorParameters = (
-        AxisMonitorParameters())
+    vertical_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
     """Configuration for the vertical axis monitor"""
-    horizontal_axis_monitor_parameters: AxisMonitorParameters = (
-        AxisMonitorParameters())
+    horizontal_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
     """Configuration for the horizontal axis monitor"""
 
     def add_horizontal_offset(self, offset: int) -> None:

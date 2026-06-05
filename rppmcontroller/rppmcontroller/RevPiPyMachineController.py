@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import copy
 import inspect
 import json as json
 import logging
 import multiprocessing
 import os
+import select
 import signal
 import socket
 import sys
@@ -17,7 +17,6 @@ from multiprocessing import Queue
 from queue import Empty
 from typing import Any, Dict, List, Optional, Callable, cast
 
-import select
 import yaml
 
 from rppmcontroller import __version__, TRACE
@@ -672,7 +671,7 @@ class RevPiPyMachineController(ABC):
                 self.outputBuffer.put(j, block=False)
                 self.MQTT.publishEvent(self.plcId, m.machineTypeName(), m.id, EventKind.EMITTED, "machine_feedback", JSONParser.parse(f))
 
-    def sendCommandFeedbackOnChange(self, machine: Machine, lastCommand: Optional[CycleStepCommand], lastResult: CycleStepResult) -> None:
+    def sendCommandFeedbackOnChange(self, machine: Machine, lastCommand: CycleStepCommand | None, lastResult: CycleStepResult) -> None:
         """
         Whenever the result of the last executed command changes, feedback is created
         If lastCommand is None, it means that no command was running on the machine or that the command was invalid and must be sent
@@ -714,8 +713,12 @@ class RevPiPyMachineController(ABC):
         else:
             logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
         if lastCommand is not None:
-            self.commandFeedback[machine] = CommandResult(copy.deepcopy(lastCommand), copy.deepcopy(lastResult))
-            logging.debug(f'stored CommandResult for machine {machine.id} {self.commandFeedback[machine].command} {self.commandFeedback[machine].result}')
+            # clone result here since it might be a runner, which is mutable
+            # -> we prefer clone over deepcopy, since that is more predictable
+            #  with subclasses like runners
+            result = lastResult.clone()
+            self.commandFeedback[machine] = CommandResult(lastCommand, result)
+            logging.debug(f'stored CommandResult for machine {machine.id} {lastCommand} {result}')
 
     def publishMQTTMeasurementStatus(self) -> None:
         """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set

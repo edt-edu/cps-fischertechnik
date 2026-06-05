@@ -205,7 +205,7 @@ class AxisMonitor:
 
     def __log_to_csv(self, data: CycleData):
         if self.__csv_writer is not None:
-            self.__csv_writer.writerow([data.counter_value, data.pwm_value, data.moved_distance, str(data.deviation)])
+            self.__csv_writer.write([data.counter_value, data.pwm_value, data.moved_distance, str(data.deviation)])
 
     def get_recorded_deviations(self) -> list[Deviation]:
         """
@@ -359,7 +359,10 @@ class Deviation(Enum):
     """Movement below what the axis tolerates as movement"""
 
     def __str__(self) -> str:
-        return f"{self.name.lower()} deviation"
+        if self is Deviation.NONE:
+            return "no deviation"
+        else:
+            return f"{self.name.lower()} deviation"
 
 
 def calculate_mean(values: list[float]) -> float:
