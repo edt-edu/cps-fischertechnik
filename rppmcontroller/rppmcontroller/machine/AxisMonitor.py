@@ -45,6 +45,9 @@ class NamedAxisMonitor:
                                 axis,
                                 axis_name)
 
+    def __debug(self, msg: str) -> None:
+        logging.debug(f"[{self.axis_name}] {msg}")
+
     def record_and_action_is_required(self, current_pwm_value: int) -> bool:
         """
         Records the current axis value for the given pwm value and checks
@@ -77,7 +80,7 @@ class NamedAxisMonitor:
                 penalty += self.parameters.minor_deviation_penalty
             elif deviation == Deviation.HIGH:
                 penalty += self.parameters.major_deviation_penalty
-        logging.debug(f"Total penalty: {penalty}")
+        self.__debug(f"Total penalty: {penalty}")
         return penalty
 
     def record(self, current_pwm_value) -> Deviation:
@@ -91,7 +94,7 @@ class NamedAxisMonitor:
         deviation = self.monitor.record(self.axis.counterValueCurrent,
                                         current_pwm_value)
         if deviation != Deviation.NONE:
-            logging.debug(f"Recorded {deviation} on {self.axis_name}")
+            self.__debug(f"Recorded {deviation}")
         return deviation
 
 
