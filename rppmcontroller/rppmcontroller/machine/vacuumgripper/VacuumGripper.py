@@ -431,6 +431,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if error:
             self.stop_CycleStep()
             return error.as_abort()
+        # FIXME move to 0 would result in no movement being reported to the
+        #  axis monitor
         if not self.__axisRot.gotoAxisConfig(config.rotation_axis_config):
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
