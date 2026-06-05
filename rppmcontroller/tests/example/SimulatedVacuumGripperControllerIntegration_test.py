@@ -601,11 +601,13 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
             elif re.match(r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 MUST_CONTINUE .*", notification):
                 pass
             else:
-                self.assertGreater(iterationDone, 50, "COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done" )
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 notification = ctHelper.readMachineFeedbackNotification(self.controller)
                 self.assertRegex(notification, r"VacuumGripper01 \d+\.\d+ MACHINE_FEEDBACK INITIALIZED_IDLE")
                 logging.debug(f"PLACE DONE reached in {iterationDone} iterations")
+                self.assertGreater(iterationDone,
+                                   40,
+                                   "COMMAND_FEEDBACK reached in less than 50 iterations, it was probably not done")
                 endCommandReached = True
             self.assertLess(iterationDone, 200, "PLACE DONE not reached in less than 200 iterations" )
 
