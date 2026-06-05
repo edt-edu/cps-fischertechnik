@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class to handle socket communication using threads for sending and receiving messages.
@@ -96,6 +97,8 @@ public class SocketProtocol implements Protocol {
     	this.connectionStatusListeners.add(connectionStatusListener);
     }
 
+    private final AtomicBoolean sendWarningLogged = new AtomicBoolean(false);
+    private final AtomicBoolean receiveWarningLogged = new AtomicBoolean(false);
     /**
      * Handles sending messages by connecting to the socket and sending messages from the sendQueue.
      */
@@ -106,6 +109,7 @@ public class SocketProtocol implements Protocol {
             	
                 log.info("Connected to send socket at {}:{}", hostname, sendPort);
                 this.setSendChannelConnected(true);
+                sendWarningLogged.set(false);
                 while (!Thread.currentThread().isInterrupted()) {
                     String message = sendQueue.take();
                     out.write(message.getBytes());
@@ -116,7 +120,7 @@ public class SocketProtocol implements Protocol {
                 this.setSendChannelConnected(false);
             } catch (IOException | InterruptedException e) {
             	this.setSendChannelConnected(false);
-                handleException(e, "sending", sendPort);
+                handleException(e, "sending", sendPort, sendWarningLogged);
             }
         }
     }
@@ -131,6 +135,7 @@ public class SocketProtocol implements Protocol {
 
                 log.info("Connected to receive socket at {}:{}", hostname, receivePort);
                 this.setReceiveChannelConnected(true);
+                receiveWarningLogged.set(false);
                 String message;
                 while ((message = reader.readLine()) != null && !Thread.currentThread().isInterrupted()) {
                     receiveQueue.add(message);
@@ -149,8 +154,11 @@ public class SocketProtocol implements Protocol {
                 this.setReceiveChannelConnected(false);
                 
                 // if reception socket is closed, need to close send socket too and try to reconnected everything
-                send("WATCHDOG\n");
-                handleException(e, "receiving", receivePort);
+                // send a watch dog only once
+                if(!receiveWarningLogged.get()) {
+                    send("WATCHDOG\n");
+                }
+                handleException(e, "receiving", receivePort, receiveWarningLogged);
             }
         }
     }
@@ -162,12 +170,15 @@ public class SocketProtocol implements Protocol {
      * @param action The action being performed (sending or receiving).
      * @param port   The port on which the exception occurred.
      */
-    private void handleException(Exception e, String action, int port) {
+    private void handleException(Exception e, String action, int port,
+                                 AtomicBoolean warningState) {
         if (e instanceof InterruptedException) {
             log.error("Thread interrupted while waiting for {} on {}: {}: {}", action, hostname, port, e.getMessage());
             Thread.currentThread().interrupt();
         } else {
-            log.warn("Failed while {} message on {}:{} : {}", action, hostname, port, e.getMessage());
+            if (warningState.compareAndSet(false, true)) {
+                log.warn("Failed while {} message on {}:{} : {}", action, hostname, port, e.getMessage());
+            }
             try {
                 Thread.sleep(RECONNECT_DELAY_MS);
             } catch (InterruptedException ex) {

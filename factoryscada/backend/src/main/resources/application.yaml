@@ -16,9 +16,10 @@ logging:
     console: UTF-8
   level:
     root: INFO
-    io.github.mbdo.factoryscada.socket.SocketProtocol: ERROR  # avoid spam when an island is (intentionally) offline
+    io.github.mbdo.factoryscada.socket.SocketProtocol: INFO  
     io.github.mbdo.factoryscada.core.AbstractCommand: DEBUG
-    io.github.mbdo.factoryscada.mqtt.MqttGatewayService: DEBUG
+    io.github.mbdo.factoryscada.frontend: DEBUG
+    io.github.mbdo.factoryscada.mqtt.MqttGatewayService: INFO
     io.github.mbdo.factoryscada.service.FactoryScada: DEBUG
     io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
 
