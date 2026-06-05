@@ -21,6 +21,7 @@ import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.AppEnvironment;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -116,7 +117,30 @@ public class FactoryScada {
 
     @EventListener(ApplicationReadyEvent.class)
     public void initAfterStartup() {
+    }
 
+    @PostConstruct
+    public void init() {
+        // bean itself initialized
+    }
+    @EventListener(org.springframework.context.event.ContextRefreshedEvent.class)
+    public void onContextReady() {
+        // fires after all singleton beans are instantiated and initialized
+        log.info("Starting threads for PLC sockets");
+        for(Map.Entry<String, Protocol> c : this.getFactoryScadaInstance().controllers().entrySet()) {
+
+            log.debug("Starting thread sockets for {}", c.getKey());
+            try {
+                c.getValue().start();
+            } catch (ProtocolException e) {
+                log.error("Failed to start protocol threads for PLC {}",c.getKey(), e);
+
+                // send connection failure to MQTT
+                String topic = "FactoryScada/Backend/internal/plc_connection/" + c.getKey()
+                        + "/status";
+                mqttGateway.sendToMqtt("unreachable", topic);
+            }
+        }
     }
 
     /**
@@ -183,16 +207,7 @@ public class FactoryScada {
                             sendWithRetry("disconnected", topic);
                         }
                     });
-            try {
-                controllerInstance.start();
-            } catch (ProtocolException e) {
-                log.error("Failed to start controller protocol", e);
 
-                // send connection failure to MQTT
-                String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name()
-                        + "/status";
-                mqttGateway.sendToMqtt("unreachable", topic);
-            }
             controllers.put(controllerConfiguration.name(), controllerInstance);
 
             // Create machines for each controller

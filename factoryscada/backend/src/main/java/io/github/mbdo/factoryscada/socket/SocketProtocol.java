@@ -240,7 +240,7 @@ public class SocketProtocol implements Protocol {
 		// Notify the listeners		
     	if(this.sendChannelConnected != sendChannelConnected) {
     		this.sendChannelConnected = sendChannelConnected;
-    		log.info("Notify sendChannelConnected to " + connectionStatusListeners.size());
+    		log.debug("Notify sendChannelConnected to " + connectionStatusListeners.size());
     		for (ConnectionStatusListener connectionStatusListener : connectionStatusListeners) {
     			connectionStatusListener.onConnectionStatusChanged(sendChannelConnected, this.receiveChannelConnected);	
 			}
@@ -252,7 +252,7 @@ public class SocketProtocol implements Protocol {
 		// Notify the listeners
     	if(this.receiveChannelConnected != receiveChannelConnected) {
     		this.receiveChannelConnected = receiveChannelConnected;
-    		log.info("Notify setReceiveChannelConnected to " + connectionStatusListeners.size());
+    		log.debug("Notify setReceiveChannelConnected to {}", connectionStatusListeners.size());
     		for (ConnectionStatusListener connectionStatusListener : connectionStatusListeners) {
     			connectionStatusListener.onConnectionStatusChanged(this.sendChannelConnected, receiveChannelConnected);	
 			}    		
