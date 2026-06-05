@@ -87,14 +87,14 @@ class VacuumGripperParameters(MachineParameters):
     Offset how much lower to go when pressuring a position.
     Used in e.g. picking or placing.
     """
-    horizontal_axis_monitor_parameters: AxisMonitorParameters = (
-        AxisMonitorParameters())
+    horizontal_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
     """Configuration for the horizontal axis monitor"""
-    vertical_axis_monitor_parameters: AxisMonitorParameters = (
-        AxisMonitorParameters())
+    vertical_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
     """Configuration for the vertical axis monitor"""
-    rotational_axis_monitor_parameters: AxisMonitorParameters = (
-        AxisMonitorParameters())
+    rotational_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
     """Configuration for the rotational axis monitor"""
 
     def derive_over_positions(self) -> Self:

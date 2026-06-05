@@ -14,16 +14,16 @@ class CycleStepCommand:
         to the CycleStep function implementing the command
         _displayName (str) : human-readable name
         to be displayed in log or in feedback, or a supplier for such a name
-        _commandId (int) : protocol commandId that triggered this command
+        _commandId (str) : protocol commandId that triggered this command
     """
 
     def __init__(self,
                  cycleStep: Callable[[], CycleStepResult],
                  displayName: str,
-                 commandId: int = ""):
+                 commandId: str = ""):
         self._cycleStep: Callable[[], CycleStepResult] = cycleStep
         self._displayName: str = displayName
-        self._commandId: int = commandId
+        self._commandId: str = commandId
 
     @property
     def cycleStep(self) -> Callable[[], CycleStepResult]:
@@ -42,11 +42,11 @@ class CycleStepCommand:
         self._displayName = displayName
 
     @property
-    def commandId(self) -> int:
+    def commandId(self) -> str:
         return self._commandId
 
     @commandId.setter
-    def commandId(self, commandId: int):
+    def commandId(self, commandId: str):
         self._commandId = commandId
 
     def __repr__(self):
