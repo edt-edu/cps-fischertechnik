@@ -1,11 +1,12 @@
 package io.github.mbdo.factoryscada.service;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.GlobalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.MachineMissionBinding;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.MissionTemplate;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
+import fr.inria.mbdo.mission.runtime.config.GlobalMission;
+import fr.inria.mbdo.mission.runtime.config.MachineMissionBinding;
+import fr.inria.mbdo.mission.runtime.config.MissionTemplate;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
+import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import io.github.mbdo.factoryscada.frontend.dto.BetterMissionDTO;
 import io.github.mbdo.factoryscada.frontend.dto.BetterMissionMachineDTO;
 import io.github.mbdo.factoryscada.frontend.dto.BetterMissionNodeDTO;
@@ -14,7 +15,7 @@ import io.github.mbdo.factoryscada.frontend.dto.BetterMissionsConfigurationDTO;
 import io.github.mbdo.factoryscada.frontend.dto.GlobalMissionDTO;
 import io.github.mbdo.factoryscada.frontend.dto.MissionCommandResponseDTO;
 import io.github.mbdo.factoryscada.frontend.dto.MissionExecutionCommandDTO;
-import io.github.mbdo.factoryscada.mission.extension.MissionExtensionRegistry;
+import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MissionExtensionRegistry;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayDeque;
@@ -31,9 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BetterMissionService {
 
     private final MissionExtensionRegistry missionExtensionRegistry;
-    private final Map<String, MissionRuntime> activeMissionsByMachine = new ConcurrentHashMap<>();
+
+    // Active missions keyed by mission name
+    private final Map<String, MissionRuntime> activeMissions = new ConcurrentHashMap<>();
     private String activeGlobalMissionName;
-    private Map<String, String> globalMissionMachineOverrides = new ConcurrentHashMap<>();
 
     public BetterMissionService(MissionExtensionRegistry missionExtensionRegistry) {
         this.missionExtensionRegistry = missionExtensionRegistry;
@@ -51,9 +53,11 @@ public class BetterMissionService {
                 .toList();
 
         List<GlobalMissionDTO> globalMissions = missionExtensionRegistry.getGlobalMissions().stream()
-                .map(gm -> new GlobalMissionDTO(gm.name(), gm.description(), gm.machineDefaultMissions()))
+                .map(gm -> new GlobalMissionDTO(gm.name(), gm.description(), gm.missionNames()))
                 .sorted(Comparator.comparing(GlobalMissionDTO::name))
                 .toList();
+
+        List<String> activeMissionNames = new ArrayList<>(activeMissions.keySet());
 
         return new BetterMissionsConfigurationDTO(
                 "StateMachineMissions",
@@ -61,65 +65,65 @@ public class BetterMissionService {
                 machines,
                 globalMissions,
                 activeGlobalMissionName,
-                new ConcurrentHashMap<>(globalMissionMachineOverrides));
+                activeMissionNames);
     }
 
     public MissionCommandResponseDTO startMission(MissionExecutionCommandDTO command) {
-        MachineMissionBinding binding = missionExtensionRegistry.getBindingForMachine(command.machineName())
-                .orElseThrow(() -> new IllegalArgumentException("Unknown machine: " + command.machineName()));
+        String missionName = command.missionName();
 
-        if (!binding.missionNames().contains(command.missionName())) {
-            throw new IllegalArgumentException(
-                    "Mission " + command.missionName() + " is not available for machine " + command.machineName());
-        }
+        // Validate mission exists
+        missionExtensionRegistry.getMissionTemplate(missionName)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown mission: " + missionName));
 
-        stopActiveMissionIfAny(command.machineName());
+        // Stop if already running
+        stopMissionByName(missionName);
 
-        MachineMissionStrategy mission = missionExtensionRegistry.createMission(command.missionName());
+        // Start the mission
+        MachineMissionStrategy mission = missionExtensionRegistry.createMission(missionName);
         mission.start();
-        activeMissionsByMachine.put(command.machineName(), new MissionRuntime(command.missionName(), mission));
+        activeMissions.put(missionName, new MissionRuntime(missionName, mission));
 
         return new MissionCommandResponseDTO(
-                "Mission " + command.missionName() + " started on " + command.machineName(),
+                "Mission " + missionName + " started",
                 command.machineName(),
-                command.missionName(),
-                command.missionName());
+                missionName,
+                missionName);
     }
 
     public MissionCommandResponseDTO stopMission(String machineName) {
-        MissionRuntime activeMission = activeMissionsByMachine.remove(machineName);
-        if (activeMission == null) {
-            return new MissionCommandResponseDTO("No active mission for machine " + machineName, machineName, null,
-                    null);
+        // For backward compatibility: find mission running on this machine
+        // A machine is involved in a mission if it appears in involvedMachines
+        String missionName = findActiveMissionForMachine(machineName);
+        if (missionName == null) {
+            return new MissionCommandResponseDTO("No active mission involving machine " + machineName,
+                    machineName, null, null);
         }
 
-        activeMission.strategy().stop();
+        stopMissionByName(missionName);
         return new MissionCommandResponseDTO(
-                "Mission " + activeMission.missionName() + " stopped on " + machineName,
-                machineName,
-                activeMission.missionName(),
-                null);
+                "Mission " + missionName + " stopped",
+                machineName, missionName, null);
     }
 
     public MissionCommandResponseDTO stopActiveMission() {
-        if (activeMissionsByMachine.isEmpty()) {
+        if (activeMissions.isEmpty()) {
             return new MissionCommandResponseDTO("No active mission to stop", null, null, null);
         }
 
-        List<String> stoppedMachines = new ArrayList<>();
-        for (Map.Entry<String, MissionRuntime> entry : new ArrayList<>(activeMissionsByMachine.entrySet())) {
+        List<String> stopped = new ArrayList<>();
+        for (Map.Entry<String, MissionRuntime> entry : new ArrayList<>(activeMissions.entrySet())) {
             entry.getValue().strategy().stop();
-            stoppedMachines.add(entry.getKey());
-            activeMissionsByMachine.remove(entry.getKey());
+            stopped.add(entry.getKey());
         }
+        activeMissions.clear();
 
-        return new MissionCommandResponseDTO("Active missions stopped on " + String.join(", ", stoppedMachines), null,
-                null, null);
+        return new MissionCommandResponseDTO(
+                "Stopped missions: " + String.join(", ", stopped), null, null, null);
     }
 
     public MissionCommandResponseDTO startGlobalMission(String globalMissionName,
             Map<String, String> machineOverrides) {
-        // Stop any active global or individual missions
+        // Stop any currently active missions
         stopActiveMission();
 
         GlobalMission globalMission = missionExtensionRegistry.getGlobalMissions().stream()
@@ -127,37 +131,23 @@ public class BetterMissionService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown global mission: " + globalMissionName));
 
-        // Start missions on each machine (apply overrides if provided)
         activeGlobalMissionName = globalMissionName;
-        globalMissionMachineOverrides = machineOverrides != null ? new ConcurrentHashMap<>(machineOverrides)
-                : new ConcurrentHashMap<>();
 
-        List<String> startedMachines = new ArrayList<>();
-        for (Map.Entry<String, String> machineDefault : globalMission.machineDefaultMissions().entrySet()) {
-            String machineName = machineDefault.getKey();
-            String missionName = globalMissionMachineOverrides.getOrDefault(machineName, machineDefault.getValue());
+        // Start each mission in the global mission
+        List<String> started = new ArrayList<>();
+        for (String missionName : globalMission.missionNames()) {
+            missionExtensionRegistry.getMissionTemplate(missionName)
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown mission template: " + missionName));
 
-            // Validate mission is available for this machine
-            MachineMissionBinding binding = missionExtensionRegistry.getBindingForMachine(machineName)
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown machine: " + machineName));
-
-            if (!binding.missionNames().contains(missionName)) {
-                throw new IllegalArgumentException(
-                        "Mission " + missionName + " is not available for machine " + machineName);
-            }
-
-            // Start the mission
             MachineMissionStrategy mission = missionExtensionRegistry.createMission(missionName);
             mission.start();
-            activeMissionsByMachine.put(machineName, new MissionRuntime(missionName, mission));
-            startedMachines.add(machineName + ":" + missionName);
+            activeMissions.put(missionName, new MissionRuntime(missionName, mission));
+            started.add(missionName);
         }
 
         return new MissionCommandResponseDTO(
-                "Global mission " + globalMissionName + " started on machines: " + String.join(", ", startedMachines),
-                null,
-                null,
-                null);
+                "Global mission " + globalMissionName + " started: " + String.join(", ", started),
+                null, null, null);
     }
 
     public MissionCommandResponseDTO setGlobalMissionMachineOverride(String machineName, String missionName) {
@@ -165,44 +155,48 @@ public class BetterMissionService {
             throw new IllegalArgumentException("No active global mission");
         }
 
-        // Validate mission is available for this machine
-        MachineMissionBinding binding = missionExtensionRegistry.getBindingForMachine(machineName)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown machine: " + machineName));
+        // Validate mission exists
+        missionExtensionRegistry.getMissionTemplate(missionName)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown mission: " + missionName));
 
-        if (!binding.missionNames().contains(missionName)) {
-            throw new IllegalArgumentException(
-                    "Mission " + missionName + " is not available for machine " + machineName);
-        }
-
-        // Stop current mission on this machine and start the new one
-        MissionRuntime currentMission = activeMissionsByMachine.remove(machineName);
+        // Stop the old mission for this machine if any
+        String currentMission = findActiveMissionForMachine(machineName);
         if (currentMission != null) {
-            currentMission.strategy().stop();
+            stopMissionByName(currentMission);
         }
 
+        // Start the new mission
         MachineMissionStrategy mission = missionExtensionRegistry.createMission(missionName);
         mission.start();
-        activeMissionsByMachine.put(machineName, new MissionRuntime(missionName, mission));
-        globalMissionMachineOverrides.put(machineName, missionName);
+        activeMissions.put(missionName, new MissionRuntime(missionName, mission));
 
         return new MissionCommandResponseDTO(
-                "Machine " + machineName + " mission changed to " + missionName,
-                machineName,
-                missionName,
-                activeGlobalMissionName);
+                "Mission " + missionName + " started (override for " + machineName + ")",
+                machineName, missionName, activeGlobalMissionName);
     }
 
     public MissionCommandResponseDTO stopGlobalMission() {
         activeGlobalMissionName = null;
-        globalMissionMachineOverrides.clear();
         return stopActiveMission();
     }
 
-    private void stopActiveMissionIfAny(String machineName) {
-        MissionRuntime activeMission = activeMissionsByMachine.remove(machineName);
-        if (activeMission != null) {
-            activeMission.strategy().stop();
+    // --- Private helpers ---
+
+    private void stopMissionByName(String missionName) {
+        MissionRuntime runtime = activeMissions.remove(missionName);
+        if (runtime != null) {
+            runtime.strategy().stop();
         }
+    }
+
+    private String findActiveMissionForMachine(String machineName) {
+        for (String missionName : activeMissions.keySet()) {
+            Optional<MissionTemplate> template = missionExtensionRegistry.getMissionTemplate(missionName);
+            if (template.isPresent() && template.get().involvedMachines().contains(machineName)) {
+                return missionName;
+            }
+        }
+        return null;
     }
 
     private BetterMissionMachineDTO toMachineDTO(MachineMissionBinding binding) {
@@ -212,18 +206,27 @@ public class BetterMissionService {
                 .map(template -> new BetterMissionOptionDTO(template.name(), template.description()))
                 .toList();
 
-        MissionRuntime activeMission = activeMissionsByMachine.get(binding.machineName());
+        // A machine's "active mission" is any running mission that involves it
+        String activeMissionName = findActiveMissionForMachine(binding.machineName());
+
         return new BetterMissionMachineDTO(binding.machineName(), binding.machineType(), missions,
-                activeMission == null ? null : activeMission.missionName());
+                activeMissionName);
     }
 
     private BetterMissionDTO toMissionDTO(MissionTemplate template) {
         MachineMissionStrategy strategy = template.previewStrategy();
-        if (!(strategy instanceof AbstractMissionStrategy missionStrategy)) {
+        List<String> involvedMachines = template.involvedMachines() != null ? template.involvedMachines() : List.of();
+
+        // Use the running instance if available, otherwise fall back to preview
+        MissionRuntime runtime = activeMissions.get(template.name());
+        MachineMissionStrategy activeStrategy = runtime != null ? runtime.strategy() : strategy;
+
+        if (!(activeStrategy instanceof AbstractMissionStrategy missionStrategy)) {
             return new BetterMissionDTO(
                     template.name(),
                     template.description(),
                     null,
+                    involvedMachines,
                     List.of());
         }
 
@@ -231,7 +234,8 @@ public class BetterMissionService {
         String activeStateName = missionStrategy.getActiveStateName();
 
         if (initialState == null) {
-            return new BetterMissionDTO(template.name(), template.description(), activeStateName, List.of());
+            return new BetterMissionDTO(template.name(), template.description(), activeStateName,
+                    involvedMachines, List.of());
         }
 
         Map<String, RuntimeState> visitedStates = new LinkedHashMap<>();
@@ -240,38 +244,46 @@ public class BetterMissionService {
 
         while (!queue.isEmpty()) {
             RuntimeState current = queue.poll();
-            if (current == null || visitedStates.containsKey(current.name())) {
+            if (current == null || visitedStates.containsKey(current.getName())) {
                 continue;
             }
 
-            visitedStates.put(current.name(), current);
-            current.transitions().stream()
-                    .map(transition -> transition.targetState())
-                    .filter(Objects::nonNull)
-                    .forEach(queue::add);
+            visitedStates.put(current.getName(), current);
+            if (current.getTransitions() != null) {
+                current.getTransitions().stream()
+                        .map(RuntimeTransition::targetState)
+                        .filter(Objects::nonNull)
+                        .forEach(queue::add);
+            }
         }
 
         List<BetterMissionNodeDTO> nodes = new ArrayList<>();
         for (RuntimeState state : visitedStates.values()) {
-            List<String> outputs = state.transitions().stream()
-                    .map(transition -> transition.targetState().name())
-                    .distinct()
-                    .toList();
+            List<String> outputs = state.getTransitions() != null
+                    ? state.getTransitions().stream()
+                            .map(RuntimeTransition::targetState)
+                            .filter(Objects::nonNull)
+                            .map(RuntimeState::getName)
+                            .distinct()
+                            .toList()
+                    : List.of();
 
-            String type = state.name().equals(initialState.name()) ? "EntryNode" : "State";
-            String description = state.isFinal() ? state.name() + " (final)" : state.name();
+            String type = state.getName().equals(initialState.getName()) ? "EntryNode" : "State";
+            boolean isFinal = state.getTransitions() == null || state.getTransitions().isEmpty();
+            String description = isFinal ? state.getName() + " (final)" : state.getName();
 
             nodes.add(new BetterMissionNodeDTO(
-                    state.name(),
+                    state.getName(),
                     type,
                     description,
                     outputs,
                     "",
                     List.of(),
-                    state.name().equals(activeStateName)));
+                    state.getName().equals(activeStateName)));
         }
 
-        return new BetterMissionDTO(template.name(), template.description(), activeStateName, nodes);
+        return new BetterMissionDTO(template.name(), template.description(), activeStateName,
+                involvedMachines, nodes);
     }
 
     private record MissionRuntime(String missionName, MachineMissionStrategy strategy) {

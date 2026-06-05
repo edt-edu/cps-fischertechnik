@@ -1,10 +1,11 @@
-package io.github.mbdo.factoryscada.mission.extension;
+package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.GlobalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.MachineMissionBinding;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.MissionBindingCatalog;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.MissionTemplate;
 import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
+import fr.inria.mbdo.mission.runtime.config.GlobalMission;
+import fr.inria.mbdo.mission.runtime.config.MachineMissionBinding;
+import fr.inria.mbdo.mission.runtime.config.MissionBindingCatalog;
+import fr.inria.mbdo.mission.runtime.config.MissionTemplate;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

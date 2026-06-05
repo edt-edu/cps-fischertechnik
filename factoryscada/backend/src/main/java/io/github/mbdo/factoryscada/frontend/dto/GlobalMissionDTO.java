@@ -1,9 +1,9 @@
 package io.github.mbdo.factoryscada.frontend.dto;
 
-import java.util.Map;
+import java.util.List;
 
 public record GlobalMissionDTO(
-        String name,
-        String description,
-        Map<String, String> machineDefaultMissions) {
+                String name,
+                String description,
+                List<String> missionNames) {
 }

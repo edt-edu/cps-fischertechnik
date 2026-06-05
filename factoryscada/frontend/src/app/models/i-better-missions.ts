@@ -5,11 +5,12 @@ export interface IBetterMissionsConfiguration extends IFactoryParallelizedMissio
     machines: IBetterMissionMachine[];
     globalMissions: IGlobalMission[];
     activeGlobalMissionName?: string | null;
-    globalMissionMachineOverrides: { [key: string]: string };
+    activeMissionNames: string[];
 }
 
 export interface IBetterMission extends MissionParallelized {
     activeState?: string | null;
+    involvedMachines: string[];
     nodes: IBetterMissionNode[];
 }
 
@@ -34,7 +35,7 @@ export interface IBetterMissionOption {
 export interface IGlobalMission {
     name: string;
     description: string;
-    machineDefaultMissions: { [key: string]: string };
+    missionNames: string[];
 }
 
 export interface IMissionCommandResponse {

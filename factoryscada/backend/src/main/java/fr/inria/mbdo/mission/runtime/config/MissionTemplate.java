@@ -2,6 +2,7 @@ package fr.inria.mbdo.mission.runtime.config;
 
 import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -62,8 +63,9 @@ import java.util.function.Supplier;
  *                        execution
  */
 public record MissionTemplate(
-        String name,
-        String description,
-        MachineMissionStrategy previewStrategy,
-        Supplier<MachineMissionStrategy> factory) {
+                String name,
+                String description,
+                List<String> involvedMachines,
+                MachineMissionStrategy previewStrategy,
+                Supplier<MachineMissionStrategy> factory) {
 }
