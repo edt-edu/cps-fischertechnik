@@ -1,15 +1,10 @@
 package io.github.mbdo.factoryscada.frontend;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import io.github.mbdo.factoryscada.domain.CommandStatus;
 import io.github.mbdo.factoryscada.domain.MachineStatus;
@@ -75,7 +70,7 @@ public class WebSocketPublisher {
 
         @MessageMapping("/logs/request")
         public void requestFrontendLogs() {
-            String logs = String.join("\n", factoryscada.getFrontendLogsList());
+            String logs = String.join("\n", factoryscada.getFrontendLogsList().snapshot());
             template.convertAndSend("/topic/frontend-logs", logs);
         }
     }

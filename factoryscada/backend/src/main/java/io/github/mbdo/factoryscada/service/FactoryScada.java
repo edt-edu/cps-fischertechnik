@@ -20,6 +20,7 @@ import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.AppEnvironment;
+import io.github.mbdo.factoryscada.utilities.BoundedLogBuffer;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
@@ -80,7 +81,7 @@ public class FactoryScada {
     private final int logLimit;
     public Map<String, Integer> sessionLogLimits = new ConcurrentHashMap<>();
 
-    private List<String> frontendLogsList = new LinkedList<String>();
+    private BoundedLogBuffer<String> frontendLogsList;
 
     // MQTT messages
     private final MqttConfig mqttConfig;
@@ -102,6 +103,7 @@ public class FactoryScada {
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
+        this.frontendLogsList = new BoundedLogBuffer<String>(logLimit);
         this.mqttGateway = mqttGateway;
 
         // Initialization and validation of mission graph
@@ -414,16 +416,11 @@ public class FactoryScada {
 
     /**
      * This function is used to add logs in the list containing all frontend logs
-     * 
-     * @return Nothing
      */
     public void addLogsForFrontend(String log) {
-        this.getFrontendLogsList().add(LocalDateTime.now().toString() + " : " + log);
-        if (this.getFrontendLogsList().size() > logLimit) {
-            this.getFrontendLogsList().removeFirst();
-        }
+        frontendLogsList.add(LocalDateTime.now() + " : " + log);
         this.getWebSocketPublisher()
-                .sendFrontendLogs(String.join("\n", this.getFrontendLogsList()));
+                .sendFrontendLogs(String.join("\n", this.getFrontendLogsList().snapshot()));
     }
 
     private void sendWithRetry(String payload, String topic) {
