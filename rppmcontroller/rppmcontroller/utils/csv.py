@@ -1,14 +1,16 @@
 import csv
+import os
 from typing import Any, Iterable
 
 
 class CSVWriter:
     def __init__(self, path: str):
-        file = open(path, "w", newline="")
+        self.__path = path
 
-        self.__file = file
-        self.__writer = csv.writer(file)
+        # delete previous data to avoid data clutter
+        if os.path.exists(path):
+            os.remove(path)
 
     def write(self, row: Iterable[Any]):
-        self.__writer.writerow(row)
-        self.__file.flush()
+        with open(self.__path, "a", newline="") as file:
+            csv.writer(file).writerow(row)

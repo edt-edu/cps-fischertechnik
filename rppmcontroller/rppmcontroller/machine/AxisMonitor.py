@@ -186,9 +186,11 @@ class AxisMonitor:
         if direct_previous_data is not None:
             moved_distance = abs(current_counter_value -
                                  direct_previous_data.counter_value)
-            deviation = self.__calculate_deviation(moved_distance,
-                                                   current_pwm_value) \
-                if direct_previous_data.pwm_value > 0 else None
+            if direct_previous_data.pwm_value > 0:
+                deviation = self.__calculate_deviation(moved_distance,
+                                                       current_pwm_value)
+            else:
+                deviation = None
             if deviation is not None and deviation is not Deviation.NONE:
                 logging.debug(f"got {deviation} for distance of "
                               f"{moved_distance}")
