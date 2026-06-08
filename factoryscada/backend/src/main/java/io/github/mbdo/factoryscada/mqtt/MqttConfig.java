@@ -53,6 +53,7 @@ public class MqttConfig {
         adapter.setCompletionTimeout(5000);
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInboundChannel());
+        adapter.setAutoStartup(Boolean.FALSE);      // ensure we do not process message before the app is ready cf. MqttStartup.java
         return adapter;
     }
 
