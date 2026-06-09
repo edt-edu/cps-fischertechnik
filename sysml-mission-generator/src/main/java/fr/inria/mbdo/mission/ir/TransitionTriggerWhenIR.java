@@ -3,30 +3,44 @@ package fr.inria.mbdo.mission.ir;
 import lombok.Getter;
 import org.eclipse.syson.sysml.Element;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 @Getter
 public class TransitionTriggerWhenIR extends TransitionTriggerIR {
 
-    private final String acceptEventName;
-    private final String acceptEventQualifiedName;
-    private final String machineRefName;
-    private final String machineTypeQualifiedName;
-    private final String conditionMethodName;
-    private final String triggerMethodName;
-    private final String sysmlSource;
+    private final TriggerExpressionIR expression;
+    private final String triggerEventName;
 
-    public TransitionTriggerWhenIR(Element element, String acceptEventName, String acceptEventQualifiedName, String machineRefName, String machineTypeQualifiedName, String conditionMethodName, String triggerMethodName, String sysmlSource) {
+    public TransitionTriggerWhenIR(Element element, String triggerEventName, TriggerExpressionIR expression) {
         super(element);
-        this.acceptEventName = acceptEventName;
-        this.acceptEventQualifiedName = acceptEventQualifiedName;
-        this.machineRefName = machineRefName;
-        this.machineTypeQualifiedName = machineTypeQualifiedName;
-        this.conditionMethodName = conditionMethodName;
-        this.triggerMethodName = triggerMethodName;
-        this.sysmlSource = sysmlSource;
+        this.triggerEventName = triggerEventName;
+        this.expression = expression;
+    }
+
+    @Override
+    public String getName() {
+        return "AcceptWhen" + expression.getName() + "Event";
     }
 
     @Override
     public String getQualifiedName() {
-        return String.format("%s::%s", super.getQualifiedName(), acceptEventQualifiedName);
+        return getNamespace() + "::" + getName();
+    }
+
+    @Override
+    public String toString() {
+        return expression.toString();
+    }
+
+    public MachineRefIR getAssociatedMachine() {
+        Set<MachineRefIR> machines = new HashSet<>(expression.getMachines());
+        if (machines.size() == 1) {
+            return machines.iterator().next();
+        } else if (machines.size() > 1) {
+            throw new IllegalStateException("Multiple machines associated to same 'accept-when' expression.");
+        }
+        return null;
     }
 }

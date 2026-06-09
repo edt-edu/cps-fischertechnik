@@ -5,18 +5,16 @@ import fr.inria.mbdo.mission.generators.SymbolIndex;
 import fr.inria.mbdo.mission.ir.*;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.syson.sysml.*;
-import org.eclipse.syson.sysml.impl.FeatureChainingImpl;
+import org.eclipse.syson.sysml.impl.*;
 import org.eclipse.syson.sysml.util.SysmlSwitch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class ToIrSwitch extends SysmlSwitch<Void> {
     private static final Logger logger = LoggerFactory.getLogger(ToIrSwitch.class);
-    private static final Pattern MACHINE_REF_TOKEN = Pattern.compile("\\b([A-Za-z_]\\w*)\\s*\\.");
 
     private final SymbolIndex index;
     private final IrRepository.Builder irRepositoryBuilder;
@@ -35,8 +33,10 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
 
         List<MachineAttributeIR> attributes = new ArrayList<>();
         for (AttributeUsage ownedAttribute : object.getOwnedAttribute()) {
-            TypeRef attributeType = toTypeRef(ownedAttribute.getType());
-            attributes.add(new MachineAttributeIR(ownedAttribute, attributeType));
+            TypeRef attrType = (ownedAttribute.getType() == null || ownedAttribute.getType().isEmpty())
+                    ? TypeRef.unknown(object.getQualifiedName() + "::" + ownedAttribute.getName())
+                    : toTypeRef(ownedAttribute.getType());
+            attributes.add(new MachineAttributeIR(ownedAttribute, attrType));
         }
 
         Map<String, Ref<MachineActionIR>> actions = new HashMap<>();
@@ -100,7 +100,8 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             throw new IllegalStateException("No default transition found for state " + object.getQualifiedName());
         }
 
-        irRepositoryBuilder.add(new MachineMissionIR(object, new Ref<>(defaultTransitionIR.getQualifiedName()), statesRefs, machinesRefs));
+        irRepositoryBuilder.add(new MachineMissionIR(object, new Ref<>(defaultTransitionIR.getQualifiedName()),
+                statesRefs, machinesRefs));
 
         return null;
     }
@@ -139,12 +140,7 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
     private List<MachineRefIR> collectMachineRefs(StateDefinition object) {
         List<MachineRefIR> machinesRefs = new ArrayList<>();
         for (ReferenceUsage ref : object.getOwnedReference()) {
-            TypeRef machineType = toTypeRef(ref.getType());
-            logger.info("[State] Machine ref {} : id={}", ref.getName(), ref.getElementId());
-            if (machineType.kind() != TypeRef.TypeKind.USER) {
-                throw new IllegalStateException("Machine reference must target a user type: " + ref.getQualifiedName());
-            }
-            machinesRefs.add(new MachineRefIR(ref.getName(), machineType));
+            machinesRefs.add(new MachineRefIR(ref.getName(), ref.getQualifiedName(), toTypeRef(ref.getType())));
         }
         return machinesRefs;
     }
@@ -159,28 +155,15 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
 
     private TransitionIR buildTransitionIR(TransitionUsage transition, List<Ref<StateIR>> statesRefs,
                                            List<MachineRefIR> machineRefs) {
-        String sourceQName = transition.getSource() != null ? transition.getSource().getQualifiedName() : null;
-        String targetQName = transition.getTarget().getQualifiedName();
-        TransitionActionIR transitionAction = buildTransitionAction(transition, machineRefs);
-        Ref<TransitionActionIR> transitionActionRef = transitionAction != null
-                ? new Ref<>(transitionAction.getQualifiedName())
+        /* Retrieve states From -> To */
+        String sourceQName = transition.getSource() != null && !(transition.getSource() instanceof PerformActionUsage)
+                ? transition.getSource().getQualifiedName()
                 : null;
-        if (transitionAction != null) {
-            irRepositoryBuilder.add(transitionAction);
-        }
-        logger.debug("[State]\t\tFound transition: {} -> {} : {}", sourceQName, targetQName, transitionActionRef);
+        String targetQName = transition.getTarget().getQualifiedName();
 
-        if (sourceQName == null) {
-            logger.warn("[State]\t\t\tFound null source for transition, what should I do ?");
-        } else if (transition.getSource() instanceof PerformActionUsage) {
-            logger.warn("[State]\t\t\tFound action source for transition");
-            sourceQName = null; // Set to null to avoid referencing action as source state
-        } else {
-            String finalSourceQName = sourceQName;
-            if (statesRefs.stream().noneMatch(r -> r.qName().equals(finalSourceQName))) {
-                logger.warn("Transition source state not found in index ({})", sourceQName);
-                throw new IllegalStateException("Transition source state not found: " + sourceQName);
-            }
+        if (sourceQName != null && statesRefs.stream().noneMatch(r -> r.qName().equals(sourceQName))) {
+            logger.warn("Transition source state not found in index ({})", sourceQName);
+            throw new IllegalStateException("Transition source state not found: " + sourceQName);
         }
 
         if (statesRefs.stream().noneMatch(r -> r.qName().equals(targetQName))) {
@@ -188,34 +171,30 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             throw new IllegalStateException("Transition target state not found: " + targetQName);
         }
 
-        TransitionTriggerIR trigger = null;
-        List<AcceptActionUsage> accepts = transition.getTriggerAction();
-
-        if (accepts != null && !accepts.isEmpty()) {
-            AcceptActionUsage aau = accepts.getFirst();
-            if (aau.isTriggerAction()) {
-                trigger = buildTriggerIR(transition, aau, sourceQName, targetQName, machineRefs);
-                irRepositoryBuilder.add(trigger);
-            } else {
-                logger.debug("[State]\t\t\tNo trigger action found for transition");
-            }
+        /* Build trigger */
+        TransitionTriggerIR trigger = buildTriggerIR(transition);
+        if (trigger != null) {
+            irRepositoryBuilder.add(trigger);
         }
 
+        /* Build guard (Not implemented yet, TODO) */
         TransitionGuardIR guard = null;
 
-        for (Expression e : transition.getGuardExpression()) {
-            for (TextualRepresentation tr : e.getTextualRepresentation()) {
-                logger.info("[State]\t\t\tFound guard expression: {}", tr.getBody());
-            }
+        /* Build action */
+        TransitionActionIR transitionAction = buildTransitionAction(transition, machineRefs);
+        if (transitionAction != null) {
+            irRepositoryBuilder.add(transitionAction);
         }
 
-        // TODO build Guard ?
         Ref<StateIR> sourceStateRef = sourceQName != null ? new Ref<>(sourceQName) : null;
         Ref<StateIR> targetStateRef = new Ref<>(targetQName);
+        Ref<TransitionActionIR> transitionActionRef = transitionAction != null
+                ? new Ref<>(transitionAction.getQualifiedName())
+                : null;
         Ref<TransitionTriggerIR> triggerRef = trigger != null ? new Ref<>(trigger.getQualifiedName()) : null;
         Ref<TransitionGuardIR> guardRef = guard != null ? new Ref<>(guard.getQualifiedName()) : null;
 
-        logger.debug("[State]\t\t\tBuilt transition IR: {} -> {} [trigger={}, guard={}, action={}]",
+        logger.debug("[State]\t\t\tNew transition {} -> {} [trigger={}, guard={}, action={}]",
                 sourceQName, targetQName, triggerRef, guardRef, transitionActionRef);
 
         return new TransitionIR(transition, sourceStateRef, targetStateRef, triggerRef, guardRef, transitionActionRef);
@@ -244,53 +223,119 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         List<ParameterIR> parameterIRs = new ArrayList<>();
         for (Feature parameter : actionUsage.getParameter()) {
             EList<Type> types = parameter.getType();
-            TypeRef paramType = (types == null || types.isEmpty()) ?
-                    TypeRef.unknown(actionUsage.getQualifiedName() + "::" + parameter.getName()) : toTypeRef(types);
+            TypeRef paramType = (types == null || types.isEmpty())
+                    ? TypeRef.unknown(actionUsage.getQualifiedName() + "::" + parameter.getName())
+                    : toTypeRef(types);
             parameterIRs.add(new ParameterIR(parameter, paramType));
         }
 
         return new MachineActionIR(actionUsage, parameterIRs);
     }
 
-    private TypeRef toParameterTypeRef(Feature parameter, String ownerQualifiedName) {
-        EList<Type> types = parameter.getType();
-        if (types == null || types.isEmpty()) {
-            return TypeRef.unknown(ownerQualifiedName + "::" + parameter.getName());
+    private TransitionTriggerIR buildTriggerIR(TransitionUsage transition) {
+        List<AcceptActionUsage> accepts = transition.getTriggerAction();
+        if (accepts == null || accepts.isEmpty()) {
+            return null;
         }
-        return toTypeRef(types);
-    }
+        AcceptActionUsage accept = accepts.getFirst();
 
-    private TransitionTriggerIR buildTriggerIR(TransitionUsage transition, AcceptActionUsage accept, String sourceQName,
-                                               String targetQName, List<MachineRefIR> machineRefs) {
         String explicitMessageTypeQName = resolveExplicitAcceptMessageTypeQName(accept);
         if (explicitMessageTypeQName != null) {
-            return new TransitionTriggerSimpleIR(accept, new Ref<>(explicitMessageTypeQName));
+            return new TransitionTriggerSimpleIR(transition, new Ref<>(explicitMessageTypeQName));
         }
 
-        String sourceToken = simpleToken(sourceQName, "Init");
-        String targetToken = simpleToken(targetQName, "Target");
-        String acceptEventName = "AcceptWhen" + sourceToken + "To" + targetToken + "Event";
-        String acceptEventQualifiedName = transition.getQualifiedName() + "::" + acceptEventName;
-        String machineRefName = "TODO";
-        String machineTypeQualifiedName = machineRefs.stream()
-                .filter(machineRef -> machineRef.name().equals(machineRefName))
-                .map(machineRef -> machineRef.type().qualifiedName())
-                .findFirst()
-                .orElse(null);
+        TriggerExpressionIR triggerExpression = extractTriggerExpression(accept.getPayloadArgument());
+        if (triggerExpression == null) {
+            logger.warn("No trigger expression found for {}",
+                    accept.getPayloadArgument().getParameter().getFirst().getName());
+        }
 
-        String conditionMethodName = "isAcceptWhenEventConditionMet";
-        String triggerMethodName = "checkAndTriggerAcceptWhenEvent";
-        String sysmlSource = "accept when // TODO boolean expression";
+        return new TransitionTriggerWhenIR(transition,
+                triggerExpression != null ? triggerExpression.getName() : null, triggerExpression);
+    }
 
-        return new TransitionTriggerWhenIR(
-                accept,
-                acceptEventName,
-                acceptEventQualifiedName,
-                machineRefName,
-                machineTypeQualifiedName,
-                conditionMethodName,
-                triggerMethodName,
-                sysmlSource);
+    private TriggerExpressionIR extractTriggerExpression(Element element) {
+        switch (element) {
+            case null -> {
+                return null;
+            }
+            case FeatureChainExpression fce -> {
+                return new TriggerMachineAttributeExpressionIR(fce, extractMachineRef(fce),
+                        extractMachineAttributeRef(fce));
+            }
+            case OperatorExpression oe -> {
+                List<Feature> parameters = oe.getParameter();
+                if (parameters != null && parameters.size() < 2) {
+                    throw new IllegalArgumentException("Illegal operator expression, must contain 2 elements");
+                }
+                TriggerExpressionIR leftExpression = extractTriggerExpression(parameters.get(0));
+                TriggerExpressionIR rightExpression = extractTriggerExpression(parameters.get(1));
+                return new TriggerOperatorExpressionIR(oe, oe.getOperator(), leftExpression, rightExpression);
+            }
+            case LiteralExpression le -> {
+                return switch (le) {
+                    case LiteralBoolean lb -> new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.BOOLEAN),
+                            String.valueOf(lb.isValue()));
+                    case LiteralInteger li -> new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.INTEGER),
+                            String.valueOf(li.getValue()));
+                    case LiteralString ls ->
+                            new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.STRING), ls.getValue());
+                    case LiteralRational lr -> new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.REAL),
+                            String.valueOf(lr.getValue()));
+                    default -> null;
+                };
+            }
+            default -> {
+                for (Element member : element.getOwnedElement()) {
+                    TriggerExpressionIR tmp = extractTriggerExpression(member);
+                    if (tmp != null) {
+                        return tmp;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private MachineRefIR extractMachineRef(Element element) {
+        switch (element) {
+            case FeatureChainExpression fce -> {
+                for (Feature feat : fce.getParameter()) {
+                    MachineRefIR tmp = extractMachineRef(feat);
+                    if (tmp != null) {
+                        return tmp;
+                    }
+                }
+            }
+            case FeatureReferenceExpression ffr -> {
+                Feature referent = ffr.getReferent();
+                return new MachineRefIR(referent.getName(), referent.getQualifiedName(), toTypeRef(referent.getType()));
+            }
+            default -> {
+                for (Element member : element.getOwnedElement()) {
+                    MachineRefIR tmp = extractMachineRef(member);
+                    if (tmp != null) {
+                        return tmp;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private MachineAttributeRefIR extractMachineAttributeRef(Element element) {
+        switch (element) {
+            case FeatureChainExpression fce -> {
+                return extractMachineAttributeRef(fce.getTargetFeature());
+            }
+            case AttributeUsage au -> {
+                return new MachineAttributeRefIR(au.getName(), au.getQualifiedName(), toTypeRef(au.getType()));
+            }
+            default -> {
+                return null;
+            }
+        }
     }
 
     private String resolveExplicitAcceptMessageTypeQName(AcceptActionUsage accept) {
@@ -325,59 +370,6 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         return null;
     }
 
-    private String simpleToken(String qualifiedName, String fallback) {
-        if (qualifiedName == null || qualifiedName.isBlank()) {
-            return fallback;
-        }
-        String token = qualifiedName;
-        int separator = qualifiedName.lastIndexOf("::");
-        if (separator >= 0 && separator + 2 < qualifiedName.length()) {
-            token = qualifiedName.substring(separator + 2);
-        }
-        return toUpperCamel(token, fallback);
-    }
-
-    private String toUpperCamel(String value, String fallback) {
-        if (value == null || value.isBlank()) {
-            return fallback;
-        }
-
-        String[] parts = value.split("[^A-Za-z0-9]+");
-        StringBuilder builder = new StringBuilder();
-        for (String part : parts) {
-            if (part == null || part.isBlank()) {
-                continue;
-            }
-            builder.append(part.substring(0, 1).toUpperCase(Locale.ROOT));
-            if (part.length() > 1) {
-                builder.append(part.substring(1));
-            }
-        }
-
-        return builder.isEmpty() ? fallback : builder.toString();
-    }
-
-    private TypeRef toTypeRef(EList<Type> types) {
-        if (types == null || types.isEmpty()) {
-            throw new IllegalArgumentException("Missing type");
-        }
-
-        String qualifiedName = types.getFirst().getQualifiedName();
-        if (qualifiedName == null) {
-            throw new IllegalArgumentException("Type without qualified name");
-        }
-
-        return switch (qualifiedName) {
-            case "ScalarValues::Boolean" -> TypeRef.scalar(ScalarType.BOOLEAN);
-            case "ScalarValues::Integer" -> TypeRef.scalar(ScalarType.INTEGER);
-            case "ScalarValues::Real" -> TypeRef.scalar(ScalarType.REAL);
-            default -> index.resolveAny(qualifiedName)
-                    .map(def -> TypeRef.user(qualifiedName))
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Cannot resolve type: " + qualifiedName));
-        };
-    }
-
     private boolean shouldSkipGeneration(Definition object) {
         for (MetadataUsage metadataUsage : object.getOwnedMetadata()) {
             if (metadataUsage.getType().stream().map(Type::getQualifiedName).anyMatch("Common::NoGeneration"::equals)) {
@@ -397,10 +389,13 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             String receiverName = sau.getSenderArgument().getResult().getName();
             TypeRef messageTypeRef = toTypeRef(sau.getPayloadArgument().getType());
             MachineRefIR senderMachine = machineRefs.stream()
-                    .filter(ref -> ref.name().equals(receiverName)).findFirst().orElseThrow(() -> new IllegalStateException("Receiver was not specified for message " + messageTypeRef.qualifiedName()));
+                    .filter(ref -> ref.name().equals(receiverName)).findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Receiver was not specified for message " + messageTypeRef.qualifiedName()));
 
             logger.warn("SendActionUsage called message={} to={}", messageTypeRef.qualifiedName(), senderMachine);
-            MachineMessageRefIR messageRef = new MachineMessageRefIR(sau.getPayloadArgument().getType().getFirst().getQualifiedName(), messageTypeRef);
+            MachineMessageRefIR messageRef = new MachineMessageRefIR(
+                    sau.getPayloadArgument().getType().getFirst().getQualifiedName(), messageTypeRef);
 
             action = new TransitionActionSendToIR(sau, List.of(), messageRef, senderMachine);
             // Event qName: sau.getPayloadArgument().getType().getFirst().getQualifiedName
@@ -460,5 +455,25 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         }
 
         return result;
+    }
+
+    private TypeRef toTypeRef(EList<Type> types) {
+        if (types == null || types.isEmpty()) {
+            return TypeRef.unknown(null);
+        }
+
+        Type type = types.getFirst();
+        String qualifiedName = type.getQualifiedName();
+        if (qualifiedName == null || qualifiedName.isBlank()) {
+            return TypeRef.unknown(null);
+        }
+
+        return switch (qualifiedName) {
+            case "ScalarValues::Boolean" -> TypeRef.scalar(ScalarType.BOOLEAN);
+            case "ScalarValues::Integer" -> TypeRef.scalar(ScalarType.INTEGER);
+            case "ScalarValues::Real" -> TypeRef.scalar(ScalarType.REAL);
+            case "ScalarValues::String" -> TypeRef.scalar(ScalarType.STRING);
+            default -> TypeRef.user(qualifiedName);
+        };
     }
 }

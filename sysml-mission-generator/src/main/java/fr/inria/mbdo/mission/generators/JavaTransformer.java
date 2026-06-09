@@ -25,19 +25,12 @@ public class JavaTransformer {
     private static final String COMMENT_TRANSITIONS = "Transitions connect triggers, runtime actions, and next-state targets.";
     private static final String COMMENT_STATES = "States are built from the collected transitions.";
     private static final String COMMENT_SUBSCRIPTIONS = "Subscribe each mission machine to trigger event types used by this mission.";
-    private static final String INIT_STATE_VAR_NAME = "__init";
-    private static final String INIT_STATE_DISPLAY_NAME = "__Init";
-    private static final String FIELD_STATE = "state";
-    private static final String ASSIGN_FIELD = "this.$N = $N";
     private static final String EMPTY_RUNTIME_ACTION = "event -> { }";
     private static final String ALWAYS_TRUE_GUARD = "event -> true";
     private static final String ACTIONS_SUFFIX = "Actions";
     private static final String GUARDS_SUFFIX = "Guards";
     private static final String CURRENT_COMMAND_ATTR = "currentCommand";
     private static final String COMMAND_SUCCESS_MESSAGE = "CommandSuccessEventMessage";
-    private static final String FALLBACK_TRANSITION_ACTION = "transitionAction";
-    private static final String FALLBACK_PERFORM_ACTION = "performAction";
-    private static final String FALLBACK_TRANSITION_GUARD = "transitionGuard";
     private static final String JAVADOC_ACCEPT_WHEN_EVENT = """
             Generated accept-when event trigger for runtime transitions.
             SysML source:
@@ -59,6 +52,8 @@ public class JavaTransformer {
             $L
             }</pre>""";
     private static final String JAVADOC_TRANSITION_ACTION_TODO = "TODO: implement transition action for $L";
+
+    private static final String STMT_ASSIGN_FIELD = "this.$N = $N";
     private static final String STMT_NEW_STATE = "$T $N = new $T($S)";
     private static final String STMT_ADD_TRANSITION = "$N.addTransition(new $T($T.class, $L, $L, $N))";
     private static final String STMT_SET_ENTRY_TRANSITION = "this.runtime.setEntryTransition(new $T($T.class, $L, $L, $N))";
@@ -75,12 +70,10 @@ public class JavaTransformer {
     private final Logger logger = LoggerFactory.getLogger(JavaTransformer.class);
     private final IrRepository irRepository;
     private final TypeTable typeTable;
-    private final String packagePrefix;
 
-    public JavaTransformer(IrRepository irRepository, TypeTable typeTable, String packagePrefix) {
+    public JavaTransformer(IrRepository irRepository, TypeTable typeTable) {
         this.irRepository = irRepository;
         this.typeTable = typeTable;
-        this.packagePrefix = packagePrefix;
     }
 
     public Map<String, JavaFile> generate() {
@@ -97,28 +90,23 @@ public class JavaTransformer {
 
     private Map<String, JavaFile> generateAcceptEventClasses() {
         Map<String, JavaFile> javaFiles = new LinkedHashMap<>();
-        Set<String> generated = new LinkedHashSet<>();
 
         for (TransitionTriggerIR trigger : irRepository.getTriggers().values()) {
-            if (trigger instanceof TransitionTriggerWhenIR triggerWhen
-                    && triggerWhen.getAcceptEventQualifiedName() != null
-                    && generated.add(triggerWhen.getAcceptEventQualifiedName())) {
-                logger.info("Generating accept-event class for {}", triggerWhen.getAcceptEventQualifiedName());
-                javaFiles.put(triggerWhen.getAcceptEventQualifiedName(), buildAcceptWhenEventJavaFile(triggerWhen));
+            if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
+                logger.info("Generating accept-event class for {}", triggerWhen.getQualifiedName());
+
+                TypeSpec.Builder eventBuilder = TypeSpec.classBuilder(typeTable.resolveClassNameOrThrow(trigger.getQualifiedName()))
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addSuperinterface(Event.class)
+                        .addJavadoc(JAVADOC_ACCEPT_WHEN_EVENT, trigger.toString());
+
+                javaFiles.put(triggerWhen.getQualifiedName(),
+                        JavaFile.builder(typeTable.resolvePackageOrThrow(trigger.getQualifiedName()),
+                                eventBuilder.build()).build());
             }
         }
 
         return javaFiles;
-    }
-
-    private JavaFile buildAcceptWhenEventJavaFile(TransitionTriggerWhenIR trigger) {
-        String source = trigger.getSysmlSource() == null ? "" : trigger.getSysmlSource();
-        TypeSpec.Builder eventBuilder = TypeSpec.classBuilder(trigger.getAcceptEventName())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(Event.class)
-                .addJavadoc(JAVADOC_ACCEPT_WHEN_EVENT, source);
-
-        return JavaFile.builder(javaPackageOf(trigger), eventBuilder.build()).build();
     }
 
     private Map<String, JavaFile> generateMachinesInterfaces() {
@@ -182,13 +170,11 @@ public class JavaTransformer {
             }
 
             for (TransitionTriggerWhenIR triggerWhen : resolveAcceptWhenTriggersForMachine(machine)) {
-                ClassName acceptEventType = ClassName.get(javaPackageOf(triggerWhen),
-                        triggerWhen.getAcceptEventName());
+                ClassName acceptEventType = typeTable.resolveClassNameOrThrow(triggerWhen.getQualifiedName());
 
-                methods.add(MethodSpec.methodBuilder(triggerWhen.getTriggerMethodName())
+                methods.add(MethodSpec.methodBuilder("trigger" + triggerWhen.getQualifiedName())
                         .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
-                        .addJavadoc(JAVADOC_ADAPTER_TRIGGER_PLACEHOLDER,
-                                triggerWhen.getSysmlSource() == null ? "" : triggerWhen.getSysmlSource())
+                        .addJavadoc(JAVADOC_ADAPTER_TRIGGER_PLACEHOLDER, triggerWhen.toString())
                         .beginControlFlow("if (false)")
                         .addStatement(STMT_DECLARE_ACCEPT_EVENT, acceptEventType)
                         .addStatement(STMT_PUBLISH_ACCEPT_EVENT)
@@ -198,7 +184,8 @@ public class JavaTransformer {
 
             interfaceBuilder.addMethods(methods);
             javaFiles.put(machine.getQualifiedName() + "::interface",
-                    JavaFile.builder(javaPackageOf(machine), interfaceBuilder.build()).build());
+                    JavaFile.builder(typeTable.resolvePackageOrThrow(machine.getQualifiedName()),
+                            interfaceBuilder.build()).build());
         }
 
         return javaFiles;
@@ -216,7 +203,8 @@ public class JavaTransformer {
                 enumBuilder.addEnumConstant(constant);
             }
             javaFiles.put(enumeration.getQualifiedName(),
-                    JavaFile.builder(javaPackageOf(enumeration), enumBuilder.build()).build());
+                    JavaFile.builder(typeTable.resolvePackageOrThrow(enumeration.getQualifiedName()),
+                            enumBuilder.build()).build());
         }
 
         return javaFiles;
@@ -226,19 +214,14 @@ public class JavaTransformer {
         Map<String, JavaFile> javaFiles = new LinkedHashMap<>();
 
         for (MachineMessageIR message : irRepository.getMessages().values()) {
-            logger.info("Generating message for {}", message.getQualifiedName());
-            javaFiles.put(message.getQualifiedName(), buildMessageJavaFile(message));
+            TypeSpec messageClass = TypeSpec.classBuilder(message.getName())
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addSuperinterface(Event.class).build();
+            javaFiles.put(message.getQualifiedName(), JavaFile
+                    .builder(typeTable.resolvePackageOrThrow(message.getQualifiedName()), messageClass).build());
         }
 
         return javaFiles;
-    }
-
-    private JavaFile buildMessageJavaFile(MachineMessageIR message) {
-        TypeSpec.Builder messageBuilder = TypeSpec.classBuilder(message.getName())
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addSuperinterface(Event.class);
-
-        return JavaFile.builder(javaPackageOf(message), messageBuilder.build()).build();
     }
 
     private Map<String, JavaFile> generateMachinesMissionsClasses() {
@@ -256,12 +239,13 @@ public class JavaTransformer {
                     .addJavadoc(JAVADOC_FROM, mission.getQualifiedName(), mission.getDocumentation())
                     .addField(FieldSpec.builder(ClassName.get(Logger.class), "logger", Modifier.PRIVATE,
                                     Modifier.STATIC, Modifier.FINAL)
-                            .initializer("$T.getLogger($T.class)", LoggerFactory.class,
-                                    ClassName.get(javaPackageOf(mission), mission.getName()))
+                            .initializer("$T.getLogger($S)", LoggerFactory.class,
+                                    mission.getName())
                             .build());
 
             // Add a field for the runtime actions implementor that users should provide.
-            ClassName actionsInterface = ClassName.get(javaPackageOf(mission), mission.getName() + ACTIONS_SUFFIX);
+            ClassName actionsInterface = ClassName.get(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
+                    mission.getName() + ACTIONS_SUFFIX);
             missionBuilder.addField(FieldSpec.builder(actionsInterface, "actions", Modifier.PRIVATE,
                     Modifier.FINAL).build());
             for (MachineRefIR machineRef : mission.getMachinesRefs()) {
@@ -272,7 +256,8 @@ public class JavaTransformer {
             missionBuilder.addMethod(buildGetNameMethod(mission));
 
             javaFiles.put(mission.getQualifiedName(),
-                    JavaFile.builder(javaPackageOf(mission), missionBuilder.build()).build());
+                    JavaFile.builder(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
+                            missionBuilder.build()).build());
         }
 
         return javaFiles;
@@ -333,7 +318,8 @@ public class JavaTransformer {
             }
 
             javaFiles.put(mission.getQualifiedName() + "::actions-interface",
-                    JavaFile.builder(javaPackageOf(mission), actionsInterfaceBuilder.build()).build());
+                    JavaFile.builder(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
+                            actionsInterfaceBuilder.build()).build());
         }
 
         return javaFiles;
@@ -347,20 +333,22 @@ public class JavaTransformer {
         for (MachineRefIR machineRef : mission.getMachinesRefs()) {
             String machineName = machineRef.name();
             constructorBuilder.addParameter(typeTable.resolve(machineRef.type()), machineName);
-            constructorBuilder.addStatement(ASSIGN_FIELD, machineName, machineName);
+            constructorBuilder.addStatement(STMT_ASSIGN_FIELD, machineName, machineName);
         }
 
         // Add constructor parameter for the actions implementor and assign it.
-        ClassName actionsInterface = ClassName.get(javaPackageOf(mission), mission.getName() + ACTIONS_SUFFIX);
+        ClassName actionsInterface = ClassName.get(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
+                mission.getName() + ACTIONS_SUFFIX);
         constructorBuilder.addParameter(actionsInterface, "actions");
-        constructorBuilder.addStatement(ASSIGN_FIELD, "actions", "actions");
+        constructorBuilder.addStatement(STMT_ASSIGN_FIELD, "actions", "actions");
 
         Map<String, String> customActionMethodNamesByQualifiedName = resolveCustomTransitionActionMethodNames(
                 transitions);
 
         Map<String, String> guardMethodNamesByQualifiedName = resolveTransitionGuardMethodNames(transitions);
         Map<String, String> transitionGuardExpressionsByGuardQName = new LinkedHashMap<>();
-        ClassName guardsClass = ClassName.get(javaPackageOf(mission), mission.getName() + GUARDS_SUFFIX);
+        ClassName guardsClass = ClassName.get(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
+                mission.getName() + GUARDS_SUFFIX);
         for (TransitionIR transition : transitions) {
             String transitionGuardQName = resolveTransitionGuardQName(transition);
             if (transitionGuardQName == null) {
@@ -395,7 +383,7 @@ public class JavaTransformer {
         constructorBuilder.addComment(COMMENT_STATES);
         Map<String, String> stateRuntimeNames = new LinkedHashMap<>();
         for (StateIR state : states) {
-            String stateVarName = localStateName(state.getName());
+            String stateVarName = cleanName(state.getName());
             constructorBuilder.addStatement(STMT_NEW_STATE, RuntimeState.class, stateVarName, RuntimeState.class,
                     state.getName());
             stateRuntimeNames.put(state.getQualifiedName(), stateVarName);
@@ -413,7 +401,7 @@ public class JavaTransformer {
 
         for (TransitionIR transition : transitions) {
 
-            logger.info("[Transition]\t\tBuilding transition {}", transition);
+            logger.info("[Transition]\t\tBuilding transition {}", transition.getQualifiedName());
 
             Optional<StateIR> sourceState = resolveState(transition.getFromState());
             Optional<StateIR> targetState = resolveState(transition.getToState());
@@ -454,7 +442,8 @@ public class JavaTransformer {
                     continue;
                 }
 
-                if (!machineOwnsTrigger(machineRef, machine, trigger, transition)) {
+                MachineMessageIR eventMessage = resolveTriggerMessage(transition);
+                if (eventMessage == null || !machineDefinesMessage(machineRef, machine, eventMessage)) {
                     continue;
                 }
 
@@ -525,8 +514,12 @@ public class JavaTransformer {
                 continue;
             }
 
+            if (customAction.getName() == null) {
+                throw new IllegalStateException("Custom transition action has no name for transition " + transition.getQualifiedName());
+            }
+
             customActionMethodNamesByQualifiedName.computeIfAbsent(customAction.getQualifiedName(), key -> {
-                String baseMethodName = localName(deriveLogicalActionName(customAction), FALLBACK_TRANSITION_ACTION);
+                String baseMethodName = cleanName(customAction.getName());
                 String methodName = uniqueLocalName(baseMethodName, usedMethodNames);
                 usedMethodNames.add(methodName);
                 return methodName;
@@ -608,24 +601,6 @@ public class JavaTransformer {
         return trigger;
     }
 
-    private boolean machineOwnsTrigger(MachineRefIR machineRef, MachineIR machine, TransitionTriggerIR trigger,
-                                       TransitionIR transition) {
-        if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
-            if (triggerWhen.getMachineTypeQualifiedName() == null && triggerWhen.getMachineRefName() == null) {
-                return true;
-            }
-            if (triggerWhen.getMachineTypeQualifiedName() != null && machine != null
-                    && triggerWhen.getMachineTypeQualifiedName().equals(machine.getQualifiedName())) {
-                return true;
-            }
-            return triggerWhen.getMachineRefName() != null && machineRef != null
-                    && triggerWhen.getMachineRefName().equals(machineRef.name());
-        }
-
-        MachineMessageIR eventMessage = resolveTriggerMessage(transition);
-        return eventMessage != null && machineDefinesMessage(machineRef, machine, eventMessage);
-    }
-
     private boolean machineDefinesMessage(MachineRefIR machineRef, MachineIR machine, MachineMessageIR message) {
         if (machine == null || message == null) {
             return false;
@@ -640,8 +615,8 @@ public class JavaTransformer {
 
         String messageQualifiedName = message.getQualifiedName() == null ? ""
                 : message.getQualifiedName().toLowerCase(Locale.ROOT);
-        String messagePackage = message.getJavaPackage() == null ? ""
-                : message.getJavaPackage().toLowerCase(Locale.ROOT);
+        String messagePackage = typeTable.resolvePackage(message.getQualifiedName()).orElse("");
+        messagePackage = messagePackage.toLowerCase(Locale.ROOT);
         for (String ownershipSignal : ownershipSignals) {
             if (ownershipSignal == null || ownershipSignal.isBlank()) {
                 continue;
@@ -685,14 +660,15 @@ public class JavaTransformer {
         }
 
         if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
-            return ClassName.get(javaPackageOf(trigger), triggerWhen.getAcceptEventName());
+            return typeTable.resolveClassNameOrThrow(triggerWhen.getQualifiedName());
         }
 
         MachineMessageIR eventMessage = resolveTriggerMessage(transition);
         if (eventMessage == null) {
             throw new IllegalStateException("Missing trigger IR for transition " + transition.getQualifiedName());
         }
-        return ClassName.get(javaPackageOf(eventMessage), eventMessage.getName());
+
+        return typeTable.resolveClassNameOrThrow(eventMessage.getQualifiedName());
     }
 
     private CodeBlock resolveTransitionActionExpression(TransitionIR transition,
@@ -728,7 +704,7 @@ public class JavaTransformer {
                     throw new IllegalStateException("Transition " + transition.getQualifiedName()
                             + " has a machine action without a machine reference");
                 }
-                String methodName = localName(machineAction.getName(), FALLBACK_PERFORM_ACTION);
+                String methodName = cleanName(machineAction.getName());
                 // try to resolve ActionIR to match parameter count
                 String underlyingQName = machineAction.getQualifiedName();
                 int idx = underlyingQName.indexOf(':');
@@ -768,35 +744,6 @@ public class JavaTransformer {
         };
     }
 
-    private String deriveLogicalActionName(TransitionActionIR transitionAction) {
-        if (transitionAction == null) {
-            return FALLBACK_TRANSITION_ACTION;
-        }
-
-        String logicalName = transitionAction.getName();
-        if (transitionAction instanceof TransitionActionCustomIR customAction
-                && (logicalName == null || logicalName.isBlank()
-                || logicalName.toLowerCase(Locale.ROOT).contains("perform")
-                || logicalName.toLowerCase(Locale.ROOT).contains("actionusage")
-                || logicalName.toLowerCase(Locale.ROOT).contains("action"))) {
-            for (String stmt : customAction.getBodyStatements()) {
-                if (stmt != null && stmt.contains(".")) {
-                    int dot = stmt.indexOf('.');
-                    int par = stmt.indexOf('(');
-                    if (par > dot) {
-                        String candidate = stmt.substring(dot + 1, par);
-                        if (!candidate.isBlank()) {
-                            logicalName = candidate;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        return logicalName;
-    }
-
     private Map<String, String> resolveTransitionGuardMethodNames(List<TransitionIR> transitions) {
         Map<String, String> transitionGuardMethodNamesByQualifiedName = new LinkedHashMap<>();
         Set<String> usedMethodNames = new LinkedHashSet<>();
@@ -807,7 +754,7 @@ public class JavaTransformer {
                 continue;
             }
 
-            String baseMethodName = localName(transitionGuardQName, FALLBACK_TRANSITION_GUARD);
+            String baseMethodName = cleanName(transitionGuardQName);
             String methodName = uniqueLocalName(baseMethodName, usedMethodNames);
             usedMethodNames.add(methodName);
 
@@ -852,23 +799,17 @@ public class JavaTransformer {
         return guardQName;
     }
 
-    private String localStateName(String stateName) {
-        return localName(stateName, FIELD_STATE);
-    }
-
-    private String localName(String candidate, String fallback) {
+    private String cleanName(String candidate) {
         if (candidate == null || candidate.isBlank()) {
-            return fallback;
+            throw new IllegalStateException("Candidate parameter is empty.");
         }
 
         String cleaned = candidate.replaceAll("\\W", "_");
-        if (cleaned.isBlank()) {
-            return fallback;
-        }
 
         if (Character.isUpperCase(cleaned.charAt(0))) {
             cleaned = Character.toLowerCase(cleaned.charAt(0)) + cleaned.substring(1);
         }
+
         return cleaned;
     }
 
@@ -933,16 +874,11 @@ public class JavaTransformer {
 
         for (TransitionTriggerIR trigger : irRepository.getTriggers().values()) {
             if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
-                if (triggerWhen.getMachineTypeQualifiedName() != null
-                        && !triggerWhen.getMachineTypeQualifiedName().equals(machine.getQualifiedName())) {
-                    continue;
+                MachineRefIR machineRef = triggerWhen.getAssociatedMachine();
+                if (machineRef != null
+                        && machineRef.qualifiedName().equals(machine.getQualifiedName())) {
+                    acceptWhenTriggers.putIfAbsent(triggerWhen.getQualifiedName(), triggerWhen);
                 }
-                if (triggerWhen.getMachineRefName() != null
-                        && triggerWhen.getMachineTypeQualifiedName() == null
-                        && !triggerWhen.getMachineRefName().equals(machine.getName())) {
-                    continue;
-                }
-                acceptWhenTriggers.putIfAbsent(triggerWhen.getAcceptEventQualifiedName(), triggerWhen);
             }
         }
 
@@ -959,9 +895,5 @@ public class JavaTransformer {
                 .findFirst()
                 .map(attribute -> typeTable.resolve(attribute.getType()))
                 .orElse(TypeName.get(Object.class));
-    }
-
-    private String javaPackageOf(ElementIR element) {
-        return packagePrefix + "." + element.getJavaPackage();
     }
 }

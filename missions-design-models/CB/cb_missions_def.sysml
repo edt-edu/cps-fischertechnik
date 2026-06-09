@@ -20,7 +20,7 @@ package ConveyorBeltMissions {
 
         state MovingToSensor;
         accept CBCommandSuccessEventMessage
-            do action {
+            do action notifyVgr1AndVgr2 {
                 send new FeedFreeEventMessage() to vacuumGripper1;
                 send new SwapBusyEventMessage() to vacuumGripper2;
             }

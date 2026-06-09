@@ -26,15 +26,6 @@ package VacuumGripperMissions {
             }
         }
 
-        action pickColor {
-            in color : Color;
-
-            then decide;
-                if color == Color::BLUE then pickBlue;
-                if color == Color::WHITE then pickWhite;
-                if color == Color::RED then pickRed;
-        }
-
         action pickBlue : Pick {
             perform vacuumGripper.pick : Pick {
                 in targetPosition : Position3D {

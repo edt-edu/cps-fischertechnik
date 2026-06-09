@@ -5,18 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import fr.inria.mbdo.mission.generators.*;
 import fr.inria.mbdo.mission.switchs.IndexerSwitch;
 import fr.inria.mbdo.mission.switchs.ToIrSwitch;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.syson.sysml.Classifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.palantir.javapoet.JavaFile;
 
 import com.palantir.javapoet.JavaFile;
 
@@ -33,30 +29,30 @@ public class SysmlMissionGenerator {
         SysmlImporter importer = new SysmlImporter();
         List<Resource> resources = importer.importSysmlTexts(inputFiles, resourceSet);
 
-		// Pass 1: Index types
-		SymbolIndex.Builder symbolIndexBuilder = new SymbolIndex.Builder();
-		IndexerSwitch indexer = new IndexerSwitch(symbolIndexBuilder);
+        // Pass 1: Index types
+        SymbolIndex.Builder symbolIndexBuilder = new SymbolIndex.Builder();
+        IndexerSwitch indexer = new IndexerSwitch(symbolIndexBuilder);
 
-		for (Resource resource : resources) {
-			resource.getContents().forEach(indexer::doSwitch);
-		}
+        for (Resource resource : resources) {
+            resource.getContents().forEach(indexer::doSwitch);
+        }
 
-		SymbolIndex symbolIndex = symbolIndexBuilder.build();
+        SymbolIndex symbolIndex = symbolIndexBuilder.build();
 
-		// Pass 2: Link types and build Intermediate Representation
-		IrRepository.Builder irRepositoryBuilder = new IrRepository.Builder();
-		ToIrSwitch toIr = new ToIrSwitch(symbolIndex, irRepositoryBuilder);
+        // Pass 2: Link types and build Intermediate Representation
+        IrRepository.Builder irRepositoryBuilder = new IrRepository.Builder();
+        ToIrSwitch toIr = new ToIrSwitch(symbolIndex, irRepositoryBuilder);
 
-		for (Resource resource : resources) {
-			resource.getContents().forEach(toIr::doSwitch);
-		}
+        for (Resource resource : resources) {
+            resource.getContents().forEach(toIr::doSwitch);
+        }
 
-		IrRepository irRepository = irRepositoryBuilder.build();
+        IrRepository irRepository = irRepositoryBuilder.build();
 
-		// Pass 3: Link + Generate Java code
-		TypeTable typeTable = new Linker().link(irRepository, basePackageName);
-		JavaTransformer transformer = new JavaTransformer(irRepository, typeTable, basePackageName);
-		Map<String, JavaFile> javaFiles = transformer.generate();
+        // Pass 3: Link + Generate Java code
+        TypeTable typeTable = new JavaLinker().link(irRepository, basePackageName);
+        JavaTransformer transformer = new JavaTransformer(irRepository, typeTable);
+        Map<String, JavaFile> javaFiles = transformer.generate();
 
         writeToFile(javaFiles, targetFolder);
     }

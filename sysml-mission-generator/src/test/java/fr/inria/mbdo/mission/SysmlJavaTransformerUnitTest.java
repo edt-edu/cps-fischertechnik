@@ -1,11 +1,10 @@
 package fr.inria.mbdo.mission;
 
 import fr.inria.mbdo.mission.generators.IrRepository;
-import fr.inria.mbdo.mission.generators.Linker;
+import fr.inria.mbdo.mission.generators.JavaLinker;
 import fr.inria.mbdo.mission.generators.JavaTransformer;
 import fr.inria.mbdo.mission.importer.SysmlImporter;
 import fr.inria.mbdo.mission.utils.ImportUtils;
-import fr.inria.mbdo.mission.generators.TypeTable;
 import fr.inria.mbdo.mission.generators.SymbolIndex;
 import fr.inria.mbdo.mission.switchs.IndexerSwitch;
 import fr.inria.mbdo.mission.switchs.ToIrSwitch;
@@ -62,9 +61,9 @@ class SysmlJavaTransformerUnitTest {
         }
 
         var irRepository = irRepositoryBuilder.build();
-        var typeTable = new Linker().link(irRepository, "com.example.generated");
+        var typeTable = new JavaLinker().link(irRepository, "com.example.generated");
 
-        JavaTransformer transformer = new JavaTransformer(irRepository, typeTable, "com.example.generated");
+        JavaTransformer transformer = new JavaTransformer(irRepository, typeTable);
         var generated = transformer.generate();
 
         // Expect an Actions interface for ConveyorBeltNominalMission
