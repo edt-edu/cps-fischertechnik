@@ -2,6 +2,7 @@ package fr.inria.mbdo.mission.generators;
 
 import com.palantir.javapoet.*;
 import fr.inria.mbdo.mission.ir.*;
+import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
@@ -29,6 +30,8 @@ public class JavaTransformer {
     private static final String ALWAYS_TRUE_GUARD = "event -> true";
     private static final String ACTIONS_SUFFIX = "Actions";
     private static final String GUARDS_SUFFIX = "Guards";
+    private static final String ABSTRACT_ADAPTER_PREFIX = "Abstract";
+    private static final String ABSTRACT_ADAPTER_SUFFIX = "Adapter";
     private static final String CURRENT_COMMAND_ATTR = "currentCommand";
     private static final String COMMAND_SUCCESS_MESSAGE = "CommandSuccessEventMessage";
     private static final String JAVADOC_ACCEPT_WHEN_EVENT = """
@@ -79,6 +82,7 @@ public class JavaTransformer {
     public Map<String, JavaFile> generate() {
         Map<String, JavaFile> result = new LinkedHashMap<>();
         result.putAll(generateMachinesInterfaces());
+        result.putAll(generateMachineAbstractAdapters());
         result.putAll(generateEnumerations());
         result.putAll(generateMachineEventMessages());
         result.putAll(generateAcceptEventClasses());
@@ -169,19 +173,6 @@ public class JavaTransformer {
                 methods.add(actionBuilder.build());
             }
 
-            for (TransitionTriggerWhenIR triggerWhen : resolveAcceptWhenTriggersForMachine(machine)) {
-                ClassName acceptEventType = typeTable.resolveClassNameOrThrow(triggerWhen.getQualifiedName());
-
-                methods.add(MethodSpec.methodBuilder("trigger" + triggerWhen.getQualifiedName())
-                        .addModifiers(Modifier.PUBLIC, Modifier.DEFAULT)
-                        .addJavadoc(JAVADOC_ADAPTER_TRIGGER_PLACEHOLDER, triggerWhen.toString())
-                        .beginControlFlow("if (false)")
-                        .addStatement(STMT_DECLARE_ACCEPT_EVENT, acceptEventType)
-                        .addStatement(STMT_PUBLISH_ACCEPT_EVENT)
-                        .endControlFlow()
-                        .build());
-            }
-
             interfaceBuilder.addMethods(methods);
             javaFiles.put(machine.getQualifiedName() + "::interface",
                     JavaFile.builder(typeTable.resolvePackageOrThrow(machine.getQualifiedName()),
@@ -189,6 +180,159 @@ public class JavaTransformer {
         }
 
         return javaFiles;
+    }
+
+    private Map<String, JavaFile> generateMachineAbstractAdapters() {
+        Map<String, JavaFile> javaFiles = new LinkedHashMap<>();
+
+        for (MachineIR machine : irRepository.getMachines().values()) {
+            logger.info("Generating abstract adapter for {}", machine.getQualifiedName());
+
+            List<TransitionTriggerWhenIR> acceptWhenTriggers = resolveAcceptWhenTriggersForMachine(machine);
+            Set<String> attributesInConditions = collectAttributeNamesInConditions(acceptWhenTriggers);
+
+            String abstractAdapterName = ABSTRACT_ADAPTER_PREFIX + machine.getName() + ABSTRACT_ADAPTER_SUFFIX;
+            String machinePackage = typeTable.resolvePackageOrThrow(machine.getQualifiedName());
+            ClassName machineInterfaceType = typeTable.resolveClassNameOrThrow(machine.getQualifiedName());
+
+            TypeSpec.Builder adapterBuilder = TypeSpec.classBuilder(abstractAdapterName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .superclass(AbstractAdapter.class)
+                    .addSuperinterface(machineInterfaceType)
+                    .addJavadoc(JAVADOC_FROM, machine.getQualifiedName(), machine.getDocumentation());
+
+            adapterBuilder.addMethod(MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PROTECTED)
+                    .addParameter(String.class, "id")
+                    .addStatement("super($N)", "id")
+                    .build());
+
+            for (MachineAttributeIR attribute : machine.getAttributes()) {
+                TypeName attrType = typeTable.resolve(attribute.getType());
+                adapterBuilder.addField(
+                        FieldSpec.builder(attrType, attribute.getName(), Modifier.PROTECTED, Modifier.VOLATILE)
+                                .build());
+            }
+
+            for (MachineAttributeIR attribute : machine.getAttributes()) {
+                TypeName attrType = typeTable.resolve(attribute.getType());
+
+                adapterBuilder.addMethod(MethodSpec.methodBuilder("get" + toUpperFirst(attribute.getName()))
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(attrType)
+                        .addStatement("return this.$N", attribute.getName())
+                        .build());
+
+                MethodSpec.Builder setterBuilder = MethodSpec.methodBuilder(
+                        "set" + toUpperFirst(attribute.getName()))
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC)
+                        .addParameter(attrType, attribute.getName())
+                        .addStatement("this.$N = $N", attribute.getName(), attribute.getName());
+
+                if (attributesInConditions.contains(attribute.getName())) {
+                    setterBuilder.addStatement("checkAndFireAcceptWhenEvents()");
+                }
+
+                adapterBuilder.addMethod(setterBuilder.build());
+            }
+
+            if (hasCurrentCommand(machine) && hasMessage(COMMAND_SUCCESS_MESSAGE)) {
+                adapterBuilder.addMethod(MethodSpec.methodBuilder("setCommandSuccess")
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                        .addParameter(findCurrentCommandType(machine), "command")
+                        .build());
+            }
+
+            for (Map.Entry<String, Ref<MachineActionIR>> actionEntry : machine.getActions().entrySet()) {
+                MachineActionIR actionIR = resolveActionIR(actionEntry.getValue());
+                if (actionIR == null) {
+                    continue;
+                }
+                MethodSpec.Builder actionBuilder = MethodSpec.methodBuilder(actionIR.getName())
+                        .addAnnotation(Override.class)
+                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                        .addJavadoc(JAVADOC_FROM, actionIR.getQualifiedName(), actionIR.getDocumentation());
+                for (ParameterIR param : actionIR.getParameters()) {
+                    actionBuilder.addParameter(typeTable.resolve(param.getType()), param.getName());
+                }
+                adapterBuilder.addMethod(actionBuilder.build());
+            }
+
+            if (!acceptWhenTriggers.isEmpty()) {
+                MethodSpec.Builder checkBuilder = MethodSpec.methodBuilder("checkAndFireAcceptWhenEvents")
+                        .addModifiers(Modifier.PRIVATE);
+
+                for (TransitionTriggerWhenIR triggerWhen : acceptWhenTriggers) {
+                    if (triggerWhen.getExpression() == null) {
+                        continue;
+                    }
+                    ClassName eventType = typeTable.resolveClassNameOrThrow(triggerWhen.getQualifiedName());
+                    String condition = toJavaCondition(triggerWhen.getExpression());
+                    checkBuilder
+                            .beginControlFlow("if ($L)", condition)
+                            .addStatement("publish(new $T())", eventType)
+                            .endControlFlow();
+                }
+
+                adapterBuilder.addMethod(checkBuilder.build());
+            }
+
+            javaFiles.put(machine.getQualifiedName() + "::abstract-adapter",
+                    JavaFile.builder(machinePackage, adapterBuilder.build()).build());
+        }
+
+        return javaFiles;
+    }
+
+    private String toJavaCondition(TriggerExpressionIR expression) {
+        if (expression == null) {
+            return "false";
+        }
+        return switch (expression) {
+            case TriggerOperatorExpressionIR op -> {
+                String javaOp = switch (op.getOperator()) {
+                    case "==" -> "==";
+                    case "!=" -> "!=";
+                    case "and" -> "&&";
+                    case "or" -> "||";
+                    case "<" -> "<";
+                    case ">" -> ">";
+                    case "<=" -> "<=";
+                    case ">=" -> ">=";
+                    default -> op.getOperator();
+                };
+                yield "(" + toJavaCondition(op.getLeftPart()) + " " + javaOp + " "
+                        + toJavaCondition(op.getRightPart()) + ")";
+            }
+            case TriggerMachineAttributeExpressionIR attr -> "this." + attr.getAttributeRef().name();
+            case TriggerLiteralExpressionIR lit -> lit.getValue();
+            default -> throw new IllegalStateException(
+                    "Unsupported trigger expression type: " + expression.getClass().getSimpleName());
+        };
+    }
+
+    private Set<String> collectAttributeNamesInConditions(List<TransitionTriggerWhenIR> triggers) {
+        Set<String> names = new LinkedHashSet<>();
+        for (TransitionTriggerWhenIR trigger : triggers) {
+            if (trigger.getExpression() != null) {
+                collectAttributeNamesFromExpression(trigger.getExpression(), names);
+            }
+        }
+        return names;
+    }
+
+    private void collectAttributeNamesFromExpression(TriggerExpressionIR expression, Set<String> names) {
+        switch (expression) {
+            case TriggerOperatorExpressionIR op -> {
+                collectAttributeNamesFromExpression(op.getLeftPart(), names);
+                collectAttributeNamesFromExpression(op.getRightPart(), names);
+            }
+            case TriggerMachineAttributeExpressionIR attr -> names.add(attr.getAttributeRef().name());
+            default -> { /* literals contribute no attribute names */ }
+        }
     }
 
     private Map<String, JavaFile> generateEnumerations() {
@@ -876,7 +1020,8 @@ public class JavaTransformer {
             if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
                 MachineRefIR machineRef = triggerWhen.getAssociatedMachine();
                 if (machineRef != null
-                        && machineRef.qualifiedName().equals(machine.getQualifiedName())) {
+                        && machineRef.type() != null
+                        && machine.getQualifiedName().equals(machineRef.type().qualifiedName())) {
                     acceptWhenTriggers.putIfAbsent(triggerWhen.getQualifiedName(), triggerWhen);
                 }
             }

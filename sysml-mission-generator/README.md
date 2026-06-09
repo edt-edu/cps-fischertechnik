@@ -62,24 +62,29 @@ src/main/java/fr/inria/mbdo/mission/
 ├── ir/                             # Intermediate Representation model
 │   ├── ElementIR.java              # Base class (name, qualifiedName, docs)
 │   ├── MachineMissionIR.java       # A mission (state machine composition)
-│   ├── MachineIR.java              # A machine (interface contract)
+│   ├── MachineIR.java              # A machine (interface contract + attributes)
 │   ├── StateIR.java                # A state with outgoing transitions
 │   ├── TransitionIR.java           # Transition (from, to, trigger, guard, action)
 │   ├── TransitionTriggerIR.java    # Trigger base
 │   ├── TransitionTriggerSimpleIR   # Message-based trigger
-│   ├── TransitionTriggerWhenIR     # Accept-when conditional trigger
+│   ├── TransitionTriggerWhenIR     # Accept-when conditional trigger (expression tree + associated machine)
+│   ├── TriggerExpressionIR.java    # Accept-when expression tree base
+│   ├── TriggerOperatorExpressionIR # Binary operator node (==, !=, and, or, …)
+│   ├── TriggerMachineAttributeExpressionIR # Leaf: machine.attribute reference
+│   ├── TriggerLiteralExpressionIR  # Leaf: boolean / integer / string literal
 │   ├── TransitionActionIR.java     # Action base
-│   ├── TransitionActionCustomIR    # Custom code action
-│   ├── TransitionActionMachineIR   # Machine call action
+│   ├── TransitionActionCustomIR    # Custom code action (delegates to Actions interface)
+│   ├── TransitionActionMachineIR   # Direct machine method call
 │   ├── TransitionActionSendToIR    # Send-to-machine action
 │   ├── EnumerationIR.java          # Enum definition
-│   ├── ActionIR.java               # Reusable action definition
+│   ├── MachineActionIR.java        # Action owned by a machine (name + parameters)
+│   ├── MachineAttributeIR.java     # Attribute owned by a machine (name + type)
 │   ├── Ref.java                    # Lazy reference by qualified name
 │   └── ...
 ├── generators/
 │   ├── IrRepository.java           # Central registry for all IR elements
 │   ├── SymbolIndex.java            # Symbol table (definitions by qualified name)
-│   ├── Linker.java                 # Pass 3a: resolves references, validates
+│   ├── JavaLinker.java             # Pass 3a: resolves cross-references, builds TypeTable
 │   ├── TypeTable.java              # Maps qualified names → JavaPoet TypeNames
 │   └── JavaTransformer.java        # Pass 3b: IR → Java source files
 ├── runtime/
@@ -88,7 +93,7 @@ src/main/java/fr/inria/mbdo/mission/
 │   │   ├── MachineAdapter.java     # publish/subscribe/shutdown contract
 │   │   ├── MachineMissionStrategy  # Strategy interface (start/stop/onEvent)
 │   │   ├── AbstractMissionStrategy # Base class for generated missions
-│   │   └── AbstractAdapter.java    # Base adapter implementation
+│   │   └── AbstractAdapter.java    # Base adapter implementation (pub/sub engine)
 │   └── rtc/
 │       ├── def/
 │       │   ├── RuntimeState.java       # State definition for runtime
@@ -107,7 +112,7 @@ src/main/java/fr/inria/mbdo/mission/
     ├── FileUtils.java
     ├── ImportUtils.java             # SySon workaround transformations
     ├── StringUtils.java
-    └── SymlUtils.java
+    └── SysmlToJavaUtils.java        # Qualified-name → Java package/class mapping
 ```
 
 ## Architecture
@@ -130,21 +135,22 @@ The generator follows a **3-pass compiler architecture**:
 
 1. **Import**: SysML text is parsed by Eclipse SySon into an EMF model (`SysmlImporter`).
 2. **Pass 1 — Index**: `IndexerSwitch` traverses the EMF tree and registers all definitions (parts, enums, items, states, actions, attributes) into a `SymbolIndex`.
-3. **Pass 2 — IR conversion**: `ToIrSwitch` walks the same tree, building a typed Intermediate Representation (`IrRepository`) using the symbol table for lookups.
-4. **Pass 3 — Link & Generate**: `Linker` validates cross-references and builds a `TypeTable` mapping qualified names to Java types. `JavaTransformer` then produces Java source files via JavaPoet.
+3. **Pass 2 — IR conversion**: `ToIrSwitch` walks the same tree, building a typed Intermediate Representation (`IrRepository`) using the symbol table for lookups. `accept when` expressions are parsed recursively into a `TriggerExpressionIR` tree and linked to the machine they reference.
+4. **Pass 3 — Link & Generate**: `JavaLinker` validates cross-references and builds a `TypeTable` mapping qualified names to Java types. `JavaTransformer` then produces all Java source files via JavaPoet.
 
 ### Generated artifacts
 
-For each SysML mission, the generator produces:
+For each SysML model, the generator produces the following artifacts. Packages follow `<basePackage>.<sysmlNamespace>`:
 
-| Artifact | Description |
-|----------|-------------|
-| **Mission class** | Extends `AbstractMissionStrategy`, builds states and transitions, wires event subscriptions |
-| **Machine interfaces** | One per `PartDefinition` — defines the adapter contract (methods from actions/attributes) |
-| **Enumerations** | One per `EnumerationDefinition` |
-| **Message classes** | One per `ItemDefinition` — event payloads |
-| **Accept-event classes** | One per `accept when` trigger — implements `Event` |
-| **Actions utility interface** | Custom action callbacks for manual implementation |
+| Artifact | One per | Description |
+|----------|---------|-------------|
+| **Mission class** | `state def` with states | Extends `AbstractMissionStrategy`; builds `RuntimeState`/`RuntimeTransition` objects and wires event subscriptions in its constructor |
+| **Actions interface** | Mission | Declares one method per custom transition action; developers implement this to provide the business logic |
+| **Machine interface** | `part def` | Extends `MachineAdapter`; declares getters/setters for attributes and abstract methods for machine actions |
+| **Abstract machine adapter** | `part def` | Extends `AbstractAdapter` and implements the machine interface; manages `protected volatile` attribute fields and automatically fires accept-when events when their conditions become true — developers extend this instead of `AbstractAdapter` directly |
+| **Accept-when event class** | `accept when` trigger | Implements `Event`; published by the abstract adapter whenever the associated boolean condition is satisfied |
+| **Message class** | `item def` extending `EventMessage` | Implements `Event`; used as typed event payloads between machines |
+| **Enumeration** | `enum def` | Plain Java enum |
 
 ### Runtime framework
 
@@ -153,6 +159,57 @@ Generated missions extend `AbstractMissionStrategy` and use `RuntimeInstance` fo
 - **Event dispatch**: incoming events are matched against transitions leaving the active state.
 - **Completion transitions**: after each state change, guard-less transitions (completions) fire automatically.
 - **Pub/Sub**: machines communicate via `MachineAdapter.publish()` / `subscribe()`.
+
+### Accept-when event flow
+
+`accept when` expressions in SysML (e.g., `accept when machine.attr == true`) produce two generated artifacts that work together:
+
+1. A **typed event class** (e.g., `AcceptWhenMachineAttrEqualstrueEvent`) placed in a `customevents` sub-package of the mission.
+2. An entry in the **abstract machine adapter** that evaluates the condition after every relevant setter call and publishes the event when it becomes true:
+
+```java
+// generated in AbstractConveyorBeltMachineAdapter
+@Override
+public void setConveyorSensFeed(boolean conveyorSensFeed) {
+    this.conveyorSensFeed = conveyorSensFeed;
+    checkAndFireAcceptWhenEvents();
+}
+
+private void checkAndFireAcceptWhenEvents() {
+    if ((this.conveyorSensFeed == true) && (this.conveyorSensSwap == false)) {
+        publish(new AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent());
+    }
+}
+```
+
+The adapter developer only needs to call the attribute setters (e.g., from MQTT or OPC-UA message handlers) — event firing is handled automatically.
+
+## Developer workflow
+
+For each machine, the expected implementation pattern is:
+
+```
+Generated (do not edit)                     Hand-written
+─────────────────────────────────           ──────────────────────────────
+ConveyorBeltMachine         (interface)
+        │
+        ▼
+AbstractConveyorBeltMachineAdapter          ConveyorBeltAdapterImpl
+  - volatile attribute fields                 extends AbstractConveyorBeltMachineAdapter
+  - getters / setters                         - MQTT/OPC-UA subscription
+  - checkAndFireAcceptWhenEvents()            - calls setXxx() on incoming data
+  - abstract action methods                   - implements abstract action methods
+```
+
+For each mission, the expected implementation pattern is:
+
+```
+Generated (do not edit)                     Hand-written
+─────────────────────────────────           ──────────────────────────────
+ConveyorBeltNominalMission  (class)         ConveyorBeltNominalMissionActionsImpl
+ConveyorBeltNominalMissionActions (iface)     implements ConveyorBeltNominalMissionActions
+                                              - implements each custom action method
+```
 
 ## Design choices
 
@@ -172,14 +229,19 @@ IR elements reference each other by qualified name (`Ref<T>` record). Resolution
 
 Both `IndexerSwitch` and `ToIrSwitch` extend SySon's `SysmlSwitch<Void>`, leveraging the built-in EMF visitor pattern for type-safe traversal of the SysML metamodel.
 
-### Utils interface for custom code
+### Actions interface for custom code
 
-Rather than attempting to generate complex action logic, the generator produces a **Utils interface** that application developers implement manually in plain Java. This handles:
+Rather than attempting to generate complex action logic, the generator produces an **Actions interface** that application developers implement manually in plain Java. Each custom transition action body (expressed in SysML as an inline `action { … }` block on a transition) becomes one method in this interface, documented with its SysML source body when available.
 
-- Custom transition actions (business logic).
-- Custom `accept when` guard evaluation.
+### Abstract machine adapters for accept-when automation
 
-This keeps the generator deterministic while allowing full flexibility in the hand-written parts.
+`accept when` conditions are converted into an expression tree in the IR (`TriggerExpressionIR`). The generator uses this tree to:
+
+- Derive the set of machine attributes that each condition depends on.
+- Emit a `checkAndFireAcceptWhenEvents()` helper in the abstract adapter.
+- Call that helper from the setter of every attribute that appears in at least one condition.
+
+The condition itself is recursively translated to a Java boolean expression (SysML `and` → Java `&&`, SysML `or` → `||`, `==`/`!=`/`<`/`>` pass through). This removes a class of boilerplate that every adapter author would otherwise have to write manually and get right.
 
 ### Fat jar distribution
 
@@ -200,18 +262,29 @@ The `maven-shade-plugin` produces a single executable jar containing all depende
 
 ## Testing
 
-Tests use JUnit 5 with a **golden file** strategy:
+Tests use JUnit 5. There are two complementary styles:
 
-- Expected generator output is stored in `src/test/resources/golden/`.
-- Tests run the generator on sample inputs and compare with the golden baseline.
-- To update golden files after intentional changes: `mvn test -Dupdate.golden=true`, then review the diff.
+- **Golden file tests**: expected generator output is stored in `src/test/resources/golden/`. Tests run the generator on sample inputs and compare output with the golden baseline. Update after intentional changes with `mvn test -Dupdate.golden=true`, then review the diff.
+- **Integration checks** (`SysmlJavaTransformerIntegrationChecks`): run the full pipeline and assert focused properties on the generated output (file existence, key content) without maintaining a full golden snapshot.
 
 ```bash
-# Run tests
+# Run all tests
 mvn test
 
-# Update golden files
+# Update golden files after intentional output changes
 mvn test -Dupdate.golden=true
+```
+
+Input models for tests are resolved relative to `../missions-design-models/` (the sibling directory in the repository). Required files follow the pattern:
+
+```
+common/common_def.sysml
+zones/zones_def.sysml
+zones/zones_missions_def.sysml
+CB/cb_def.sysml  +  CB/cb_missions_def.sysml
+MPS/mps_def.sysml  +  MPS/mps_missions_def.sysml
+SL/sl_def.sysml   +  SL/sl_missions_def.sysml
+VGR/vgr_def.sysml +  VGR/vgr_missions_def.sysml
 ```
 
 ## SysML mapping
@@ -219,10 +292,15 @@ mvn test -Dupdate.golden=true
 | SysML concept | Generated Java |
 |---------------|----------------|
 | `state def` (with states) | Mission class extending `AbstractMissionStrategy` |
-| `state` (usage) | `RuntimeState` constant in the mission class |
-| `transition` | `RuntimeTransition` connecting states |
-| `part def` | Machine interface extending `MachineAdapter` |
-| `item def` | Message/event class implementing `Event` |
+| `state` (usage) | `RuntimeState` instance wired in the mission constructor |
+| `transition` | `RuntimeTransition` connecting states, with typed trigger, guard, and action |
+| `part def` | Machine interface extending `MachineAdapter` + abstract adapter base class |
+| `attribute` on `part def` | `protected volatile` field + getter/setter in the abstract adapter |
+| `action def` / `perform action` | Abstract method in both the machine interface and the abstract adapter |
+| `item def :> EventMessage` | Message class implementing `Event` |
 | `enum def` | Java enum |
-| `action def` | Method in the machine interface |
-| `accept when` | Event class + trigger-based subscription |
+| `accept <MessageType>` | `RuntimeTransition` triggered by that message class |
+| `accept when <expr>` | Typed event class + condition check in abstract adapter that publishes the event when true |
+| inline `action { … }` on transition | Method in the mission's Actions interface (Javadoc shows the SysML body) |
+| `send new M() to machine` | `publish(new M())` lambda in the mission constructor |
+| `do machine.action` | Direct method-reference lambda (`event -> this.machine.action()`) in the mission constructor |

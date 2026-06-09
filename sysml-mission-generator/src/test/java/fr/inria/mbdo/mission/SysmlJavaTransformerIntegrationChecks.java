@@ -26,11 +26,12 @@ class SysmlJavaTransformerIntegrationChecks {
 
         List<String> fileNames = List.of(
                 "common/common_def.sysml",
-                "common/zones_def.sysml",
+                "zones/zones_def.sysml",
                 "CB/cb_def.sysml",
                 "MPS/mps_def.sysml",
                 "SL/sl_def.sysml",
                 "VGR/vgr_def.sysml",
+                "zones/zones_missions_def.sysml",
                 "CB/cb_missions_def.sysml",
                 "MPS/mps_missions_def.sysml",
                 "SL/sl_missions_def.sysml",
@@ -48,12 +49,12 @@ class SysmlJavaTransformerIntegrationChecks {
         generator.generate(inputFiles, "com.example.generated", outputDir);
 
         Path actionsInterface = outputDir.toPath()
-                .resolve("com/example/generated/conveyorbeltmission/ConveyorBeltNominalMissionActions.java");
+                .resolve("com/example/generated/conveyorbeltmissions/conveyorbeltnominalmission/ConveyorBeltNominalMissionActions.java");
         assertTrue(Files.exists(actionsInterface), "Generated actions interface for conveyor belt should exist");
 
-        Path guardsUtility = outputDir.toPath()
-                .resolve("com/example/generated/conveyorbeltmission/ConveyorBeltNominalMissionGuards.java");
-        assertTrue(Files.exists(guardsUtility), "Generated guards utility for conveyor belt should exist");
+        Path abstractAdapter = outputDir.toPath()
+                .resolve("com/example/generated/conveyorbeltsystem/conveyorbelt/AbstractConveyorBeltMachineAdapter.java");
+        assertTrue(Files.exists(abstractAdapter), "Generated abstract adapter for ConveyorBelt should exist");
     }
 
     @Test
@@ -62,11 +63,12 @@ class SysmlJavaTransformerIntegrationChecks {
 
         List<String> fileNames = List.of(
                 "common/common_def.sysml",
-                "common/zones_def.sysml",
+                "zones/zones_def.sysml",
                 "CB/cb_def.sysml",
                 "MPS/mps_def.sysml",
                 "SL/sl_def.sysml",
                 "VGR/vgr_def.sysml",
+                "zones/zones_missions_def.sysml",
                 "CB/cb_missions_def.sysml",
                 "MPS/mps_missions_def.sysml",
                 "SL/sl_missions_def.sysml",
@@ -84,9 +86,9 @@ class SysmlJavaTransformerIntegrationChecks {
         generator.generate(inputFiles, "com.example.generated", outputDir);
 
         Path mission = outputDir.toPath()
-                .resolve("com/example/generated/conveyorbeltmission/ConveyorBeltNominalMission.java");
+                .resolve("com/example/generated/conveyorbeltmissions/conveyorbeltnominalmission/ConveyorBeltNominalMission.java");
         String missionSource = Files.readString(mission);
-        assertTrue(missionSource.contains("this.actions::") || missionSource.contains("actions::"),
+        assertTrue(missionSource.contains("this.actions."),
                 "Mission should delegate runtime actions to actions implementor");
     }
 }

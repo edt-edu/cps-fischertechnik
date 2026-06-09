@@ -83,8 +83,8 @@ class SysmlMissionGeneratorTest {
 
         List<File> inputFiles = List.of(
                 projectPath.resolve("common/common_def.sysml").toFile(),
-                projectPath.resolve("common/zones_def.sysml").toFile(),
-                projectPath.resolve("common/zones_missions_def.sysml").toFile(),
+                projectPath.resolve("zones/zones_def.sysml").toFile(),
+                projectPath.resolve("zones/zones_missions_def.sysml").toFile(),
                 projectPath.resolve("CB/cb_def.sysml").toFile(),
                 projectPath.resolve("MPS/mps_def.sysml").toFile(),
                 projectPath.resolve("SL/sl_def.sysml").toFile(),
@@ -150,11 +150,12 @@ class SysmlMissionGeneratorTest {
         List<File> inputFiles = new ArrayList<>();
         for (String fileName : List.of(
                 "common/common_def.sysml",
-                "common/zones_def.sysml",
+                "zones/zones_def.sysml",
                 "CB/cb_def.sysml",
                 "MPS/mps_def.sysml",
                 "SL/sl_def.sysml",
                 "VGR/vgr_def.sysml",
+                "zones/zones_missions_def.sysml",
                 "CB/cb_missions_def.sysml",
                 "MPS/mps_missions_def.sysml",
                 "SL/sl_missions_def.sysml",
@@ -168,7 +169,7 @@ class SysmlMissionGeneratorTest {
         generator.generate(inputFiles, "com.example.generated", outputDir);
 
         Path generatedMission = outputDir.toPath()
-                .resolve("com/example/generated/conveyorbeltmission/ConveyorBeltNominalMission.java");
+                .resolve("com/example/generated/conveyorbeltmissions/conveyorbeltnominalmission/ConveyorBeltNominalMission.java");
         assertTrue(Files.exists(generatedMission), "Generated ConveyorBelt mission should exist");
 
         String missionSource = Files.readString(generatedMission);
@@ -178,29 +179,33 @@ class SysmlMissionGeneratorTest {
                 "Generated triggers should no longer use placeholder expression names");
         // Action bodies are now moved to a generated Actions interface (Javadoc).
         Path actionsInterface = outputDir.toPath()
-                .resolve("com/example/generated/conveyorbeltmission/ConveyorBeltNominalMissionActions.java");
+                .resolve("com/example/generated/conveyorbeltmissions/conveyorbeltnominalmission/ConveyorBeltNominalMissionActions.java");
         assertTrue(Files.exists(actionsInterface), "Generated ConveyorBelt actions interface should exist");
 
         String actionsSource = Files.readString(actionsInterface);
-        assertTrue(actionsSource.contains("moveToSensor"),
-                "Actions Javadoc should contain the conveyor belt method name 'moveToSensor'");
-        assertTrue(actionsSource.contains("FeedFreeEventMessage"),
-                "Actions Javadoc should reference FeedFreeEventMessage");
-        assertTrue(actionsSource.contains("SwapBusyEventMessage"),
-                "Actions Javadoc should reference SwapBusyEventMessage");
+        assertTrue(actionsSource.contains("notifyVgr1AndVgr2"),
+                "Actions interface should contain the custom action method 'notifyVgr1AndVgr2'");
 
         Path machineInterface = outputDir.toPath()
                 .resolve("com/example/generated/common/Machine.java");
         assertTrue(Files.exists(machineInterface), "Generated Machine interface should exist");
 
-        String machineSource = Files.readString(machineInterface);
-        assertTrue(machineSource.contains("if (false)"),
-                "Accept-when trigger helpers should use the false-guard placeholder");
-        assertFalse(machineSource.contains("ConditionMet()"),
-                "Accept-when trigger helpers should not expose a separate boolean condition method");
+        // Abstract adapter for ConveyorBelt should contain real condition-checking logic.
+        Path cbAbstractAdapter = outputDir.toPath()
+                .resolve("com/example/generated/conveyorbeltsystem/conveyorbelt/AbstractConveyorBeltMachineAdapter.java");
+        assertTrue(Files.exists(cbAbstractAdapter),
+                "Generated abstract adapter for ConveyorBeltMachine should exist");
+
+        String cbAdapterSource = Files.readString(cbAbstractAdapter);
+        assertTrue(cbAdapterSource.contains("checkAndFireAcceptWhenEvents"),
+                "Abstract adapter should call checkAndFireAcceptWhenEvents from setters involved in conditions");
+        assertTrue(cbAdapterSource.contains("conveyorSensFeed"),
+                "Abstract adapter should manage the conveyorSensFeed attribute");
+        assertTrue(cbAdapterSource.contains("AcceptWhen"),
+                "Abstract adapter should publish the generated accept-when event class");
 
         // Mission wiring should delegate to the provided actions implementor.
-        assertTrue(missionSource.contains("this.actions::"),
+        assertTrue(missionSource.contains("this.actions."),
                 "Mission should delegate runtime actions to actions implementor");
 
         boolean hasTypedRequestAccept = Files.walk(outputDir.toPath())
@@ -218,17 +223,17 @@ class SysmlMissionGeneratorTest {
                 "accept evt : Event should compile to a typed event trigger class");
 
         Path vgrMission = outputDir.toPath()
-                .resolve("com/example/generated/vacuumgrippermissions/VacuumGripper1NominalMission.java");
+                .resolve("com/example/generated/vacuumgrippermissions/vacuumgripper1nominalmission/VacuumGripper1NominalMission.java");
         assertTrue(Files.exists(vgrMission), "Generated VacuumGripper mission should exist");
 
         String vgrMissionSource = Files.readString(vgrMission);
         // VacuumGripper action moved to Actions interface Javadoc
         Path vgrActions = outputDir.toPath()
-                .resolve("com/example/generated/vacuumgrippermissions/VacuumGripper1NominalMissionActions.java");
+                .resolve("com/example/generated/vacuumgrippermissions/vacuumgripper1nominalmission/VacuumGripper1NominalMissionActions.java");
         assertTrue(Files.exists(vgrActions), "Generated VacuumGripper actions interface should exist");
         String vgrActionsSource = Files.readString(vgrActions);
-        assertTrue(vgrActionsSource.contains("goToPosition"),
-                "Actions Javadoc should contain the declared goToPosition perform call");
+        assertTrue(vgrActionsSource.contains("goToStandby"),
+                "VGR1 actions interface should contain the goToStandby action method");
         assertFalse(vgrMissionSource.contains("VacuumGripper2NominalMission.goToStandby()"),
                 "Standby action must not pull in unrelated mission actions");
         assertFalse(vgrMissionSource.contains("vacuumGripper.pick()"),
