@@ -1,16 +1,15 @@
 package fr.inria.mbdo.mission.ir;
 
 import lombok.Getter;
-import org.eclipse.syson.sysml.Element;
 
 import java.util.List;
 
 @Getter
-public class TransitionActionMachineIR extends TransitionActionIR {
+public final class TransitionActionMachineIR extends TransitionActionIR {
     private final MachineRefIR machineRef;
 
-    public TransitionActionMachineIR(Element element, List<ParameterIR> parameters, MachineRefIR machineRef) {
-        super(element, parameters);
+    public TransitionActionMachineIR(IrMetadata metadata, List<ParameterIR> parameters, MachineRefIR machineRef) {
+        super(metadata, parameters);
         this.machineRef = machineRef;
     }
 }

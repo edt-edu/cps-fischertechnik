@@ -2,19 +2,18 @@ package fr.inria.mbdo.mission.ir;
 
 import fr.inria.mbdo.mission.utils.StringUtils;
 import lombok.Getter;
-import org.eclipse.syson.sysml.OperatorExpression;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class TriggerOperatorExpressionIR extends TriggerExpressionIR {
+public final class TriggerOperatorExpressionIR extends TriggerExpressionIR {
     private final String operator;
     private final TriggerExpressionIR leftPart;
     private final TriggerExpressionIR rightPart;
 
-    public TriggerOperatorExpressionIR(OperatorExpression element, String operator, TriggerExpressionIR leftPart, TriggerExpressionIR rightPart) {
-        super(element);
+    public TriggerOperatorExpressionIR(String operator, TriggerExpressionIR leftPart,
+                                       TriggerExpressionIR rightPart) {
         this.operator = operator;
         this.leftPart = leftPart;
         this.rightPart = rightPart;

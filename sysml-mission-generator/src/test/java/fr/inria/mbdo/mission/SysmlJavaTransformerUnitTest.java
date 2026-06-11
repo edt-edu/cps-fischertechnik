@@ -55,9 +55,12 @@ class SysmlJavaTransformerUnitTest {
         }
 
         var irRepositoryBuilder = new IrRepository.Builder();
-        var toIr = new ToIrSwitch(symbolIndexBuilder.build(), irRepositoryBuilder);
+        var toIr = new ToIrSwitch(symbolIndexBuilder.build());
         for (var resource : resources) {
-            resource.getContents().forEach(toIr::doSwitch);
+            for (var root : resource.getContents()) {
+                var irs = toIr.doSwitch(root);
+                if (irs != null) irs.forEach(irRepositoryBuilder::add);
+            }
         }
 
         var irRepository = irRepositoryBuilder.build();

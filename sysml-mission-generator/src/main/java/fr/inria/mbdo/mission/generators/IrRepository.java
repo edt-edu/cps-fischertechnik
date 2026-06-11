@@ -8,39 +8,65 @@ import java.util.Map;
 
 @Getter
 public class IrRepository {
-    protected Map<String, MachineMissionIR> missions = new HashMap<>();
-    protected Map<String, MachineIR> machines = new HashMap<>();
-    protected Map<String, EnumerationIR> enumerations = new HashMap<>();
-    protected Map<String, MachineActionIR> actions = new HashMap<>();
-    protected Map<String, MachineMessageIR> messages = new HashMap<>();
-    protected Map<String, StateIR> states = new HashMap<>();
-    protected Map<String, TransitionIR> transitions = new HashMap<>();
-    protected Map<String, TransitionTriggerIR> triggers = new HashMap<>();
-    protected Map<String, TransitionActionIR> transitionActions = new HashMap<>();
+    private final Map<String, MachineMissionIR> missions;
+    private final Map<String, MachineIR> machines;
+    private final Map<String, EnumerationIR> enumerations;
+    private final Map<String, MachineActionIR> actions;
+    private final Map<String, MachineMessageIR> messages;
+    private final Map<String, StateIR> states;
+    private final Map<String, TransitionIR> transitions;
+    private final Map<String, TransitionTriggerIR> triggers;
+    private final Map<String, TransitionActionIR> transitionActions;
+
+    private IrRepository(Builder b) {
+        this.missions = Map.copyOf(b.missions);
+        this.machines = Map.copyOf(b.machines);
+        this.enumerations = Map.copyOf(b.enumerations);
+        this.actions = Map.copyOf(b.actions);
+        this.messages = Map.copyOf(b.messages);
+        this.states = Map.copyOf(b.states);
+        this.transitions = Map.copyOf(b.transitions);
+        this.triggers = Map.copyOf(b.triggers);
+        this.transitionActions = Map.copyOf(b.transitionActions);
+    }
 
     public static class Builder {
-
-        private final IrRepository irRepository = new IrRepository();
+        private final Map<String, MachineMissionIR> missions = new HashMap<>();
+        private final Map<String, MachineIR> machines = new HashMap<>();
+        private final Map<String, EnumerationIR> enumerations = new HashMap<>();
+        private final Map<String, MachineActionIR> actions = new HashMap<>();
+        private final Map<String, MachineMessageIR> messages = new HashMap<>();
+        private final Map<String, StateIR> states = new HashMap<>();
+        private final Map<String, TransitionIR> transitions = new HashMap<>();
+        private final Map<String, TransitionTriggerIR> triggers = new HashMap<>();
+        private final Map<String, TransitionActionIR> transitionActions = new HashMap<>();
 
         public Builder add(ElementIR elementIR) {
             String name = elementIR.getQualifiedName();
             switch (elementIR) {
-                case MachineMissionIR mission -> this.irRepository.missions.put(name, mission);
-                case MachineIR machine -> this.irRepository.machines.put(name, machine);
-                case EnumerationIR enumeration -> this.irRepository.enumerations.put(name, enumeration);
-                case MachineActionIR action -> this.irRepository.actions.put(name, action);
-                case MachineMessageIR message -> this.irRepository.messages.put(name, message);
-                case StateIR state -> this.irRepository.states.put(name, state);
-                case TransitionIR transition -> this.irRepository.transitions.put(name, transition);
-                case TransitionTriggerIR trigger -> this.irRepository.triggers.put(name, trigger);
-                case TransitionActionIR action -> this.irRepository.transitionActions.put(name, action);
-                default -> throw new IllegalStateException("Unexpected value: " + elementIR.getQualifiedName());
+                case MachineMissionIR mission -> missions.put(name, mission);
+                case MachineIR machine -> machines.put(name, machine);
+                case EnumerationIR enumeration -> enumerations.put(name, enumeration);
+                case MachineActionIR action -> actions.put(name, action);
+                case MachineMessageIR message -> messages.put(name, message);
+                case StateIR state -> states.put(name, state);
+                case TransitionIR transition -> transitions.put(name, transition);
+                // TransitionTriggerIR subtypes
+                case TransitionTriggerSimpleIR t -> triggers.put(name, t);
+                case TransitionTriggerWhenIR t -> triggers.put(name, t);
+                // TransitionActionIR subtypes
+                case TransitionActionCustomIR a -> transitionActions.put(name, a);
+                case TransitionActionMachineIR a -> transitionActions.put(name, a);
+                case TransitionActionSendToIR a -> transitionActions.put(name, a);
+                // not stored in the repository
+                default -> {
+                }
             }
             return this;
         }
 
         public IrRepository build() {
-            return irRepository;
+            return new IrRepository(this);
         }
     }
 }

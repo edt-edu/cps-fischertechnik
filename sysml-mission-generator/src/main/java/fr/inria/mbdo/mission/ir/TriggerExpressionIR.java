@@ -1,21 +1,18 @@
 package fr.inria.mbdo.mission.ir;
 
-import lombok.Getter;
-import org.eclipse.syson.sysml.Element;
-
 import java.util.List;
 
-@Getter
-public abstract class TriggerExpressionIR extends ElementIR {
-    public TriggerExpressionIR(Element element) {
-        super(element);
-    }
-
-    @Override
+/**
+ * Base type for the expression tree embedded in an {@code accept when} trigger.
+ * These nodes are structural tree nodes, not named SysML model elements,
+ * so they do not extend {@link ElementIR}.
+ */
+public sealed abstract class TriggerExpressionIR
+        permits TriggerLiteralExpressionIR, TriggerMachineAttributeExpressionIR, TriggerOperatorExpressionIR {
     public abstract String getName();
+
+    public abstract List<MachineRefIR> getMachines();
 
     @Override
     public abstract String toString();
-
-    public abstract List<MachineRefIR> getMachines();
 }

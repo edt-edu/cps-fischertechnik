@@ -70,13 +70,17 @@ public class JavaTransformer {
     private static final String EXPR_MACHINE_ACTION_NO_ARGS = "event -> this.%s.%s()";
     private static final String EXPR_SEND_TO_PUBLISH = "event -> this.%s.publish(new $T())";
 
+    private static final String DOT_SCHEMA_FIELD = "DOT_SCHEMA";
+
     private final Logger logger = LoggerFactory.getLogger(JavaTransformer.class);
     private final IrRepository irRepository;
     private final TypeTable typeTable;
+    private final DotTransformer dotTransformer;
 
     public JavaTransformer(IrRepository irRepository, TypeTable typeTable) {
         this.irRepository = irRepository;
         this.typeTable = typeTable;
+        this.dotTransformer = new DotTransformer(irRepository);
     }
 
     public Map<String, JavaFile> generate() {
@@ -128,14 +132,14 @@ public class JavaTransformer {
 
             /* Setup Adapter attributes */
             for (MachineAttributeIR attribute : machine.getAttributes()) {
-                TypeName type = typeTable.resolve(attribute.getType());
-                methods.add(MethodSpec.methodBuilder("get" + toUpperFirst(attribute.getName()))
+                TypeName type = typeTable.resolve(attribute.type());
+                methods.add(MethodSpec.methodBuilder("get" + toUpperFirst(attribute.name()))
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                         .returns(type)
                         .build());
-                methods.add(MethodSpec.methodBuilder("set" + toUpperFirst(attribute.getName()))
+                methods.add(MethodSpec.methodBuilder("set" + toUpperFirst(attribute.name()))
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .addParameter(type, attribute.getName())
+                        .addParameter(type, attribute.name())
                         .build());
             }
 
@@ -151,8 +155,7 @@ public class JavaTransformer {
             }
 
             /* Implement here the operations corresponding to machine actions */
-            for (Map.Entry<String, Ref<MachineActionIR>> action : machine.getActions().entrySet()) {
-                Ref<MachineActionIR> actionRef = action.getValue();
+            for (Ref<MachineActionIR> actionRef : machine.getActions()) {
                 MachineActionIR machineActionIR = resolveActionIR(actionRef);
                 if (machineActionIR == null) {
                     // best-effort: skip missing actions rather than fail generation
@@ -168,7 +171,7 @@ public class JavaTransformer {
                                 machineActionIR.getDocumentation());
                 for (var parameter : machineActionIR.getParameters()) {
                     actionBuilder.addParameter(
-                            ParameterSpec.builder(typeTable.resolve(parameter.getType()), parameter.getName()).build());
+                            ParameterSpec.builder(typeTable.resolve(parameter.type()), parameter.name()).build());
                 }
                 methods.add(actionBuilder.build());
             }
@@ -208,30 +211,30 @@ public class JavaTransformer {
                     .build());
 
             for (MachineAttributeIR attribute : machine.getAttributes()) {
-                TypeName attrType = typeTable.resolve(attribute.getType());
+                TypeName attrType = typeTable.resolve(attribute.type());
                 adapterBuilder.addField(
-                        FieldSpec.builder(attrType, attribute.getName(), Modifier.PROTECTED, Modifier.VOLATILE)
+                        FieldSpec.builder(attrType, attribute.name(), Modifier.PROTECTED, Modifier.VOLATILE)
                                 .build());
             }
 
             for (MachineAttributeIR attribute : machine.getAttributes()) {
-                TypeName attrType = typeTable.resolve(attribute.getType());
+                TypeName attrType = typeTable.resolve(attribute.type());
 
-                adapterBuilder.addMethod(MethodSpec.methodBuilder("get" + toUpperFirst(attribute.getName()))
+                adapterBuilder.addMethod(MethodSpec.methodBuilder("get" + toUpperFirst(attribute.name()))
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
                         .returns(attrType)
-                        .addStatement("return this.$N", attribute.getName())
+                        .addStatement("return this.$N", attribute.name())
                         .build());
 
                 MethodSpec.Builder setterBuilder = MethodSpec.methodBuilder(
-                        "set" + toUpperFirst(attribute.getName()))
+                        "set" + toUpperFirst(attribute.name()))
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
-                        .addParameter(attrType, attribute.getName())
-                        .addStatement("this.$N = $N", attribute.getName(), attribute.getName());
+                        .addParameter(attrType, attribute.name())
+                        .addStatement("this.$N = $N", attribute.name(), attribute.name());
 
-                if (attributesInConditions.contains(attribute.getName())) {
+                if (attributesInConditions.contains(attribute.name())) {
                     setterBuilder.addStatement("checkAndFireAcceptWhenEvents()");
                 }
 
@@ -246,8 +249,8 @@ public class JavaTransformer {
                         .build());
             }
 
-            for (Map.Entry<String, Ref<MachineActionIR>> actionEntry : machine.getActions().entrySet()) {
-                MachineActionIR actionIR = resolveActionIR(actionEntry.getValue());
+            for (Ref<MachineActionIR> actionRef : machine.getActions()) {
+                MachineActionIR actionIR = resolveActionIR(actionRef);
                 if (actionIR == null) {
                     continue;
                 }
@@ -256,7 +259,7 @@ public class JavaTransformer {
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                         .addJavadoc(JAVADOC_FROM, actionIR.getQualifiedName(), actionIR.getDocumentation());
                 for (ParameterIR param : actionIR.getParameters()) {
-                    actionBuilder.addParameter(typeTable.resolve(param.getType()), param.getName());
+                    actionBuilder.addParameter(typeTable.resolve(param.type()), param.name());
                 }
                 adapterBuilder.addMethod(actionBuilder.build());
             }
@@ -309,8 +312,6 @@ public class JavaTransformer {
             }
             case TriggerMachineAttributeExpressionIR attr -> "this." + attr.getAttributeRef().name();
             case TriggerLiteralExpressionIR lit -> lit.getValue();
-            default -> throw new IllegalStateException(
-                    "Unsupported trigger expression type: " + expression.getClass().getSimpleName());
         };
     }
 
@@ -331,7 +332,7 @@ public class JavaTransformer {
                 collectAttributeNamesFromExpression(op.getRightPart(), names);
             }
             case TriggerMachineAttributeExpressionIR attr -> names.add(attr.getAttributeRef().name());
-            default -> { /* literals contribute no attribute names */ }
+            case TriggerLiteralExpressionIR ignored -> { /* literals contribute no attribute names */ }
         }
     }
 
@@ -398,6 +399,8 @@ public class JavaTransformer {
 
             missionBuilder.addMethod(buildMissionConstructor(mission, states, transitions));
             missionBuilder.addMethod(buildGetNameMethod(mission));
+            missionBuilder.addField(buildDotSchemaField(mission));
+            missionBuilder.addMethod(buildToDotMethod());
 
             javaFiles.put(mission.getQualifiedName(),
                     JavaFile.builder(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
@@ -883,8 +886,6 @@ public class JavaTransformer {
                 TypeName messageType = typeTable.resolve(messageRef.type());
                 yield CodeBlock.of(String.format(EXPR_SEND_TO_PUBLISH, receiverName), messageType);
             }
-            default -> throw new IllegalStateException("Unsupported transition action type for transition "
-                    + transition.getQualifiedName() + ": " + transitionAction.getClass().getSimpleName());
         };
     }
 
@@ -1010,7 +1011,7 @@ public class JavaTransformer {
     }
 
     private boolean hasCurrentCommand(MachineIR machine) {
-        return machine.getAttributes().stream().anyMatch(attribute -> CURRENT_COMMAND_ATTR.equals(attribute.getName()));
+        return machine.getAttributes().stream().anyMatch(attribute -> CURRENT_COMMAND_ATTR.equals(attribute.name()));
     }
 
     private List<TransitionTriggerWhenIR> resolveAcceptWhenTriggersForMachine(MachineIR machine) {
@@ -1036,9 +1037,25 @@ public class JavaTransformer {
 
     private TypeName findCurrentCommandType(MachineIR machine) {
         return machine.getAttributes().stream()
-                .filter(attribute -> CURRENT_COMMAND_ATTR.equals(attribute.getName()))
+                .filter(attribute -> CURRENT_COMMAND_ATTR.equals(attribute.name()))
                 .findFirst()
-                .map(attribute -> typeTable.resolve(attribute.getType()))
+                .map(attribute -> typeTable.resolve(attribute.type()))
                 .orElse(TypeName.get(Object.class));
+    }
+
+    private FieldSpec buildDotSchemaField(MachineMissionIR mission) {
+        String dotContent = dotTransformer.generateForMission(mission);
+        return FieldSpec.builder(String.class, DOT_SCHEMA_FIELD,
+                        Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                .initializer("$S", dotContent)
+                .build();
+    }
+
+    private MethodSpec buildToDotMethod() {
+        return MethodSpec.methodBuilder("toDot")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(String.class)
+                .addStatement("return $N", DOT_SCHEMA_FIELD)
+                .build();
     }
 }

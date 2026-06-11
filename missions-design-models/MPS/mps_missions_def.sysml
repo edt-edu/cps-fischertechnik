@@ -8,6 +8,10 @@ package MultiProcessingStationMissions {
     doc
     /* Nominal mission for the multi-processing station */
     state def MultiProcessingStationNominalMission {
+        in multiProcessingStation
+            : MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine;
+        in zoneMPS : ZonesSystem::Zone;
+
         action broadcastCompletion {
             doc
             /* This action is responsible for broadcasting the completion of the processing task to any interested parties. It can be used to trigger subsequent actions in other machines or to update the system state. */
@@ -17,10 +21,6 @@ package MultiProcessingStationMissions {
             send new InputFreeEventMessage() to multiProcessingStation;
             send new OutputBusyEventMessage() to multiProcessingStation;
         }
-
-        in multiProcessingStation
-            : MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine;
-        in zoneMPS : ZonesSystem::Zone;
 
         entry multiProcessingStation.setup;
         then Idle;

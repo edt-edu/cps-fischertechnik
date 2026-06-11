@@ -1,21 +1,16 @@
 package fr.inria.mbdo.mission.ir;
 
 import lombok.Getter;
-import org.eclipse.syson.sysml.Element;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
-public class TransitionTriggerWhenIR extends TransitionTriggerIR {
-
+public final class TransitionTriggerWhenIR extends TransitionTriggerIR {
     private final TriggerExpressionIR expression;
-    private final String triggerEventName;
 
-    public TransitionTriggerWhenIR(Element element, String triggerEventName, TriggerExpressionIR expression) {
-        super(element);
-        this.triggerEventName = triggerEventName;
+    public TransitionTriggerWhenIR(IrMetadata metadata, TriggerExpressionIR expression) {
+        super(metadata);
         this.expression = expression;
     }
 

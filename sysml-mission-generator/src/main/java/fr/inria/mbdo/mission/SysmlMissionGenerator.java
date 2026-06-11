@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import fr.inria.mbdo.mission.generators.*;
+import fr.inria.mbdo.mission.ir.ElementIR;
 import fr.inria.mbdo.mission.switchs.IndexerSwitch;
 import fr.inria.mbdo.mission.switchs.ToIrSwitch;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -41,10 +42,13 @@ public class SysmlMissionGenerator {
 
         // Pass 2: Link types and build Intermediate Representation
         IrRepository.Builder irRepositoryBuilder = new IrRepository.Builder();
-        ToIrSwitch toIr = new ToIrSwitch(symbolIndex, irRepositoryBuilder);
+        ToIrSwitch toIr = new ToIrSwitch(symbolIndex);
 
         for (Resource resource : resources) {
-            resource.getContents().forEach(toIr::doSwitch);
+            for (var root : resource.getContents()) {
+                List<ElementIR> irs = toIr.doSwitch(root);
+                if (irs != null) irs.forEach(irRepositoryBuilder::add);
+            }
         }
 
         IrRepository irRepository = irRepositoryBuilder.build();

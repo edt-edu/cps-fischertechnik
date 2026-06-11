@@ -1,6 +1,5 @@
 package fr.inria.mbdo.mission.switchs;
 
-import fr.inria.mbdo.mission.generators.IrRepository;
 import fr.inria.mbdo.mission.generators.SymbolIndex;
 import fr.inria.mbdo.mission.ir.*;
 import org.eclipse.emf.common.util.EList;
@@ -13,129 +12,141 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ToIrSwitch extends SysmlSwitch<Void> {
+public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
     private static final Logger logger = LoggerFactory.getLogger(ToIrSwitch.class);
 
     private final SymbolIndex index;
-    private final IrRepository.Builder irRepositoryBuilder;
 
-    public ToIrSwitch(SymbolIndex index, IrRepository.Builder irRepositoryBuilder) {
+    public ToIrSwitch(SymbolIndex index) {
         this.index = index;
-        this.irRepositoryBuilder = irRepositoryBuilder;
     }
 
+    // --- EMF metadata extraction ---
+
+    private static IrMetadata meta(Element element) {
+        String namespace = element.getOwningNamespace().getQualifiedName();
+        String name = element.getName();
+        String documentation = element.getDocumentation().stream()
+                .map(Documentation::getBody).collect(Collectors.joining("\n"));
+        String sourceUri = element.eResource() != null ? element.eResource().getURI().toString() : null;
+        return new IrMetadata(namespace, name, documentation, sourceUri);
+    }
+
+    // --- Switch cases ---
+
     @Override
-    public Void casePartDefinition(PartDefinition object) {
+    public List<ElementIR> casePartDefinition(PartDefinition object) {
         logger.debug("Traversing part def: {}", object.getQualifiedName());
         if (shouldSkipGeneration(object)) {
-            return null;
+            return List.of();
         }
+
+        List<ElementIR> result = new ArrayList<>();
 
         List<MachineAttributeIR> attributes = new ArrayList<>();
         for (AttributeUsage ownedAttribute : object.getOwnedAttribute()) {
             TypeRef attrType = (ownedAttribute.getType() == null || ownedAttribute.getType().isEmpty())
                     ? TypeRef.unknown(object.getQualifiedName() + "::" + ownedAttribute.getName())
                     : toTypeRef(ownedAttribute.getType());
-            attributes.add(new MachineAttributeIR(ownedAttribute, attrType));
+            attributes.add(new MachineAttributeIR(ownedAttribute.getName(), attrType));
         }
 
-        Map<String, Ref<MachineActionIR>> actions = new HashMap<>();
+        List<Ref<MachineActionIR>> actionRefs = new ArrayList<>();
         for (ActionUsage ownedAction : object.getOwnedAction()) {
             MachineActionIR action = buildMachineActionIR(ownedAction);
-            irRepositoryBuilder.add(action);
+            result.add(action);
             logger.info("Traversing action: {} of type {}", ownedAction.getQualifiedName(), action.getQualifiedName());
-            actions.put(ownedAction.getQualifiedName(), new Ref<>(action.getQualifiedName()));
+            actionRefs.add(new Ref<>(action.getQualifiedName()));
         }
 
         // TODO define messages sent by this machine ?
-        irRepositoryBuilder.add(new MachineIR(object, actions, attributes, List.of()));
-        return null;
+        result.add(new MachineIR(meta(object), actionRefs, attributes, List.of()));
+        return result;
     }
 
     @Override
-    public Void caseItemDefinition(ItemDefinition object) {
+    public List<ElementIR> caseItemDefinition(ItemDefinition object) {
         logger.debug("Traversing item def: {}", object.getQualifiedName());
         if (shouldSkipGeneration(object) || index.resolvePart(object.getQualifiedName()).isPresent()) {
-            return null;
+            return List.of();
         }
         if (object.supertypes(true).stream().anyMatch(t -> t.getName().equals("EventMessage"))) {
-            irRepositoryBuilder.add(new MachineMessageIR(object));
+            return List.of(new MachineMessageIR(meta(object)));
         }
-        return null;
+        return List.of();
     }
 
     @Override
-    public Void caseStateDefinition(StateDefinition object) {
+    public List<ElementIR> caseStateDefinition(StateDefinition object) {
         logger.debug("[State]\tTraversing state def: {}", object.getQualifiedName());
         if (shouldSkipGeneration(object)) {
-            return null;
+            return List.of();
         }
 
+        List<ElementIR> result = new ArrayList<>();
         TransitionIR defaultTransitionIR = null;
         List<MachineRefIR> machinesRefs = collectMachineRefs(object);
         List<Ref<StateIR>> statesRefs = collectStatesRefs(object.getOwnedState());
         Map<String, List<Ref<TransitionIR>>> transitionsRefs = new HashMap<>();
 
         for (TransitionUsage transition : object.getOwnedTransition()) {
-            TransitionIR transitionIR = buildTransitionIR(transition, statesRefs, machinesRefs);
-            irRepositoryBuilder.add(transitionIR);
+            TransitionBundle bundle = buildTransitionIR(transition, statesRefs, machinesRefs);
+            result.addAll(bundle.nodes());
+            TransitionIR transitionIR = bundle.transition();
+
             if (defaultTransitionIR == null && transitionIR.getFromState() == null) {
                 defaultTransitionIR = transitionIR;
                 continue;
             }
             String sourceQName = transitionIR.getFromState().qName();
-            Ref<TransitionIR> transitionRef = new Ref<>(transitionIR.getQualifiedName());
-
             transitionsRefs
                     .computeIfAbsent(sourceQName, k -> new ArrayList<>())
-                    .add(transitionRef);
+                    .add(new Ref<>(transitionIR.getQualifiedName()));
         }
 
         for (StateUsage state : object.getOwnedState()) {
-            StateIR stateIR = new StateIR(state, transitionsRefs.get(state.getQualifiedName()));
-            irRepositoryBuilder.add(stateIR);
+            result.add(new StateIR(meta(state), transitionsRefs.get(state.getQualifiedName())));
         }
 
         if (defaultTransitionIR == null) {
             throw new IllegalStateException("No default transition found for state " + object.getQualifiedName());
         }
 
-        irRepositoryBuilder.add(new MachineMissionIR(object, new Ref<>(defaultTransitionIR.getQualifiedName()),
+        result.add(new MachineMissionIR(meta(object), new Ref<>(defaultTransitionIR.getQualifiedName()),
                 statesRefs, machinesRefs));
 
-        return null;
+        return result;
     }
 
     @Override
-    public Void caseEnumerationDefinition(EnumerationDefinition object) {
+    public List<ElementIR> caseEnumerationDefinition(EnumerationDefinition object) {
         logger.debug("Traversing enumeration def: {}", object.getQualifiedName());
         if (shouldSkipGeneration(object)) {
-            return null;
+            return List.of();
         }
-
         List<String> constants = object.getEnumeratedValue().stream().map(Element::getName).toList();
-        irRepositoryBuilder.add(new EnumerationIR(object, constants));
-        return null;
+        return List.of(new EnumerationIR(meta(object), constants));
     }
 
     @Override
-    public Void caseActionDefinition(ActionDefinition object) {
+    public List<ElementIR> caseActionDefinition(ActionDefinition object) {
         logger.debug("Traversing action def: {}", object.getQualifiedName());
-        if (shouldSkipGeneration(object)) {
-            return null;
-        }
-        return null;
+        return List.of();
     }
 
     @Override
-    public Void caseElement(Element object) {
-        return doSwitchForAllOwnedElements(object);
+    public List<ElementIR> caseElement(Element object) {
+        List<ElementIR> result = new ArrayList<>();
+        for (Element owned : object.getOwnedElement()) {
+            List<ElementIR> child = doSwitch(owned);
+            if (child != null) {
+                result.addAll(child);
+            }
+        }
+        return result;
     }
 
-    private Void doSwitchForAllOwnedElements(Element object) {
-        object.getOwnedElement().forEach(this::doSwitch);
-        return null;
-    }
+    // --- private helpers ---
 
     private List<MachineRefIR> collectMachineRefs(StateDefinition object) {
         List<MachineRefIR> machinesRefs = new ArrayList<>();
@@ -153,8 +164,12 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         return stateRefs;
     }
 
-    private TransitionIR buildTransitionIR(TransitionUsage transition, List<Ref<StateIR>> statesRefs,
-                                           List<MachineRefIR> machineRefs) {
+    private record TransitionBundle(List<ElementIR> nodes, TransitionIR transition) {}
+
+    private TransitionBundle buildTransitionIR(TransitionUsage transition, List<Ref<StateIR>> statesRefs,
+                                               List<MachineRefIR> machineRefs) {
+        List<ElementIR> nodes = new ArrayList<>();
+
         /* Retrieve states From -> To */
         String sourceQName = transition.getSource() != null && !(transition.getSource() instanceof PerformActionUsage)
                 ? transition.getSource().getQualifiedName()
@@ -173,18 +188,14 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
 
         /* Build trigger */
         TransitionTriggerIR trigger = buildTriggerIR(transition);
-        if (trigger != null) {
-            irRepositoryBuilder.add(trigger);
-        }
+        if (trigger != null) nodes.add(trigger);
 
         /* Build guard (Not implemented yet, TODO) */
         TransitionGuardIR guard = null;
 
         /* Build action */
         TransitionActionIR transitionAction = buildTransitionAction(transition, machineRefs);
-        if (transitionAction != null) {
-            irRepositoryBuilder.add(transitionAction);
-        }
+        if (transitionAction != null) nodes.add(transitionAction);
 
         Ref<StateIR> sourceStateRef = sourceQName != null ? new Ref<>(sourceQName) : null;
         Ref<StateIR> targetStateRef = new Ref<>(targetQName);
@@ -197,7 +208,11 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         logger.debug("[State]\t\t\tNew transition {} -> {} [trigger={}, guard={}, action={}]",
                 sourceQName, targetQName, triggerRef, guardRef, transitionActionRef);
 
-        return new TransitionIR(transition, sourceStateRef, targetStateRef, triggerRef, guardRef, transitionActionRef);
+        TransitionIR transitionIR = new TransitionIR(meta(transition), sourceStateRef, targetStateRef, triggerRef,
+                guardRef, transitionActionRef);
+        nodes.add(transitionIR);
+
+        return new TransitionBundle(nodes, transitionIR);
     }
 
     private MachineActionIR buildMachineActionIR(ActionUsage actionUsage) {
@@ -226,10 +241,10 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
             TypeRef paramType = (types == null || types.isEmpty())
                     ? TypeRef.unknown(actionUsage.getQualifiedName() + "::" + parameter.getName())
                     : toTypeRef(types);
-            parameterIRs.add(new ParameterIR(parameter, paramType));
+            parameterIRs.add(new ParameterIR(parameter.getName(), paramType));
         }
 
-        return new MachineActionIR(actionUsage, parameterIRs);
+        return new MachineActionIR(meta(actionUsage), parameterIRs);
     }
 
     private TransitionTriggerIR buildTriggerIR(TransitionUsage transition) {
@@ -241,17 +256,20 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
 
         String explicitMessageTypeQName = resolveExplicitAcceptMessageTypeQName(accept);
         if (explicitMessageTypeQName != null) {
-            return new TransitionTriggerSimpleIR(transition, new Ref<>(explicitMessageTypeQName));
+            return new TransitionTriggerSimpleIR(meta(transition), new Ref<>(explicitMessageTypeQName));
         }
 
-        TriggerExpressionIR triggerExpression = extractTriggerExpression(accept.getPayloadArgument());
+        Expression payloadArg = accept.getPayloadArgument();
+        TriggerExpressionIR triggerExpression = extractTriggerExpression(payloadArg);
         if (triggerExpression == null) {
-            logger.warn("No trigger expression found for {}",
-                    accept.getPayloadArgument().getParameter().getFirst().getName());
+            String argName = (payloadArg != null && !payloadArg.getParameter().isEmpty())
+                    ? payloadArg.getParameter().getFirst().getName()
+                    : "<no payload argument>";
+            logger.warn("No trigger expression found for {}, skipping accept-when trigger", argName);
+            return null;
         }
 
-        return new TransitionTriggerWhenIR(transition,
-                triggerExpression != null ? triggerExpression.getName() : null, triggerExpression);
+        return new TransitionTriggerWhenIR(meta(transition), triggerExpression);
     }
 
     private TriggerExpressionIR extractTriggerExpression(Element element) {
@@ -260,7 +278,7 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
                 return null;
             }
             case FeatureChainExpression fce -> {
-                return new TriggerMachineAttributeExpressionIR(fce, extractMachineRef(fce),
+                return new TriggerMachineAttributeExpressionIR(extractMachineRef(fce),
                         extractMachineAttributeRef(fce));
             }
             case OperatorExpression oe -> {
@@ -270,17 +288,17 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
                 }
                 TriggerExpressionIR leftExpression = extractTriggerExpression(parameters.get(0));
                 TriggerExpressionIR rightExpression = extractTriggerExpression(parameters.get(1));
-                return new TriggerOperatorExpressionIR(oe, oe.getOperator(), leftExpression, rightExpression);
+                return new TriggerOperatorExpressionIR(oe.getOperator(), leftExpression, rightExpression);
             }
             case LiteralExpression le -> {
                 return switch (le) {
-                    case LiteralBoolean lb -> new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.BOOLEAN),
+                    case LiteralBoolean lb -> new TriggerLiteralExpressionIR(TypeRef.scalar(ScalarType.BOOLEAN),
                             String.valueOf(lb.isValue()));
-                    case LiteralInteger li -> new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.INTEGER),
+                    case LiteralInteger li -> new TriggerLiteralExpressionIR(TypeRef.scalar(ScalarType.INTEGER),
                             String.valueOf(li.getValue()));
-                    case LiteralString ls ->
-                            new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.STRING), ls.getValue());
-                    case LiteralRational lr -> new TriggerLiteralExpressionIR(le, TypeRef.scalar(ScalarType.REAL),
+                    case LiteralString ls -> new TriggerLiteralExpressionIR(TypeRef.scalar(ScalarType.STRING),
+                            ls.getValue());
+                    case LiteralRational lr -> new TriggerLiteralExpressionIR(TypeRef.scalar(ScalarType.REAL),
                             String.valueOf(lr.getValue()));
                     default -> null;
                 };
@@ -386,21 +404,26 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
         ActionUsage actionUsage = extractTransitionAction(transition);
 
         if (actionUsage instanceof SendActionUsage sau) {
-            String receiverName = sau.getSenderArgument().getResult().getName();
-            TypeRef messageTypeRef = toTypeRef(sau.getPayloadArgument().getType());
-            MachineRefIR senderMachine = machineRefs.stream()
-                    .filter(ref -> ref.name().equals(receiverName)).findFirst()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Receiver was not specified for message " + messageTypeRef.qualifiedName()));
+            EList<Type> payloadTypes = sau.getPayloadArgument().getType();
+            if (payloadTypes == null || payloadTypes.isEmpty()) {
+                // Constructor expressions (e.g. `send new Foo() to x`) don't have their type list
+                // resolved by SySon — skip rather than crash; the send action won't be in the IR.
+                logger.warn("SendActionUsage has unresolvable payload type (constructor expression?), skipping: {}",
+                        sau.eClass().getName());
+            } else {
+                String receiverName = sau.getSenderArgument().getResult().getName();
+                TypeRef messageTypeRef = toTypeRef(payloadTypes);
+                MachineRefIR senderMachine = machineRefs.stream()
+                        .filter(ref -> ref.name().equals(receiverName)).findFirst()
+                        .orElseThrow(() -> new IllegalStateException(
+                                "Receiver was not specified for message " + messageTypeRef.qualifiedName()));
 
-            logger.warn("SendActionUsage called message={} to={}", messageTypeRef.qualifiedName(), senderMachine);
-            MachineMessageRefIR messageRef = new MachineMessageRefIR(
-                    sau.getPayloadArgument().getType().getFirst().getQualifiedName(), messageTypeRef);
+                logger.warn("SendActionUsage called message={} to={}", messageTypeRef.qualifiedName(), senderMachine);
+                MachineMessageRefIR messageRef = new MachineMessageRefIR(
+                        payloadTypes.getFirst().getQualifiedName(), messageTypeRef);
 
-            action = new TransitionActionSendToIR(sau, List.of(), messageRef, senderMachine);
-            // Event qName: sau.getPayloadArgument().getType().getFirst().getQualifiedName
-            // Sender: sau.getSenderArgument().getResult()
-            // Receiver:
+                action = new TransitionActionSendToIR(meta(sau), List.of(), messageRef, senderMachine);
+            }
         } else if (actionUsage instanceof PerformActionUsage pea) {
             logger.debug("Building transition action: {} with class {}", actionUsage, actionUsage.getClass());
 
@@ -418,9 +441,9 @@ public class ToIrSwitch extends SysmlSwitch<Void> {
 
             MachineRefIR machineRef = !featuredMachinesRefs.isEmpty() ? featuredMachinesRefs.getFirst() : null;
             if (featuredMachinesRefs.isEmpty()) {
-                action = new TransitionActionCustomIR(feat, List.of(), List.of());
+                action = new TransitionActionCustomIR(meta(feat), List.of(), List.of());
             } else {
-                action = new TransitionActionMachineIR(feat, List.of(), machineRef);
+                action = new TransitionActionMachineIR(meta(feat), List.of(), machineRef);
             }
         } else if (actionUsage != null) {
             logger.info("ActionUsage {} is of type {}", actionUsage, actionUsage.getClass());

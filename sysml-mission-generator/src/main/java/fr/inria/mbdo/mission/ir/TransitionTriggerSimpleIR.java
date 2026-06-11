@@ -1,15 +1,13 @@
 package fr.inria.mbdo.mission.ir;
 
 import lombok.Getter;
-import org.eclipse.syson.sysml.Element;
 
 @Getter
-public class TransitionTriggerSimpleIR extends TransitionTriggerIR {
-
+public final class TransitionTriggerSimpleIR extends TransitionTriggerIR {
     private final Ref<MachineMessageIR> eventMessage;
 
-    public TransitionTriggerSimpleIR(Element element, Ref<MachineMessageIR> eventMessage) {
-        super(element);
+    public TransitionTriggerSimpleIR(IrMetadata metadata, Ref<MachineMessageIR> eventMessage) {
+        super(metadata);
         this.eventMessage = eventMessage;
     }
 

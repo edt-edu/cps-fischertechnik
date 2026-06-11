@@ -2,17 +2,15 @@ package fr.inria.mbdo.mission.ir;
 
 import fr.inria.mbdo.mission.utils.StringUtils;
 import lombok.Getter;
-import org.eclipse.syson.sysml.Element;
 
 import java.util.List;
 
 @Getter
-public class TriggerMachineAttributeExpressionIR extends TriggerExpressionIR {
+public final class TriggerMachineAttributeExpressionIR extends TriggerExpressionIR {
     private final MachineRefIR machineRef;
     private final MachineAttributeRefIR attributeRef;
 
-    public TriggerMachineAttributeExpressionIR(Element element, MachineRefIR machineRef, MachineAttributeRefIR attributeRef) {
-        super(element);
+    public TriggerMachineAttributeExpressionIR(MachineRefIR machineRef, MachineAttributeRefIR attributeRef) {
         this.machineRef = machineRef;
         this.attributeRef = attributeRef;
     }

@@ -1,17 +1,15 @@
 package fr.inria.mbdo.mission.ir;
 
 import lombok.Getter;
-import org.eclipse.syson.sysml.Element;
 
 import java.util.List;
 
 @Getter
-public class TriggerLiteralExpressionIR extends TriggerExpressionIR {
+public final class TriggerLiteralExpressionIR extends TriggerExpressionIR {
     private final TypeRef type;
     private final String value;
 
-    public TriggerLiteralExpressionIR(Element element, TypeRef type, String value) {
-        super(element);
+    public TriggerLiteralExpressionIR(TypeRef type, String value) {
         this.type = type;
         this.value = value;
     }
