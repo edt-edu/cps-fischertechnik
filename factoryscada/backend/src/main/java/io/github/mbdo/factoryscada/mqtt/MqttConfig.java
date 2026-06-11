@@ -42,7 +42,7 @@ public class MqttConfig {
         MqttPahoMessageHandler handler = new MqttPahoMessageHandler("clientId", mqttClientFactory());
         handler.setAsync(true);
         handler.setDefaultQos(1);
-        handler.setDefaultRetained(false);
+        handler.setDefaultRetained(true);
         return handler;
     }
 
