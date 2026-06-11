@@ -1,6 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.SortingLineNominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.SortingLineNominalMissionActions;
 
 /**
  * Default (no-op) implementation of SortingLineNominalMission actions.

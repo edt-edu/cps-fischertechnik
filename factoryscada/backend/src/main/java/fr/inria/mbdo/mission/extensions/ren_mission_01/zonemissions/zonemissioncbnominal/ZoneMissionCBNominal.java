@@ -1,4 +1,4 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
@@ -16,7 +16,22 @@ import org.slf4j.LoggerFactory;
  * From ZoneMissions::ZoneMissionCBNominal
  */
 public class ZoneMissionCBNominal extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger(ZoneMissionCBNominal.class);
+  private static final Logger logger = LoggerFactory.getLogger("ZoneMissionCBNominal");
+
+  public static final String DOT_SCHEMA = "digraph ZoneMissionCBNominal {\n"
+      + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
+      + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    rankdir=LR;\n"
+      + "    node [shape=point, label=\"\"]; __init__;\n"
+      + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
+      + "    \"IdleFree\";\n"
+      + "    \"IdleBusy\";\n"
+      + "\n"
+      + "    __init__ -> \"IdleFree\" [label=\"ε\"];\n"
+      + "    \"IdleFree\" -> \"IdleBusy\" [label=\"AcquireRequestEventMessage / sendAcquireResponseEventMessage\"];\n"
+      + "    \"IdleBusy\" -> \"IdleFree\" [label=\"ReleaseRequestEventMessage\"];\n"
+      + "}";
 
   private final ZoneMissionCBNominalActions actions;
 
@@ -45,5 +60,9 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
   @Override
   public String getName() {
     return "ZoneMissionCBNominal";
+  }
+
+  public static String toDot() {
+    return DOT_SCHEMA;
   }
 }

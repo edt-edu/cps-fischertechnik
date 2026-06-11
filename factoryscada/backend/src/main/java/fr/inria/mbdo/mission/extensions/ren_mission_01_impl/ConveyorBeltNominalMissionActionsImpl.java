@@ -1,6 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.ConveyorBeltNominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.ConveyorBeltNominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
@@ -16,8 +16,7 @@ public class ConveyorBeltNominalMissionActionsImpl implements ConveyorBeltNomina
     private static final Logger log = LoggerFactory.getLogger(ConveyorBeltNominalMissionActionsImpl.class);
 
     @Override
-    public void performActionUsage(Event event, ConveyorBeltMachine conveyorBelt,
-            VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2) {
+    public void notifyVgr1AndVgr2(Event event, ConveyorBeltMachine conveyorBelt, VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2) {
         log.info("ConveyorBelt performActionUsage triggered by {}", event.getClass().getSimpleName());
     }
 }

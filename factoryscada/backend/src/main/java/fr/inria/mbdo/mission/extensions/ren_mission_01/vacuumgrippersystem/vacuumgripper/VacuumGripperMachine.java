@@ -49,19 +49,9 @@ public interface VacuumGripperMachine extends MachineAdapter {
   void setVacuumActValve(boolean vacuumActValve);
 
   /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::release
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::goToPosition
    */
-  void release();
-
-  /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::statusRequest
-   */
-  void statusRequest();
-
-  /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::pick
-   */
-  void pick();
+  void goToPosition();
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::move
@@ -69,14 +59,9 @@ public interface VacuumGripperMachine extends MachineAdapter {
   void move();
 
   /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::grip
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::pick
    */
-  void grip();
-
-  /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::goToPosition
-   */
-  void goToPosition();
+  void pick();
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::place
@@ -84,9 +69,24 @@ public interface VacuumGripperMachine extends MachineAdapter {
   void place();
 
   /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::moveToSafePosition
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::setup
    */
-  void moveToSafePosition();
+  void setup();
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::statusRequest
+   */
+  void statusRequest();
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::grip
+   */
+  void grip();
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::release
+   */
+  void release();
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::stop
@@ -94,9 +94,9 @@ public interface VacuumGripperMachine extends MachineAdapter {
   void stop();
 
   /**
-   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::setup
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::moveToSafePosition
    */
-  void setup();
+  void moveToSafePosition();
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::retractArm

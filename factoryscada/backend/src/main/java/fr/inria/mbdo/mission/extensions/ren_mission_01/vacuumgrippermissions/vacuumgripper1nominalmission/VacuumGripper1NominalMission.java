@@ -1,4 +1,4 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper1nominalmission;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.SortingLineMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.BlueTokenAvailableEventMessage;
@@ -23,7 +23,32 @@ import org.slf4j.LoggerFactory;
  * From VacuumGripperMissions::VacuumGripper1NominalMission
  */
 public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger(VacuumGripper1NominalMission.class);
+  private static final Logger logger = LoggerFactory.getLogger("VacuumGripper1NominalMission");
+
+  public static final String DOT_SCHEMA = "digraph VacuumGripper1NominalMission {\n"
+      + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
+      + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    rankdir=LR;\n"
+      + "    node [shape=point, label=\"\"]; __init__;\n"
+      + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
+      + "    \"SetupCMD\";\n"
+      + "    \"StandbyCMD\";\n"
+      + "    \"Idle\";\n"
+      + "    \"PickColorCMD\";\n"
+      + "    \"IdlePicked\";\n"
+      + "    \"PlaceConveyorBeltFeed\";\n"
+      + "\n"
+      + "    __init__ -> \"SetupCMD\" [label=\"ε / vacuumGripper.setup()\"];\n"
+      + "    \"SetupCMD\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"StandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
+      + "    \"Idle\" -> \"PickColorCMD\" [label=\"BlueTokenAvailableEventMessage / pickBlue\"];\n"
+      + "    \"Idle\" -> \"PickColorCMD\" [label=\"WhiteTokenAvailableEventMessage / pickWhite\"];\n"
+      + "    \"Idle\" -> \"PickColorCMD\" [label=\"RedTokenAvailableEventMessage / pickRed\"];\n"
+      + "    \"PickColorCMD\" -> \"IdlePicked\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
+      + "    \"IdlePicked\" -> \"PlaceConveyorBeltFeed\" [label=\"AcquireResponseEventMessage / placeConveyoBeltFeed\"];\n"
+      + "    \"PlaceConveyorBeltFeed\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "}";
 
   private final VacuumGripper1NominalMissionActions actions;
 
@@ -70,5 +95,9 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
   @Override
   public String getName() {
     return "VacuumGripper1NominalMission";
+  }
+
+  public static String toDot() {
+    return DOT_SCHEMA;
   }
 }

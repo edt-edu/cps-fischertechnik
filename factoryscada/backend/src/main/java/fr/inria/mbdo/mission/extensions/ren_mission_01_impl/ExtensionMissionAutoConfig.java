@@ -1,21 +1,21 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.ConveyorBeltNominalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.ConveyorBeltNominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.ConveyorBeltNominalMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.ConveyorBeltNominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.MultiProcessingStationNominalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.MultiProcessingStationNominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.MultiProcessingStationNominalMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.MultiProcessingStationNominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.MultiProcessingStationMachine;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.SortingLineNominalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.SortingLineNominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.SortingLineNominalMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.SortingLineNominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.SortingLineMachine;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.VacuumGripper1NominalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.VacuumGripper1NominalMissionActions;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.VacuumGripper2NominalMission;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.VacuumGripper2NominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper1nominalmission.VacuumGripper1NominalMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper1nominalmission.VacuumGripper1NominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission.VacuumGripper2NominalMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission.VacuumGripper2NominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.ZoneMissionCBNominal;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.ZoneMissionCBNominalActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominal;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.config.GlobalMission;
 import fr.inria.mbdo.mission.runtime.config.MachineMissionBinding;
@@ -24,6 +24,8 @@ import fr.inria.mbdo.mission.runtime.config.MissionTemplate;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import io.github.mbdo.factoryscada.mqtt.MqttMessageRouter;
 
 import java.util.List;
 
@@ -64,28 +66,33 @@ public class ExtensionMissionAutoConfig {
     // ──────────────────────────────────────────────────────────────────────────
 
     @Bean("conveyorBeltAdapter")
-    public ConveyorBeltMachine conveyorBeltAdapter() {
-        return new ConveyorBeltAdapterImpl("ConveyorBelt");
+    public ConveyorBeltMachine conveyorBeltAdapter(MqttMessageRouter mqttRouter) {
+        return new ConveyorBeltAdapterImpl("ConveyorBelt", mqttRouter,
+                "PLC/+/ConveyorBelt/ConveyorBelt01/measurements/input/#");
     }
 
     @Bean("sortingLineAdapter")
-    public SortingLineMachine sortingLineAdapter() {
-        return new SortingLineAdapterImpl("SortingLine");
+    public SortingLineMachine sortingLineAdapter(MqttMessageRouter mqttRouter) {
+        return new SortingLineAdapterImpl("SortingLine", mqttRouter,
+                "PLC/+/SortingLine/SortingLine01/measurements/input/#");
     }
 
     @Bean("multiProcessingStationAdapter")
-    public MultiProcessingStationMachine multiProcessingStationAdapter() {
-        return new MultiProcessingStationAdapterImpl("MultiProcessingStation");
+    public MultiProcessingStationMachine multiProcessingStationAdapter(MqttMessageRouter mqttRouter) {
+        return new MultiProcessingStationAdapterImpl("MultiProcessingStation", mqttRouter,
+                "PLC/+/MultiProcessing/MultiProcessing01/measurements/input/#");
     }
 
     @Bean("vacuumGripper1Adapter")
-    public VacuumGripperMachine vacuumGripper1Adapter() {
-        return new VacuumGripperAdapterImpl("VacuumGripper1");
+    public VacuumGripperMachine vacuumGripper1Adapter(MqttMessageRouter mqttRouter) {
+        return new VacuumGripperAdapterImpl("VacuumGripper1", mqttRouter,
+                "PLC/+/VacuumGripper/VacuumGripper01/measurements/input/#");
     }
 
     @Bean("vacuumGripper2Adapter")
-    public VacuumGripperMachine vacuumGripper2Adapter() {
-        return new VacuumGripperAdapterImpl("VacuumGripper2");
+    public VacuumGripperMachine vacuumGripper2Adapter(MqttMessageRouter mqttRouter) {
+        return new VacuumGripperAdapterImpl("VacuumGripper2", mqttRouter,
+                "PLC/+/VacuumGripper/VacuumGripper02/measurements/input/#");
     }
 
     @Bean("zoneCBAdapter")

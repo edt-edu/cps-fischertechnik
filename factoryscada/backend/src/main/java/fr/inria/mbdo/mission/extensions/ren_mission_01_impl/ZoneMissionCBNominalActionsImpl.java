@@ -1,7 +1,7 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.ZoneMissionCBNominalActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 import org.slf4j.Logger;

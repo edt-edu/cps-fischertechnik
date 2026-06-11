@@ -1,7 +1,7 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.SortingLineMachine;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.VacuumGripper1NominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper1nominalmission.VacuumGripper1NominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;

@@ -1,106 +1,45 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.AbstractConveyorBeltMachineAdapter;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.ConveyorCommandKind;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.DirectionKind;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import io.github.mbdo.factoryscada.mqtt.MqttMessageRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadParser.*;
+
 /**
- * Stub adapter for the Conveyor Belt machine.
+ * Adapter for the Conveyor Belt machine.
  *
  * <p>
- * Logs all commands and maintains local state. To connect to real hardware,
- * inject the legacy {@code FactoryScada} service and delegate command calls
- * to the TCP socket layer, then call {@link #publish} when hardware feedback
- * arrives (e.g. {@code CBCommandSuccessEventMessage}).
+ * Subscribes to {@code PLC/+/ConveyorBelt/<instanceId>/#} and maps
+ * input measurement topics to internal state fields.
  */
-public class ConveyorBeltAdapterImpl extends AbstractAdapter implements ConveyorBeltMachine {
+public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(ConveyorBeltAdapterImpl.class);
 
-    private volatile ConveyorCommandKind currentCommand;
-    private volatile DirectionKind direction;
-    private volatile int currentStepCount;
-    private volatile int targetStepCount;
-    private volatile boolean conveyorSensFeed;
-    private volatile boolean conveyorSensSwap;
-    private volatile int conveyorSensImpulse;
-
-    public ConveyorBeltAdapterImpl(String id) {
+    public ConveyorBeltAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
+        mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 
-    @Override
-    public ConveyorCommandKind getCurrentCommand() {
-        return currentCommand;
+    private void onMqttMessage(String topic, String payload) {
+        String measurement = extractMeasurement(topic);
+        log.debug("[{}] MQTT input: {}={}", id, measurement, payload);
+
+        switch (measurement) {
+            case "conveyorSensFeed" -> setConveyorSensFeed(parseBool(payload));
+            case "conveyorSensSwap" -> setConveyorSensSwap(parseBool(payload));
+            case "conveyorSensImpulse" -> setConveyorSensImpulse(parseInt(payload));
+            default -> log.warn("[{}] Unknown MQTT measurement: {}", id, measurement);
+        }
     }
 
     @Override
     public void setCurrentCommand(ConveyorCommandKind currentCommand) {
-        this.currentCommand = currentCommand;
+        super.setCurrentCommand(currentCommand);
         log.info("[{}] setCurrentCommand({})", id, currentCommand);
-    }
-
-    @Override
-    public DirectionKind getDirection() {
-        return direction;
-    }
-
-    @Override
-    public void setDirection(DirectionKind direction) {
-        this.direction = direction;
-    }
-
-    @Override
-    public int getCurrentStepCount() {
-        return currentStepCount;
-    }
-
-    @Override
-    public void setCurrentStepCount(int currentStepCount) {
-        this.currentStepCount = currentStepCount;
-    }
-
-    @Override
-    public int getTargetStepCount() {
-        return targetStepCount;
-    }
-
-    @Override
-    public void setTargetStepCount(int targetStepCount) {
-        this.targetStepCount = targetStepCount;
-    }
-
-    @Override
-    public boolean getConveyorSensFeed() {
-        return conveyorSensFeed;
-    }
-
-    @Override
-    public void setConveyorSensFeed(boolean conveyorSensFeed) {
-        this.conveyorSensFeed = conveyorSensFeed;
-    }
-
-    @Override
-    public boolean getConveyorSensSwap() {
-        return conveyorSensSwap;
-    }
-
-    @Override
-    public void setConveyorSensSwap(boolean conveyorSensSwap) {
-        this.conveyorSensSwap = conveyorSensSwap;
-    }
-
-    @Override
-    public int getConveyorSensImpulse() {
-        return conveyorSensImpulse;
-    }
-
-    @Override
-    public void setConveyorSensImpulse(int conveyorSensImpulse) {
-        this.conveyorSensImpulse = conveyorSensImpulse;
     }
 
     @Override

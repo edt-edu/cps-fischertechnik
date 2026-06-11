@@ -20,29 +20,9 @@ public interface MultiProcessingStationMachine extends MachineAdapter {
   void setSensor_MPS_out(boolean sensor_MPS_out);
 
   /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::armMove
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::setup
    */
-  void armMove();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenLoad
-   */
-  void ovenLoad();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::turntableEject
-   */
-  void turntableEject();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::turntableRotate
-   */
-  void turntableRotate();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::armPick
-   */
-  void armPick();
+  void setup();
 
   /**
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::stop
@@ -50,49 +30,9 @@ public interface MultiProcessingStationMachine extends MachineAdapter {
   void stop();
 
   /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenHeat
-   */
-  void ovenHeat();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::conveyorMoveOut
-   */
-  void conveyorMoveOut();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenUnload
-   */
-  void ovenUnload();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenProcess
-   */
-  void ovenProcess();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::conveyorMoveToSensor
-   */
-  void conveyorMoveToSensor();
-
-  /**
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::process1
    */
   void process1();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::sawCut
-   */
-  void sawCut();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::armPlace
-   */
-  void armPlace();
-
-  /**
-   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::setup
-   */
-  void setup();
 
   /**
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::process
@@ -103,4 +43,64 @@ public interface MultiProcessingStationMachine extends MachineAdapter {
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::moveToSafePosition
    */
   void moveToSafePosition();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenLoad
+   */
+  void ovenLoad();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenUnload
+   */
+  void ovenUnload();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenHeat
+   */
+  void ovenHeat();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::ovenProcess
+   */
+  void ovenProcess();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::armMove
+   */
+  void armMove();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::armPick
+   */
+  void armPick();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::armPlace
+   */
+  void armPlace();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::turntableRotate
+   */
+  void turntableRotate();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::turntableEject
+   */
+  void turntableEject();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::conveyorMoveToSensor
+   */
+  void conveyorMoveToSensor();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::conveyorMoveOut
+   */
+  void conveyorMoveOut();
+
+  /**
+   * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::sawCut
+   */
+  void sawCut();
 }

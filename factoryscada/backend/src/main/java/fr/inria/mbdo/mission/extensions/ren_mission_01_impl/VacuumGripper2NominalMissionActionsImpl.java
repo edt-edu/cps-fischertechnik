@@ -1,6 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.VacuumGripper2NominalMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission.VacuumGripper2NominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
@@ -21,13 +21,13 @@ public class VacuumGripper2NominalMissionActionsImpl implements VacuumGripper2No
     }
 
     @Override
-    public void performActionUsage(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
-        log.info("VacuumGripper2 performActionUsage triggered by {}", event.getClass().getSimpleName());
+    public void pickCBswap(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
+        log.info("VacuumGripper2 pickCBswap triggered by {}", event.getClass().getSimpleName());
     }
 
     @Override
-    public void pickCBswap(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
-        log.info("VacuumGripper2 pickCBswap triggered by {}", event.getClass().getSimpleName());
+    public void releaseCBZoneAndAcquireMPSZone(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
+        log.info("VacuumGripper2 releaseCBZoneAndAcquireMPSZone triggered by {}", event.getClass().getSimpleName());
     }
 
     @Override

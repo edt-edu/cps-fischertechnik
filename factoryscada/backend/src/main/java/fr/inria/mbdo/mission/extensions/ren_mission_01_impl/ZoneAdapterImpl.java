@@ -1,7 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.AbstractZoneAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,26 +11,19 @@ import org.slf4j.LoggerFactory;
  * Zones are software-only constructs that arbitrate access between grippers.
  * This adapter maintains occupancy state and publishes/subscribes events
  * through
- * the standard {@link AbstractAdapter} event bus.
+ * the standard {@link AbstractZoneAdapter} event bus.
  */
-public class ZoneAdapterImpl extends AbstractAdapter implements Zone {
+public class ZoneAdapterImpl extends AbstractZoneAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(ZoneAdapterImpl.class);
-
-    private volatile boolean isOccupied;
 
     public ZoneAdapterImpl(String id) {
         super(id);
     }
 
     @Override
-    public boolean getIsOccupied() {
-        return isOccupied;
-    }
-
-    @Override
     public void setIsOccupied(boolean isOccupied) {
-        this.isOccupied = isOccupied;
+        super.setIsOccupied(isOccupied);
         log.info("[{}] setIsOccupied({})", id, isOccupied);
     }
 }

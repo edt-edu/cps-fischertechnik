@@ -1,6 +1,6 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.transitionusage.AcceptWhenIdleToMovingToSensorEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.customevents.AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.CBCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
@@ -17,7 +17,22 @@ import org.slf4j.LoggerFactory;
  * From ConveyorBeltMissions::ConveyorBeltNominalMission
  */
 public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger(ConveyorBeltNominalMission.class);
+  private static final Logger logger = LoggerFactory.getLogger("ConveyorBeltNominalMission");
+
+  public static final String DOT_SCHEMA = "digraph ConveyorBeltNominalMission {\n"
+      + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
+      + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    rankdir=LR;\n"
+      + "    node [shape=point, label=\"\"]; __init__;\n"
+      + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
+      + "    \"Idle\";\n"
+      + "    \"MovingToSensor\";\n"
+      + "\n"
+      + "    __init__ -> \"Idle\" [label=\"ε\"];\n"
+      + "    \"Idle\" -> \"MovingToSensor\" [label=\"when(conveyorBelt.conveyorSensFeed == true and conveyorBelt.conveyorSensSwap == false) / conveyorBelt.moveToSensor()\"];\n"
+      + "    \"MovingToSensor\" -> \"Idle\" [label=\"CBCommandSuccessEventMessage / notifyVgr1AndVgr2\"];\n"
+      + "}";
 
   private final ConveyorBeltNominalMissionActions actions;
 
@@ -41,8 +56,8 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, idle));
-    idle.addTransition(new RuntimeTransition(AcceptWhenIdleToMovingToSensorEvent.class, event -> true, event -> this.conveyorBelt.moveToSensor(), movingToSensor));
-    movingToSensor.addTransition(new RuntimeTransition(CBCommandSuccessEventMessage.class, event -> true, event -> this.actions.performActionUsage(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2), idle));
+    idle.addTransition(new RuntimeTransition(AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent.class, event -> true, event -> this.conveyorBelt.moveToSensor(), movingToSensor));
+    movingToSensor.addTransition(new RuntimeTransition(CBCommandSuccessEventMessage.class, event -> true, event -> this.actions.notifyVgr1AndVgr2(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
     conveyorBelt.subscribe(CBCommandSuccessEventMessage.class, this::onEvent);
@@ -51,5 +66,9 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
   @Override
   public String getName() {
     return "ConveyorBeltNominalMission";
+  }
+
+  public static String toDot() {
+    return DOT_SCHEMA;
   }
 }

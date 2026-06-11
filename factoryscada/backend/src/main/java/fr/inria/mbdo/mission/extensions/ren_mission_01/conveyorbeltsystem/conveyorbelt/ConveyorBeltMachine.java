@@ -37,16 +37,6 @@ public interface ConveyorBeltMachine extends MachineAdapter {
   void setConveyorSensImpulse(int conveyorSensImpulse);
 
   /**
-   * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::stop
-   */
-  void stop();
-
-  /**
-   * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::moveNbSteps
-   */
-  void moveNbSteps();
-
-  /**
    * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::moveToSensor
    */
   void moveToSensor();
@@ -55,6 +45,16 @@ public interface ConveyorBeltMachine extends MachineAdapter {
    * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::moveOut
    */
   void moveOut();
+
+  /**
+   * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::moveNbSteps
+   */
+  void moveNbSteps();
+
+  /**
+   * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::stop
+   */
+  void stop();
 
   /**
    * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine::statusRequest

@@ -1,68 +1,41 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.SortingLineMachine;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.AbstractSortingLineMachineAdapter;
+import io.github.mbdo.factoryscada.mqtt.MqttMessageRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadParser.*;
+
 /**
- * Stub adapter for the Sorting Line machine.
+ * Adapter for the Sorting Line machine.
  *
  * <p>
- * Logs all commands and maintains local state. Connect to real hardware by
- * delegating to the legacy TCP socket layer and publishing events on feedback.
+ * Subscribes to {@code PLC/+/SortingLine/<instanceId>/#} and maps
+ * input measurement topics to internal state fields.
  */
-public class SortingLineAdapterImpl extends AbstractAdapter implements SortingLineMachine {
+public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(SortingLineAdapterImpl.class);
 
-    private volatile boolean sensor_SL_in;
-    private volatile boolean sensor_SL_blue;
-    private volatile boolean sensor_SL_white;
-    private volatile boolean sensor_SL_red;
-
-    public SortingLineAdapterImpl(String id) {
+    public SortingLineAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
+        mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 
-    @Override
-    public boolean getSensor_SL_in() {
-        return sensor_SL_in;
-    }
+    private void onMqttMessage(String topic, String payload) {
+        String measurement = extractMeasurement(topic);
+        log.debug("[{}] MQTT input: {}={}", id, measurement, payload);
 
-    @Override
-    public void setSensor_SL_in(boolean sensor_SL_in) {
-        this.sensor_SL_in = sensor_SL_in;
-    }
-
-    @Override
-    public boolean getSensor_SL_blue() {
-        return sensor_SL_blue;
-    }
-
-    @Override
-    public void setSensor_SL_blue(boolean sensor_SL_blue) {
-        this.sensor_SL_blue = sensor_SL_blue;
-    }
-
-    @Override
-    public boolean getSensor_SL_white() {
-        return sensor_SL_white;
-    }
-
-    @Override
-    public void setSensor_SL_white(boolean sensor_SL_white) {
-        this.sensor_SL_white = sensor_SL_white;
-    }
-
-    @Override
-    public boolean getSensor_SL_red() {
-        return sensor_SL_red;
-    }
-
-    @Override
-    public void setSensor_SL_red(boolean sensor_SL_red) {
-        this.sensor_SL_red = sensor_SL_red;
+        switch (measurement) {
+            case "sortingLineSensInputLightBarrier" -> setSensor_SL_in(parseBool(payload));
+            case "sortingLineSensMiddleLightBarrier" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "sortingLineSensWhiteLightBarrier" -> setSensor_SL_white(parseBool(payload));
+            case "sortingLineSensBlueLightBarrier" -> setSensor_SL_blue(parseBool(payload));
+            case "sortingLineSensRedLightBarrier" -> setSensor_SL_red(parseBool(payload));
+            case "sortingLineSensImpulseCounterRaw" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            default -> log.warn("[{}] Unknown MQTT measurement: {}", id, measurement);
+        }
     }
 
     @Override

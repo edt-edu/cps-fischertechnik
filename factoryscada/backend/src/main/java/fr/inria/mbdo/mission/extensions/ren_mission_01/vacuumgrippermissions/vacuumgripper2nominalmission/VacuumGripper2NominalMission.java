@@ -1,4 +1,4 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.InputFreeEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
@@ -20,7 +20,36 @@ import org.slf4j.LoggerFactory;
  * From VacuumGripperMissions::VacuumGripper2NominalMission
  */
 public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger(VacuumGripper2NominalMission.class);
+  private static final Logger logger = LoggerFactory.getLogger("VacuumGripper2NominalMission");
+
+  public static final String DOT_SCHEMA = "digraph VacuumGripper2NominalMission {\n"
+      + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
+      + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    rankdir=LR;\n"
+      + "    node [shape=point, label=\"\"]; __init__;\n"
+      + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
+      + "    \"SetupIdle\";\n"
+      + "    \"GotoStandbyCMD\";\n"
+      + "    \"Idle\";\n"
+      + "    \"WaitForCBZoneAcquisition\";\n"
+      + "    \"PickCBswapCMD\";\n"
+      + "    \"ReleaseCBZone\";\n"
+      + "    \"WaitForMPSZoneAcquisition\";\n"
+      + "    \"PlaceMPSInCMD\";\n"
+      + "    \"ReleaseMPSZone\";\n"
+      + "\n"
+      + "    __init__ -> \"SetupIdle\" [label=\"ε / vacuumGripper.setup()\"];\n"
+      + "    \"SetupIdle\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"GotoStandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage\"];\n"
+      + "    \"Idle\" -> \"WaitForCBZoneAcquisition\" [label=\"InputFreeEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
+      + "    \"WaitForCBZoneAcquisition\" -> \"PickCBswapCMD\" [label=\"AcquireResponseEventMessage / pickCBswap\"];\n"
+      + "    \"PickCBswapCMD\" -> \"ReleaseCBZone\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"ReleaseCBZone\" -> \"WaitForMPSZoneAcquisition\" [label=\"VGRCommandSuccessEventMessage / releaseCBZoneAndAcquireMPSZone\"];\n"
+      + "    \"WaitForMPSZoneAcquisition\" -> \"PlaceMPSInCMD\" [label=\"AcquireResponseEventMessage / placeMPSin\"];\n"
+      + "    \"PlaceMPSInCMD\" -> \"ReleaseMPSZone\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"ReleaseMPSZone\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneMPS\"];\n"
+      + "}";
 
   private final VacuumGripper2NominalMissionActions actions;
 
@@ -55,7 +84,7 @@ public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
     idle.addTransition(new RuntimeTransition(InputFreeEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), waitForCBZoneAcquisition));
     waitForCBZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.pickCBswap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), pickCBswapCMD));
     pickCBswapCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseCBZone));
-    releaseCBZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.performActionUsage(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), waitForMPSZoneAcquisition));
+    releaseCBZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.releaseCBZoneAndAcquireMPSZone(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), waitForMPSZoneAcquisition));
     waitForMPSZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), placeMPSInCMD));
     placeMPSInCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseMPSZone));
     releaseMPSZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneMPS.publish(new ReleaseRequestEventMessage()), gotoStandbyCMD));
@@ -69,5 +98,9 @@ public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
   @Override
   public String getName() {
     return "VacuumGripper2NominalMission";
+  }
+
+  public static String toDot() {
+    return DOT_SCHEMA;
   }
 }

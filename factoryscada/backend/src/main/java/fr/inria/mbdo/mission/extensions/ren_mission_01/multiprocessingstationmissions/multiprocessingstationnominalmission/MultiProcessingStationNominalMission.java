@@ -1,6 +1,6 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.transitionusage.AcceptWhenIdleToZoneAcquiredEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.customevents.AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.MultiProcessingStationMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.MPSCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
@@ -19,7 +19,24 @@ import org.slf4j.LoggerFactory;
  * From MultiProcessingStationMissions::MultiProcessingStationNominalMission
  */
 public class MultiProcessingStationNominalMission extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger(MultiProcessingStationNominalMission.class);
+  private static final Logger logger = LoggerFactory.getLogger("MultiProcessingStationNominalMission");
+
+  public static final String DOT_SCHEMA = "digraph MultiProcessingStationNominalMission {\n"
+      + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
+      + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
+      + "    rankdir=LR;\n"
+      + "    node [shape=point, label=\"\"]; __init__;\n"
+      + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
+      + "    \"Idle\";\n"
+      + "    \"ZoneAcquired\";\n"
+      + "    \"ProcessCMD\";\n"
+      + "\n"
+      + "    __init__ -> \"Idle\" [label=\"ε / multiProcessingStation.setup()\"];\n"
+      + "    \"Idle\" -> \"ZoneAcquired\" [label=\"when(multiProcessingStation.sensor_MPS_in == true and multiProcessingStation.sensor_MPS_out == false) / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneMPS\"];\n"
+      + "    \"ZoneAcquired\" -> \"ProcessCMD\" [label=\"AcquireResponseEventMessage / multiProcessingStation.process()\"];\n"
+      + "    \"ProcessCMD\" -> \"Idle\" [label=\"MPSCommandSuccessEventMessage / broadcastCompletion\"];\n"
+      + "}";
 
   private final MultiProcessingStationNominalMissionActions actions;
 
@@ -40,7 +57,7 @@ public class MultiProcessingStationNominalMission extends AbstractMissionStrateg
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.multiProcessingStation.setup(), idle));
-    idle.addTransition(new RuntimeTransition(AcceptWhenIdleToZoneAcquiredEvent.class, event -> true, event -> this.zoneMPS.publish(new AcquireRequestEventMessage()), zoneAcquired));
+    idle.addTransition(new RuntimeTransition(AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent.class, event -> true, event -> this.zoneMPS.publish(new AcquireRequestEventMessage()), zoneAcquired));
     zoneAcquired.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.multiProcessingStation.process(), processCMD));
     processCMD.addTransition(new RuntimeTransition(MPSCommandSuccessEventMessage.class, event -> true, event -> this.actions.broadcastCompletion(event, this.multiProcessingStation, this.zoneMPS), idle));
 
@@ -52,5 +69,9 @@ public class MultiProcessingStationNominalMission extends AbstractMissionStrateg
   @Override
   public String getName() {
     return "MultiProcessingStationNominalMission";
+  }
+
+  public static String toDot() {
+    return DOT_SCHEMA;
   }
 }

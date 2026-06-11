@@ -1,59 +1,54 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.MultiProcessingStationMachine;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.AbstractMultiProcessingStationMachineAdapter;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import io.github.mbdo.factoryscada.mqtt.MqttMessageRouter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadParser.*;
+
 /**
- * Stub adapter for the Multi-Processing Station machine.
+ * Adapter for the Multi-Processing Station machine.
  *
  * <p>
- * Logs all commands and maintains local state. Connect to real hardware by
- * delegating to the legacy TCP socket layer and publishing events on feedback.
+ * Subscribes to {@code PLC/+/MultiProcessing/<instanceId>/#} and maps
+ * input measurement topics to internal state fields.
  */
-public class MultiProcessingStationAdapterImpl extends AbstractAdapter implements MultiProcessingStationMachine {
+public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingStationMachineAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(MultiProcessingStationAdapterImpl.class);
 
-    private volatile MultiProcessingStationCommandKind currentCommand;
-    private volatile boolean sensor_MPS_in;
-    private volatile boolean sensor_MPS_out;
-
-    public MultiProcessingStationAdapterImpl(String id) {
+    public MultiProcessingStationAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
+        mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 
-    @Override
-    public MultiProcessingStationCommandKind getCurrentCommand() {
-        return currentCommand;
+    private void onMqttMessage(String topic, String payload) {
+        String measurement = extractMeasurement(topic);
+        log.debug("[{}] MQTT input: {}={}", id, measurement, payload);
+
+        switch (measurement) {
+            case "multiProcessingSensTurntablePosVacuum" ->
+                setSensor_MPS_in(parseBool(payload));
+            case "multiProcessingSensTurntablePosBelt" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "multiProcessingSensTurntablePosSaw" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "multiProcessingSensEndConveyor" -> setSensor_MPS_out(parseBool(payload));
+            case "multiProcessingSensOven" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "multiProcessingSensVacuumGripperAtTurntable" ->
+                log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "multiProcessingSensVacuumGripperAtOven" ->
+                log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "multiProcessingSensOvenFeederIn" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            case "multiProcessingSensOvenFeederOut" -> log.warn("[{}] measurement '{}' not mapped", id, measurement);
+            default -> log.warn("[{}] Unknown MQTT measurement: {}", id, measurement);
+        }
     }
 
     @Override
     public void setCurrentCommand(MultiProcessingStationCommandKind currentCommand) {
-        this.currentCommand = currentCommand;
+        super.setCurrentCommand(currentCommand);
         log.info("[{}] setCurrentCommand({})", id, currentCommand);
-    }
-
-    @Override
-    public boolean getSensor_MPS_in() {
-        return sensor_MPS_in;
-    }
-
-    @Override
-    public void setSensor_MPS_in(boolean sensor_MPS_in) {
-        this.sensor_MPS_in = sensor_MPS_in;
-    }
-
-    @Override
-    public boolean getSensor_MPS_out() {
-        return sensor_MPS_out;
-    }
-
-    @Override
-    public void setSensor_MPS_out(boolean sensor_MPS_out) {
-        this.sensor_MPS_out = sensor_MPS_out;
     }
 
     @Override
