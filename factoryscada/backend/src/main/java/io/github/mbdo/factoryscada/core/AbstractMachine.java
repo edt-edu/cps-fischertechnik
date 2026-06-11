@@ -1,9 +1,11 @@
 package io.github.mbdo.factoryscada.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
 import io.github.mbdo.factoryscada.core.dtos.Parameter;
+import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
@@ -29,7 +31,11 @@ public abstract class AbstractMachine {
 	 */
     protected final String name;
 
-	  protected final Protocol protocol;
+    protected final Protocol protocol;
+
+    // must be set separately
+    @JsonIgnore
+    protected FactoryScada factoryScada;
 
     /**
      * List of the command names defined in the command-placeholder.yml for this machine
@@ -143,6 +149,6 @@ public abstract class AbstractMachine {
     public abstract void stop();
 
     public record Parameters(
-        String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
+            String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
     ) {}
 }

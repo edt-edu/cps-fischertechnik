@@ -217,6 +217,7 @@ public class FactoryScada {
                 for (FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration machineConfiguration : controllerConfiguration
                         .machines()) {
                     AbstractMachine machineInstance = createMachineInstance(machineConfiguration, controllerInstance);
+                    machineInstance.setFactoryScada(this);
                     machines.put(machineConfiguration.name(), machineInstance);
                 }
             } else {
