@@ -52,6 +52,18 @@ public class MqttGatewayService {
    * @param payload The message payload
    */
   public void updateMachineStateFromMessage(String topic, byte[] payload) {
+
+    var matcher = TOPIC_PATTERN.matcher(topic);
+    if (!matcher.matches()) {
+      return;
+    }
+
+    //group 1 is the island, we don't need that
+    var machineType = matcher.group(2);
+    var machineName = matcher.group(3);
+    var measurementKind = matcher.group(4);
+    var inputName = matcher.group(5);
+
     var mapper = new ObjectMapper();
     JsonNode node;
     try {
@@ -65,16 +77,6 @@ public class MqttGatewayService {
     }
 
     var value = node.get("value");
-    var matcher = TOPIC_PATTERN.matcher(topic);
-    if (!matcher.matches()) {
-      return;
-    }
-
-    //group 1 is the island, we don't need that
-    var machineType = matcher.group(2);
-    var machineName = matcher.group(3);
-    var measurementKind = matcher.group(4);
-    var inputName = matcher.group(5);
 
     switch (measurementKind) {
       case "internal" -> {
