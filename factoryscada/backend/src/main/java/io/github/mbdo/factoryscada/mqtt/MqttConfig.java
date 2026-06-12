@@ -65,13 +65,13 @@ public class MqttConfig {
 
     @Bean
     @ServiceActivator(inputChannel = "mqttInboundChannel")
-    public MessageHandler mqttInboundHandler(MqttGatewayService mqttGatewayService) {
+    public MessageHandler mqttInboundHandler(MqttInboundRouterService mqttInboundRouterService) {
         return message -> {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             if (topic == null) {
                 return;
             }
-            mqttGatewayService.onMessage(topic, toBytes(message));
+            mqttInboundRouterService.onMessage(topic, toBytes(message));
         };
     }
 

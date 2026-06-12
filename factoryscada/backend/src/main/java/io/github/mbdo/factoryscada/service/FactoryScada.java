@@ -14,7 +14,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.mqtt.MqttConfig;
 import io.github.mbdo.factoryscada.mqtt.RawMqttOutboundGateway;
-import io.github.mbdo.factoryscada.mqtt.MqttGatewayService;
+import io.github.mbdo.factoryscada.mqtt.MqttInboundRouterService;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -87,14 +87,14 @@ public class FactoryScada {
     // MQTT messages
     private final MqttConfig mqttConfig;
     private final RawMqttOutboundGateway rawMqttOutboundGateway;
-    private final MqttGatewayService mqttGatewayService;
+    private final MqttInboundRouterService mqttInboundRouterService;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
             ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
             @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, RawMqttOutboundGateway rawMqttOutboundGateway,
-            MqttGatewayService mqttGatewayService) {
+            MqttInboundRouterService mqttInboundRouterService) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -103,7 +103,7 @@ public class FactoryScada {
         this.webSocketPublisher.factoryscada = this;
         this.commandIdGenerator = new CommandIdGenerator();
         this.rawMqttOutboundGateway = rawMqttOutboundGateway;
-        this.mqttGatewayService = mqttGatewayService;
+        this.mqttInboundRouterService = mqttInboundRouterService;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
@@ -364,7 +364,7 @@ public class FactoryScada {
                 controllerInstance,
                 rawCommandNames,
                 commandIdGenerator,
-                mqttGatewayService);
+                mqttInboundRouterService);
     }
 
     /**
