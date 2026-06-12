@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.domains.vacuumgripper;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.passable.Position;
@@ -23,6 +24,14 @@ public class VacuumGripperMachine extends AbstractMachine {
 
     public static String getType() {
         return "vacuumGripper";
+    }
+
+    @Override
+    protected void onMqttInputMessage(String inputName, JsonNode value) {
+        switch (inputName) {
+            case "vacuumSensArmEndIn" -> setArmRetracted(value.asBoolean());
+            default -> super.onMqttInputMessage(inputName, value);
+        }
     }
 
     @Override
