@@ -1205,14 +1205,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
           "idle" : {
             "type" : "boolean"
           },
+          "commandMachineType" : {
+            "type" : "string"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
-          },
-          "commandMachineType" : {
-            "type" : "string"
           }
         }
       }
@@ -5147,15 +5147,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_vacuumgripper-machinename-command-pick]]
-===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
+[[incoming_vacuumgripper-machinename-command-place]]
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePickCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePlaceCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `pickDTO` (GenericMachineCommandDTO)
+- `placeDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -5213,15 +5213,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_vacuumgripper-machinename-command-place]]
-===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
+[[incoming_vacuumgripper-machinename-command-pick]]
+===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePlaceCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePickCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `placeDTO` (GenericMachineCommandDTO)
+- `pickDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -6168,14 +6168,14 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
           "idle" : {
             "type" : "boolean"
           },
+          "commandMachineType" : {
+            "type" : "string"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
-          },
-          "commandMachineType" : {
-            "type" : "string"
           }
         }
       }

@@ -81,19 +81,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 }
                 machine.executeCommand(commandName, commandDTO);
                 log.info("Executed command '{}' on machine '{}' with payload.message {}", commandName, machineName, commandDTO.getMessage());
-                CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName, new CommandStatus());
-                // update storage
-                status.setCurrentCommandTimestamp(commandDTO.getTimestamp());
-                status.setCurrentCommandName(commandName);
-                status.setCurrentCommandId(commandDTO.getMessage().getOutputId());
-                ObjectMapper mapper = new ObjectMapper();
-                status.setCurrentCommandRawJSON(mapper.writeValueAsString(commandDTO));
-                this.factoryScada.getMachineLastCommandStatusMap().put(machineName, status);
-                // publish to frontend
-                this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
-    					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
-                factoryScada.addLogsForFrontend(mapper.writeValueAsString(commandDTO));
-            } else {
+             } else {
                 log.warn("Machine '{}' not found", machineName);
                 return "Machine not found";
             }
@@ -134,7 +122,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     public CommandStatusDTO getCommandStatus ( 
     	@DestinationVariable("machineName") String machineName
     )  {
-        log.info("Received request on /"+machineName+"/command-status");
+        log.info("Received WS request on /"+machineName+"/command-status");
         CommandStatus status = this.factoryScada.getMachineLastCommandStatusMap().getOrDefault(machineName, new CommandStatus());
         return  CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status);
     }
@@ -144,7 +132,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     public MachineStatusDTO getMachineStatus ( 
     	@DestinationVariable("machineName") String machineName
     )  {
-        log.info("Received request on /"+machineName+"/machine-status");
+        log.info("Received WS request on /"+machineName+"/machine-status");
         MachineStatus status = this.factoryScada.getMachineLastMachineStatusMap().getOrDefault(machineName, new MachineStatus());
         return  MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(status);
     }

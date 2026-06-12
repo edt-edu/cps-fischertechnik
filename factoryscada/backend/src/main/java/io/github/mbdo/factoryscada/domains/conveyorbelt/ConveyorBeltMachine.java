@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.domains.conveyorbelt;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.dtos.Parameter;
@@ -28,6 +29,15 @@ public class ConveyorBeltMachine extends AbstractMachine {
 
     public static String getType() {
         return "conveyorBelt";
+    }
+
+    @Override
+    protected void onMqttInputMessage(String inputName, JsonNode value) {
+        switch (inputName) {
+            case "conveyorSensFeed" -> setTokenAtFeed(!value.asBoolean());
+            case "conveyorSensSwap" -> setTokenAtSwap(!value.asBoolean());
+            default -> super.onMqttInputMessage(inputName, value);
+        }
     }
 
     @Override

@@ -45,7 +45,7 @@ public class AppEnvironment {
         String argumentName = "configuration.path";
         if (args.containsOption(argumentName)) {
             configurationFilePath = "file:" + args.getOptionValues(argumentName).getFirst();
-            System.out.println("--> " + configurationFilePath);
+            log.info("configurationFilePath={}", configurationFilePath);
         } else {
             log.warn("No configuration file provided. The default configuration file is being used. (ie. \"classpath:configuration.yml\")");
             log.info("you can specify the configuration file using the option --configuration.path=/app/config/configuration.yml");
@@ -55,7 +55,7 @@ public class AppEnvironment {
         argumentName = "missions.parallelized.configuration.path";
         if (args.containsOption(argumentName)) {
             missionsConfigurationParallelizedFilePath = "file:" + args.getOptionValues(argumentName).getFirst();
-            System.out.println("--> " + missionsConfigurationParallelizedFilePath);
+            log.info("missionsConfigurationParallelizedFilePath={}", missionsConfigurationParallelizedFilePath);
         } else {
             log.warn("No mission configuration file provided. The default missions configuration file is being used. (ie. \"classpath:missions-parallelized-configuration.yml\")");
             log.info("you can specify the mission configuration file using the option --missions.configuration.path=/app/config/missions-parallelized-configuration.yml");

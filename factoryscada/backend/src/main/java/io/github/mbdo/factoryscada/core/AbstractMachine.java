@@ -1,9 +1,12 @@
 package io.github.mbdo.factoryscada.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
 import io.github.mbdo.factoryscada.core.dtos.Parameter;
+import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
@@ -14,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -24,15 +28,23 @@ import java.util.List;
 @AllArgsConstructor
 public abstract class AbstractMachine {
 
-	/**
-	 * Name of the Machine (also referred to as topicName in GenericMachineCommandDTO)
-	 */
-    protected final String name;
-
-	  protected final Protocol protocol;
+    private static final ObjectMapper MQTT_MAPPER = new ObjectMapper();
 
     /**
-     * List of the command names defined in the command-placeholder.yml for this machine
+     * Name of the Machine (also referred to as topicName in
+     * GenericMachineCommandDTO)
+     */
+    protected final String name;
+
+    protected final Protocol protocol;
+
+    // must be set separately
+    @JsonIgnore
+    protected FactoryScada factoryScada;
+
+    /**
+     * List of the command names defined in the command-placeholder.yml for this
+     * machine
      */
     protected final List<String> rawCommandNames;
 
@@ -47,10 +59,16 @@ public abstract class AbstractMachine {
         this.protocol = parameters.protocol;
         this.rawCommandNames = parameters.rawCommandNames;
         this.commandIdGenerator = parameters.commandIdGenerator;
+        if (parameters.mqttRouter() != null) {
+            parameters.mqttRouter().subscribe(
+                    "PLC/+/+/" + this.name + "/measurements/#",
+                    this::dispatchMqttMessage);
+        }
     }
 
     /**
-     * Used by {@link io.github.mbdo.factoryscada.utilities.Utilities} to map the string identifier to a concrete class.
+     * Used by {@link io.github.mbdo.factoryscada.utilities.Utilities} to map the
+     * string identifier to a concrete class.
      * Do not use in other contexts.
      */
     @Deprecated
@@ -61,35 +79,44 @@ public abstract class AbstractMachine {
     /**
      * Gets the machine type which is used in a command payload.
      *
-     * <p>Those type names are usually uppercase. E.g., for the SortingLine it would be {@code SORTING}.
+     * <p>
+     * Those type names are usually uppercase. E.g., for the SortingLine it would be
+     * {@code SORTING}.
      */
     public abstract String getCommandMachineType();
 
     protected <T extends AbstractMachine> GenericMachineCommandDTO<T> createCommandDTO(String commandName,
-                                                                                       Parameter... parameters) {
+            Parameter... parameters) {
         var outputId = commandIdGenerator.generateId();
         var commandMessage = new CommandMessage("COMMAND",
-                                                getCommandMachineType(),
-                                                Long.toString(outputId),
-                                                commandName,
-                                                List.of(parameters));
+                getCommandMachineType(),
+                Long.toString(outputId),
+                commandName,
+                List.of(parameters));
         var timestamp = System.currentTimeMillis();
         return new GenericMachineCommandDTO<>(getName(), Long.toString(timestamp), commandMessage);
     }
 
     /**
-     * Executes a method on the current class instance with the given method name and parameter.
-     * The method to be executed must be a public method with the specified name and parameter type.
+     * Executes a method on the current class instance with the given method name
+     * and parameter.
+     * The method to be executed must be a public method with the specified name and
+     * parameter type.
      *
      * @param methodName the name of the method to be invoked
-     * @param parameter  the parameter to be passed to the method, which must extend {@link GenericMachineCommandDTO}
+     * @param parameter  the parameter to be passed to the method, which must extend
+     *                   {@link GenericMachineCommandDTO}
      * @throws NullPointerException     if methodName or parameter is null
-     * @throws IllegalArgumentException if the method with the specified name and parameter type is not found,
-     *                                  or if the method cannot be accessed or invoked
+     * @throws IllegalArgumentException if the method with the specified name and
+     *                                  parameter type is not found,
+     *                                  or if the method cannot be accessed or
+     *                                  invoked
      */
-    public void executeCommand(@NotNull String methodName, @NotNull GenericMachineCommandDTO<? extends AbstractMachine> parameter) {
+    public void executeCommand(@NotNull String methodName,
+            @NotNull GenericMachineCommandDTO<? extends AbstractMachine> parameter) {
         try {
-            // Retrieve the method from the current class with the specified name and parameter type
+            // Retrieve the method from the current class with the specified name and
+            // parameter type
             Method method = this.getClass().getMethod(methodName, parameter.getClass());
             // Invoke the method with the provided parameter
             method.invoke(this, parameter);
@@ -106,7 +133,7 @@ public abstract class AbstractMachine {
     }
 
     public void executeRequest(@NotNull GenericMachineStatusRequestDTO<? extends AbstractMachine> parameter) {
-    	ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
         Protocol protocol = this.getProtocol();
         try {
             protocol.send(mapper.writeValueAsString(parameter));
@@ -121,12 +148,17 @@ public abstract class AbstractMachine {
     }
 
     /**
-     * Returns a list of names of all the commands (methods) in the current machine class
-     * that accept a single parameter of type {@link GenericMachineCommandDTO} or its subclasses.
-     * This method scans all declared methods in the class, checks their parameter types,
-     * and adds the method name to the list if it has exactly one parameter which is a subclass of {@link GenericMachineCommandDTO}.
+     * Returns a list of names of all the commands (methods) in the current machine
+     * class
+     * that accept a single parameter of type {@link GenericMachineCommandDTO} or
+     * its subclasses.
+     * This method scans all declared methods in the class, checks their parameter
+     * types,
+     * and adds the method name to the list if it has exactly one parameter which is
+     * a subclass of {@link GenericMachineCommandDTO}.
      *
-     * @return a list of command names in the current machine class that accept an AbstractDTO parameter
+     * @return a list of command names in the current machine class that accept an
+     *         AbstractDTO parameter
      */
     public List<String> getCommandNames() {
         List<String> commandNames = new ArrayList<>();
@@ -142,7 +174,40 @@ public abstract class AbstractMachine {
 
     public abstract void stop();
 
+    // PLC/<island>/<type>/<machineName>/measurements/<measurementKind>/<inputName>
+    private void dispatchMqttMessage(String topic, String payload) {
+        String[] parts = topic.split("/");
+        if (parts.length < 7)
+            return;
+        String measurementKind = parts[5];
+        String inputName = parts[6];
+        JsonNode value;
+        try {
+            JsonNode node = MQTT_MAPPER.readTree(payload);
+            if (!node.isObject() || !node.has("value"))
+                return;
+            value = node.get("value");
+        } catch (IOException e) {
+            log.debug("Failed reading MQTT payload for {}: {}", topic, e.getMessage());
+            return;
+        }
+        switch (measurementKind) {
+            case "internal" -> {
+                if ("isExecuting".equals(inputName)) {
+                    log.debug("Updating idle state for machine {} to {}", name, !value.asBoolean());
+                    setIdle(!value.asBoolean());
+                }
+            }
+            case "input" -> onMqttInputMessage(inputName, value);
+        }
+    }
+
+    protected void onMqttInputMessage(String inputName, JsonNode value) {
+        log.debug("Ignoring input {}/{}", name, inputName);
+    }
+
     public record Parameters(
-        String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator
-    ) {}
+            String name, Protocol protocol, List<String> rawCommandNames, CommandIdGenerator commandIdGenerator,
+            MqttMessageRouter mqttRouter) {
+    }
 }

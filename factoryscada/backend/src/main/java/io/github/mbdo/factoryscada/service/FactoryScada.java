@@ -16,11 +16,14 @@ import io.github.mbdo.factoryscada.mission.dsl.visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.mission.dsl.visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.mqtt.MqttConfig;
 import io.github.mbdo.factoryscada.mqtt.MqttGateway;
+import io.github.mbdo.factoryscada.mqtt.MqttGatewayService;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.SocketProtocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.AppEnvironment;
+import io.github.mbdo.factoryscada.utilities.BoundedLogBuffer;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
+import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -79,17 +82,19 @@ public class FactoryScada {
     private final int logLimit;
     public Map<String, Integer> sessionLogLimits = new ConcurrentHashMap<>();
 
-    private List<String> frontendLogsList = new LinkedList<String>();
+    private BoundedLogBuffer<String> frontendLogsList;
 
     // MQTT messages
     private final MqttConfig mqttConfig;
     private final MqttGateway mqttGateway;
+    private final MqttGatewayService mqttGatewayService;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
             ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
-            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway) {
+            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway,
+            MqttGatewayService mqttGatewayService) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -97,11 +102,13 @@ public class FactoryScada {
         this.mqttConfig = mqttConfig;
         this.webSocketPublisher.factoryscada = this;
         this.commandIdGenerator = new CommandIdGenerator();
+        this.mqttGateway = mqttGateway;
+        this.mqttGatewayService = mqttGatewayService;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
-        this.mqttGateway = mqttGateway;
+        this.frontendLogsList = new BoundedLogBuffer<String>(logLimit);
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
@@ -116,7 +123,31 @@ public class FactoryScada {
 
     @EventListener(ApplicationReadyEvent.class)
     public void initAfterStartup() {
+    }
 
+    @PostConstruct
+    public void init() {
+        // bean itself initialized
+    }
+
+    @EventListener(org.springframework.context.event.ContextRefreshedEvent.class)
+    public void onContextReady() {
+        // fires after all singleton beans are instantiated and initialized
+        log.info("Starting threads for PLC sockets");
+        for (Map.Entry<String, Protocol> c : this.getFactoryScadaInstance().controllers().entrySet()) {
+
+            log.debug("Starting thread sockets for {}", c.getKey());
+            try {
+                c.getValue().start();
+            } catch (ProtocolException e) {
+                log.error("Failed to start protocol threads for PLC {}", c.getKey(), e);
+
+                // send connection failure to MQTT
+                String topic = "FactoryScada/Backend/internal/plc_connection/" + c.getKey()
+                        + "/status";
+                mqttGateway.sendToMqtt("unreachable", topic);
+            }
+        }
     }
 
     /**
@@ -183,16 +214,7 @@ public class FactoryScada {
                             sendWithRetry("disconnected", topic);
                         }
                     });
-            try {
-                controllerInstance.start();
-            } catch (ProtocolException e) {
-                log.error("Failed to start controller protocol", e);
 
-                // send connection failure to MQTT
-                String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name()
-                        + "/status";
-                mqttGateway.sendToMqtt("unreachable", topic);
-            }
             controllers.put(controllerConfiguration.name(), controllerInstance);
 
             // Create machines for each controller
@@ -200,6 +222,7 @@ public class FactoryScada {
                 for (FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration machineConfiguration : controllerConfiguration
                         .machines()) {
                     AbstractMachine machineInstance = createMachineInstance(machineConfiguration, controllerInstance);
+                    machineInstance.setFactoryScada(this);
                     machines.put(machineConfiguration.name(), machineInstance);
                 }
             } else {
@@ -340,7 +363,8 @@ public class FactoryScada {
         return new AbstractMachine.Parameters(machineConfiguration.name(),
                 controllerInstance,
                 rawCommandNames,
-                commandIdGenerator);
+                commandIdGenerator,
+                mqttGatewayService);
     }
 
     /**
@@ -404,16 +428,11 @@ public class FactoryScada {
 
     /**
      * This function is used to add logs in the list containing all frontend logs
-     *
-     * @return Nothing
      */
     public void addLogsForFrontend(String log) {
-        this.getFrontendLogsList().add(LocalDateTime.now().toString() + " : " + log);
-        if (this.getFrontendLogsList().size() > logLimit) {
-            this.getFrontendLogsList().removeFirst();
-        }
+        frontendLogsList.add(LocalDateTime.now() + " : " + log);
         this.getWebSocketPublisher()
-                .sendFrontendLogs(String.join("\n", this.getFrontendLogsList()));
+                .sendFrontendLogs(String.join("\n", this.getFrontendLogsList().snapshot()));
     }
 
     private void sendWithRetry(String payload, String topic) {
