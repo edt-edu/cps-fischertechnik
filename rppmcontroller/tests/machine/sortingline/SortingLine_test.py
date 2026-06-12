@@ -1,9 +1,9 @@
 import inspect
 import logging
+import unittest
 
 from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
 
-import unittest
 
 class SortingLineTestCase(unittest.TestCase):
 
@@ -12,7 +12,7 @@ class SortingLineTestCase(unittest.TestCase):
 
     def test_Stop(self):
         """
-            Test if stop fucntion stop the conveyor acting forward
+            Test if the stop-function stops the conveyor acting forward
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
 

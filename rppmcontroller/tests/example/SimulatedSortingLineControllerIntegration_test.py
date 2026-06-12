@@ -20,7 +20,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
     def setUp(self):
         script_path = os.path.abspath(__file__)
         logging.info(f'script path : {script_path}')
-        dir_path = os.path.dirname(__file__)
+        dir_path = str(os.path.dirname(__file__))
         config_path = os.path.join(dir_path, "config.yml")
         logging.info(f'config file path : {config_path}')
 
@@ -47,7 +47,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         self.controller.mainLoopIteration()
         self.assertEqual(ctHelper.readMachineFeedbackNotification(self.controller), "")
 
-        # send a eject command
+        # send an eject command
         message = MachineCommand("COMMAND", "SORTING", 1, "EJECT", [Color.WHITE])
 
         ctHelper.sendMessage(self.controller, "SortingLine01", message)
@@ -65,7 +65,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
 
 
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
             elif iterationDone == 4:
@@ -191,7 +191,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
             elif iterationDone == 4:
@@ -254,7 +254,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 2:
                 self.controller.sortingLineSimulator.fakeSensor(RequestedParameter.LIGHTBARRIERINLET,False)
             elif iterationDone == 4:
@@ -361,6 +361,7 @@ class SimulatedSortingLineControllerIntegrationTestCase(unittest.TestCase):
                 self.assertRegex(notification,
                                  r"SortingLine01 \d+\.\d+ COMMAND_FEEDBACK 1 DONE")
                 if start_time is not None:
+                    assert Timer.custom_current_time is not None, "Custom time should be set at beginning of test"
                     elapsed_seconds = Timer.custom_current_time - start_time
                     logging.info(f"notification received in {elapsed_seconds}s and {iterationDone} iterations")
 

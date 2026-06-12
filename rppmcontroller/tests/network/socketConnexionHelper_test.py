@@ -1,26 +1,16 @@
-import unittest
-#from time import time
-from time import sleep
-from abc import abstractmethod
-import logging
-from multiprocessing import Process
-import signal
-import socket
-import sys
-import time
-import json
-import os
-from  typing import Callable
 import inspect
+# from time import time
+import logging
+import socket
+import time
+import unittest
+from multiprocessing import Process
 
 from rppmcontroller.protocol import socketConnexionHelper
 
-class SocketConnexionHelperTestCase(unittest.TestCase):
-    def setUp(self):
-        dictMap = {}
-        
 
-    def testListenSocket_noReconnect(self):        
+class SocketConnexionHelperTestCase(unittest.TestCase):
+    def testListenSocket_noReconnect(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         myServerClass  = MyServerClass(False)
@@ -37,13 +27,13 @@ class SocketConnexionHelperTestCase(unittest.TestCase):
             logging.info(f"Received response: {received_data}")
             self.assertEqual(received_data, "test response")
             client_socket.close()
- 
-        # not configured for allowing more connections, the server should have ended       
+
+        # not configured for allowing more connections, the server should have ended
         server.join(timeout=3)
         assert(not server.is_alive())
         time.sleep(0.5)
-        
-    def testListenSocket_reconnect(self):        
+
+    def testListenSocket_reconnect(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         myServerClass  = MyServerClass(True)
@@ -60,10 +50,10 @@ class SocketConnexionHelperTestCase(unittest.TestCase):
             logging.info(f"Received response: {received_data}")
             self.assertEqual(received_data, "test response")
             client_socket.close()
-        
-        # configured for allowing more connections, the server should not have ended       
+
+        # configured for allowing more connections, the server should not have ended
         assert(server.is_alive())
- 
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect(("localhost", 8889))
 
@@ -74,7 +64,7 @@ class SocketConnexionHelperTestCase(unittest.TestCase):
             logging.info(f"Received response: {received_data}")
             self.assertEqual(received_data, "test response")
             client_socket.close()
-        
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect(("localhost", 8889))
 
@@ -86,7 +76,7 @@ class SocketConnexionHelperTestCase(unittest.TestCase):
         time.sleep(0.5)
 
 
-    def testConnectSocket_noReconnect(self):        
+    def testConnectSocket_noReconnect(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
         myClientClass  = MyClientClass(False)
@@ -108,27 +98,27 @@ class SocketConnexionHelperTestCase(unittest.TestCase):
             received_data = client_socket.recv(1024).decode("utf-8")
             logging.info(f"Received response: {received_data}")
             self.assertEqual(received_data, "test response")
- 
-            # not configured for allowing more connections, the client should have ended       
+
+            # not configured for allowing more connections, the client should have ended
             client.join(timeout=3)
             assert(not client.is_alive())
             client_socket.close()
         client.kill()
         time.sleep(0.5)
 
- 
-            
 
-class MyClientClass():
-    def __init__(self, autoreconnect: bool) -> None:
-        self.autoreconnect = autoreconnect
+
+
+class MyClientClass:
+    def __init__(self, autoReconnect: bool) -> None:
+        self.autoReconnect = autoReconnect
         self.funcMustExit = False
     def my_function(self, s: socket.socket) -> None:
         # Your implementation here
         if not self.funcMustExit:
             received_data = s.recv(1024).decode("utf-8")
             if received_data:
-                
+
                 logging.info(f"MyClientClass received data: {received_data}")
 
                 s.sendall("test response".encode("utf-8"))
@@ -138,17 +128,18 @@ class MyClientClass():
         else:
             logging.info(f"MyClientClass must exit")
         time.sleep(0.2)
-    
+
     def run(self):
         time.sleep(0.2)
         socketConnexionHelper.connectSocket("localhost", 8888, self.my_function)
         logging.info("MyClientClass end of process")
 
-class MyServerClass():
-    def __init__(self, autoreconnect: bool) -> None:
-        self.autoreconnect = autoreconnect
-        
-    def my_function(self, s: socket.socket) -> None:
+class MyServerClass:
+    def __init__(self, autoReconnect: bool) -> None:
+        self.autoReconnect = autoReconnect
+
+    @staticmethod
+    def my_function(s: socket.socket) -> None:
         # Your implementation here
         received_data = s.recv(1024).decode("utf-8")
         if received_data:
@@ -158,9 +149,9 @@ class MyServerClass():
             # Client closed the connection
             logging.info('Client closed the connection')
         time.sleep(0.2)
-    
+
     def run(self):
-        socketConnexionHelper.listenSocket("localhost", 8889, self.my_function, self.autoreconnect)
+        socketConnexionHelper.listenSocket("localhost", 8889, self.my_function, self.autoReconnect)
         logging.info("MyServerClass end of process")
 
 

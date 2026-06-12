@@ -22,7 +22,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
     def setUp(self):
         script_path = os.path.abspath(__file__)
         logging.info(f'script path : {script_path}')
-        dir_path = os.path.dirname(__file__)
+        dir_path = str(os.path.dirname(__file__))
         config_path = os.path.join(dir_path, "config.yml")
         logging.info(f'config file path : {config_path}')
 
@@ -61,7 +61,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         while not endCommandReached:
             self.controller.mainLoopIteration()
             notification = ctHelper.readCommandFeedbackNotification(self.controller)
-            '''Simulate sensor changes for testing all the functionnalities of the command'''
+            '''Simulate sensor changes for testing all the functionalities of the command'''
             if iterationDone == 0:
                 #initial state
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.LIGHTBARRIEROVEN,False)
@@ -88,7 +88,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONVACUUM, False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW, True)
             elif iterationDone == 42:
-                #simulate tuntable moved to conveyor belt
+                #simulate turntable moved to conveyor belt
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONSAW, False)
                 self.controller.multiProcessingSimulator.fakeSensor(RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT, True)
             elif iterationDone == 52:
@@ -920,7 +920,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
-        #setup the MPS with the arm on turntable
+        #set up the MPS with the arm on turntable
         mps = self.controller.machines[0]
         assert isinstance(mps, MultiProcessing)
         mps.parameters.safety_at_oven = True
@@ -974,7 +974,7 @@ class SimulatedMultiProcessingControllerIntegrationTestCase(unittest.TestCase):
         """
         logging.debug(f'{inspect.stack()[0][3]} start')
 
-        #setup the MPS with the arm on turntable
+        #set up the MPS with the arm on turntable
         mps = self.controller.machines[0]
         assert isinstance(mps, MultiProcessing)
         mps.parameters.safety_at_oven = False

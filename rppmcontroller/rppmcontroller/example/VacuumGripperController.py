@@ -1,49 +1,32 @@
-import logging
-import multiprocessing
-from multiprocessing import Process
-from multiprocessing import Queue
-from queue import Empty
-import signal
-import socket
-import sys
-import time
-import json
-import os
 import ctypes
+import logging
 
 import revpimodio2
 
-import rppmcontroller
-import rppmcontroller.machine
-import rppmcontroller.machine.vacuumgripper
-from rppmcontroller.protocol import socketConnexionHelper
-from rppmcontroller.protocol.JSONParser import JSONParser
-from rppmcontroller.protocol.JSONOutput import JSONOutput
-from rppmcontroller.protocol.MachineStatusRequestAnswer import MachineStatusRequestAnswer
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
 
 
 class VacuumGripperController(RevPiPyMachineController):
     """
-    Class allowing to stream commands to and from  a vacuum gripper
+    Class allowing to stream commands to and from a vacuum gripper
     """
 
     def __init__(self, simulatedRevPiModIO: bool = False, configurationFile : str = ""):
         """
-        Init method of this class, starts all threads and everything is ready for receiving commands via Sockets and executing them
+        Init method of this class. Starts all threads and everything is ready for receiving commands via Sockets and executing them
         """
 
         super().__init__(configurationFile)
 
         # Instantiate RevPiModIO
-        if(not simulatedRevPiModIO):
+        if not simulatedRevPiModIO:
             self.rpi = revpimodio2.RevPiModIO(autorefresh=True)
 
         # TODO find a way to read from a configuration file
         #the list of all machines that are connected to this core
         self.machines = []
-        #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
+        #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
         self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.machines = [self.vacuumGripperMachine]

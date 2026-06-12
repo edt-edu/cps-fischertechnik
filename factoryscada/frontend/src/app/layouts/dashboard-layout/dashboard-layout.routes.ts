@@ -17,5 +17,8 @@ export const dashboardLayoutRoutes: Routes = [
   }, {
     path: 'better-mission',
     loadComponent: () => import('../../pages/better-mission/better-mission.component').then(c => c.BetterMissionComponent)
+  }, {
+    path: 'dynamic-mission',
+    loadComponent: () => import('../../pages/dynamic-mission/dynamic-mission.component').then(c => c.DynamicMissionComponent)
   }
 ]

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterOutlet } from "@angular/router";
+import { RouterOutlet } from "@angular/router";
 import { MenubarModule } from 'primeng/menubar';
 import { MenuItem } from 'primeng/api';
 
@@ -8,7 +8,6 @@ import { MenuItem } from 'primeng/api';
   standalone: true,
   imports: [
     RouterOutlet,
-    RouterLink,
     MenubarModule
     //TabMenuModule
   ],
@@ -63,6 +62,11 @@ export class DashboardLayoutComponent {
             routerLink: 'better-mission'
           }
         ]
+      },
+      {
+        label: 'Dynamic Mission',
+        icon: 'pi pi-sitemap',
+        routerLink: 'dynamic-mission'
       }
     ];
   }

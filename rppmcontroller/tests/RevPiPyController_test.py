@@ -18,20 +18,16 @@ class RevPiPyControllerTestCase(unittest.TestCase):
     def setUp(self):
         script_path = os.path.abspath(__file__)
         logging.warning(f'script path : {script_path}')
-        dir_path = os.path.dirname(__file__)
+        dir_path = str(os.path.dirname(__file__))
         config_path = os.path.join(dir_path, "example/config.yml")
         logging.warning(f'config file path : {config_path}')
 
         logging.debug("setup called")
-        # pickupRobot1 = [2600,3550,25]
-        # placeConveyorRobot1 = [2000,100,100]
-        # placeRand = [2,3,4,5]
-        # placeListrobot1 = [pickupRobot1, placeConveyorRobot1, placeRand]
 
         # RevPiPyMachineController is abstract, so we need to instantiate a
         # child class
         class InstantiableController(RevPiPyMachineController):
-            def __init__(self, config_path):
+            def __init__(self):
                 super().__init__(config_path)
 
             def read(self) -> None:
@@ -43,7 +39,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
             def reset(self) -> None:
                 raise Exception("not implemented")
 
-        self.controller = InstantiableController(config_path)
+        self.controller = InstantiableController()
 
         self.gripperMachine = VacuumGripper("VacuumGripper01")
         self.controller.machines = [self.gripperMachine]
@@ -56,6 +52,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
     def test_processJson_with_jsonTxtMsg(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
 
+        # noinspection SpellCheckingInspection
         jsonMessage = JSONReader.read("""{
           "topicName" : "VacuumGripper01",
           "timestamp" : 1677144787.891000000,
@@ -95,11 +92,11 @@ class RevPiPyControllerTestCase(unittest.TestCase):
 
         #logging.debug(self.controller.inputBuffer.qsize())
         self.controller.processJson(self.controller.inputBuffer)
-        currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
-        assert currentlyExecutting is not None
-        logging.debug(f"currently executing={currentlyExecutting.displayName}")
-        self.assertIsNotNone(currentlyExecutting.cycleStep)
-        self.assertEqual(currentlyExecutting.commandId,77)
+        currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
+        assert currentlyExecuting is not None
+        logging.debug(f"currently executing={currentlyExecuting.displayName}")
+        self.assertIsNotNone(currentlyExecuting.cycleStep)
+        self.assertEqual(currentlyExecuting.commandId, 77)
 
     def test_processJson_with_JSONOutputMsg(self):
 
@@ -118,9 +115,9 @@ class RevPiPyControllerTestCase(unittest.TestCase):
 
       self.controller.processJson(self.controller.inputBuffer)
 
-      currentlyExecutting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
-      assert currentlyExecutting is not None
-      self.assertIsNotNone(currentlyExecutting.cycleStep)
+      currentlyExecuting  = self.controller.currentlyExecuting.get(self.controller.machines[0])
+      assert currentlyExecuting is not None
+      self.assertIsNotNone(currentlyExecuting.cycleStep)
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)-5s: %(module)-20s,%(lineno)-3s: %(message)s', level=logging.DEBUG)

@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional, Callable, cast
 import select
 import yaml
 
-from rppmcontroller import __version__
+from rppmcontroller import __version__, TRACE
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -297,11 +297,14 @@ class RevPiPyMachineController(ABC):
                                               message,
                                               machine)
 
+        logging.debug("Determining machine class")
         machine_class = self.__get_machine_class(message_type)
         if machine_class is None:
             logging.warning(f"invalid JSON command: unsupported machine "
                             f"type: {message_type}")
             return
+
+        logging.debug(f"Determined machine class to be {machine_class}")
 
         if not isinstance(machine, machine_class):
             # the machine is determined by the topic name, so it is better to
@@ -330,6 +333,7 @@ class RevPiPyMachineController(ABC):
             return
 
         # apply parameter modifications
+        logging.debug("Applying parameter modifications")
         try:
             self.__replace_named_positions(machine, parameters)
         except UnknownNamedPosition as e:
@@ -341,9 +345,12 @@ class RevPiPyMachineController(ABC):
                 f"Unknown named position: {named_position}"))
             return
 
+        logging.debug("Applying machine-specific parameter modifications")
         self.__apply_machine_specific_parameter_modifications(message_type,
                                                               parameters)
+
         # call command function
+        logging.debug("Calling command function")
         command_function_return_value = self.__call_command_function(
             command_function,
             command_function_name,
@@ -371,6 +378,7 @@ class RevPiPyMachineController(ABC):
 
         # send interruption feedback for the previously running
         # command on the machine
+        logging.debug("Interrupting currently running command")
         self.__interrupt_currently_running_command(machine, message)
 
         # store the new command on the machine
@@ -473,7 +481,9 @@ class RevPiPyMachineController(ABC):
 
         for parameter_index, parameter in enumerate(parameters):
             if isinstance(parameter, NamedPosition):
-                resolved = named_positions[parameter.name]
+                resolved = named_positions[parameter.name] \
+                    if parameter.name in named_positions \
+                    else None
                 if resolved is None:
                     raise UnknownNamedPosition(parameter)
 
@@ -546,7 +556,7 @@ class RevPiPyMachineController(ABC):
             "CONVEYOR": ConveyorBelt,
             "PUNCHING": PunchingMachine,
         }
-        return machine_type_to_class_mapping[machine_type]
+        return machine_type_to_class_mapping[machine_type] if machine_type in machine_type_to_class_mapping else None
 
     def __publish_received_message_event(self,
                                          event_group: str,
@@ -594,12 +604,12 @@ class RevPiPyMachineController(ABC):
         """
         Reset encoder values to 0 after the setup of the individual machine connected to
         these ports is finished
-        DIO IO variables names must conforms to the physical configuration
+        DIO IO variables names must conform to the physical configuration
         """
 
     def exLoop(self) -> None:
         """
-        The execute loop, which activates all the necessary "_cycleStep" functions on each machine
+        The execute-loop, which activates all the necessary "_cycleStep" functions on each machine
         a "_cycleStep" function is maintained in the currentlyExecuting map until it returns
         """
         for key in self.currentlyExecuting.keys():
@@ -609,12 +619,14 @@ class RevPiPyMachineController(ABC):
                 #logging.debug(f'currentlyExecuting {key}.{cycleStepCommand.displayName}')
                 try:
                     ret = cycleStepCommand.cycleStep()
-                except Exception:
-                    logging.exception("Error while executing cycleStepCommand")
+                except Exception as e:
+                    logging.exception("Error while executing cycleStepCommand", exc_info=e)
+                    continue
 
                 # removes currentlyExecuting function once it indicates it is finished
                 # logging.debug(f"{ret}")
-                if ret.is_done():
+                # we use "not must continue" since is_done() wouldn't handle the abort case
+                if not ret.must_continue():
                     self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
                     self.currentlyExecuting[key] = None
@@ -748,32 +760,32 @@ class RevPiPyMachineController(ABC):
         logging.debug('all threads started')
         signal.signal(signal.SIGINT, lambda sig, frame: signal_custom_handler(sig, frame, "Main"))
         while True:
-            self.mainLoopIteration()
+            try:
+                self.mainLoopIteration()
+            except Exception as e:
+                logging.error("Encountered an unexpected error during the main loop iteration", exc_info=e)
 
     def mainLoopIteration(self):
-        # logging.debug(f'main loop - self.inputBuffer.empty()={self.inputBuffer.empty()}')
+        logging.log(TRACE, "[main loop] Processing json...")
         self.processJson(self.inputBuffer)
-        # logging.debug("after processJson")
+        logging.log(TRACE, "[main loop] Reading...")
         self.read()
-        # logging.debug("after read")
+        logging.log(TRACE, "[main loop] Executing loop...")
         self.exLoop()
-        # logging.debug("after exLoop")
+        logging.log(TRACE, "[main loop] Writing...")
         self.write()
-        # logging.debug("after write")
+        logging.log(TRACE, "[main loop] Publishing MQTT measurement status...")
         self.publishMQTTMeasurementStatus()
-        # logging.debug("after publish")
+        logging.log(TRACE, "[main loop] Resetting...")
         self.reset()
-        # logging.debug("after reset")
-        # # logging.debug(self.currentlyExecuting)
+        logging.log(TRACE, "[main loop] Creating machine feedback...")
         self.createMachineFeedbackOnChange()
-        # logging.debug("after feedback")
-        # self.createCommandFeedbackOnChange()
+        logging.log(TRACE, "[main loop] Decrementing required execution cycles...")
         # if a machine was executing some command, we are now sure that it was taken into account (incl. write, reset, and feedback)
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()
-        # logging.debug("after decrements")
+        logging.log(TRACE, "[main loop] Sleeping...")
         time.sleep(self.mainLoopDelay)
-        # logging.debug("after sleep")
 
 # Create an empty list
 socket_list : List[socket.socket] = []

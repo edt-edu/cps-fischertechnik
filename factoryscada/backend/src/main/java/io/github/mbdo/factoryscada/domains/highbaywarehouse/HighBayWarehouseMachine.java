@@ -3,22 +3,24 @@ package io.github.mbdo.factoryscada.domains.highbaywarehouse;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.commands.*;
-import io.github.mbdo.factoryscada.socket.Protocol;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-
 @Slf4j
 public class HighBayWarehouseMachine extends AbstractMachine {
 
-    public HighBayWarehouseMachine(String name, Protocol protocol, List<String> rawCommandNames) {
-        super(name, protocol, rawCommandNames);
+    public HighBayWarehouseMachine(Parameters parameters) {
+        super(parameters);
     }
 
     public static String getType() {
         return "highBayWarehouse";
+    }
+
+    @Override
+    public String getCommandMachineType() {
+        return "WAREHOUSE";
     }
 
     public void cantilever_backward(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
@@ -69,6 +71,11 @@ public class HighBayWarehouseMachine extends AbstractMachine {
     public void setup(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
         log.info("Setting up HighBayWarehouse {}", dto);
         new SetupCommand(this, dto).execute();
+    }
+
+    @Override
+    public void stop() {
+        stop(createCommandDTO("stop"));
     }
 
     public void stop(@Valid @NotNull final GenericMachineCommandDTO<HighBayWarehouseMachine> dto) {
