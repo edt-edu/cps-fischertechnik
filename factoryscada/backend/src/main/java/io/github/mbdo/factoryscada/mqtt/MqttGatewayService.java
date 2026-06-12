@@ -14,16 +14,16 @@ import java.util.function.BiConsumer;
 @Service
 public class MqttGatewayService implements MqttMessageRouter {
 
-  private final MqttGateway mqttGateway;
+  private final RawMqttOutboundGateway rawMqttOutboundGateway;
   private final List<Subscription> subscriptions = new CopyOnWriteArrayList<>();
 
   @Autowired
-  public MqttGatewayService(MqttGateway mqttGateway) {
-    this.mqttGateway = mqttGateway;
+  public MqttGatewayService(RawMqttOutboundGateway rawMqttOutboundGateway) {
+    this.rawMqttOutboundGateway = rawMqttOutboundGateway;
   }
 
   public void sendToMqtt(String payload, String topic) {
-    mqttGateway.sendToMqtt(payload, topic);
+    rawMqttOutboundGateway.sendToMqtt(payload, topic);
   }
 
   @Override

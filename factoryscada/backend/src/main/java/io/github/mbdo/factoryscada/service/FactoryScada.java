@@ -13,7 +13,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.mqtt.MqttConfig;
-import io.github.mbdo.factoryscada.mqtt.MqttGateway;
+import io.github.mbdo.factoryscada.mqtt.RawMqttOutboundGateway;
 import io.github.mbdo.factoryscada.mqtt.MqttGatewayService;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
@@ -86,14 +86,14 @@ public class FactoryScada {
 
     // MQTT messages
     private final MqttConfig mqttConfig;
-    private final MqttGateway mqttGateway;
+    private final RawMqttOutboundGateway rawMqttOutboundGateway;
     private final MqttGatewayService mqttGatewayService;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
             ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
-            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway,
+            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, RawMqttOutboundGateway rawMqttOutboundGateway,
             MqttGatewayService mqttGatewayService) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
@@ -102,7 +102,7 @@ public class FactoryScada {
         this.mqttConfig = mqttConfig;
         this.webSocketPublisher.factoryscada = this;
         this.commandIdGenerator = new CommandIdGenerator();
-        this.mqttGateway = mqttGateway;
+        this.rawMqttOutboundGateway = rawMqttOutboundGateway;
         this.mqttGatewayService = mqttGatewayService;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
@@ -145,7 +145,7 @@ public class FactoryScada {
                 // send connection failure to MQTT
                 String topic = "FactoryScada/Backend/internal/plc_connection/" + c.getKey()
                         + "/status";
-                mqttGateway.sendToMqtt("unreachable", topic);
+                rawMqttOutboundGateway.sendToMqtt("unreachable", topic);
             }
         }
     }
@@ -437,7 +437,7 @@ public class FactoryScada {
 
     private void sendWithRetry(String payload, String topic) {
         try {
-            mqttGateway.sendToMqtt(payload, topic);
+            rawMqttOutboundGateway.sendToMqtt(payload, topic);
         } catch (Exception e) {
             log.warn(
                     "Failed to publish MQTT message to broker={} topic={}, MQTT system may be not ready: retrying in 1s",

@@ -17,6 +17,12 @@ import org.springframework.messaging.MessageHandler;
 
 import java.nio.charset.StandardCharsets;
 
+
+/**
+ * Configuration for 2 Mqtt clients,
+ *  one for Inbound (currently used for listening messages from other services)
+ *  one for outbound (currently used for publishing this application telemetry)
+ */
 @Slf4j
 @Configuration
 public class MqttConfig {
