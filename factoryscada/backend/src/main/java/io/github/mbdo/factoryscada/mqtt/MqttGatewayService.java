@@ -1,153 +1,83 @@
 package io.github.mbdo.factoryscada.mqtt;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.mbdo.factoryscada.core.AbstractMachine;
-import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
-import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMachine;
-import io.github.mbdo.factoryscada.domains.indexedline.IndexedLineMachine;
-import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
-import io.github.mbdo.factoryscada.domains.punchingmachine.PunchingMachine;
-import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
-import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
-import io.github.mbdo.factoryscada.service.FactoryScada;
+import io.github.mbdo.factoryscada.core.MqttMessageRouter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.Optional;
-import java.util.regex.Pattern;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 
 @Slf4j
 @Service
-public class MqttGatewayService {
-  //PLC/<island>/<type>/<machineName>/measurements/<measurement kind>/<inputName>
-  private static final Pattern TOPIC_PATTERN = Pattern.compile("PLC/([^/]+)/([^/]+)/([^/]+)/measurements/([^/]+)/(.+)");
+public class MqttGatewayService implements MqttMessageRouter {
 
   private final MqttGateway mqttGateway;
-  private final FactoryScada factoryScada;
+  private final List<Subscription> subscriptions = new CopyOnWriteArrayList<>();
 
   @Autowired
-  public MqttGatewayService(MqttGateway mqttGateway, FactoryScada factoryScada) {
+  public MqttGatewayService(MqttGateway mqttGateway) {
     this.mqttGateway = mqttGateway;
-    this.factoryScada = factoryScada;
   }
 
   public void sendToMqtt(String payload, String topic) {
     mqttGateway.sendToMqtt(payload, topic);
   }
 
+  @Override
+  public void subscribe(String topicFilter, BiConsumer<String, String> callback) {
+    subscriptions.add(new Subscription(topicFilter, callback));
+    log.info("MQTT subscription registered: {}", topicFilter);
+  }
+
   public void onMessage(String topic, byte[] payload) {
     log.debug("Received MQTT message on topic {}", topic);
-    updateMachineStateFromMessage(topic, payload);
+    route(topic, new String(payload, StandardCharsets.UTF_8));
   }
 
   /**
-   * Attempts to update the state of a machine from an incoming mqtt message.
-   *
-   * <p>If an error occurs, it may produce a log message, but it will not throw an exception.
-   *
-   * @param topic   The topic on which the message arrived
-   * @param payload The message payload
+   * Route an incoming message to all matching subscribers.
    */
-  public void updateMachineStateFromMessage(String topic, byte[] payload) {
-
-    var matcher = TOPIC_PATTERN.matcher(topic);
-    if (!matcher.matches()) {
-      return;
-    }
-
-    //group 1 is the island, we don't need that
-    var machineType = matcher.group(2);
-    var machineName = matcher.group(3);
-    var measurementKind = matcher.group(4);
-    var inputName = matcher.group(5);
-
-    var mapper = new ObjectMapper();
-    JsonNode node;
-    try {
-      node = mapper.readTree(payload);
-    } catch (IOException e) {
-      log.debug("Failed readingTree in payload {} ",e.getMessage(), e);
-      return;
-    }
-    if (!node.isObject() || !node.has("value")) {
-      return;
-    }
-
-    var value = node.get("value");
-
-    switch (measurementKind) {
-      case "internal" -> {
-        if (inputName.equals("isExecuting")) {
-          getMachine(machineName).ifPresent(machine -> {
-            log.debug("Updating idle state for machine {} to {}", machineName, !value.asBoolean());
-            machine.setIdle(!value.asBoolean());
-          });
-        }
-      }
-      case "input" -> {
+  public void route(String topic, String payload) {
+    for (Subscription sub : subscriptions) {
+      if (topicMatches(sub.topicFilter(), topic)) {
         try {
-          updateMachineInputState(machineType, machineName, inputName, value);
-        } catch (IllegalArgumentException e) {
-          log.warn("Failed to update machine state", e);
+          sub.callback().accept(topic, payload);
+        } catch (Exception e) {
+          log.error("Error in MQTT subscription callback for filter '{}': {}",
+                  sub.topicFilter(), e.getMessage(), e);
         }
       }
     }
   }
 
-  @SuppressWarnings("SwitchStatementWithTooFewBranches") //needed for the vgr case
-  private void updateMachineInputState(String machineType, String machineName, String inputName, JsonNode value)
-  throws IllegalArgumentException {
-    var machine = getMachine(machineName);
-    if (machine.isEmpty()) {
-      log.warn("Ignoring update of unknown machine {}, you may need to flush your mqtt broker date", machineName);
-      return;
-    }
+  /**
+   * Matches a topic against an MQTT-style topic filter.
+   * <ul>
+   * <li>{@code +} matches exactly one level</li>
+   * <li>{@code #} matches zero or more levels (must be last segment)</li>
+   * </ul>
+   */
+  static boolean topicMatches(String filter, String topic) {
+    String[] filterParts = filter.split("/");
+    String[] topicParts = topic.split("/");
 
-    switch (machine.get()) {
-      case ConveyorBeltMachine cb -> {
-        switch (inputName) {
-          case "conveyorSensFeed" -> cb.setTokenAtFeed(!value.asBoolean());
-          case "conveyorSensSwap" -> cb.setTokenAtSwap(!value.asBoolean());
-          default -> logIgnoredInput(machineName, inputName);
-        }
+    for (int i = 0; i < filterParts.length; i++) {
+      if ("#".equals(filterParts[i])) {
+        return true;
       }
-      case HighBayWarehouseMachine ignored -> logIgnoredInput(machineName, inputName);
-      case IndexedLineMachine ignored -> logIgnoredInput(machineName, inputName);
-      case MultiProcessingStationMachine mps -> {
-        switch (inputName) {
-          case "multiProcessingSensOven" -> mps.setTokenAtFeed(!value.asBoolean());
-          case "multiProcessingSendEndConveyor" -> mps.setTokenAtSwap(!value.asBoolean());
-          default -> logIgnoredInput(machineName, inputName);
-        }
+      if (i >= topicParts.length) {
+        return false;
       }
-      case PunchingMachine ignored -> logIgnoredInput(machineName, inputName);
-      case SortingLineMachine sl -> {
-        switch (inputName) {
-          case "sortingLineSensInputLightBarrier" -> sl.setTokenAtFeed(!value.asBoolean());
-          case "sortingLineSensWhiteLightBarrier" -> sl.setTokenAtWhite(!value.asBoolean());
-          case "sortingLineSensRedLightBarrier" -> sl.setTokenAtRed(!value.asBoolean());
-          case "sortingLineSensBlueLightBarrier" -> sl.setTokenAtBlue(!value.asBoolean());
-          default -> logIgnoredInput(machineName, inputName);
-        }
+      if (!"+".equals(filterParts[i]) && !filterParts[i].equals(topicParts[i])) {
+        return false;
       }
-      case VacuumGripperMachine vgr -> {
-        switch (inputName) {
-          case "vacuumSensArmEndIn" -> vgr.setArmRetracted(value.asBoolean());
-          default -> logIgnoredInput(machineName, inputName);
-        }
-      }
-      default -> throw new IllegalArgumentException("Unsupported machine type: " + machineType);
     }
+    return filterParts.length == topicParts.length;
   }
 
-  public Optional<AbstractMachine> getMachine(String machineName) {
-    return Optional.ofNullable(factoryScada.getFactoryScadaInstance().machines().get(machineName));
-  }
-
-  private void logIgnoredInput(String machineName, String inputName) {
-    log.debug("Ignoring input {}/{}", machineName, inputName);
+  private record Subscription(String topicFilter, BiConsumer<String, String> callback) {
   }
 }

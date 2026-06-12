@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.domains.multiprocessingstation;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.dtos.Parameter;
@@ -28,6 +29,15 @@ public class MultiProcessingStationMachine extends AbstractMachine {
     }
 
     @Override
+    protected void onMqttInputMessage(String inputName, JsonNode value) {
+        switch (inputName) {
+            case "multiProcessingSensOven" -> setTokenAtFeed(!value.asBoolean());
+            case "multiProcessingSendEndConveyor" -> setTokenAtSwap(!value.asBoolean());
+            default -> super.onMqttInputMessage(inputName, value);
+        }
+    }
+
+    @Override
     public String getCommandMachineType() {
         return "MULTIPROCESSING";
     }
@@ -48,9 +58,9 @@ public class MultiProcessingStationMachine extends AbstractMachine {
 
     public void process(int ovenTime, int sawTime, MPSOutput output) {
         process(createCommandDTO("process",
-                                 Parameter.numberNatural(ovenTime),
-                                 Parameter.numberNatural(sawTime),
-                                 Parameter.mpsOutput(output)));
+                Parameter.numberNatural(ovenTime),
+                Parameter.numberNatural(sawTime),
+                Parameter.mpsOutput(output)));
     }
 
     public void process(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
@@ -68,7 +78,8 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         new StopCommand(this, dto).execute();
     }
 
-    public void move_to_safe_position(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
+    public void move_to_safe_position(
+            @Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Move To Safe Position {}", dto);
         new MoveToSafePositionCommand(this, dto).execute();
     }
@@ -118,7 +129,8 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         new TurntableEjectCommand(this, dto).execute();
     }
 
-    public void conveyor_move_to_sensor(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
+    public void conveyor_move_to_sensor(
+            @Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Move payload to sensor on conveyor {}", dto);
         new ConveyorMoveToSensorCommand(this, dto).execute();
     }
@@ -133,11 +145,9 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         new SawCutCommand(this, dto).execute();
     }
 
-
-
-//    public void eject(@Valid @NotNull final EjectDTO ejectDTO) {
-//        log.info("Eject sortingLine {}", ejectDTO);
-//        new EjectCommand(this, ejectDTO);
-//    }
+    // public void eject(@Valid @NotNull final EjectDTO ejectDTO) {
+    // log.info("Eject sortingLine {}", ejectDTO);
+    // new EjectCommand(this, ejectDTO);
+    // }
 
 }

@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.domains.sortingline;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.dtos.Parameter;
@@ -31,6 +32,17 @@ public class SortingLineMachine extends AbstractMachine {
     }
 
     @Override
+    protected void onMqttInputMessage(String inputName, JsonNode value) {
+        switch (inputName) {
+            case "sortingLineSensInputLightBarrier" -> setTokenAtFeed(!value.asBoolean());
+            case "sortingLineSensWhiteLightBarrier" -> setTokenAtWhite(!value.asBoolean());
+            case "sortingLineSensRedLightBarrier" -> setTokenAtRed(!value.asBoolean());
+            case "sortingLineSensBlueLightBarrier" -> setTokenAtBlue(!value.asBoolean());
+            default -> super.onMqttInputMessage(inputName, value);
+        }
+    }
+
+    @Override
     public String getCommandMachineType() {
         return "SORTING";
     }
@@ -53,5 +65,5 @@ public class SortingLineMachine extends AbstractMachine {
         log.info("Stop sortingLine {}", stopDTO);
         new StopCommand(this, stopDTO).execute();
     }
-    
+
 }

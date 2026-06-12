@@ -14,6 +14,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.mqtt.MqttConfig;
 import io.github.mbdo.factoryscada.mqtt.MqttGateway;
+import io.github.mbdo.factoryscada.mqtt.MqttGatewayService;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -86,12 +87,14 @@ public class FactoryScada {
     // MQTT messages
     private final MqttConfig mqttConfig;
     private final MqttGateway mqttGateway;
+    private final MqttGatewayService mqttGatewayService;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
-                        ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
-                        @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway) {
+            ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
+            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway,
+            MqttGatewayService mqttGatewayService) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -99,12 +102,13 @@ public class FactoryScada {
         this.mqttConfig = mqttConfig;
         this.webSocketPublisher.factoryscada = this;
         this.commandIdGenerator = new CommandIdGenerator();
+        this.mqttGateway = mqttGateway;
+        this.mqttGatewayService = mqttGatewayService;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
         this.frontendLogsList = new BoundedLogBuffer<String>(logLimit);
-        this.mqttGateway = mqttGateway;
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
@@ -125,17 +129,18 @@ public class FactoryScada {
     public void init() {
         // bean itself initialized
     }
+
     @EventListener(org.springframework.context.event.ContextRefreshedEvent.class)
     public void onContextReady() {
         // fires after all singleton beans are instantiated and initialized
         log.info("Starting threads for PLC sockets");
-        for(Map.Entry<String, Protocol> c : this.getFactoryScadaInstance().controllers().entrySet()) {
+        for (Map.Entry<String, Protocol> c : this.getFactoryScadaInstance().controllers().entrySet()) {
 
             log.debug("Starting thread sockets for {}", c.getKey());
             try {
                 c.getValue().start();
             } catch (ProtocolException e) {
-                log.error("Failed to start protocol threads for PLC {}",c.getKey(), e);
+                log.error("Failed to start protocol threads for PLC {}", c.getKey(), e);
 
                 // send connection failure to MQTT
                 String topic = "FactoryScada/Backend/internal/plc_connection/" + c.getKey()
@@ -255,10 +260,10 @@ public class FactoryScada {
                     var currentCommandId = commandStatus.getCurrentCommandId();
                     var feedbackCommandId = feedback.getMessage().getCommandId();
                     var feedbackIdMatchingCommandId = currentCommandId == null ||
-                                                      currentCommandId.equals(feedbackCommandId);
+                            currentCommandId.equals(feedbackCommandId);
                     if (!feedbackIdMatchingCommandId) {
                         log.warn("Received Feedback CommandId {} doesn't match current Command CommandId {}",
-                                 feedbackCommandId, currentCommandId);
+                                feedbackCommandId, currentCommandId);
                     }
 
                     this.machineLastCommandStatusMap.put(machineName, commandStatus);
@@ -267,13 +272,14 @@ public class FactoryScada {
                     // notify ExecuterVisitor
                     this.executerVisitor.receivedMachineCommandFeedback(commandStatus);
 
-                    //update idle status of machine
+                    // update idle status of machine
                     Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
                         var feedbackMessage = commandStatus.getCommandFeedbackStatus();
                         var isDone = feedbackMessage.contains("DONE");
                         log.info("Received command feedback for machine {} : {}", machineName, feedbackMessage);
-                        log.debug("Updating idle state for machine {} to {} (reason: command feedback {})", machineName, isDone,
-                                  feedbackCommandId);
+                        log.debug("Updating idle state for machine {} to {} (reason: command feedback {})", machineName,
+                                isDone,
+                                feedbackCommandId);
                         machine.setIdle(isDone);
                     });
 
@@ -292,10 +298,11 @@ public class FactoryScada {
                     // publish changes to frontend
                     webSocketPublisher.sendMachineStatus(machineName, machineStatus);
 
-                    //update idle status of machine
+                    // update idle status of machine
                     Optional.ofNullable(getFactoryScadaInstance().machines().get(machineName)).ifPresent(machine -> {
                         log.info("Received status for machine {} : {}", machineName, status);
-                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName, status.contains("IDLE"));
+                        log.debug("Updating idle state for machine {} to {} (reason: machine feedback)", machineName,
+                                status.contains("IDLE"));
                         machine.setIdle(status.contains("IDLE"));
                     });
 
@@ -332,9 +339,11 @@ public class FactoryScada {
 
             // Instantiate the machine using the found class, constructor that takes String,
             // Protocol and List<String> as parameters
-            Constructor<? extends AbstractMachine> constructor = machineClass.getConstructor(AbstractMachine.Parameters.class);
+            Constructor<? extends AbstractMachine> constructor = machineClass
+                    .getConstructor(AbstractMachine.Parameters.class);
             Map<String, String> machineRawCommandPlaceholder = this.commandPlaceholder().get(machineType);
-            var parameters = createMachineParameters(machineConfiguration, controllerInstance, machineRawCommandPlaceholder);
+            var parameters = createMachineParameters(machineConfiguration, controllerInstance,
+                    machineRawCommandPlaceholder);
             return constructor.newInstance(parameters);
 
         } catch (Exception e) {
@@ -344,16 +353,18 @@ public class FactoryScada {
     }
 
     @NonNull
-    private AbstractMachine.Parameters createMachineParameters(FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration machineConfiguration,
-                                                               Protocol controllerInstance,
-                                                               Map<String, String> machineRawCommandPlaceholder) {
-        List<String> rawCommandNames = machineRawCommandPlaceholder != null ?
-            new ArrayList<>(machineRawCommandPlaceholder.keySet()) :
-            new ArrayList<>();
+    private AbstractMachine.Parameters createMachineParameters(
+            FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration machineConfiguration,
+            Protocol controllerInstance,
+            Map<String, String> machineRawCommandPlaceholder) {
+        List<String> rawCommandNames = machineRawCommandPlaceholder != null
+                ? new ArrayList<>(machineRawCommandPlaceholder.keySet())
+                : new ArrayList<>();
         return new AbstractMachine.Parameters(machineConfiguration.name(),
-                                              controllerInstance,
-                                              rawCommandNames,
-                                              commandIdGenerator);
+                controllerInstance,
+                rawCommandNames,
+                commandIdGenerator,
+                mqttGatewayService);
     }
 
     /**
@@ -428,7 +439,9 @@ public class FactoryScada {
         try {
             mqttGateway.sendToMqtt(payload, topic);
         } catch (Exception e) {
-            log.warn("Failed to publish MQTT message to broker={} topic={}, MQTT system may be not ready: retrying in 1s", mqttConfig.getMqttHost(), topic);
+            log.warn(
+                    "Failed to publish MQTT message to broker={} topic={}, MQTT system may be not ready: retrying in 1s",
+                    mqttConfig.getMqttHost(), topic);
             scheduler.schedule(() -> sendWithRetry(payload, topic), 1, TimeUnit.SECONDS);
         }
     }
