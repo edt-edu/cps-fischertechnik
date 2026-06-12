@@ -441,7 +441,7 @@ public class FactoryScada {
         } catch (Exception e) {
             log.warn(
                     "Failed to publish MQTT message to broker={} topic={}, MQTT system may be not ready: retrying in 1s",
-                    mqttConfig.getMqttHost(), topic);
+                    mqttConfig.getMqttOutboundHost(), topic);
             scheduler.schedule(() -> sendWithRetry(payload, topic), 1, TimeUnit.SECONDS);
         }
     }

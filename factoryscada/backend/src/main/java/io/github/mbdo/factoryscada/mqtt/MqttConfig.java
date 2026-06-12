@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.mqtt;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,11 +24,17 @@ import java.nio.charset.StandardCharsets;
  *  one for Inbound (currently used for listening messages from other services)
  *  one for outbound (currently used for publishing this application telemetry)
  */
+@Getter
 @Slf4j
 @Configuration
 public class MqttConfig {
-    @Value("${configuration.mqttHost:tcp://localhost:1883}")
-    String mqttHost;
+    @Value("${configuration.mqtt.inbound.host:tcp://localhost:1883}")
+    String mqttInboundHost;
+
+
+    @Value("${configuration.mqtt.outbound.host:tcp://localhost:1883}")
+    String mqttOutboundHost;
+
 
     @Value("${configuration.mqttTopics:#}")
     String[] mqttTopics;
@@ -45,7 +52,7 @@ public class MqttConfig {
     @Bean
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MqttPahoMessageHandler mqttOutbound() {
-        MqttPahoMessageHandler handler = new MqttPahoMessageHandler("clientId", mqttClientFactory());
+        MqttPahoMessageHandler handler = new MqttPahoMessageHandler("clientId-outbound", mqttOutboundClientFactory());
         handler.setAsync(true);
         handler.setDefaultQos(1);
         handler.setDefaultRetained(true);
@@ -55,7 +62,7 @@ public class MqttConfig {
     @Bean
     public MqttPahoMessageDrivenChannelAdapter mqttInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("clientId-inbound", mqttClientFactory(), mqttTopics);
+                new MqttPahoMessageDrivenChannelAdapter("clientId-inbound", mqttInboundClientFactory(), mqttTopics);
         adapter.setCompletionTimeout(5000);
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInboundChannel());
@@ -76,17 +83,22 @@ public class MqttConfig {
     }
 
     @Bean
-    public MqttPahoClientFactory mqttClientFactory() {
+    public MqttPahoClientFactory mqttInboundClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
-        log.info("MQTT Connecting to {}", mqttHost);
-        options.setServerURIs(new String[] { mqttHost });
+        log.info("MQTT Inbound Connecting to {}", mqttInboundHost);
+        options.setServerURIs(new String[] {mqttInboundHost});
         factory.setConnectionOptions(options);
         return factory;
     }
-
-    public String getMqttHost() {
-        return mqttHost;
+    @Bean
+    public MqttPahoClientFactory mqttOutboundClientFactory() {
+        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        MqttConnectOptions options = new MqttConnectOptions();
+        log.info("MQTT Outbound Connecting to {}", mqttOutboundHost);
+        options.setServerURIs(new String[] {mqttOutboundHost});
+        factory.setConnectionOptions(options);
+        return factory;
     }
 
     private static byte[] toBytes(Message<?> message) {
