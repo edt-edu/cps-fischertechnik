@@ -348,7 +348,7 @@ public class Demo implements DynamicMission {
         vgr2Activity = VGR2Activity.MOVE_FROM_SL_TO_CB;
         vacuumGripper2.move(new NamedPosition(originName), new NamedPosition("CB"));
       } else {
-        log.debug("Not moving from SL to CB: No token at SL output");
+        moveFromSLtoCBLogger.debug("Not moving from SL to CB: No token at SL output");
       }
     } else {
       if(log.isDebugEnabled()) {

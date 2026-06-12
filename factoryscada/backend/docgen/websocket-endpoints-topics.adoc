@@ -1024,14 +1024,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
           "idle" : {
             "type" : "boolean"
           },
+          "commandMachineType" : {
+            "type" : "string"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
-          },
-          "commandMachineType" : {
-            "type" : "string"
           }
         }
       }
@@ -5987,14 +5987,14 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
           "idle" : {
             "type" : "boolean"
           },
+          "commandMachineType" : {
+            "type" : "string"
+          },
           "commandNames" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
-          },
-          "commandMachineType" : {
-            "type" : "string"
           }
         }
       }
