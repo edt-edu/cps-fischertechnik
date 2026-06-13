@@ -15,7 +15,8 @@ import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 
@@ -31,13 +32,17 @@ public class MqttConfig {
     @Value("${configuration.mqtt.inbound.host:tcp://localhost:1883}")
     String mqttInboundHost;
 
+    @Value("${configuration.mqtt.inbound.topics:#}")
+    String[] mqttTopics;
 
     @Value("${configuration.mqtt.outbound.host:tcp://localhost:1883}")
     String mqttOutboundHost;
 
+    @Value("${configuration.mqtt.outbound.root-topic:FactorySCADABackend}")
+    private String outboundRootTopic;
 
-    @Value("${configuration.mqttTopics:#}")
-    String[] mqttTopics;
+    @Value("${configuration.mqtt.outbound.topic-include-hostname:True}")
+    private Boolean outboundTopicIncludeHostname;
 
     @Bean
     public MessageChannel mqttOutboundChannel() {
@@ -101,6 +106,25 @@ public class MqttConfig {
         return factory;
     }
 
+    /**
+     * Use the configuration to compute the base topic for outbound mqtt messages sent by MqttPublisher
+     * @return
+     * @throws UnknownHostException
+     */
+    @Bean("mqttPublisherBaseTopic")
+    public String mqttPublisherBaseTopic() throws UnknownHostException {
+        String baseTopic = "";
+        if (outboundRootTopic != null && !outboundRootTopic.isBlank()) {
+            baseTopic = outboundRootTopic;
+        }
+
+        if (outboundTopicIncludeHostname) {
+            String hostname = InetAddress.getLocalHost().getHostName();
+            baseTopic = baseTopic + (!baseTopic.isBlank()? "/":"") + hostname;
+        }
+
+        return baseTopic;
+    }
     private static byte[] toBytes(Message<?> message) {
         Object payload = message.getPayload();
         if (payload instanceof byte[] bytes) {
