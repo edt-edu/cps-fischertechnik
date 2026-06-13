@@ -13,7 +13,7 @@ import io.github.mbdo.factoryscada.domains.mission.dtos.MissionParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.mqtt.MqttConfig;
-import io.github.mbdo.factoryscada.mqtt.RawMqttOutboundGateway;
+import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import io.github.mbdo.factoryscada.mqtt.MqttInboundRouterService;
 import io.github.mbdo.factoryscada.service.Visitor.ExecuterVisitor;
 import io.github.mbdo.factoryscada.service.Visitor.InitializerVisitor;
@@ -43,7 +43,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static io.github.mbdo.factoryscada.utilities.Utilities.convertYamlToObject;
 import static io.github.mbdo.factoryscada.utilities.Utilities.findMachineClass;
@@ -82,18 +81,18 @@ public class FactoryScada {
     private final int logLimit;
     public Map<String, Integer> sessionLogLimits = new ConcurrentHashMap<>();
 
-    private BoundedLogBuffer<String> frontendLogsList;
+    private final BoundedLogBuffer<String> frontendLogsList;
 
     // MQTT messages
     private final MqttConfig mqttConfig;
-    private final RawMqttOutboundGateway rawMqttOutboundGateway;
-    private final MqttInboundRouterService mqttInboundRouterService;
+    private final MqttPublisherService mqttPublisher;
+    private final MqttInboundRouterService mqttInboundRouter;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     @Autowired
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
             ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
-            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, RawMqttOutboundGateway rawMqttOutboundGateway,
+            @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttPublisherService rawMqttOutboundGateway,
             MqttInboundRouterService mqttInboundRouterService) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
@@ -102,13 +101,13 @@ public class FactoryScada {
         this.mqttConfig = mqttConfig;
         this.webSocketPublisher.factoryscada = this;
         this.commandIdGenerator = new CommandIdGenerator();
-        this.rawMqttOutboundGateway = rawMqttOutboundGateway;
-        this.mqttInboundRouterService = mqttInboundRouterService;
+        this.mqttPublisher = rawMqttOutboundGateway;
+        this.mqttInboundRouter = mqttInboundRouterService;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
-        this.frontendLogsList = new BoundedLogBuffer<String>(logLimit);
+        this.frontendLogsList = new BoundedLogBuffer<>(logLimit);
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
@@ -143,9 +142,9 @@ public class FactoryScada {
                 log.error("Failed to start protocol threads for PLC {}", c.getKey(), e);
 
                 // send connection failure to MQTT
-                String topic = "FactoryScada/Backend/internal/plc_connection/" + c.getKey()
+                String topic = "internal/plc_connection/" + c.getKey()
                         + "/status";
-                rawMqttOutboundGateway.sendToMqtt("unreachable", topic);
+                mqttPublisher.publish(topic, "unreachable");
             }
         }
     }
@@ -206,12 +205,12 @@ public class FactoryScada {
                                 receivedChannelConnected);
 
                         // send connection state to MQTT
-                        String topic = "FactoryScada/Backend/internal/plc_connection/" + controllerConfiguration.name()
+                        String topic = "internal/plc_connection/" + controllerConfiguration.name()
                                 + "/status";
                         if (sendChannelConnected && receivedChannelConnected) {
-                            sendWithRetry("connected", topic);
+                            mqttPublisher.publishWithRetry(topic, "connected");
                         } else {
-                            sendWithRetry("disconnected", topic);
+                            mqttPublisher.publishWithRetry(topic, "disconnected");
                         }
                     });
 
@@ -364,7 +363,7 @@ public class FactoryScada {
                 controllerInstance,
                 rawCommandNames,
                 commandIdGenerator,
-                mqttInboundRouterService);
+                mqttInboundRouter);
     }
 
     /**
@@ -435,14 +434,4 @@ public class FactoryScada {
                 .sendFrontendLogs(String.join("\n", this.getFrontendLogsList().snapshot()));
     }
 
-    private void sendWithRetry(String payload, String topic) {
-        try {
-            rawMqttOutboundGateway.sendToMqtt(payload, topic);
-        } catch (Exception e) {
-            log.warn(
-                    "Failed to publish MQTT message to broker={} topic={}, MQTT system may be not ready: retrying in 1s",
-                    mqttConfig.getMqttOutboundHost(), topic);
-            scheduler.schedule(() -> sendWithRetry(payload, topic), 1, TimeUnit.SECONDS);
-        }
-    }
 }
