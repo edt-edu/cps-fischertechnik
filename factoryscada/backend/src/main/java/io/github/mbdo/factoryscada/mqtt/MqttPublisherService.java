@@ -52,7 +52,7 @@ public class MqttPublisherService {
     public void publish(String relativeTopic, TimestampedPayload<?> payload) {
         try {
             String json = objectMapper.writeValueAsString(payload);
-            gateway.sendToMqtt(json, resolvedTopic(relativeTopic));
+            gateway.sendToMqtt( resolvedTopic(relativeTopic), json);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to serialize MQTT payload", e);
         }
