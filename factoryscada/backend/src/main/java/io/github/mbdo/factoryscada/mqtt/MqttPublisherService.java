@@ -44,8 +44,8 @@ public class MqttPublisherService {
      */
     public <T> void publish(String relativeTopic, T payload) {
         publish(relativeTopic, new TimestampedPayload<>(
-                Instant.now(),
-                payload
+                payload,
+                Instant.now()
         ));
     }
 
