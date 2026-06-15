@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
     private static final Logger logger = LoggerFactory.getLogger(ToIrSwitch.class);
 
+    private static final String MAIN_MACHINE_METADATA_QNAME = "MainMachineMetadata";
+
     private final SymbolIndex index;
 
     public ToIrSwitch(SymbolIndex index) {
@@ -150,10 +152,33 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
 
     private List<MachineRefIR> collectMachineRefs(StateDefinition object) {
         List<MachineRefIR> machinesRefs = new ArrayList<>();
+        Map<String, List<MetadataUsage>> metadata = extractMetadataUsages(object);
         for (ReferenceUsage ref : object.getOwnedReference()) {
-            machinesRefs.add(new MachineRefIR(ref.getName(), ref.getQualifiedName(), toTypeRef(ref.getType())));
+            String key = ref.getQualifiedName();
+            boolean isMain = metadata.containsKey(key)
+                    && metadata.get(key).stream().filter(m ->
+                    (m.getOwnedRelationship() instanceof Annotation annotation)
+                            && annotation.getAnnotatedElement().getQualifiedName().equals(key)
+                            && m.getType().getFirst().getName().equals(MAIN_MACHINE_METADATA_QNAME)
+            ).toList().size() == 1;
+            machinesRefs.add(new MachineRefIR(ref.getName(), ref.getQualifiedName(), toTypeRef(ref.getType()), isMain));
         }
         return machinesRefs;
+    }
+
+    private Map<String, List<MetadataUsage>> extractMetadataUsages(StateDefinition object) {
+        Map<String, List<MetadataUsage>> result = new HashMap<>();
+
+        for (Membership member : object.getOwnedMembership()) {
+            if (member.getOwnedRelatedElement() instanceof MetadataUsage mu) {
+                String key = member.getQualifiedName();
+                ArrayList<MetadataUsage> list = !result.containsKey(key) ? new ArrayList<>() : new ArrayList<>(result.get(key));
+                list.add(mu);
+                result.put(key, list);
+            }
+        }
+
+        return result;
     }
 
     private List<Ref<StateIR>> collectStatesRefs(List<StateUsage> stateUsages) {
@@ -164,7 +189,8 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
         return stateRefs;
     }
 
-    private record TransitionBundle(List<ElementIR> nodes, TransitionIR transition) {}
+    private record TransitionBundle(List<ElementIR> nodes, TransitionIR transition) {
+    }
 
     private TransitionBundle buildTransitionIR(TransitionUsage transition, List<Ref<StateIR>> statesRefs,
                                                List<MachineRefIR> machineRefs) {

@@ -1,13 +1,16 @@
 package MultiProcessingStationMissions {
+    private import Common::*;
     private import MultiProcessingStationSystem::*;
     private import MultiProcessingStationSystem::MultiProcessingStationCommands::*;
     private import MultiProcessingStationSystem::MultiProcessingStationMessages::*;
     private import ZonesSystem::*;
     private import ZonesSystem::ZonesMessages::*;
 
-    doc
-    /* Nominal mission for the multi-processing station */
     state def MultiProcessingStationNominalMission {
+        doc
+        /* Nominal mission for the multi-processing station */
+
+        @MainMachineMetadata about multiProcessingStation;
         in multiProcessingStation
             : MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine;
         in zoneMPS : ZonesSystem::Zone;

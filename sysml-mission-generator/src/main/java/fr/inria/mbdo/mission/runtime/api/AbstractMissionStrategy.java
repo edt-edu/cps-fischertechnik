@@ -40,23 +40,8 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
         runtime.dispatch(event);
     }
 
+    @Override
     public String getActiveStateName() {
         return runtime.activeState().getName();
     }
-
-    protected static final class StateBox {
-        private RuntimeState state;
-
-        public StateBox() {
-        }
-
-        public void set(RuntimeState s) {
-            this.state = s;
-        }
-
-        public RuntimeState get() {
-            return state;
-        }
-    }
-
 }

@@ -48,7 +48,13 @@ public class DotTransformer {
         if (hasInitial) {
             sb.append("    node [shape=point, label=\"\"]; ").append(INIT_NODE).append(";\n");
         }
-        sb.append("    node [shape=circle];\n");
+
+        // Attached (main) machine node — visually distinct
+        mission.getAttachedMachine().ifPresent(main ->
+                sb.append("    node [shape=component, style=filled, fillcolor=lightblue]; \"")
+                  .append(main.name()).append("\";\n"));
+
+        sb.append("    node [shape=circle, style=\"\", fillcolor=\"\"];\n");
         for (StateIR state : states) {
             sb.append("    \"").append(state.getName()).append("\";\n");
         }

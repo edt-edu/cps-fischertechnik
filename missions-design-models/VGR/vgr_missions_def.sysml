@@ -1,4 +1,5 @@
 package VacuumGripperMissions {
+    private import Common::*;
     private import VacuumGripperSystem::*;
     private import VacuumGripperSystem::VacuumGripperCommands::*;
     private import VacuumGripperSystem::VacuumGripperMessages::*;
@@ -9,9 +10,11 @@ package VacuumGripperMissions {
     private import MultiProcessingStationSystem::MultiProcessingStationMessages::*;
     private import ScalarValues::*;
 
-    doc
-    /* Nominal mission scenario for VacuumGripper n°1 */
     state def VacuumGripper1NominalMission {
+        doc
+        /* Nominal mission scenario for VacuumGripper n°1 */
+
+        @MainMachineMetadata about vacuumGripper;
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
         in sortingLine : SortingLineSystem::SortingLine::SortingLineMachine;
         in zoneCB : ZonesSystem::Zone;
@@ -96,9 +99,11 @@ package VacuumGripperMissions {
         accept VGRCommandSuccessEventMessage via vacuumGripper do goToStandby then StandbyCMD;
     }
 
-    doc
-    /* Nominal mission scenario for VacuumGripper n°2 */
     state def VacuumGripper2NominalMission {
+        doc
+        /* Nominal mission scenario for VacuumGripper n°2 */
+
+        @MainMachineMetadata about vacuumGripper;
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
         in zoneCB : ZonesSystem::Zone;
         in zoneMPS : ZonesSystem::Zone;

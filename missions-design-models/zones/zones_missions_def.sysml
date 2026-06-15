@@ -1,9 +1,10 @@
 package ZoneMissions {
     private import ZonesSystem::ZonesMessages::*;
 
-    doc
-    /* Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission */
     state def ZoneMissionCBNominal {
+        doc
+        /* Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission */
+
         in vacuumGripper1 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
         in vacuumGripper2 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
 

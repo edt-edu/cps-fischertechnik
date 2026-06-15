@@ -2,6 +2,8 @@ package fr.inria.mbdo.mission.runtime.api;
 
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
+import java.util.List;
+
 public interface MachineMissionStrategy {
 
     /**
@@ -10,6 +12,13 @@ public interface MachineMissionStrategy {
      * @return the name of the mission
      */
     String getName();
+
+    /**
+     * Returns the list of machines involved in the mission.
+     *
+     * @return the list of machines
+     */
+    List<MachineAdapter> getMachines();
 
     /**
      * start the mission
@@ -33,4 +42,23 @@ public interface MachineMissionStrategy {
      * @param event the incoming event
      */
     void onEvent(Event event);
+
+    /**
+     * Returns the active state name.
+     *
+     * @return the name of the active state
+     */
+    String getActiveStateName();
+
+    /**
+     * @return the mission short description.
+     */
+    String getDescription();
+
+    /**
+     * Returns a graphviz représentation of the State Machine.
+     *
+     * @return the content of the .dot graph.
+     */
+    String getDotGraph();
 }

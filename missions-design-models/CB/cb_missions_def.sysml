@@ -1,11 +1,14 @@
 package ConveyorBeltMissions {
+    private import Common::*;
     private import ConveyorBeltSystem::*;
     private import ConveyorBeltSystem::ConveyorBeltCommands::*;
     private import ConveyorBeltSystem::ConveyorBeltMessages::*;
 
-    doc
-    /* Nominal mission for the conveyor belt */
     state def ConveyorBeltNominalMission {
+        doc
+        /* Nominal mission for the conveyor belt */
+
+        @MainMachineMetadata about conveyorBelt;
         in conveyorBelt : ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine;
         in vacuumGripper1 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
         in vacuumGripper2 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;

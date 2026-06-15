@@ -1,12 +1,14 @@
 package SortingLineMissions {
-    private import Common::Messages::*;
+    private import Common::*;
     private import SortingLineSystem::*;
     private import SortingLineSystem::SortingLineCommands::*;
     private import SortingLineSystem::SortingLineMessages::*;
 
-    doc
-    /* Nominal mission scenario for SortingLine */
     state def SortingLineNominalMission {
+        doc
+        /* Nominal mission scenario for SortingLine */
+
+        @MainMachineMetadata about sortingLine;
         in sortingLine : SortingLineSystem::SortingLine::SortingLineMachine;
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
 

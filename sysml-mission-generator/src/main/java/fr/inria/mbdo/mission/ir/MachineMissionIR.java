@@ -3,6 +3,7 @@ package fr.inria.mbdo.mission.ir;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 public final class MachineMissionIR extends ElementIR {
@@ -16,5 +17,9 @@ public final class MachineMissionIR extends ElementIR {
         this.defaultTransition = defaultTransition;
         this.states = states;
         this.machinesRefs = machinesRefs;
+    }
+
+    public Optional<MachineRefIR> getAttachedMachine() {
+        return machinesRefs.stream().filter(MachineRefIR::attached).findFirst();
     }
 }

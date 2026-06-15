@@ -5,6 +5,7 @@ import fr.inria.mbdo.mission.ir.*;
 import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
+import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
@@ -399,8 +400,11 @@ public class JavaTransformer {
 
             missionBuilder.addMethod(buildMissionConstructor(mission, states, transitions));
             missionBuilder.addMethod(buildGetNameMethod(mission));
+            missionBuilder.addMethod(buildGetMachinesMethod(mission));
+            missionBuilder.addMethod(buildGetDescriptionMethod(mission));
             missionBuilder.addField(buildDotSchemaField(mission));
             missionBuilder.addMethod(buildToDotMethod());
+            missionBuilder.addMethod(buildGetDotGraphMethod());
 
             javaFiles.put(mission.getQualifiedName(),
                     JavaFile.builder(typeTable.resolvePackageOrThrow(mission.getQualifiedName()),
@@ -610,6 +614,45 @@ public class JavaTransformer {
                 .addModifiers(Modifier.PUBLIC)
                 .returns(String.class)
                 .addStatement(STMT_RETURN_NAME, mission.getName())
+                .build();
+    }
+
+    private MethodSpec buildGetMachinesMethod(MachineMissionIR mission) {
+        ParameterizedTypeName returnType = ParameterizedTypeName.get(
+                ClassName.get(List.class), ClassName.get(MachineAdapter.class));
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("getMachines")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(returnType);
+
+        if (mission.getMachinesRefs().isEmpty()) {
+            builder.addStatement("return $T.of()", List.class);
+        } else {
+            String args = mission.getMachinesRefs().stream()
+                    .map(ref -> "this." + ref.name())
+                    .collect(Collectors.joining(", "));
+            builder.addStatement("return $T.<$T>of($L)", List.class, MachineAdapter.class, args);
+        }
+
+        return builder.build();
+    }
+
+    private MethodSpec buildGetDescriptionMethod(MachineMissionIR mission) {
+        String description = mission.getDocumentation() != null ? mission.getDocumentation() : "";
+        return MethodSpec.methodBuilder("getDescription")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(String.class)
+                .addStatement(STMT_RETURN_NAME, description)
+                .build();
+    }
+
+    private MethodSpec buildGetDotGraphMethod() {
+        return MethodSpec.methodBuilder("getDotGraph")
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(String.class)
+                .addStatement("return $N", DOT_SCHEMA_FIELD)
                 .build();
     }
 
