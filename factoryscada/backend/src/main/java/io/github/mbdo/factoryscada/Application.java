@@ -1,23 +1,21 @@
 package io.github.mbdo.factoryscada;
 
-import io.github.mbdo.factoryscada.mqtt.MqttGateway;
+import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 
 @SpringBootApplication
 public class Application {
 
-    private final MqttGateway mqttGateway;
+    private final MqttPublisherService mqttPublisher;
 
     @Autowired
-    public Application(MqttGateway mqttGateway) {
-        this.mqttGateway = mqttGateway;
+    public Application(MqttPublisherService mqttPublisher) {
+        this.mqttPublisher = mqttPublisher;
     }
 
     public static void main(String[] args) {
@@ -27,12 +25,12 @@ public class Application {
     // Send "started"  on boot
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
-        mqttGateway.sendToMqtt("started", "FactoryScada/Backend/internal/backendStatus");
+        mqttPublisher.publish("internal/backendStatus", "started");
     }
 
     // Send "stopped" on shutdown
     @EventListener
     public void onShutdown(ContextClosedEvent event) {
-        mqttGateway.sendToMqtt("stopped", "FactoryScada/Backend/internal/backendStatus");
+        mqttPublisher.publish( "internal/backendStatus", "stopped");
     }
 }
