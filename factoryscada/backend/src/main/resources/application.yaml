@@ -19,9 +19,19 @@ logging:
     io.github.mbdo.factoryscada.socket.SocketProtocol: INFO  
     io.github.mbdo.factoryscada.core.AbstractCommand: DEBUG
     io.github.mbdo.factoryscada.frontend: DEBUG
-    io.github.mbdo.factoryscada.mqtt.MqttGatewayService: INFO
+    io.github.mbdo.factoryscada.mqtt.io.github.mbdo.factoryscada.mqtt.MqttInboundRouterService: INFO
     io.github.mbdo.factoryscada.service.FactoryScada: DEBUG
     io.github.mbdo.factoryscada.service.dynamicmission: DEBUG
-
 log:
   limit: 1000
+
+# other factory specific configuration
+configuration:
+  mqtt:
+    inbound:
+      host: tcp://localhost:1883
+      topics: "#"
+    outbound:
+      host: tcp://localhost:1883
+      root-topic: "FactorySCADABackend"
+      topic-include-hostname: True
