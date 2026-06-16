@@ -10,20 +10,16 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 
+/**
+ * Receives Mqtt messages and routes them to other classes that have subscribed to given topics
+ */
 @Slf4j
 @Service
-public class MqttGatewayService implements MqttMessageRouter {
+public class MqttInboundRouterService implements MqttMessageRouter {
 
-  private final MqttGateway mqttGateway;
   private final List<Subscription> subscriptions = new CopyOnWriteArrayList<>();
 
-  @Autowired
-  public MqttGatewayService(MqttGateway mqttGateway) {
-    this.mqttGateway = mqttGateway;
-  }
-
-  public void sendToMqtt(String payload, String topic) {
-    mqttGateway.sendToMqtt(payload, topic);
+  public MqttInboundRouterService() {
   }
 
   @Override

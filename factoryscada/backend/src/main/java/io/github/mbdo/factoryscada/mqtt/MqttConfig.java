@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.mqtt;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,17 +15,34 @@ import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
+
+/**
+ * Configuration for 2 Mqtt clients,
+ *  one for Inbound (currently used for listening messages from other services)
+ *  one for outbound (currently used for publishing this application telemetry)
+ */
+@Getter
 @Slf4j
 @Configuration
 public class MqttConfig {
-    @Value("${configuration.mqttHost:tcp://localhost:1883}")
-    String mqttHost;
+    @Value("${configuration.mqtt.inbound.host:tcp://localhost:1883}")
+    String mqttInboundHost;
 
-    @Value("${configuration.mqttTopics:#}")
+    @Value("${configuration.mqtt.inbound.topics:#}")
     String[] mqttTopics;
+
+    @Value("${configuration.mqtt.outbound.host:tcp://localhost:1883}")
+    String mqttOutboundHost;
+
+    @Value("${configuration.mqtt.outbound.root-topic:FactorySCADABackend}")
+    private String outboundRootTopic;
+
+    @Value("${configuration.mqtt.outbound.topic-include-hostname:True}")
+    private Boolean outboundTopicIncludeHostname;
 
     @Bean
     public MessageChannel mqttOutboundChannel() {
@@ -39,7 +57,7 @@ public class MqttConfig {
     @Bean
     @ServiceActivator(inputChannel = "mqttOutboundChannel")
     public MqttPahoMessageHandler mqttOutbound() {
-        MqttPahoMessageHandler handler = new MqttPahoMessageHandler("clientId", mqttClientFactory());
+        MqttPahoMessageHandler handler = new MqttPahoMessageHandler("clientId-outbound", mqttOutboundClientFactory());
         handler.setAsync(true);
         handler.setDefaultQos(1);
         handler.setDefaultRetained(true);
@@ -49,7 +67,7 @@ public class MqttConfig {
     @Bean
     public MqttPahoMessageDrivenChannelAdapter mqttInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
-                new MqttPahoMessageDrivenChannelAdapter("clientId-inbound", mqttClientFactory(), mqttTopics);
+                new MqttPahoMessageDrivenChannelAdapter("clientId-inbound", mqttInboundClientFactory(), mqttTopics);
         adapter.setCompletionTimeout(5000);
         adapter.setQos(1);
         adapter.setOutputChannel(mqttInboundChannel());
@@ -59,30 +77,54 @@ public class MqttConfig {
 
     @Bean
     @ServiceActivator(inputChannel = "mqttInboundChannel")
-    public MessageHandler mqttInboundHandler(MqttGatewayService mqttGatewayService) {
+    public MessageHandler mqttInboundHandler(MqttInboundRouterService mqttInboundRouterService) {
         return message -> {
             String topic = message.getHeaders().get("mqtt_receivedTopic", String.class);
             if (topic == null) {
                 return;
             }
-            mqttGatewayService.onMessage(topic, toBytes(message));
+            mqttInboundRouterService.onMessage(topic, toBytes(message));
         };
     }
 
     @Bean
-    public MqttPahoClientFactory mqttClientFactory() {
+    public MqttPahoClientFactory mqttInboundClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
         MqttConnectOptions options = new MqttConnectOptions();
-        log.info("MQTT Connecting to {}", mqttHost);
-        options.setServerURIs(new String[] { mqttHost });
+        log.info("MQTT Inbound Connecting to {}", mqttInboundHost);
+        options.setServerURIs(new String[] {mqttInboundHost});
+        factory.setConnectionOptions(options);
+        return factory;
+    }
+    @Bean
+    public MqttPahoClientFactory mqttOutboundClientFactory() {
+        DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
+        MqttConnectOptions options = new MqttConnectOptions();
+        log.info("MQTT Outbound Connecting to {}", mqttOutboundHost);
+        options.setServerURIs(new String[] {mqttOutboundHost});
         factory.setConnectionOptions(options);
         return factory;
     }
 
-    public String getMqttHost() {
-        return mqttHost;
-    }
+    /**
+     * Use the configuration to compute the base topic for outbound mqtt messages sent by MqttPublisher
+     * @return
+     * @throws UnknownHostException
+     */
+    @Bean("mqttPublisherBaseTopic")
+    public String mqttPublisherBaseTopic() throws UnknownHostException {
+        String baseTopic = "";
+        if (outboundRootTopic != null && !outboundRootTopic.isBlank()) {
+            baseTopic = outboundRootTopic;
+        }
 
+        if (outboundTopicIncludeHostname) {
+            String hostname = InetAddress.getLocalHost().getHostName();
+            baseTopic = baseTopic + (!baseTopic.isBlank()? "/":"") + hostname;
+        }
+
+        return baseTopic;
+    }
     private static byte[] toBytes(Message<?> message) {
         Object payload = message.getPayload();
         if (payload instanceof byte[] bytes) {
