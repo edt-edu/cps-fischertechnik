@@ -2,14 +2,14 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacu
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.ExecutionStatusKind;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.VacuumGripperCommandKind;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import java.lang.Override;
 import java.lang.String;
 
 /**
  * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine
  */
-public abstract class AbstractVacuumGripperMachineAdapter extends AbstractAdapter implements VacuumGripperMachine {
+public abstract class AbstractVacuumGripperMachineAdapter extends AbstractMachineAdapter implements VacuumGripperMachine {
   protected volatile VacuumGripperCommandKind currentCommand;
 
   protected volatile ExecutionStatusKind executionStatus;

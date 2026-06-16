@@ -10,11 +10,11 @@ defined in `fr.inria.mbdo.mission.extensions.ren_mission_01`) and the **Spring a
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  Frontend (React/Angular)                                       │
-│  REST: /api/better-missions    STOMP: /app/better-missions/*    │
+│  REST: /api/mission-extension   STOMP: /app/mission-extension/* │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────────┐
-│  BetterMissionController + BetterMissionService                 │
+│  MissionExtensionController + MissionExtensionService           │
 │  Manages mission lifecycle (start/stop/override)                │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
@@ -55,15 +55,15 @@ Each adapter:
 
 **Current adapters:**
 
-| Bean Name                        | Interface                      | Physical Machine       |
-|----------------------------------|--------------------------------|------------------------|
-| `conveyorBeltAdapter`            | `ConveyorBeltMachine`          | Conveyor Belt          |
-| `sortingLineAdapter`             | `SortingLineMachine`           | Sorting Line           |
-| `multiProcessingStationAdapter`  | `MultiProcessingStationMachine`| Multi-Processing Stn   |
-| `vacuumGripper1Adapter`          | `VacuumGripperMachine`         | Vacuum Gripper 1       |
-| `vacuumGripper2Adapter`          | `VacuumGripperMachine`         | Vacuum Gripper 2       |
-| `zoneCBAdapter`                  | `Zone`                         | CB Exclusion Zone      |
-| `zoneMPSAdapter`                 | `Zone`                         | MPS Exclusion Zone     |
+| Bean Name                       | Interface                       | Physical Machine     |
+|---------------------------------|---------------------------------|----------------------|
+| `conveyorBeltAdapter`           | `ConveyorBeltMachine`           | Conveyor Belt        |
+| `sortingLineAdapter`            | `SortingLineMachine`            | Sorting Line         |
+| `multiProcessingStationAdapter` | `MultiProcessingStationMachine` | Multi-Processing Stn |
+| `vacuumGripper1Adapter`         | `VacuumGripperMachine`          | Vacuum Gripper 1     |
+| `vacuumGripper2Adapter`         | `VacuumGripperMachine`          | Vacuum Gripper 2     |
+| `zoneCBAdapter`                 | `Zone`                          | CB Exclusion Zone    |
+| `zoneMPSAdapter`                | `Zone`                          | MPS Exclusion Zone   |
 
 ### Mission Action Implementations (NoOp*)
 
@@ -84,15 +84,17 @@ To bridge a stub adapter to the legacy `FactoryScada` TCP socket layer:
 
 1. Inject `FactoryScada` into the adapter (or create a separate `@Service` bridge)
 2. In command methods (e.g. `moveToSensor()`), delegate to the legacy machine's command
-3. Subscribe to feedback from the socket layer and call `this.publish(new CBCommandSuccessEventMessage())` to advance the mission state machine
+3. Subscribe to feedback from the socket layer and call `this.publish(new CBCommandSuccessEventMessage())` to advance
+   the mission state machine
 
 Example:
 
 ```java
+
 @Override
 public void moveToSensor() {
     // Delegate to legacy layer
-    legacyConveyorBelt.executeCommand("moveToSensor", new GenericMachineCommandDTO<>(...));
+    legacyConveyorBelt.executeCommand("moveToSensor", new GenericMachineCommandDTO<>(...))
 }
 
 // Called when TCP feedback arrives

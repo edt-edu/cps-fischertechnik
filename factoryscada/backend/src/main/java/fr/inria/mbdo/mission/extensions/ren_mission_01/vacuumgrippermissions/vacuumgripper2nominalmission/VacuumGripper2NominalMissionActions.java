@@ -6,6 +6,7 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
 /**
  * From VacuumGripperMissions::VacuumGripper2NominalMission
+ * Nominal mission scenario for VacuumGripper n°2
  */
 public interface VacuumGripper2NominalMissionActions {
   /**

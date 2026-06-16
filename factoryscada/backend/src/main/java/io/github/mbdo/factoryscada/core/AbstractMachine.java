@@ -11,6 +11,7 @@ import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -22,6 +23,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 
 @Data
 @Slf4j
@@ -53,6 +56,9 @@ public abstract class AbstractMachine {
     @Getter
     @Setter
     protected boolean idle = true;
+
+    @Getter(AccessLevel.NONE)
+    private final List<BiConsumer<Boolean, String>> commandFeedbackListeners = new CopyOnWriteArrayList<>();
 
     public AbstractMachine(Parameters parameters) {
         this.name = parameters.name;
@@ -204,6 +210,16 @@ public abstract class AbstractMachine {
 
     protected void onMqttInputMessage(String inputName, JsonNode value) {
         log.debug("Ignoring input {}/{}", name, inputName);
+    }
+
+    public void addCommandFeedbackListener(BiConsumer<Boolean, String> listener) {
+        commandFeedbackListeners.add(listener);
+    }
+
+    public void notifyCommandFeedback(boolean done, String status) {
+        for (BiConsumer<Boolean, String> listener : commandFeedbackListeners) {
+            listener.accept(done, status);
+        }
     }
 
     public record Parameters(

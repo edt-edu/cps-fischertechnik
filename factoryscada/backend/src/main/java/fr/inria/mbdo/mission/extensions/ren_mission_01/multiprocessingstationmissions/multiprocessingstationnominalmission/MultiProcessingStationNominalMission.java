@@ -7,16 +7,19 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
+import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
 import java.lang.Override;
 import java.lang.String;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * From MultiProcessingStationMissions::MultiProcessingStationNominalMission
+ * Nominal mission for the multi-processing station
  */
 public class MultiProcessingStationNominalMission extends AbstractMissionStrategy {
   private static final Logger logger = LoggerFactory.getLogger("MultiProcessingStationNominalMission");
@@ -62,6 +65,7 @@ public class MultiProcessingStationNominalMission extends AbstractMissionStrateg
     processCMD.addTransition(new RuntimeTransition(MPSCommandSuccessEventMessage.class, event -> true, event -> this.actions.broadcastCompletion(event, this.multiProcessingStation, this.zoneMPS), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
+    multiProcessingStation.subscribe(AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent.class, this::onEvent);
     multiProcessingStation.subscribe(MPSCommandSuccessEventMessage.class, this::onEvent);
     zoneMPS.subscribe(AcquireResponseEventMessage.class, this::onEvent);
   }
@@ -71,7 +75,22 @@ public class MultiProcessingStationNominalMission extends AbstractMissionStrateg
     return "MultiProcessingStationNominalMission";
   }
 
+  @Override
+  public List<MachineAdapter> getMachines() {
+    return List.<MachineAdapter>of(this.multiProcessingStation, this.zoneMPS);
+  }
+
+  @Override
+  public String getDescription() {
+    return "Nominal mission for the multi-processing station";
+  }
+
   public static String toDot() {
+    return DOT_SCHEMA;
+  }
+
+  @Override
+  public String getDotGraph() {
     return DOT_SCHEMA;
   }
 }

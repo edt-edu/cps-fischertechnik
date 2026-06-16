@@ -5,6 +5,7 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
 /**
  * From ZoneMissions::ZoneMissionCBNominal
+ * Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission
  */
 public interface ZoneMissionCBNominalActions {
   /**

@@ -2,14 +2,14 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsy
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.customevents.AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import java.lang.Override;
 import java.lang.String;
 
 /**
  * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine
  */
-public abstract class AbstractMultiProcessingStationMachineAdapter extends AbstractAdapter implements MultiProcessingStationMachine {
+public abstract class AbstractMultiProcessingStationMachineAdapter extends AbstractMachineAdapter implements MultiProcessingStationMachine {
   protected volatile MultiProcessingStationCommandKind currentCommand;
 
   protected volatile boolean sensor_MPS_in;

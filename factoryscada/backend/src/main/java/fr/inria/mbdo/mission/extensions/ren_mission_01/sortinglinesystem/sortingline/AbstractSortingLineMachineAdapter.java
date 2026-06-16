@@ -1,17 +1,17 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLblueEqualstrueEvent;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLinEqualstrueEvent;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLredEqualstrueEvent;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLwhiteEqualstrueEvent;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLblueEqualsfalseEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLinEqualsfalseEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLredEqualsfalseEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sortinglinenominalmission.customevents.AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent;
+import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import java.lang.Override;
 import java.lang.String;
 
 /**
  * From SortingLineSystem::SortingLine::SortingLineMachine
  */
-public abstract class AbstractSortingLineMachineAdapter extends AbstractAdapter implements SortingLineMachine {
+public abstract class AbstractSortingLineMachineAdapter extends AbstractMachineAdapter implements SortingLineMachine {
   protected volatile boolean sensor_SL_in;
 
   protected volatile boolean sensor_SL_blue;
@@ -81,17 +81,17 @@ public abstract class AbstractSortingLineMachineAdapter extends AbstractAdapter 
   public abstract void stop();
 
   private void checkAndFireAcceptWhenEvents() {
-    if ((this.sensor_SL_blue == true)) {
-      publish(new AcceptWhenSortingLineSensorSLblueEqualstrueEvent());
+    if ((this.sensor_SL_red == false)) {
+      publish(new AcceptWhenSortingLineSensorSLredEqualsfalseEvent());
     }
-    if ((this.sensor_SL_red == true)) {
-      publish(new AcceptWhenSortingLineSensorSLredEqualstrueEvent());
+    if ((this.sensor_SL_blue == false)) {
+      publish(new AcceptWhenSortingLineSensorSLblueEqualsfalseEvent());
     }
-    if ((this.sensor_SL_in == true)) {
-      publish(new AcceptWhenSortingLineSensorSLinEqualstrueEvent());
+    if ((this.sensor_SL_in == false)) {
+      publish(new AcceptWhenSortingLineSensorSLinEqualsfalseEvent());
     }
-    if ((this.sensor_SL_white == true)) {
-      publish(new AcceptWhenSortingLineSensorSLwhiteEqualstrueEvent());
+    if ((this.sensor_SL_white == false)) {
+      publish(new AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent());
     }
   }
 }

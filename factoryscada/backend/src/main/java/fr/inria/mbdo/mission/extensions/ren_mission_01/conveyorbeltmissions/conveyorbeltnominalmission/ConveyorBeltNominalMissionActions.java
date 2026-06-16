@@ -6,6 +6,7 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
 /**
  * From ConveyorBeltMissions::ConveyorBeltNominalMission
+ * Nominal mission for the conveyor belt
  */
 public interface ConveyorBeltNominalMissionActions {
   /**

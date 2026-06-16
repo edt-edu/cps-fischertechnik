@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Minimal runtime instance for generated state machines.
@@ -17,6 +18,11 @@ public final class RuntimeInstance {
     private RuntimeDefinition def;
     private RuntimeState active;
     private static final Logger logger = LoggerFactory.getLogger(RuntimeInstance.class);
+    private Consumer<String> stateChangeListener = s -> {};
+
+    public void setStateChangeListener(Consumer<String> listener) {
+        this.stateChangeListener = listener;
+    }
 
     public synchronized void start() {
         if (def == null) {
@@ -30,7 +36,7 @@ public final class RuntimeInstance {
         }
         active = tr.targetState();
         logger.info("RuntimeInstance started in state {}", active.getName());
-        // run completion transitions if any
+        stateChangeListener.accept(active.getName());
         processCompletions();
     }
 
@@ -50,6 +56,7 @@ public final class RuntimeInstance {
             }
             active = tr.targetState();
             logger.info("Transitioned to {}", active.getName());
+            stateChangeListener.accept(active.getName());
             processCompletions();
         } else {
             logger.debug("No transition for event {} in state {}", event.getClass().getSimpleName(), active.getName());
@@ -69,6 +76,7 @@ public final class RuntimeInstance {
             }
             active = tr.targetState();
             logger.info("Completion transitioned to {}", active.getName());
+            stateChangeListener.accept(active.getName());
         }
     }
 

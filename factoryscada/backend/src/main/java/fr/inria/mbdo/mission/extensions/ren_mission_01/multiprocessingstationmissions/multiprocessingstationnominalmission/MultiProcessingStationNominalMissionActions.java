@@ -6,6 +6,7 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
 /**
  * From MultiProcessingStationMissions::MultiProcessingStationNominalMission
+ * Nominal mission for the multi-processing station
  */
 public interface MultiProcessingStationNominalMissionActions {
   /**

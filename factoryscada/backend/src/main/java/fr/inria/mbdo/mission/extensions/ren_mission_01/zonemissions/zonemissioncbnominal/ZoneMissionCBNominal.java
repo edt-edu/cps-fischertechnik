@@ -4,16 +4,19 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuu
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.ReleaseRequestEventMessage;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
+import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
 import java.lang.Override;
 import java.lang.String;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * From ZoneMissions::ZoneMissionCBNominal
+ * Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission
  */
 public class ZoneMissionCBNominal extends AbstractMissionStrategy {
   private static final Logger logger = LoggerFactory.getLogger("ZoneMissionCBNominal");
@@ -62,7 +65,22 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
     return "ZoneMissionCBNominal";
   }
 
+  @Override
+  public List<MachineAdapter> getMachines() {
+    return List.<MachineAdapter>of(this.vacuumGripper1, this.vacuumGripper2);
+  }
+
+  @Override
+  public String getDescription() {
+    return "Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission";
+  }
+
   public static String toDot() {
+    return DOT_SCHEMA;
+  }
+
+  @Override
+  public String getDotGraph() {
     return DOT_SCHEMA;
   }
 }

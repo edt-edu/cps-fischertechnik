@@ -50,24 +50,18 @@ export class DashboardLayoutComponent {
       {
         label: 'Mission',
         icon: 'pi pi-sitemap',
-        items: [
-          {
-            label: 'Legacy Mission',
-            icon: 'pi pi-sitemap',
-            routerLink: 'mission'
-          },
-          {
-            label: 'Better Missions',
-            icon: 'pi pi-share-alt',
-            routerLink: 'better-mission'
-          }
-        ]
+        routerLink: 'mission'
       },
       {
         label: 'Dynamic Mission',
         icon: 'pi pi-sitemap',
         routerLink: 'dynamic-mission'
-      }
+      },
+      {
+        label: 'Mission Extension',
+        icon: 'pi pi-sitemap',
+        routerLink: 'mission-extension'
+      },
     ];
   }
 }

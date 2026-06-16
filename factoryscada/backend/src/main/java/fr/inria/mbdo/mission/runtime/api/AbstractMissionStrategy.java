@@ -7,36 +7,52 @@ import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 import fr.inria.mbdo.mission.runtime.rtc.exec.RuntimeInstance;
 
+import java.time.LocalDateTime;
+import java.util.function.Consumer;
+
 public abstract class AbstractMissionStrategy implements MachineMissionStrategy {
 
     protected final RuntimeInstance runtime;
     private static final Logger logger = LoggerFactory.getLogger(AbstractMissionStrategy.class);
+    private Consumer<String> logListener = s -> {};
 
     protected AbstractMissionStrategy() {
         this.runtime = new RuntimeInstance();
     }
 
+    public void setLogListener(Consumer<String> listener) {
+        this.logListener = listener;
+        runtime.setStateChangeListener(state -> log("→ " + state));
+    }
+
+    private void log(String message) {
+        String entry = LocalDateTime.now() + " : [" + getName() + "] " + message;
+        logListener.accept(entry);
+    }
+
     @Override
     public void start() {
         logger.info("{} starting", getName());
+        log("started");
         runtime.start();
     }
 
     @Override
     public void stop() {
         logger.info("{} stopping", getName());
-        // no specific stop logic for now, just log
+        log("stopped");
     }
 
     @Override
     public void forceStop() {
         logger.info("{} force stopping", getName());
-        // no specific force stop logic for now, just log
+        log("force stopped");
     }
 
     @Override
     public void onEvent(Event event) {
         logger.info("{} received event {}", getName(), event.getClass().getSimpleName());
+        log("event: " + event.getClass().getSimpleName());
         runtime.dispatch(event);
     }
 
@@ -44,28 +60,4 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
         RuntimeState active = runtime.activeState();
         return active != null ? active.getName() : null;
     }
-
-    /**
-     * Returns the runtime instance for introspection (e.g. reading the state
-     * graph).
-     */
-    public RuntimeInstance getRuntime() {
-        return runtime;
-    }
-
-    protected static final class StateBox {
-        private RuntimeState state;
-
-        public StateBox() {
-        }
-
-        public void set(RuntimeState s) {
-            this.state = s;
-        }
-
-        public RuntimeState get() {
-            return state;
-        }
-    }
-
 }

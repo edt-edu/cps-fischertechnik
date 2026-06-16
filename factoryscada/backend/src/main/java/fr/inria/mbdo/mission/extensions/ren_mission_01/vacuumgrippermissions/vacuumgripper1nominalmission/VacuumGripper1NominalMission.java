@@ -11,16 +11,19 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.ReleaseRequestEventMessage;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
+import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
 import java.lang.Override;
 import java.lang.String;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * From VacuumGripperMissions::VacuumGripper1NominalMission
+ * Nominal mission scenario for VacuumGripper n°1
  */
 public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
   private static final Logger logger = LoggerFactory.getLogger("VacuumGripper1NominalMission");
@@ -97,7 +100,22 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
     return "VacuumGripper1NominalMission";
   }
 
+  @Override
+  public List<MachineAdapter> getMachines() {
+    return List.<MachineAdapter>of(this.vacuumGripper, this.sortingLine, this.zoneCB);
+  }
+
+  @Override
+  public String getDescription() {
+    return "Nominal mission scenario for VacuumGripper n°1";
+  }
+
   public static String toDot() {
+    return DOT_SCHEMA;
+  }
+
+  @Override
+  public String getDotGraph() {
     return DOT_SCHEMA;
   }
 }

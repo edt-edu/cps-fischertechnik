@@ -5,16 +5,19 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.convey
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.CBCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
+import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
 import java.lang.Override;
 import java.lang.String;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * From ConveyorBeltMissions::ConveyorBeltNominalMission
+ * Nominal mission for the conveyor belt
  */
 public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
   private static final Logger logger = LoggerFactory.getLogger("ConveyorBeltNominalMission");
@@ -60,6 +63,7 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
     movingToSensor.addTransition(new RuntimeTransition(CBCommandSuccessEventMessage.class, event -> true, event -> this.actions.notifyVgr1AndVgr2(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
+    conveyorBelt.subscribe(AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent.class, this::onEvent);
     conveyorBelt.subscribe(CBCommandSuccessEventMessage.class, this::onEvent);
   }
 
@@ -68,7 +72,22 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
     return "ConveyorBeltNominalMission";
   }
 
+  @Override
+  public List<MachineAdapter> getMachines() {
+    return List.<MachineAdapter>of(this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2);
+  }
+
+  @Override
+  public String getDescription() {
+    return "Nominal mission for the conveyor belt";
+  }
+
   public static String toDot() {
+    return DOT_SCHEMA;
+  }
+
+  @Override
+  public String getDotGraph() {
     return DOT_SCHEMA;
   }
 }

@@ -2,6 +2,7 @@ package io.github.mbdo.factoryscada.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.inria.mbdo.mission.runtime.config.MissionExtensionConfig;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.CommandFeedbackDTO;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
@@ -78,6 +79,9 @@ public class FactoryScada {
     private final ExecuterVisitor executerVisitor;
     private final CommandIdGenerator commandIdGenerator;
 
+    // Mission extension config
+    private final MissionExtensionConfig missionExtensionConfig;
+
     private final ApplicationContext applicationContext;
     private final int logLimit;
     public Map<String, Integer> sessionLogLimits = new ConcurrentHashMap<>();
@@ -94,7 +98,7 @@ public class FactoryScada {
     public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
             ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
             @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttGateway mqttGateway,
-            MqttGatewayService mqttGatewayService) {
+            MqttGatewayService mqttGatewayService, MissionExtensionConfig missionExtensionConfig) {
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -109,6 +113,7 @@ public class FactoryScada {
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
         this.frontendLogsList = new BoundedLogBuffer<String>(logLimit);
+        this.missionExtensionConfig = missionExtensionConfig;
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();
@@ -148,6 +153,9 @@ public class FactoryScada {
                 mqttGateway.sendToMqtt("unreachable", topic);
             }
         }
+
+        missionExtensionConfig.bindMachines(factoryScadaInstance.machines());
+        log.info("Mission extension adapters bound to {} machines", factoryScadaInstance.machines().size());
     }
 
     /**
@@ -281,6 +289,7 @@ public class FactoryScada {
                                 isDone,
                                 feedbackCommandId);
                         machine.setIdle(isDone);
+                        machine.notifyCommandFeedback(isDone, feedbackMessage);
                     });
 
                     break;

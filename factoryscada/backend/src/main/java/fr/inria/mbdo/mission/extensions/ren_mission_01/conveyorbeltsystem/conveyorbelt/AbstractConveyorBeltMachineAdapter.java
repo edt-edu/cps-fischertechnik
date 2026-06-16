@@ -3,14 +3,14 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conve
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.customevents.AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.ConveyorCommandKind;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.DirectionKind;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import java.lang.Override;
 import java.lang.String;
 
 /**
  * From ConveyorBeltSystem::ConveyorBelt::ConveyorBeltMachine
  */
-public abstract class AbstractConveyorBeltMachineAdapter extends AbstractAdapter implements ConveyorBeltMachine {
+public abstract class AbstractConveyorBeltMachineAdapter extends AbstractMachineAdapter implements ConveyorBeltMachine {
   protected volatile ConveyorCommandKind currentCommand;
 
   protected volatile DirectionKind direction;
