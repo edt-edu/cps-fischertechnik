@@ -9,6 +9,7 @@ import io.github.mbdo.factoryscada.domains.dynamicmission.DynamicMission;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
+import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.utilities.DistinctDebugLogger;
 import lombok.Getter;
@@ -17,9 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -64,6 +63,8 @@ public class Demo implements DynamicMission {
   private final DistinctDebugLogger processLogger;
   private final DistinctDebugLogger dumpStateLogger;
 
+  private final MqttPublisherService mqttPublisher;
+
   private enum VGR2Activity {
     MOVE_FROM_SL_TO_CB,
     MOVE_FROM_FEED_TO_SWAP,
@@ -82,14 +83,15 @@ public class Demo implements DynamicMission {
   }
 
   @Autowired
-  public Demo(FactoryScada factoryScada) {
-    this.factoryScada = factoryScada;
-    this.sortTokenLogger = new DistinctDebugLogger(log);
-    this.moveFromSLtoCBLogger = new DistinctDebugLogger(log);
-    this.moveTokenToMpsLogger = new DistinctDebugLogger(log);
-    this.processLogger = new DistinctDebugLogger(log);
-    this.moveFromFeedToSwapLogger = new DistinctDebugLogger(log);
-    this.dumpStateLogger = new DistinctDebugLogger(log);
+  public Demo(FactoryScada factoryScada, MqttPublisherService mqttPublisher) {
+      this.factoryScada = factoryScada;
+      this.mqttPublisher = mqttPublisher;
+      this.sortTokenLogger = new DistinctDebugLogger(log);
+      this.moveFromSLtoCBLogger = new DistinctDebugLogger(log);
+      this.moveTokenToMpsLogger = new DistinctDebugLogger(log);
+      this.processLogger = new DistinctDebugLogger(log);
+      this.moveFromFeedToSwapLogger = new DistinctDebugLogger(log);
+      this.dumpStateLogger = new DistinctDebugLogger(log);
   }
 
   @Override
@@ -173,6 +175,7 @@ public class Demo implements DynamicMission {
     log.info("Demo stopped");
   }
 
+  Map<String, Object> previousState = null;
   private void dumpState() {
     if (sortingLine.isIdle() && conveyorBelt.isIdle() && vacuumGripper1.isIdle() && vacuumGripper2.isIdle() && multiProcessingStation.isIdle()) {
       //locks
@@ -192,8 +195,41 @@ public class Demo implements DynamicMission {
         log.warn("MPS active: {}", mpsActive);
       }
     }
+    Map<String, Object> newState = buildState();
+    if(!newState.equals(previousState)) {
+      mqttPublisher.publish("internal/dynamicmission/Demo/state", newState);
+    }
   }
 
+  /**
+   * build a serializable map with all attributes used by the various functions
+   * @return a serializable map
+   */
+  private Map<String, Object> buildState() {
+    Map<String, Object> state = new LinkedHashMap<>();
+
+    state.put("slIsTokenAtFeed", sortingLine.isTokenAtFeed());
+    state.put("slIsIdle", sortingLine.isIdle());
+    state.put("slIsTokenAtWhite", sortingLine.isTokenAtWhite());
+    state.put("slIsTokenAtBlue", sortingLine.isTokenAtBlue());
+    state.put("slIsTokenAtRed", sortingLine.isTokenAtRed());
+    state.put("cbActive", cbActive);
+    state.put("cbIsIdle", conveyorBelt.isIdle());
+    state.put("cbFeedLocked", cbFeedLocked);
+    state.put("cbSwapLocked", cbSwapLocked);
+    state.put("cbIsTokenAtSwap", conveyorBelt.isTokenAtSwap());
+    state.put("cbIsTokenAtFeed", conveyorBelt.isTokenAtFeed());
+    state.put("mpsActive", mpsActive);
+    state.put("mpsIsIdle", multiProcessingStation.isIdle());
+    state.put("mpsInputLocked", mpsInputLocked);
+    state.put("mpsIsTokenAtFeed", multiProcessingStation.isTokenAtFeed());
+    state.put("vgr1Activity", vgr1Activity);
+    state.put("vgr1IsIdle",vacuumGripper1.isIdle());
+    state.put("vgr2Activity", vgr2Activity);
+    state.put("vgr2IsIdle",vacuumGripper2.isIdle());
+
+    return state;
+  }
   private void process() {
     if (multiProcessingStation.isTokenAtFeed() &&
         !mpsActive &&
