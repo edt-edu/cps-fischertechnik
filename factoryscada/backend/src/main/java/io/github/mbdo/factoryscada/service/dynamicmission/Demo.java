@@ -197,6 +197,7 @@ public class Demo implements DynamicMission {
     }
     Map<String, Object> newState = buildState();
     if(!newState.equals(previousState)) {
+      previousState = newState;
       mqttPublisher.publish("internal/dynamicmission/Demo/state", newState);
     }
   }
