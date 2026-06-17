@@ -79,10 +79,19 @@ package VacuumGripperSystem {
         private import VacuumGripperSystem::VacuumGripperCommands::*;
 
         part def VacuumGripperMachine specializes Machine {
-            perform action goToPosition : GoToPosition;
-            perform action move : Move;
-            perform action pick : Pick;
-            perform action place : Place;
+            perform action goToPosition : GoToPosition {
+                in targetPosition : Position3D;
+            }
+            perform action move : Move {
+                in startPosition : Position3D;
+                in endPosition : Position3D;
+            }
+            perform action pick : Pick {
+                in targetPosition : Position3D;
+            }
+            perform action place : Place {
+                in targetPosition : Position3D;
+            }
             perform action setup : Setup;
             perform action statusRequest : StatusRequest;
             perform action grip : Grip;

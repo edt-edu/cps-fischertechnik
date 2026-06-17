@@ -2,10 +2,9 @@ package fr.inria.mbdo.mission.generators;
 
 import com.palantir.javapoet.*;
 import fr.inria.mbdo.mission.ir.*;
-import fr.inria.mbdo.mission.runtime.api.AbstractAdapter;
+import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
-import fr.inria.mbdo.mission.runtime.api.MachineMissionStrategy;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.CompletionEvent;
@@ -89,6 +88,7 @@ public class JavaTransformer {
         result.putAll(generateMachinesInterfaces());
         result.putAll(generateMachineAbstractAdapters());
         result.putAll(generateEnumerations());
+        result.putAll(generateCustomTypes());
         result.putAll(generateMachineEventMessages());
         result.putAll(generateAcceptEventClasses());
         result.putAll(generateMachinesMissionsClasses());
@@ -104,7 +104,8 @@ public class JavaTransformer {
             if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
                 logger.info("Generating accept-event class for {}", triggerWhen.getQualifiedName());
 
-                TypeSpec.Builder eventBuilder = TypeSpec.classBuilder(typeTable.resolveClassNameOrThrow(trigger.getQualifiedName()))
+                TypeSpec.Builder eventBuilder = TypeSpec
+                        .classBuilder(typeTable.resolveClassNameOrThrow(trigger.getQualifiedName()))
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addSuperinterface(Event.class)
                         .addJavadoc(JAVADOC_ACCEPT_WHEN_EVENT, trigger.toString());
@@ -155,7 +156,7 @@ public class JavaTransformer {
                         .build());
             }
 
-            /* Implement here the operations corresponding to machine actions */
+            /* Implement here the operations corresponding to machine (performed) actions */
             for (Ref<MachineActionIR> actionRef : machine.getActions()) {
                 MachineActionIR machineActionIR = resolveActionIR(actionRef);
                 if (machineActionIR == null) {
@@ -171,6 +172,7 @@ public class JavaTransformer {
                         .addJavadoc(JAVADOC_FROM, machineActionIR.getQualifiedName(),
                                 machineActionIR.getDocumentation());
                 for (var parameter : machineActionIR.getParameters()) {
+                    logger.info("Adding parameter {} of type {}", parameter.name(), parameter.type());
                     actionBuilder.addParameter(
                             ParameterSpec.builder(typeTable.resolve(parameter.type()), parameter.name()).build());
                 }
@@ -201,7 +203,7 @@ public class JavaTransformer {
 
             TypeSpec.Builder adapterBuilder = TypeSpec.classBuilder(abstractAdapterName)
                     .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                    .superclass(AbstractAdapter.class)
+                    .superclass(AbstractMachineAdapter.class)
                     .addSuperinterface(machineInterfaceType)
                     .addJavadoc(JAVADOC_FROM, machine.getQualifiedName(), machine.getDocumentation());
 
@@ -229,7 +231,7 @@ public class JavaTransformer {
                         .build());
 
                 MethodSpec.Builder setterBuilder = MethodSpec.methodBuilder(
-                        "set" + toUpperFirst(attribute.name()))
+                                "set" + toUpperFirst(attribute.name()))
                         .addAnnotation(Override.class)
                         .addModifiers(Modifier.PUBLIC)
                         .addParameter(attrType, attribute.name())
@@ -333,7 +335,9 @@ public class JavaTransformer {
                 collectAttributeNamesFromExpression(op.getRightPart(), names);
             }
             case TriggerMachineAttributeExpressionIR attr -> names.add(attr.getAttributeRef().name());
-            case TriggerLiteralExpressionIR ignored -> { /* literals contribute no attribute names */ }
+            case TriggerLiteralExpressionIR ignored -> {
+                /* literals contribute no attribute names */
+            }
         }
     }
 
@@ -351,6 +355,27 @@ public class JavaTransformer {
             javaFiles.put(enumeration.getQualifiedName(),
                     JavaFile.builder(typeTable.resolvePackageOrThrow(enumeration.getQualifiedName()),
                             enumBuilder.build()).build());
+        }
+
+        return javaFiles;
+    }
+
+    private Map<String, JavaFile> generateCustomTypes() {
+        Map<String, JavaFile> javaFiles = new LinkedHashMap<>();
+
+        for (CustomTypeIR customType : irRepository.getCustomTypes().values()) {
+            logger.info("Generating customType for {}", customType.getQualifiedName());
+            TypeSpec.Builder recordBuilder = TypeSpec.recordBuilder(customType.getName())
+                    .addModifiers(Modifier.PUBLIC)
+                    .addJavadoc(JAVADOC_FROM, customType.getQualifiedName(), customType.getDocumentation())
+                    .recordConstructor(
+                            MethodSpec.constructorBuilder().addParameters(
+                                    customType.getParameters().stream().map(
+                                            p -> ParameterSpec.builder(typeTable.resolve(p.type()), p.name()).build()).toList()).build());
+            javaFiles.put(customType.getQualifiedName(),
+                    JavaFile.builder(typeTable.resolvePackageOrThrow(customType.getQualifiedName()),
+                                    recordBuilder.build())
+                            .build());
         }
 
         return javaFiles;
@@ -593,6 +618,14 @@ public class JavaTransformer {
                     continue;
                 }
 
+                if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
+                    MachineRefIR associatedMachine = triggerWhen.getAssociatedMachine();
+                    if (associatedMachine != null && associatedMachine.name().equals(machineRef.name())) {
+                        subscribedEventTypes.add(triggerType);
+                    }
+                    continue;
+                }
+
                 MachineMessageIR eventMessage = resolveTriggerMessage(transition);
                 if (eventMessage == null || !machineDefinesMessage(machineRef, machine, eventMessage)) {
                     continue;
@@ -705,7 +738,8 @@ public class JavaTransformer {
             }
 
             if (customAction.getName() == null) {
-                throw new IllegalStateException("Custom transition action has no name for transition " + transition.getQualifiedName());
+                throw new IllegalStateException(
+                        "Custom transition action has no name for transition " + transition.getQualifiedName());
             }
 
             customActionMethodNamesByQualifiedName.computeIfAbsent(customAction.getQualifiedName(), key -> {

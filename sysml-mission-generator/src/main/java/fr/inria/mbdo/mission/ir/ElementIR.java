@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public sealed class ElementIR
-        permits MachineMissionIR, MachineIR, EnumerationIR, MachineActionIR, MachineMessageIR,
+        permits MachineMissionIR, MachineIR, EnumerationIR, CustomTypeIR, MachineActionIR, MachineMessageIR,
         StateIR, TransitionGuardIR, TransitionIR, TransitionTriggerIR, TransitionActionIR {
 
     private final String namespace;

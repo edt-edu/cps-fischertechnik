@@ -17,6 +17,7 @@ public class IrRepository {
     private final Map<String, TransitionIR> transitions;
     private final Map<String, TransitionTriggerIR> triggers;
     private final Map<String, TransitionActionIR> transitionActions;
+    private final Map<String, CustomTypeIR> customTypes;
 
     private IrRepository(Builder b) {
         this.missions = Map.copyOf(b.missions);
@@ -28,6 +29,7 @@ public class IrRepository {
         this.transitions = Map.copyOf(b.transitions);
         this.triggers = Map.copyOf(b.triggers);
         this.transitionActions = Map.copyOf(b.transitionActions);
+        this.customTypes = Map.copyOf(b.customTypes);
     }
 
     public static class Builder {
@@ -40,6 +42,7 @@ public class IrRepository {
         private final Map<String, TransitionIR> transitions = new HashMap<>();
         private final Map<String, TransitionTriggerIR> triggers = new HashMap<>();
         private final Map<String, TransitionActionIR> transitionActions = new HashMap<>();
+        private final Map<String, CustomTypeIR> customTypes = new HashMap<>();
 
         public Builder add(ElementIR elementIR) {
             String name = elementIR.getQualifiedName();
@@ -47,6 +50,7 @@ public class IrRepository {
                 case MachineMissionIR mission -> missions.put(name, mission);
                 case MachineIR machine -> machines.put(name, machine);
                 case EnumerationIR enumeration -> enumerations.put(name, enumeration);
+                case CustomTypeIR customType -> customTypes.put(name, customType);
                 case MachineActionIR action -> actions.put(name, action);
                 case MachineMessageIR message -> messages.put(name, message);
                 case StateIR state -> states.put(name, state);

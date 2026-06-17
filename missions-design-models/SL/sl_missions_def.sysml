@@ -16,19 +16,19 @@ package SortingLineMissions {
         then Idle;
 
         state Idle;
-        accept when sortingLine.sensor_SL_in == true then SortCMD;
+        accept when sortingLine.sensor_SL_in == false do sortingLine.eject then SortCMD;
 
         state SortCMD;
         accept SLCommandSuccessEventMessage then SendColorUpdate;
 
         state SendColorUpdate;
-        accept when sortingLine.sensor_SL_blue == true
+        accept when sortingLine.sensor_SL_blue == false
             do send new BlueTokenAvailableEventMessage() to vacuumGripper
             then Idle;
-        accept when sortingLine.sensor_SL_white == true
+        accept when sortingLine.sensor_SL_white == false
             do send new WhiteTokenAvailableEventMessage() to vacuumGripper
             then Idle;
-        accept when sortingLine.sensor_SL_red == true
+        accept when sortingLine.sensor_SL_red == false
             do send new RedTokenAvailableEventMessage() to vacuumGripper
             then Idle;
     }

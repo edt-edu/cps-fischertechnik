@@ -21,7 +21,7 @@ package ZoneMissions {
         accept AcquireRequestEventMessage do action sendAcquireResponseEventMessage then IdleBusy;
 
         state IdleBusy;
-        accept ReleaseRequestEventMessage via vacuumGripper2 then IdleFree;
+        accept ReleaseRequestEventMessage then IdleFree;
     }
 
     // doc

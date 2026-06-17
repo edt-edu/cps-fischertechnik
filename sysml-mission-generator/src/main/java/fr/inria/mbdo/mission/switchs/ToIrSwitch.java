@@ -79,6 +79,25 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
     }
 
     @Override
+    public List<ElementIR> caseAttributeDefinition(AttributeDefinition object) {
+        logger.debug("Traversing attribute def: {}", object.getQualifiedName());
+        if (shouldSkipGeneration(object) || index.resolvePart(object.getQualifiedName()).isPresent()) {
+            return List.of();
+        }
+
+        List<ParameterIR> parameterIRs = new ArrayList<>();
+        for (Feature parameter : object.getFeature()) {
+            EList<Type> types = parameter.getType();
+            TypeRef paramType = (types == null || types.isEmpty())
+                    ? TypeRef.unknown(parameter.getQualifiedName() + "::" + parameter.getName())
+                    : toTypeRef(types);
+            parameterIRs.add(new ParameterIR(parameter.getName(), paramType));
+        }
+
+        return List.of(new CustomTypeIR(meta(object), parameterIRs));
+    }
+
+    @Override
     public List<ElementIR> caseStateDefinition(StateDefinition object) {
         logger.debug("[State]\tTraversing state def: {}", object.getQualifiedName());
         if (shouldSkipGeneration(object)) {
@@ -156,11 +175,11 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
         for (ReferenceUsage ref : object.getOwnedReference()) {
             String key = ref.getQualifiedName();
             boolean isMain = metadata.containsKey(key)
-                    && metadata.get(key).stream().filter(m ->
-                    (m.getOwnedRelationship() instanceof Annotation annotation)
+                    && metadata.get(key).stream()
+                    .filter(m -> (m.getOwnedRelationship() instanceof Annotation annotation)
                             && annotation.getAnnotatedElement().getQualifiedName().equals(key)
-                            && m.getType().getFirst().getName().equals(MAIN_MACHINE_METADATA_QNAME)
-            ).toList().size() == 1;
+                            && m.getType().getFirst().getName().equals(MAIN_MACHINE_METADATA_QNAME))
+                    .toList().size() == 1;
             machinesRefs.add(new MachineRefIR(ref.getName(), ref.getQualifiedName(), toTypeRef(ref.getType()), isMain));
         }
         return machinesRefs;
@@ -172,7 +191,8 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
         for (Membership member : object.getOwnedMembership()) {
             if (member.getOwnedRelatedElement() instanceof MetadataUsage mu) {
                 String key = member.getQualifiedName();
-                ArrayList<MetadataUsage> list = !result.containsKey(key) ? new ArrayList<>() : new ArrayList<>(result.get(key));
+                ArrayList<MetadataUsage> list = !result.containsKey(key) ? new ArrayList<>()
+                        : new ArrayList<>(result.get(key));
                 list.add(mu);
                 result.put(key, list);
             }
@@ -214,14 +234,16 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
 
         /* Build trigger */
         TransitionTriggerIR trigger = buildTriggerIR(transition);
-        if (trigger != null) nodes.add(trigger);
+        if (trigger != null)
+            nodes.add(trigger);
 
         /* Build guard (Not implemented yet, TODO) */
         TransitionGuardIR guard = null;
 
         /* Build action */
         TransitionActionIR transitionAction = buildTransitionAction(transition, machineRefs);
-        if (transitionAction != null) nodes.add(transitionAction);
+        if (transitionAction != null)
+            nodes.add(transitionAction);
 
         Ref<StateIR> sourceStateRef = sourceQName != null ? new Ref<>(sourceQName) : null;
         Ref<StateIR> targetStateRef = new Ref<>(targetQName);
@@ -432,8 +454,10 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
         if (actionUsage instanceof SendActionUsage sau) {
             EList<Type> payloadTypes = sau.getPayloadArgument().getType();
             if (payloadTypes == null || payloadTypes.isEmpty()) {
-                // Constructor expressions (e.g. `send new Foo() to x`) don't have their type list
-                // resolved by SySon — skip rather than crash; the send action won't be in the IR.
+                // Constructor expressions (e.g. `send new Foo() to x`) don't have their type
+                // list
+                // resolved by SySon — skip rather than crash; the send action won't be in the
+                // IR.
                 logger.warn("SendActionUsage has unresolvable payload type (constructor expression?), skipping: {}",
                         sau.eClass().getName());
             } else {

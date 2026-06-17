@@ -33,6 +33,14 @@ public class JavaLinker {
             typeTable.register(enumIr.getQualifiedName(), className);
         });
 
+        // Register customTypes
+        repository.getCustomTypes().values().forEach(customTypeIr -> {
+            ClassName className = ClassName.get(
+                    SysmlToJavaUtils.javaPackage(packagePrefix, customTypeIr.getNamespace()),
+                    SysmlToJavaUtils.javaClass(customTypeIr.getName()));
+            typeTable.register(customTypeIr.getQualifiedName(), className);
+        });
+
         // Register machines (adapter interfaces)
         repository.getMachines().values().forEach(machineIr -> {
             ClassName className = ClassName.get(
