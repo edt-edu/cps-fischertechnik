@@ -132,7 +132,10 @@ public class Demo implements DynamicMission {
 
   @Override
   public void stop() {
-    active = false;
+    if (active) {
+      active = false;
+      dumpState();
+    }
   }
 
   private void setup() {
@@ -208,13 +211,14 @@ public class Demo implements DynamicMission {
    */
   private Map<String, Object> buildState() {
     Map<String, Object> state = new LinkedHashMap<>();
-
+    state.put("active", active);
     state.put("slIsTokenAtFeed", sortingLine.isTokenAtFeed());
     state.put("slIsIdle", sortingLine.isIdle());
     state.put("slIsTokenAtWhite", sortingLine.isTokenAtWhite());
     state.put("slIsTokenAtBlue", sortingLine.isTokenAtBlue());
     state.put("slIsTokenAtRed", sortingLine.isTokenAtRed());
     state.put("cbActive", cbActive);
+    state.put("cbBroken", cbBroken);
     state.put("cbIsIdle", conveyorBelt.isIdle());
     state.put("cbFeedLocked", cbFeedLocked);
     state.put("cbSwapLocked", cbSwapLocked);
