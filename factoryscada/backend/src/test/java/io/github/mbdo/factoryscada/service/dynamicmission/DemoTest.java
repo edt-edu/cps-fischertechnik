@@ -9,6 +9,7 @@ import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstanc
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
+import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import org.junit.jupiter.api.Test;
 
@@ -124,8 +125,9 @@ class DemoTest {
     ConveyorBeltMachine conveyorBelt = mock(ConveyorBeltMachine.class);
     VacuumGripperMachine vacuumGripper1 = mock(VacuumGripperMachine.class);
     MultiProcessingStationMachine multiProcessingStation = mock(MultiProcessingStationMachine.class);
-    Demo demo = new Demo(factoryScada);
-    BrokenCBDemo brokenCBDemo = new BrokenCBDemo(factoryScada);
+    MqttPublisherService mqttPublisher = mock(MqttPublisherService.class);
+    Demo demo = new Demo(factoryScada, mqttPublisher);
+    BrokenCBDemo brokenCBDemo = new BrokenCBDemo(factoryScada, mqttPublisher);
     DynamicMissionService service = new DynamicMissionService(factoryScada, demo, brokenCBDemo);
     DemoFixture fixture = new DemoFixture(
         service,
