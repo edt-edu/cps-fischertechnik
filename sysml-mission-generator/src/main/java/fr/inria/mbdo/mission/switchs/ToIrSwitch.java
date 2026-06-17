@@ -61,18 +61,19 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
             actionRefs.add(new Ref<>(action.getQualifiedName()));
         }
 
+        List<Ref<MachineMessageIR>> messagesRefs = new ArrayList<>();
+      
         // TODO define messages sent by this machine ?
-        result.add(new MachineIR(meta(object), actionRefs, attributes, List.of()));
+        result.add(new MachineIR(meta(object), actionRefs, attributes, messagesRefs));
         return result;
     }
 
     @Override
     public List<ElementIR> caseItemDefinition(ItemDefinition object) {
         logger.debug("Traversing item def: {}", object.getQualifiedName());
-        if (shouldSkipGeneration(object) || index.resolvePart(object.getQualifiedName()).isPresent()) {
-            return List.of();
-        }
-        if (object.supertypes(true).stream().anyMatch(t -> t.getName().equals("EventMessage"))) {
+        if (!shouldSkipGeneration(object)
+                && index.resolvePart(object.getQualifiedName()).isEmpty()
+                && object.supertypes(true).stream().anyMatch(t -> t.getName().equals("EventMessage"))) {
             return List.of(new MachineMessageIR(meta(object)));
         }
         return List.of();

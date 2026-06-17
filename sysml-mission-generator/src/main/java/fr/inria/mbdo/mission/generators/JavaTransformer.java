@@ -62,8 +62,6 @@ public class JavaTransformer {
     private static final String STMT_SET_ENTRY_TRANSITION = "this.runtime.setEntryTransition(new $T($T.class, $L, $L, $N))";
     private static final String STMT_SUBSCRIBE = "$N.subscribe($T.class, this::onEvent)";
     private static final String STMT_RETURN_NAME = "return $S";
-    private static final String STMT_DECLARE_ACCEPT_EVENT = "$T acceptWhenEvent = null";
-    private static final String STMT_PUBLISH_ACCEPT_EVENT = "publish(acceptWhenEvent)";
 
     private static final String EXPR_CUSTOM_ACTION_PREFIX = "event -> this.actions.";
     private static final String EXPR_MACHINE_ACTION_WITH_EVENT = "event -> this.%s.%s(event)";
@@ -104,15 +102,15 @@ public class JavaTransformer {
             if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
                 logger.info("Generating accept-event class for {}", triggerWhen.getQualifiedName());
 
-                TypeSpec.Builder eventBuilder = TypeSpec
+                TypeSpec eventClass = TypeSpec
                         .classBuilder(typeTable.resolveClassNameOrThrow(trigger.getQualifiedName()))
                         .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                         .addSuperinterface(Event.class)
-                        .addJavadoc(JAVADOC_ACCEPT_WHEN_EVENT, trigger.toString());
+                        .addJavadoc(JAVADOC_ACCEPT_WHEN_EVENT, trigger.toString()).build();
 
                 javaFiles.put(triggerWhen.getQualifiedName(),
                         JavaFile.builder(typeTable.resolvePackageOrThrow(trigger.getQualifiedName()),
-                                eventBuilder.build()).build());
+                                eventClass).build());
             }
         }
 
@@ -370,8 +368,10 @@ public class JavaTransformer {
                     .addJavadoc(JAVADOC_FROM, customType.getQualifiedName(), customType.getDocumentation())
                     .recordConstructor(
                             MethodSpec.constructorBuilder().addParameters(
-                                    customType.getParameters().stream().map(
-                                            p -> ParameterSpec.builder(typeTable.resolve(p.type()), p.name()).build()).toList()).build());
+                                            customType.getParameters().stream().map(
+                                                            p -> ParameterSpec.builder(typeTable.resolve(p.type()), p.name()).build())
+                                                    .toList())
+                                    .build());
             javaFiles.put(customType.getQualifiedName(),
                     JavaFile.builder(typeTable.resolvePackageOrThrow(customType.getQualifiedName()),
                                     recordBuilder.build())
@@ -388,6 +388,7 @@ public class JavaTransformer {
             TypeSpec messageClass = TypeSpec.classBuilder(message.getName())
                     .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                     .addSuperinterface(Event.class).build();
+
             javaFiles.put(message.getQualifiedName(), JavaFile
                     .builder(typeTable.resolvePackageOrThrow(message.getQualifiedName()), messageClass).build());
         }
@@ -603,6 +604,51 @@ public class JavaTransformer {
         }
     }
 
+    private Map<TypeName, MachineRefIR> resolveEventEmitters(List<MachineRefIR> machineRefs) {
+        Map<TypeName, MachineRefIR> emitters = new LinkedHashMap<>();
+
+        for (MachineRefIR machineRef : machineRefs) {
+            MachineIR machine = resolveMachine(machineRef);
+
+            for (MachineMessageIR message : irRepository.getMessages().values()) {
+                String[] machineNamespaceSplit = machine.getNamespace().split("::");
+                String[] messageNamespaceSplit = message.getNamespace().split("::");
+                if (machineNamespaceSplit.length > 0
+                        && messageNamespaceSplit.length > 0
+                        && machineNamespaceSplit[0].equals(messageNamespaceSplit[0])) {
+                    emitters.put(typeTable.resolveClassNameOrThrow(message.getQualifiedName()), machineRef);
+                }
+            }
+
+            for (TransitionTriggerWhenIR trigger : resolveAcceptWhenTriggersForMachine(machine)) {
+                emitters.put(typeTable.resolveClassNameOrThrow(trigger.getQualifiedName()), machineRef);
+            }
+        }
+
+        return emitters;
+    }
+
+//    private void emitEventSubscriptions(MethodSpec.Builder constructorBuilder, List<MachineRefIR> machineRefs,
+//                                        List<TransitionIR> transitions) {
+//        constructorBuilder.addComment(COMMENT_SUBSCRIPTIONS);
+//
+//        Map<TypeName, MachineRefIR> emitters = resolveEventEmitters(machineRefs);
+//        Set<TypeName> eventTypes = new LinkedHashSet<>();
+//
+//        for (TransitionIR transition : transitions) {
+//            if (resolveTriggerIR(transition) != null)
+//                eventTypes.add(resolveTrigger(transition));
+//        }
+//
+//        for (TypeName eventType : eventTypes) {
+//            if (!eventType.equals(TypeName.get(CompletionEvent.class)) && emitters.containsKey(eventType)) {
+//                MachineRefIR machineRef = emitters.get(eventType);
+//                constructorBuilder.addStatement(STMT_SUBSCRIBE,
+//                        machineRef.name(), eventType);
+//            }
+//        }
+//    }
+
     private void emitEventSubscriptions(MethodSpec.Builder constructorBuilder, List<MachineRefIR> machineRefs,
                                         List<TransitionIR> transitions) {
         constructorBuilder.addComment(COMMENT_SUBSCRIPTIONS);
@@ -627,11 +673,15 @@ public class JavaTransformer {
                 }
 
                 MachineMessageIR eventMessage = resolveTriggerMessage(transition);
-                if (eventMessage == null || !machineDefinesMessage(machineRef, machine, eventMessage)) {
-                    continue;
+                if (eventMessage != null) {
+                    String[] machineNamespaceSplit = machine.getNamespace().split("::");
+                    String[] messageNamespaceSplit = eventMessage.getNamespace().split("::");
+                    if (machineNamespaceSplit.length > 0
+                            && messageNamespaceSplit.length > 0
+                            && machineNamespaceSplit[0].equals(messageNamespaceSplit[0])) {
+                        subscribedEventTypes.add(triggerType);
+                    }
                 }
-
-                subscribedEventTypes.add(triggerType);
             }
 
             for (TypeName subscribedEventType : subscribedEventTypes) {
@@ -825,58 +875,6 @@ public class JavaTransformer {
         return trigger;
     }
 
-    private boolean machineDefinesMessage(MachineRefIR machineRef, MachineIR machine, MachineMessageIR message) {
-        if (machine == null || message == null) {
-            return false;
-        }
-
-        if (machine.getMessages().stream()
-                .anyMatch(machineMessage -> message.getQualifiedName().equals(machineMessage.qName()))) {
-            return true;
-        }
-
-        List<String> ownershipSignals = getMachineSignals(machineRef, machine);
-
-        String messageQualifiedName = message.getQualifiedName() == null ? ""
-                : message.getQualifiedName().toLowerCase(Locale.ROOT);
-        String messagePackage = typeTable.resolvePackage(message.getQualifiedName()).orElse("");
-        messagePackage = messagePackage.toLowerCase(Locale.ROOT);
-        for (String ownershipSignal : ownershipSignals) {
-            if (ownershipSignal == null || ownershipSignal.isBlank()) {
-                continue;
-            }
-            String normalizedSignal = ownershipSignal.toLowerCase(Locale.ROOT);
-            if (messageQualifiedName.contains(normalizedSignal) || messagePackage.contains(normalizedSignal)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static @NonNull List<String> getMachineSignals(MachineRefIR machineRef, MachineIR machine) {
-        List<String> ownershipSignals = new ArrayList<>();
-        if (machineRef != null && machineRef.name() != null) {
-            ownershipSignals.add(machineRef.name());
-        }
-        if (machine.getName() != null) {
-            ownershipSignals.add(machine.getName());
-        }
-
-        String machineTypeQName = machineRef != null && machineRef.type() != null ? machineRef.type().qualifiedName()
-                : null;
-        if (machineTypeQName != null && !machineTypeQName.isBlank()) {
-            int sysmlSeparator = machineTypeQName.lastIndexOf("::");
-            int dotSeparator = machineTypeQName.lastIndexOf('.');
-            int lastNamespaceSeparator = Math.max(sysmlSeparator, dotSeparator);
-            String machineTypeSimpleName = lastNamespaceSeparator >= 0
-                    ? machineTypeQName.substring(lastNamespaceSeparator + (sysmlSeparator >= dotSeparator ? 2 : 1))
-                    : machineTypeQName;
-            ownershipSignals.add(machineTypeSimpleName);
-        }
-        return ownershipSignals;
-    }
-
     private TypeName resolveTrigger(TransitionIR transition) {
         TransitionTriggerIR trigger = resolveTriggerIR(transition);
         if (trigger == null) {
@@ -949,18 +947,24 @@ public class JavaTransformer {
                 }
             }
             case TransitionActionSendToIR sendToAction -> {
-                String receiverName = sendToAction.getTo() != null ? sendToAction.getTo().name() : null;
                 MachineMessageRefIR messageRef = sendToAction.getMessage();
-                if (receiverName == null || receiverName.isBlank()) {
-                    throw new IllegalStateException("Transition " + transition.getQualifiedName()
-                            + " has a send action without a receiver machine");
-                }
                 if (messageRef == null) {
                     throw new IllegalStateException("Transition " + transition.getQualifiedName()
                             + " has a send action without a resolvable message");
                 }
 
                 TypeName messageType = typeTable.resolve(messageRef.type());
+
+                Map<TypeName, MachineRefIR> emitters = resolveEventEmitters(machineRefs);
+                MachineRefIR machineRef = emitters.get(messageType);
+                if (machineRef == null) {
+                    throw new IllegalStateException("Transition " + transition.getQualifiedName()
+                            + " has a send action without a resolvable emitter");
+                }
+
+                String receiverName = machineRef.name();
+
+
                 yield CodeBlock.of(String.format(EXPR_SEND_TO_PUBLISH, receiverName), messageType);
             }
         };

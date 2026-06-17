@@ -19,9 +19,6 @@ package SortingLineMissions {
         accept when sortingLine.sensor_SL_in == false do sortingLine.eject then SortCMD;
 
         state SortCMD;
-        accept SLCommandSuccessEventMessage then SendColorUpdate;
-
-        state SendColorUpdate;
         accept when sortingLine.sensor_SL_blue == false
             do send new BlueTokenAvailableEventMessage() to vacuumGripper
             then Idle;

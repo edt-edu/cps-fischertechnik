@@ -5,9 +5,6 @@ package ZoneMissions {
         doc
         /* Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission */
 
-        in vacuumGripper1 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
-        in vacuumGripper2 : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
-
         action def sendAcquireResponseEventMessage {
             in request : AcquireRequestEventMessage;
 
