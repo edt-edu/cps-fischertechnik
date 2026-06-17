@@ -2,12 +2,13 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.AbstractSortingLineMachineAdapter;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.SLCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
+import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Adapter for the Sorting Line machine.
@@ -19,20 +20,27 @@ import java.util.Map;
 public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(SortingLineAdapterImpl.class);
+
+    @Getter
     private boolean isExecuting = false;
-    private Map<String, Runnable> commands = Map.of();
+
+    private SortingLineMachine realMachine;
 
     public SortingLineAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
         mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 
-    public void bindCommands(Map<String, Runnable> commands) {
-        this.commands = Map.copyOf(commands);
+    public void bindRealMachine(SortingLineMachine machine) {
+        this.realMachine = machine;
     }
 
-    private void dispatch(String cmd) {
-        commands.getOrDefault(cmd, () -> log.debug("[{}] {} not bound to machine", id, cmd)).run();
+    public void commandFeedback(boolean done, String status) {
+        log.info("[{}] commandFeedback({}, {})", id, done, status);
+        if (done) {
+            isExecuting = false;
+            publish(new SLCommandSuccessEventMessage());
+        }
     }
 
     private void onMqttMessage(String topic, String payload) {
@@ -46,7 +54,7 @@ public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
                 case "internal" -> {
                     if ("isExecuting".equals(inputName)) {
                         log.debug("Updating idle state for machine {} to {}", id, !value.asBoolean());
-                        this.isExecuting = !value.asBoolean();
+                        isExecuting = !value.asBoolean();
                     }
                 }
                 case "input" -> {
@@ -66,12 +74,15 @@ public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
     @Override
     public void eject() {
         log.info("[{}] eject()", id);
-        dispatch("eject");
+        isExecuting = true;
+        realMachine.eject();
     }
 
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
-        dispatch("stop");
+        isExecuting = true;
+        realMachine.stop();
+
     }
 }

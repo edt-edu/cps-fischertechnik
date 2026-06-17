@@ -1,6 +1,5 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
@@ -19,8 +18,7 @@ public class ZoneMissionCBNominalActionsImpl implements ZoneMissionCBNominalActi
     private static final Logger log = LoggerFactory.getLogger(ZoneMissionCBNominalActionsImpl.class);
 
     @Override
-    public void sendAcquireResponseEventMessage(Event event, VacuumGripperMachine vacuumGripper1,
-                                                VacuumGripperMachine vacuumGripper2) {
+    public void sendAcquireResponseEventMessage(Event event) {
         log.info("ZoneCB sendAcquireResponseEventMessage triggered by {}", event.getClass().getSimpleName());
     }
 }

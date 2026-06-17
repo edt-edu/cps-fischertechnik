@@ -16,8 +16,18 @@ public class VacuumGripper2NominalMissionActionsImpl implements VacuumGripper2No
     private static final Logger log = LoggerFactory.getLogger(VacuumGripper2NominalMissionActionsImpl.class);
 
     @Override
+    public void gotoMPSin(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
+        
+    }
+
+    @Override
     public void placeMPSin(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
         log.info("VacuumGripper2 placeMPSin triggered by {}", event.getClass().getSimpleName());
+    }
+
+    @Override
+    public void gotoCBSwap(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
+
     }
 
     @Override
@@ -31,7 +41,7 @@ public class VacuumGripper2NominalMissionActionsImpl implements VacuumGripper2No
     }
 
     @Override
-    public void goToStandby(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
-        log.info("VacuumGripper2 goToStandby triggered by {}", event.getClass().getSimpleName());
+    public void gotoStandby(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS) {
+
     }
 }

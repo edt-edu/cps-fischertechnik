@@ -1,6 +1,7 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.ExecutionStatusKind;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.Position3D;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.VacuumGripperCommandKind;
 import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import java.lang.Override;
@@ -138,25 +139,25 @@ public abstract class AbstractVacuumGripperMachineAdapter extends AbstractMachin
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::goToPosition
    */
   @Override
-  public abstract void goToPosition();
+  public abstract void goToPosition(Position3D targetPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::move
    */
   @Override
-  public abstract void move();
+  public abstract void move(Position3D startPosition, Position3D endPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::pick
    */
   @Override
-  public abstract void pick();
+  public abstract void pick(Position3D targetPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::place
    */
   @Override
-  public abstract void place();
+  public abstract void place(Position3D targetPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::setup

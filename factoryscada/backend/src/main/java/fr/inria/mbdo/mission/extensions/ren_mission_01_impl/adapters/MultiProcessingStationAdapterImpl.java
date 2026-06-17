@@ -3,12 +3,13 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters;
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.AbstractMultiProcessingStationMachineAdapter;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.MPSCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
+import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Adapter for the Multi-Processing Station machine.
@@ -20,20 +21,27 @@ import java.util.Map;
 public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingStationMachineAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(MultiProcessingStationAdapterImpl.class);
+
+    @Getter
     private boolean isExecuting = false;
-    private Map<String, Runnable> commands = Map.of();
+
+    private MultiProcessingStationMachine realMachine;
 
     public MultiProcessingStationAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
         mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 
-    public void bindCommands(Map<String, Runnable> commands) {
-        this.commands = Map.copyOf(commands);
+    public void bindRealMachine(MultiProcessingStationMachine machine) {
+        this.realMachine = machine;
     }
 
-    private void dispatch(String cmd) {
-        commands.getOrDefault(cmd, () -> log.debug("[{}] {} not bound to machine", id, cmd)).run();
+    public void commandFeedback(boolean done, String status) {
+        log.info("[{}] commandFeedback({}, {})", id, done, status);
+        if (done) {
+            isExecuting = false;
+            publish(new MPSCommandSuccessEventMessage());
+        }
     }
 
     private void onMqttMessage(String topic, String payload) {
@@ -46,7 +54,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
                 case "internal" -> {
                     if ("isExecuting".equals(inputName)) {
                         log.debug("Updating idle state for machine {} to {}", id, !value.asBoolean());
-                        this.isExecuting = !value.asBoolean();
+                        isExecuting = !value.asBoolean();
                     }
                 }
                 case "input" -> {
@@ -68,104 +76,121 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     }
 
     @Override
-    public void armMove() {
-        log.info("[{}] armMove()", id);
-        dispatch("armMove");
-    }
-
-    @Override
-    public void ovenLoad() {
-        log.info("[{}] ovenLoad()", id);
-        dispatch("ovenLoad");
-    }
-
-    @Override
-    public void turntableEject() {
-        log.info("[{}] turntableEject()", id);
-        dispatch("turntableEject");
-    }
-
-    @Override
-    public void turntableRotate() {
-        log.info("[{}] turntableRotate()", id);
-        dispatch("turntableRotate");
-    }
-
-    @Override
-    public void armPick() {
-        log.info("[{}] armPick()", id);
-        dispatch("armPick");
-    }
-
-    @Override
     public void stop() {
         log.info("[{}] stop()", id);
-        dispatch("stop");
-    }
-
-    @Override
-    public void ovenHeat() {
-        log.info("[{}] ovenHeat()", id);
-        dispatch("ovenHeat");
-    }
-
-    @Override
-    public void conveyorMoveOut() {
-        log.info("[{}] conveyorMoveOut()", id);
-        dispatch("conveyorMoveOut");
-    }
-
-    @Override
-    public void ovenUnload() {
-        log.info("[{}] ovenUnload()", id);
-        dispatch("ovenUnload");
-    }
-
-    @Override
-    public void ovenProcess() {
-        log.info("[{}] ovenProcess()", id);
-        dispatch("ovenProcess");
-    }
-
-    @Override
-    public void conveyorMoveToSensor() {
-        log.info("[{}] conveyorMoveToSensor()", id);
-        dispatch("conveyorMoveToSensor");
-    }
-
-    @Override
-    public void process1() {
-        log.info("[{}] process1()", id);
-        dispatch("process1");
-    }
-
-    @Override
-    public void sawCut() {
-        log.info("[{}] sawCut()", id);
-        dispatch("sawCut");
-    }
-
-    @Override
-    public void armPlace() {
-        log.info("[{}] armPlace()", id);
-        dispatch("armPlace");
+        isExecuting = true;
+        realMachine.stop();
     }
 
     @Override
     public void setup() {
         log.info("[{}] setup()", id);
-        dispatch("setup");
+        isExecuting = true;
+        realMachine.setup();
+    }
+
+    @Override
+    public void process1() {
+        log.info("[{}] process1()", id);
+        isExecuting = true;
+        realMachine.process1();
     }
 
     @Override
     public void process() {
         log.info("[{}] process()", id);
-        dispatch("process");
+        isExecuting = true;
+        realMachine.process();
     }
 
     @Override
     public void moveToSafePosition() {
         log.info("[{}] moveToSafePosition()", id);
-        dispatch("moveToSafePosition");
+        isExecuting = true;
+        realMachine.moveToSafePosition();
+    }
+
+    @Override
+    public void ovenLoad() {
+        log.info("[{}] ovenLoad()", id);
+        isExecuting = true;
+        realMachine.ovenLoad();
+    }
+
+    @Override
+    public void ovenUnload() {
+        log.info("[{}] ovenUnload()", id);
+        isExecuting = true;
+        realMachine.ovenUnload();
+    }
+
+    @Override
+    public void ovenHeat() {
+        log.info("[{}] ovenHeat()", id);
+        isExecuting = true;
+        realMachine.ovenHeat();
+    }
+
+    @Override
+    public void ovenProcess() {
+        log.info("[{}] ovenProcess()", id);
+        isExecuting = true;
+        realMachine.ovenProcess();
+    }
+
+    @Override
+    public void armMove() {
+        log.info("[{}] armMove()", id);
+        isExecuting = true;
+        realMachine.armMove();
+    }
+
+    @Override
+    public void armPick() {
+        log.info("[{}] armPick()", id);
+        isExecuting = true;
+        realMachine.armPick();
+    }
+
+    @Override
+    public void armPlace() {
+        log.info("[{}] armPlace()", id);
+        isExecuting = true;
+        realMachine.armPlace();
+    }
+
+    @Override
+    public void turntableRotate() {
+        log.info("[{}] turntableRotate()", id);
+        isExecuting = true;
+        realMachine.turntableRotate();
+    }
+
+    @Override
+    public void turntableEject() {
+        log.info("[{}] turntableEject()", id);
+        isExecuting = true;
+        realMachine.turntableEject();
+    }
+
+    @Override
+    public void conveyorMoveToSensor() {
+        log.info("[{}] conveyorMoveToSensor()", id);
+        isExecuting = true;
+        realMachine.conveyorMoveToSensor();
+    }
+
+    @Override
+    public void conveyorMoveOut() {
+        log.info("[{}] conveyorMoveOut()", id);
+        isExecuting = true;
+        realMachine.conveyorMoveOut();
+    }
+
+    @Override
+    public void sawCut() {
+        log.info("[{}] sawCut()", id);
+        isExecuting = true;
+        realMachine.sawCut();
     }
 }

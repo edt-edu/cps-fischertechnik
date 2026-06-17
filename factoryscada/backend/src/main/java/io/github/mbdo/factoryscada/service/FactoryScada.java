@@ -109,8 +109,8 @@ public class FactoryScada {
         this.commandPlaceholder = commandPlaceholder();
         this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
-        this.frontendLogsList = new BoundedLogBuffer<String>(logLimit);
-        this.missionExtensionConfig = missionExtensionConfig;
+        this.frontendLogsList = new BoundedLogBuffer<>(logLimit);
+        this.missionExtensionConfig = missionExtensionConfig.withMachineMapping(this.factoryScadaInstance.machines());
 
         // Initialization and validation of mission graph
         this.missionsParallelized_dto = missionsParallelized();

@@ -3,13 +3,13 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters;
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.AbstractConveyorBeltMachineAdapter;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.ConveyorCommandKind;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.CBCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
+import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Adapter for the Conveyor Belt machine.
@@ -25,19 +25,23 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
     @Getter
     private boolean isExecuting = false;
 
-    private Map<String, Runnable> commands = Map.of();
+    private ConveyorBeltMachine realMachine;
 
     public ConveyorBeltAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
         mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 
-    public void bindCommands(Map<String, Runnable> commands) {
-        this.commands = Map.copyOf(commands);
+    public void bindRealMachine(ConveyorBeltMachine machine) {
+        this.realMachine = machine;
     }
 
-    private void dispatch(String cmd) {
-        commands.getOrDefault(cmd, () -> log.debug("[{}] {} not bound to machine", id, cmd)).run();
+    public void commandFeedback(boolean done, String status) {
+        log.info("[{}] commandFeedback({}, {})", id, done, status);
+        if (done) {
+            isExecuting = false;
+            publish(new CBCommandSuccessEventMessage());
+        }
     }
 
     protected void onMqttMessage(String topic, String payload) {
@@ -51,7 +55,7 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
                 case "internal" -> {
                     if ("isExecuting".equals(inputName)) {
                         log.debug("Updating idle state for machine {} to {}", id, !value.asBoolean());
-                        this.isExecuting = !value.asBoolean();
+                        isExecuting = !value.asBoolean();
                     }
                 }
                 case "input" -> {
@@ -76,30 +80,37 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
-        dispatch("stop");
+        isExecuting = true;
+        isExecuting = true;
+        realMachine.stop();
     }
 
     @Override
     public void moveNbSteps() {
         log.info("[{}] moveNbSteps()", id);
-        dispatch("moveNbSteps");
+        isExecuting = true;
+        isExecuting = true;
+        realMachine.moveNbSteps();
     }
 
     @Override
     public void moveToSensor() {
         log.info("[{}] moveToSensor()", id);
-        dispatch("moveToSensor");
+        isExecuting = true;
+        isExecuting = true;
+        realMachine.moveToSensor();
     }
 
     @Override
     public void moveOut() {
         log.info("[{}] moveOut()", id);
-        dispatch("moveOut");
+        isExecuting = true;
+        isExecuting = true;
+        realMachine.moveOut();
     }
 
     @Override
     public void statusRequest() {
-        log.info("[{}] statusRequest()", id);
-        dispatch("statusRequest");
+        log.warn("[{}] statusRequest() — not implemented in domain machine", id);
     }
 }

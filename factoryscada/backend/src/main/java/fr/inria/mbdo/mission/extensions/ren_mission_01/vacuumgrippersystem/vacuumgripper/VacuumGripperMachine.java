@@ -1,6 +1,7 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.ExecutionStatusKind;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.Position3D;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.VacuumGripperCommandKind;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 
@@ -51,22 +52,22 @@ public interface VacuumGripperMachine extends MachineAdapter {
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::goToPosition
    */
-  void goToPosition();
+  void goToPosition(Position3D targetPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::move
    */
-  void move();
+  void move(Position3D startPosition, Position3D endPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::pick
    */
-  void pick();
+  void pick(Position3D targetPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::place
    */
-  void place();
+  void place(Position3D targetPosition);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::setup

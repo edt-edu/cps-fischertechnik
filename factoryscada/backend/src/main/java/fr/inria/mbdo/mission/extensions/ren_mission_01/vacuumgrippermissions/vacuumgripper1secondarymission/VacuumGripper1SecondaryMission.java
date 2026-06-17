@@ -1,4 +1,4 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper1nominalmission;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper1secondarymission;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.SortingLineMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.BlueTokenAvailableEventMessage;
@@ -22,13 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * From VacuumGripperMissions::VacuumGripper1NominalMission
- * Secondary mission scenario for VacuumGripper n°1
+ * From VacuumGripperMissions::VacuumGripper1SecondaryMission
+ * Nominal mission scenario for VacuumGripper n°1
  */
-public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger("VacuumGripper1NominalMission");
+public class VacuumGripper1SecondaryMission extends AbstractMissionStrategy {
+  private static final Logger logger = LoggerFactory.getLogger("VacuumGripper1SecondaryMission");
 
-  public static final String DOT_SCHEMA = "digraph VacuumGripper1NominalMission {\n"
+  public static final String DOT_SCHEMA = "digraph VacuumGripper1SecondaryMission {\n"
       + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
       + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
       + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
@@ -38,6 +38,7 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
       + "    \"SetupCMD\";\n"
       + "    \"StandbyCMD\";\n"
       + "    \"Idle\";\n"
+      + "    \"GotoColorCMD\";\n"
       + "    \"PickColorCMD\";\n"
       + "    \"IdlePicked\";\n"
       + "    \"PlaceConveyorBeltFeed\";\n"
@@ -45,15 +46,16 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
       + "    __init__ -> \"SetupCMD\" [label=\"ε / vacuumGripper.setup()\"];\n"
       + "    \"SetupCMD\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
       + "    \"StandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
-      + "    \"Idle\" -> \"PickColorCMD\" [label=\"BlueTokenAvailableEventMessage / pickBlue\"];\n"
-      + "    \"Idle\" -> \"PickColorCMD\" [label=\"WhiteTokenAvailableEventMessage / pickWhite\"];\n"
-      + "    \"Idle\" -> \"PickColorCMD\" [label=\"RedTokenAvailableEventMessage / pickRed\"];\n"
+      + "    \"Idle\" -> \"GotoColorCMD\" [label=\"BlueTokenAvailableEventMessage / gotoBluePosition\"];\n"
+      + "    \"Idle\" -> \"GotoColorCMD\" [label=\"WhiteTokenAvailableEventMessage / gotoWhitePosition\"];\n"
+      + "    \"Idle\" -> \"GotoColorCMD\" [label=\"RedTokenAvailableEventMessage / gotoRedPosition\"];\n"
+      + "    \"GotoColorCMD\" -> \"IdlePicked\" [label=\"VGRCommandSuccessEventMessage / pickColor\"];\n"
       + "    \"PickColorCMD\" -> \"IdlePicked\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
       + "    \"IdlePicked\" -> \"PlaceConveyorBeltFeed\" [label=\"AcquireResponseEventMessage / placeConveyoBeltFeed\"];\n"
       + "    \"PlaceConveyorBeltFeed\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
       + "}";
 
-  private final VacuumGripper1NominalMissionActions actions;
+  private final VacuumGripper1SecondaryMissionActions actions;
 
   private final VacuumGripperMachine vacuumGripper;
 
@@ -61,8 +63,8 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
 
   private final Zone zoneCB;
 
-  public VacuumGripper1NominalMission(VacuumGripperMachine vacuumGripper,
-      SortingLineMachine sortingLine, Zone zoneCB, VacuumGripper1NominalMissionActions actions) {
+  public VacuumGripper1SecondaryMission(VacuumGripperMachine vacuumGripper,
+      SortingLineMachine sortingLine, Zone zoneCB, VacuumGripper1SecondaryMissionActions actions) {
     this.vacuumGripper = vacuumGripper;
     this.sortingLine = sortingLine;
     this.zoneCB = zoneCB;
@@ -72,6 +74,7 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
     RuntimeState setupCMD = new RuntimeState("SetupCMD");
     RuntimeState standbyCMD = new RuntimeState("StandbyCMD");
     RuntimeState idle = new RuntimeState("Idle");
+    RuntimeState gotoColorCMD = new RuntimeState("GotoColorCMD");
     RuntimeState pickColorCMD = new RuntimeState("PickColorCMD");
     RuntimeState idlePicked = new RuntimeState("IdlePicked");
     RuntimeState placeConveyorBeltFeed = new RuntimeState("PlaceConveyorBeltFeed");
@@ -80,9 +83,10 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupCMD));
     setupCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyCMD));
     standbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), idle));
-    idle.addTransition(new RuntimeTransition(BlueTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickBlue(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
-    idle.addTransition(new RuntimeTransition(WhiteTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickWhite(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
-    idle.addTransition(new RuntimeTransition(RedTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickRed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
+    idle.addTransition(new RuntimeTransition(BlueTokenAvailableEventMessage.class, event -> true, event -> this.actions.gotoBluePosition(event, this.vacuumGripper, this.sortingLine, this.zoneCB), gotoColorCMD));
+    idle.addTransition(new RuntimeTransition(WhiteTokenAvailableEventMessage.class, event -> true, event -> this.actions.gotoWhitePosition(event, this.vacuumGripper, this.sortingLine, this.zoneCB), gotoColorCMD));
+    idle.addTransition(new RuntimeTransition(RedTokenAvailableEventMessage.class, event -> true, event -> this.actions.gotoRedPosition(event, this.vacuumGripper, this.sortingLine, this.zoneCB), gotoColorCMD));
+    gotoColorCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.pickColor(event, this.vacuumGripper, this.sortingLine, this.zoneCB), idlePicked));
     pickColorCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), idlePicked));
     idlePicked.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeConveyoBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltFeed));
     placeConveyorBeltFeed.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyCMD));
@@ -97,7 +101,7 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
 
   @Override
   public String getName() {
-    return "VacuumGripper1NominalMission";
+    return "VacuumGripper1SecondaryMission";
   }
 
   @Override
@@ -107,7 +111,7 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
 
   @Override
   public String getDescription() {
-    return "Secondary mission scenario for VacuumGripper n°1";
+    return "Nominal mission scenario for VacuumGripper n°1";
   }
 
   public static String toDot() {

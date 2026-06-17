@@ -51,6 +51,10 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         new SetupCommand(this, dto).execute();
     }
 
+    public void process1() {
+        process1(createCommandDTO("process1"));
+    }
+
     public void process1(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Process1 MultiProcessingStation {}", dto);
         new Process1Command(this, dto).execute();
@@ -61,6 +65,10 @@ public class MultiProcessingStationMachine extends AbstractMachine {
                 Parameter.numberNatural(ovenTime),
                 Parameter.numberNatural(sawTime),
                 Parameter.mpsOutput(output)));
+    }
+
+    public void process() {
+        process(createCommandDTO("process"));
     }
 
     public void process(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
@@ -78,11 +86,28 @@ public class MultiProcessingStationMachine extends AbstractMachine {
         new StopCommand(this, dto).execute();
     }
 
+    public void moveToSafePosition() {
+        move_to_safe_position(createCommandDTO("move_to_safe_position"));
+    }
+
     public void move_to_safe_position(
             @Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Move To Safe Position {}", dto);
         new MoveToSafePositionCommand(this, dto).execute();
     }
+
+    public void ovenLoad() { oven_load(createCommandDTO("oven_load")); }
+    public void ovenUnload() { oven_unload(createCommandDTO("oven_unload")); }
+    public void ovenHeat() { oven_heat(createCommandDTO("oven_heat")); }
+    public void ovenProcess() { oven_process(createCommandDTO("oven_process")); }
+    public void armMove() { arm_move(createCommandDTO("arm_move")); }
+    public void armPick() { arm_pick(createCommandDTO("arm_pick")); }
+    public void armPlace() { arm_place(createCommandDTO("arm_place")); }
+    public void turntableRotate() { turntable_rotate(createCommandDTO("turntable_rotate")); }
+    public void turntableEject() { turntable_eject(createCommandDTO("turntable_eject")); }
+    public void conveyorMoveToSensor() { conveyor_move_to_sensor(createCommandDTO("conveyor_move_to_sensor")); }
+    public void conveyorMoveOut() { conveyor_move_out(createCommandDTO("conveyor_move_out")); }
+    public void sawCut() { saw_cut(createCommandDTO("saw_cut")); }
 
     public void oven_load(@Valid @NotNull final GenericMachineCommandDTO<MultiProcessingStationMachine> dto) {
         log.info("Load the oven {}", dto);

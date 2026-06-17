@@ -11,5 +11,7 @@ public interface MissionExtensionConfig {
 
     List<FactoryMissionExtension> getFactoryMissions();
 
-    default void bindMachines(Map<String, AbstractMachine> machines) {}
+    void bindMachines(Map<String, AbstractMachine> machines);
+
+    MissionExtensionConfig withMachineMapping(Map<String, AbstractMachine> machines);
 }

@@ -10,9 +10,19 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
  */
 public interface VacuumGripper2NominalMissionActions {
   /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::gotoMPSin
+   */
+  void gotoMPSin(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
+
+  /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::placeMPSin
    */
   void placeMPSin(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
+
+  /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::gotoCBSwap
+   */
+  void gotoCBSwap(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
 
   /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::pickCBswap
@@ -26,7 +36,7 @@ public interface VacuumGripper2NominalMissionActions {
       Zone zoneMPS);
 
   /**
-   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::goToStandby
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::gotoStandby
    */
-  void goToStandby(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
+  void gotoStandby(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
 }

@@ -36,21 +36,25 @@ public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
       + "    \"GotoStandbyCMD\";\n"
       + "    \"Idle\";\n"
       + "    \"WaitForCBZoneAcquisition\";\n"
+      + "    \"GotoCBswapCMD\";\n"
       + "    \"PickCBswapCMD\";\n"
       + "    \"ReleaseCBZone\";\n"
       + "    \"WaitForMPSZoneAcquisition\";\n"
-      + "    \"PlaceMPSInCMD\";\n"
+      + "    \"GotoMPSinCMD\";\n"
+      + "    \"PlaceMPSinCMD\";\n"
       + "    \"ReleaseMPSZone\";\n"
       + "\n"
       + "    __init__ -> \"SetupIdle\" [label=\"ε / vacuumGripper.setup()\"];\n"
-      + "    \"SetupIdle\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"SetupIdle\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
       + "    \"GotoStandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage\"];\n"
       + "    \"Idle\" -> \"WaitForCBZoneAcquisition\" [label=\"InputFreeEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
-      + "    \"WaitForCBZoneAcquisition\" -> \"PickCBswapCMD\" [label=\"AcquireResponseEventMessage / pickCBswap\"];\n"
-      + "    \"PickCBswapCMD\" -> \"ReleaseCBZone\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"WaitForCBZoneAcquisition\" -> \"GotoCBswapCMD\" [label=\"AcquireResponseEventMessage / gotoCBSwap\"];\n"
+      + "    \"GotoCBswapCMD\" -> \"PickCBswapCMD\" [label=\"AcquireResponseEventMessage / pickCBswap\"];\n"
+      + "    \"PickCBswapCMD\" -> \"ReleaseCBZone\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
       + "    \"ReleaseCBZone\" -> \"WaitForMPSZoneAcquisition\" [label=\"VGRCommandSuccessEventMessage / releaseCBZoneAndAcquireMPSZone\"];\n"
-      + "    \"WaitForMPSZoneAcquisition\" -> \"PlaceMPSInCMD\" [label=\"AcquireResponseEventMessage / placeMPSin\"];\n"
-      + "    \"PlaceMPSInCMD\" -> \"ReleaseMPSZone\" [label=\"VGRCommandSuccessEventMessage / goToStandby\"];\n"
+      + "    \"WaitForMPSZoneAcquisition\" -> \"GotoMPSinCMD\" [label=\"AcquireResponseEventMessage / gotoMPSin\"];\n"
+      + "    \"GotoMPSinCMD\" -> \"PlaceMPSinCMD\" [label=\"VGRCommandSuccessEventMessage / placeMPSin\"];\n"
+      + "    \"PlaceMPSinCMD\" -> \"ReleaseMPSZone\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
       + "    \"ReleaseMPSZone\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneMPS\"];\n"
       + "}";
 
@@ -74,22 +78,26 @@ public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
     RuntimeState gotoStandbyCMD = new RuntimeState("GotoStandbyCMD");
     RuntimeState idle = new RuntimeState("Idle");
     RuntimeState waitForCBZoneAcquisition = new RuntimeState("WaitForCBZoneAcquisition");
+    RuntimeState gotoCBswapCMD = new RuntimeState("GotoCBswapCMD");
     RuntimeState pickCBswapCMD = new RuntimeState("PickCBswapCMD");
     RuntimeState releaseCBZone = new RuntimeState("ReleaseCBZone");
     RuntimeState waitForMPSZoneAcquisition = new RuntimeState("WaitForMPSZoneAcquisition");
-    RuntimeState placeMPSInCMD = new RuntimeState("PlaceMPSInCMD");
+    RuntimeState gotoMPSinCMD = new RuntimeState("GotoMPSinCMD");
+    RuntimeState placeMPSinCMD = new RuntimeState("PlaceMPSinCMD");
     RuntimeState releaseMPSZone = new RuntimeState("ReleaseMPSZone");
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupIdle));
-    setupIdle.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), gotoStandbyCMD));
+    setupIdle.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), gotoStandbyCMD));
     gotoStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, idle));
-    idle.addTransition(new RuntimeTransition(InputFreeEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), waitForCBZoneAcquisition));
-    waitForCBZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.pickCBswap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), pickCBswapCMD));
-    pickCBswapCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseCBZone));
+    idle.addTransition(new RuntimeTransition(InputFreeEventMessage.class, event -> true, event -> this.zoneMPS.publish(new AcquireRequestEventMessage()), waitForCBZoneAcquisition));
+    waitForCBZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.gotoCBSwap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), gotoCBswapCMD));
+    gotoCBswapCMD.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.pickCBswap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), pickCBswapCMD));
+    pickCBswapCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseCBZone));
     releaseCBZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.releaseCBZoneAndAcquireMPSZone(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), waitForMPSZoneAcquisition));
-    waitForMPSZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), placeMPSInCMD));
-    placeMPSInCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.goToStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseMPSZone));
+    waitForMPSZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.gotoMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), gotoMPSinCMD));
+    gotoMPSinCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.placeMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), placeMPSinCMD));
+    placeMPSinCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseMPSZone));
     releaseMPSZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneMPS.publish(new ReleaseRequestEventMessage()), gotoStandbyCMD));
 
     // Subscribe each mission machine to trigger event types used by this mission.

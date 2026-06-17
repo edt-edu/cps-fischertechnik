@@ -81,17 +81,17 @@ public abstract class AbstractSortingLineMachineAdapter extends AbstractMachineA
   public abstract void stop();
 
   private void checkAndFireAcceptWhenEvents() {
-    if ((this.sensor_SL_red == false)) {
-      publish(new AcceptWhenSortingLineSensorSLredEqualsfalseEvent());
-    }
     if ((this.sensor_SL_blue == false)) {
       publish(new AcceptWhenSortingLineSensorSLblueEqualsfalseEvent());
     }
-    if ((this.sensor_SL_in == false)) {
-      publish(new AcceptWhenSortingLineSensorSLinEqualsfalseEvent());
+    if ((this.sensor_SL_red == false)) {
+      publish(new AcceptWhenSortingLineSensorSLredEqualsfalseEvent());
     }
     if ((this.sensor_SL_white == false)) {
       publish(new AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent());
+    }
+    if ((this.sensor_SL_in == false)) {
+      publish(new AcceptWhenSortingLineSensorSLinEqualsfalseEvent());
     }
   }
 }

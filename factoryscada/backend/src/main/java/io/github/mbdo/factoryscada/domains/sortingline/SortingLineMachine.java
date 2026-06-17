@@ -47,6 +47,10 @@ public class SortingLineMachine extends AbstractMachine {
         return "SORTING";
     }
 
+    public void eject() {
+        eject(Color.AUTO);
+    }
+
     public void eject(Color color) {
         eject(createCommandDTO("eject", Parameter.color(color)));
     }

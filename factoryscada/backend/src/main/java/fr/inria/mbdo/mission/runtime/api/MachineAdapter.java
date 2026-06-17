@@ -8,8 +8,6 @@ public interface MachineAdapter {
 
     String getId();
 
-    void shutdown();
-
     void publish(Event event);
 
     <E extends Event> void subscribe(Class<E> eventType, Consumer<E> handler);

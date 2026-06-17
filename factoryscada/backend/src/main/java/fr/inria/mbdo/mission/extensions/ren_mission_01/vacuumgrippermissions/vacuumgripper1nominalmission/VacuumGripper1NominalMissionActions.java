@@ -7,7 +7,7 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
 /**
  * From VacuumGripperMissions::VacuumGripper1NominalMission
- * Nominal mission scenario for VacuumGripper n°1
+ * Secondary mission scenario for VacuumGripper n°1
  */
 public interface VacuumGripper1NominalMissionActions {
   /**
@@ -23,12 +23,6 @@ public interface VacuumGripper1NominalMissionActions {
       Zone zoneCB);
 
   /**
-   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::goToStandby
-   */
-  void goToStandby(Event event, VacuumGripperMachine vacuumGripper, SortingLineMachine sortingLine,
-      Zone zoneCB);
-
-  /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::placeConveyoBeltFeed
    */
   void placeConveyoBeltFeed(Event event, VacuumGripperMachine vacuumGripper,
@@ -38,5 +32,11 @@ public interface VacuumGripper1NominalMissionActions {
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::pickBlue
    */
   void pickBlue(Event event, VacuumGripperMachine vacuumGripper, SortingLineMachine sortingLine,
+      Zone zoneCB);
+
+  /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::gotoStandby
+   */
+  void gotoStandby(Event event, VacuumGripperMachine vacuumGripper, SortingLineMachine sortingLine,
       Zone zoneCB);
 }
