@@ -22,10 +22,10 @@
         }
       </div>
 
-      <!-- Mission details when running -->
-      @if (isGlobalMissionActive) {
+      <!-- Mission details when running or when logs exist from a previous run -->
+      @if (shouldShowMissionsDetail) {
       <div class="missions-detail">
-        @for (entry of globalMissionEntries; track entry.mission) {
+        @for (entry of missionDisplayEntries; track entry.mission) {
         <p-panel [toggleable]="true" [collapsed]="true" styleClass="mission-panel">
           <ng-template pTemplate="header">
             <div class="panel-header-content">
@@ -49,7 +49,7 @@
             </div>
           </ng-template>
           <!-- Collapsed content: logs only -->
-          <div class="log-list">
+          <div class="log-list" #logList>
             @for (log of getMissionLogs(entry.mission); track $index) {
             <div class="log-entry">
               <span class="log-msg">{{ log }}</span>

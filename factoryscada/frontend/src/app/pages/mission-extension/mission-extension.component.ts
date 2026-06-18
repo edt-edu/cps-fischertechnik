@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, ElementRef, OnInit, QueryList, ViewChildren, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -48,6 +48,8 @@ export class MissionExtensionComponent implements OnInit {
 
     // Backend-persisted logs keyed by mission name (survive page refresh)
     backendLogs: { [missionName: string]: string[] } = {};
+
+    @ViewChildren('logList') logLists!: QueryList<ElementRef<HTMLElement>>;
 
     private readonly rxStompService = inject(MyRxStompService);
     private readonly httpService = inject(MissionExtensionHttpService);
@@ -113,6 +115,19 @@ export class MissionExtensionComponent implements OnInit {
     get isGlobalMissionActive(): boolean {
         return !!this.selectedGlobalMissionName &&
             this.selectedGlobalMissionName === this.missionConfiguration?.activeGlobalMissionName;
+    }
+
+    get shouldShowMissionsDetail(): boolean {
+        return this.isGlobalMissionActive ||
+            Object.values(this.backendLogs).some(logs => logs.length > 0);
+    }
+
+    get missionDisplayEntries(): { mission: string }[] {
+        const fromGlobal = this.globalMissionEntries;
+        if (fromGlobal.length > 0) return fromGlobal;
+        return Object.keys(this.backendLogs)
+            .filter(name => this.backendLogs[name].length > 0)
+            .map(name => ({ mission: name }));
     }
 
     get selectedIndividualMissionDescription(): string {
@@ -244,5 +259,12 @@ export class MissionExtensionComponent implements OnInit {
 
     private applyLogs(logs: IMissionLogs): void {
         this.backendLogs = logs.logsByMission ?? {};
+        setTimeout(() => this.scrollLogsToBottom());
+    }
+
+    private scrollLogsToBottom(): void {
+        this.logLists?.forEach(ref => {
+            ref.nativeElement.scrollTop = ref.nativeElement.scrollHeight;
+        });
     }
 }
