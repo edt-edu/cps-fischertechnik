@@ -196,7 +196,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumSensVerticalEndUp.setter
     def vacuumSensVerticalEndUp(self, value):
         self.__vacuumSensVerticalEndUp = value
-        self.vertical_reset_helper.mark_for_reset_if(value, self.vacuumSensVerticalEncoderCounter)
+        self.vertical_reset_helper.mark_for_reset_if(value and self.vacuumSensVerticalEncoderCounter != 0, self.vacuumSensVerticalEncoderCounter)
 
     @property
     def vacuumSensVerticalEncoderCounter(self):
@@ -216,7 +216,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumSensArmEndIn.setter
     def vacuumSensArmEndIn(self, value):
         self.__vacuumSensArmEndIn = value
-        self.arm_reset_helper.mark_for_reset_if(value, self.vacuumSensArmEncoderCounter)
+        self.arm_reset_helper.mark_for_reset_if(value and self.vacuumSensArmEncoderCounter != 0, self.vacuumSensArmEncoderCounter)
 
     @property
     def vacuumSensArmEncoderCounter(self):
@@ -236,7 +236,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
     @vacuumSensRotEnd.setter
     def vacuumSensRotEnd(self, value):
         self.__vacuumSensRotEnd = value
-        self.rot_reset_helper.mark_for_reset_if(value, self.vacuumSensRotEncoderCounter)
+        self.rot_reset_helper.mark_for_reset_if(value and self.vacuumSensRotEncoderCounter != 0, self.vacuumSensRotEncoderCounter)
 
     @property
     def vacuumSensRotEncoderCounter(self):
