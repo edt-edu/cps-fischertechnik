@@ -11,6 +11,7 @@ import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import io.github.mbdo.factoryscada.service.FactoryScada;
+import io.github.mbdo.factoryscada.service.MachineNameMappingService;
 import io.github.mbdo.factoryscada.utilities.DistinctDebugLogger;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,20 +20,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Getter
 public class Demo implements DynamicMission {
-
-  private static final String SORTING_LINE_TOPIC = "I1SortingLine01";
-  private static final String VGR2_TOPIC = "I1VacuumGripper02";
-  private static final String CONVEYOR_TOPIC = "I1ConveyorBelt01";
-  private static final String VGR1_TOPIC = "I1VacuumGripper01";
-  private static final String MPS_TOPIC = "I1MultiProcessing01";
+  private static final String BASE_LOGICALNAME = "DynamicMission/Demo/";
+  private static final String SORTING_LINE_LOGICALNAME = BASE_LOGICALNAME+"SL";
+  private static final String VGR2_LOGICALNAME = BASE_LOGICALNAME+"VGR2";
+  private static final String CONVEYOR_LOGICALNAME = BASE_LOGICALNAME+"CB";
+  private static final String VGR1_LOGICALNAME = BASE_LOGICALNAME+"VGR1";
+  private static final String MPS_LOGICALNAME = BASE_LOGICALNAME+"MPS";
   private static final int POLL_DELAY_MILLIS = 100;
 
   private final FactoryScada factoryScada;
+  private final MachineNameMappingService machineNameMapping;
   private volatile boolean active = false;
   @Setter
   private volatile boolean cbBroken = false;
@@ -83,8 +86,9 @@ public class Demo implements DynamicMission {
   }
 
   @Autowired
-  public Demo(FactoryScada factoryScada, MqttPublisherService mqttPublisher) {
+  public Demo(FactoryScada factoryScada, MachineNameMappingService machineNameMapping, MqttPublisherService mqttPublisher) {
       this.factoryScada = factoryScada;
+      this.machineNameMapping = machineNameMapping;
       this.mqttPublisher = mqttPublisher;
       this.sortTokenLogger = new DistinctDebugLogger(log);
       this.moveFromSLtoCBLogger = new DistinctDebugLogger(log);
@@ -92,6 +96,8 @@ public class Demo implements DynamicMission {
       this.processLogger = new DistinctDebugLogger(log);
       this.moveFromFeedToSwapLogger = new DistinctDebugLogger(log);
       this.dumpStateLogger = new DistinctDebugLogger(log);
+
+
   }
 
   @Override
@@ -119,7 +125,11 @@ public class Demo implements DynamicMission {
 
   @Override
   public Collection<String> getInvolvedMachineNames() {
-    return List.of(SORTING_LINE_TOPIC, VGR2_TOPIC, CONVEYOR_TOPIC, VGR1_TOPIC, MPS_TOPIC);
+    List<String> logicalNames = List.of(SORTING_LINE_LOGICALNAME, VGR2_LOGICALNAME, CONVEYOR_LOGICALNAME, VGR1_LOGICALNAME, MPS_LOGICALNAME);
+    List<String> machineNames = logicalNames.stream().map(machineNameMapping::getMachineForLogicalName).toList();
+
+    log.info("Demo mission machine name mapping: \n   {}", logicalNames.stream().map(ln -> ln + "->"+machineNameMapping.getMachineForLogicalName(ln)).collect(Collectors.joining("\n   ")));
+    return machineNames;
   }
 
   @Override
@@ -141,11 +151,11 @@ public class Demo implements DynamicMission {
   private void setup() {
     //machines
     //TODO extract machine names into config
-    this.sortingLine = getMachine(SortingLineMachine.class, SORTING_LINE_TOPIC);
-    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, VGR2_TOPIC);
-    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, CONVEYOR_TOPIC);
-    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
-    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
+    this.sortingLine = getMachine(SortingLineMachine.class, machineNameMapping.getMachineForLogicalName(SORTING_LINE_LOGICALNAME));
+    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, machineNameMapping.getMachineForLogicalName(VGR2_LOGICALNAME));
+    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, machineNameMapping.getMachineForLogicalName(CONVEYOR_LOGICALNAME));
+    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, machineNameMapping.getMachineForLogicalName(VGR1_LOGICALNAME));
+    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, machineNameMapping.getMachineForLogicalName(MPS_LOGICALNAME));
 
     //locks
     cbFeedLocked = false;

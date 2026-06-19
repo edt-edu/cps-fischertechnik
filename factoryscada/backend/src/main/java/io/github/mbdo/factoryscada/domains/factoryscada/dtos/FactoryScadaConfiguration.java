@@ -9,7 +9,8 @@ import java.util.List;
 public record FactoryScadaConfiguration(
         String name,
         String mqttHost,
-        List<ControllerConfiguration> controllers
+        List<ControllerConfiguration> controllers,
+        List<MachineNameMapping> machineNameMappings
 ) implements Serializable {
     public record ControllerConfiguration(
             String name,
@@ -24,4 +25,8 @@ public record FactoryScadaConfiguration(
         ) implements Serializable {
         }
     }
+    public record MachineNameMapping(
+            String logicalName,
+            String machineName
+    ) implements Serializable {}
 }
