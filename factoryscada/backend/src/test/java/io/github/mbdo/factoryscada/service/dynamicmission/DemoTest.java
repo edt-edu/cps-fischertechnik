@@ -5,6 +5,7 @@ import io.github.mbdo.factoryscada.core.enums.DirectionKind;
 import io.github.mbdo.factoryscada.core.enums.MPSOutput;
 import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
+import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
@@ -14,6 +15,7 @@ import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.service.MachineNameMappingService;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -121,7 +123,25 @@ class DemoTest {
 
   private static DemoFixture createDemoFixture() {
     FactoryScada factoryScada = mock(FactoryScada.class);
-    MachineNameMappingService machineNameMapping = mock(MachineNameMappingService.class);
+    when(factoryScada.getFactoryScadaConfiguration()).thenReturn(new FactoryScadaConfiguration(
+            "configuration",
+            null,
+            List.of(new FactoryScadaConfiguration.ControllerConfiguration( "plc1", "localhost", 6001, 6011,
+                    List.of(new FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration("I1SortingLine01","sortingLine"),
+                            new FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration("I1VacuumGripper02","vacuumGripper"),
+                            new FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration("I1ConveyorBelt01","conveyorBelt"),
+                            new FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration("I1VacuumGripper01","vacuumGripper"),
+                            new FactoryScadaConfiguration.ControllerConfiguration.MachineConfiguration("I1MultiProcessing01","multiProcessingStation")
+                    ))),
+            List.of(
+                    new FactoryScadaConfiguration.MachineNameMapping("DynamicMission/Demo/SL","I1SortingLine01"),
+                    new FactoryScadaConfiguration.MachineNameMapping("DynamicMission/Demo/VGR2","I1VacuumGripper02"),
+                    new FactoryScadaConfiguration.MachineNameMapping("DynamicMission/Demo/CB","I1ConveyorBelt01"),
+                    new FactoryScadaConfiguration.MachineNameMapping("DynamicMission/Demo/VGR1","I1VacuumGripper01"),
+                    new FactoryScadaConfiguration.MachineNameMapping("DynamicMission/Demo/MPS","I1MultiProcessing01")
+            )
+    ));
+    MachineNameMappingService machineNameMapping = new MachineNameMappingService(factoryScada);
     SortingLineMachine sortingLine = mock(SortingLineMachine.class);
     VacuumGripperMachine vacuumGripper2 = mock(VacuumGripperMachine.class);
     ConveyorBeltMachine conveyorBelt = mock(ConveyorBeltMachine.class);
@@ -152,6 +172,7 @@ class DemoTest {
             MPS_TOPIC, multiProcessingStation
         )
     ));
+
 
     configureCommonProductionRun(fixture);
     return fixture;
