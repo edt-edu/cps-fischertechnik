@@ -987,6 +987,21 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
           }
         }
       }
+    },
+    "machineNameMappings" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:MachineNameMapping",
+        "properties" : {
+          "logicalName" : {
+            "type" : "string"
+          },
+          "machineName" : {
+            "type" : "string"
+          }
+        }
+      }
     }
   }
 }
@@ -6108,6 +6123,21 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "machineNameMappings" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:factoryscada:dtos:FactoryScadaConfiguration:MachineNameMapping",
+        "properties" : {
+          "logicalName" : {
+            "type" : "string"
+          },
+          "machineName" : {
+            "type" : "string"
           }
         }
       }

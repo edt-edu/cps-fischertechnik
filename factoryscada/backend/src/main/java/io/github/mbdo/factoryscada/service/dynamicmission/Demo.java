@@ -9,7 +9,9 @@ import io.github.mbdo.factoryscada.domains.dynamicmission.DynamicMission;
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
+import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import io.github.mbdo.factoryscada.service.FactoryScada;
+import io.github.mbdo.factoryscada.service.MachineNameMappingService;
 import io.github.mbdo.factoryscada.utilities.DistinctDebugLogger;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,23 +19,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @Getter
 public class Demo implements DynamicMission {
-
-  private static final String SORTING_LINE_TOPIC = "I1SortingLine01";
-  private static final String VGR2_TOPIC = "I1VacuumGripper02";
-  private static final String CONVEYOR_TOPIC = "I1ConveyorBelt01";
-  private static final String VGR1_TOPIC = "I1VacuumGripper01";
-  private static final String MPS_TOPIC = "I1MultiProcessing01";
+  private static final String BASE_LOGICALNAME = "DynamicMission/Demo/";
+  private static final String SORTING_LINE_LOGICALNAME = BASE_LOGICALNAME+"SL";
+  private static final String VGR2_LOGICALNAME = BASE_LOGICALNAME+"VGR2";
+  private static final String CONVEYOR_LOGICALNAME = BASE_LOGICALNAME+"CB";
+  private static final String VGR1_LOGICALNAME = BASE_LOGICALNAME+"VGR1";
+  private static final String MPS_LOGICALNAME = BASE_LOGICALNAME+"MPS";
   private static final int POLL_DELAY_MILLIS = 100;
 
   private final FactoryScada factoryScada;
+  private final MachineNameMappingService machineNameMapping;
   private volatile boolean active = false;
   @Setter
   private volatile boolean cbBroken = false;
@@ -64,6 +66,8 @@ public class Demo implements DynamicMission {
   private final DistinctDebugLogger processLogger;
   private final DistinctDebugLogger dumpStateLogger;
 
+  private final MqttPublisherService mqttPublisher;
+
   private enum VGR2Activity {
     MOVE_FROM_SL_TO_CB,
     MOVE_FROM_FEED_TO_SWAP,
@@ -82,14 +86,18 @@ public class Demo implements DynamicMission {
   }
 
   @Autowired
-  public Demo(FactoryScada factoryScada) {
-    this.factoryScada = factoryScada;
-    this.sortTokenLogger = new DistinctDebugLogger(log);
-    this.moveFromSLtoCBLogger = new DistinctDebugLogger(log);
-    this.moveTokenToMpsLogger = new DistinctDebugLogger(log);
-    this.processLogger = new DistinctDebugLogger(log);
-    this.moveFromFeedToSwapLogger = new DistinctDebugLogger(log);
-    this.dumpStateLogger = new DistinctDebugLogger(log);
+  public Demo(FactoryScada factoryScada, MachineNameMappingService machineNameMapping, MqttPublisherService mqttPublisher) {
+      this.factoryScada = factoryScada;
+      this.machineNameMapping = machineNameMapping;
+      this.mqttPublisher = mqttPublisher;
+      this.sortTokenLogger = new DistinctDebugLogger(log);
+      this.moveFromSLtoCBLogger = new DistinctDebugLogger(log);
+      this.moveTokenToMpsLogger = new DistinctDebugLogger(log);
+      this.processLogger = new DistinctDebugLogger(log);
+      this.moveFromFeedToSwapLogger = new DistinctDebugLogger(log);
+      this.dumpStateLogger = new DistinctDebugLogger(log);
+
+
   }
 
   @Override
@@ -117,7 +125,11 @@ public class Demo implements DynamicMission {
 
   @Override
   public Collection<String> getInvolvedMachineNames() {
-    return List.of(SORTING_LINE_TOPIC, VGR2_TOPIC, CONVEYOR_TOPIC, VGR1_TOPIC, MPS_TOPIC);
+    List<String> logicalNames = List.of(SORTING_LINE_LOGICALNAME, VGR2_LOGICALNAME, CONVEYOR_LOGICALNAME, VGR1_LOGICALNAME, MPS_LOGICALNAME);
+    List<String> machineNames = logicalNames.stream().map(machineNameMapping::getMachineForLogicalName).toList();
+
+    log.info("Demo mission machine name mapping: \n   {}", logicalNames.stream().map(ln -> ln + "->"+machineNameMapping.getMachineForLogicalName(ln)).collect(Collectors.joining("\n   ")));
+    return machineNames;
   }
 
   @Override
@@ -130,17 +142,20 @@ public class Demo implements DynamicMission {
 
   @Override
   public void stop() {
-    active = false;
+    if (active) {
+      active = false;
+      dumpState();
+    }
   }
 
   private void setup() {
     //machines
     //TODO extract machine names into config
-    this.sortingLine = getMachine(SortingLineMachine.class, SORTING_LINE_TOPIC);
-    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, VGR2_TOPIC);
-    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, CONVEYOR_TOPIC);
-    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, VGR1_TOPIC);
-    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, MPS_TOPIC);
+    this.sortingLine = getMachine(SortingLineMachine.class, machineNameMapping.getMachineForLogicalName(SORTING_LINE_LOGICALNAME));
+    this.vacuumGripper2 = getMachine(VacuumGripperMachine.class, machineNameMapping.getMachineForLogicalName(VGR2_LOGICALNAME));
+    this.conveyorBelt = getMachine(ConveyorBeltMachine.class, machineNameMapping.getMachineForLogicalName(CONVEYOR_LOGICALNAME));
+    this.vacuumGripper1 = getMachine(VacuumGripperMachine.class, machineNameMapping.getMachineForLogicalName(VGR1_LOGICALNAME));
+    this.multiProcessingStation = getMachine(MultiProcessingStationMachine.class, machineNameMapping.getMachineForLogicalName(MPS_LOGICALNAME));
 
     //locks
     cbFeedLocked = false;
@@ -173,6 +188,7 @@ public class Demo implements DynamicMission {
     log.info("Demo stopped");
   }
 
+  Map<String, Object> previousState = null;
   private void dumpState() {
     if (sortingLine.isIdle() && conveyorBelt.isIdle() && vacuumGripper1.isIdle() && vacuumGripper2.isIdle() && multiProcessingStation.isIdle()) {
       //locks
@@ -192,8 +208,43 @@ public class Demo implements DynamicMission {
         log.warn("MPS active: {}", mpsActive);
       }
     }
+    Map<String, Object> newState = buildState();
+    if(!newState.equals(previousState)) {
+      previousState = newState;
+      mqttPublisher.publish("internal/dynamicmission/Demo/state", newState);
+    }
   }
 
+  /**
+   * build a serializable map with all attributes used by the various functions
+   * @return a serializable map
+   */
+  private Map<String, Object> buildState() {
+    Map<String, Object> state = new LinkedHashMap<>();
+    state.put("active", active);
+    state.put("slIsTokenAtFeed", sortingLine.isTokenAtFeed());
+    state.put("slIsIdle", sortingLine.isIdle());
+    state.put("slIsTokenAtWhite", sortingLine.isTokenAtWhite());
+    state.put("slIsTokenAtBlue", sortingLine.isTokenAtBlue());
+    state.put("slIsTokenAtRed", sortingLine.isTokenAtRed());
+    state.put("cbActive", cbActive);
+    state.put("cbBroken", cbBroken);
+    state.put("cbIsIdle", conveyorBelt.isIdle());
+    state.put("cbFeedLocked", cbFeedLocked);
+    state.put("cbSwapLocked", cbSwapLocked);
+    state.put("cbIsTokenAtSwap", conveyorBelt.isTokenAtSwap());
+    state.put("cbIsTokenAtFeed", conveyorBelt.isTokenAtFeed());
+    state.put("mpsActive", mpsActive);
+    state.put("mpsIsIdle", multiProcessingStation.isIdle());
+    state.put("mpsInputLocked", mpsInputLocked);
+    state.put("mpsIsTokenAtFeed", multiProcessingStation.isTokenAtFeed());
+    state.put("vgr1Activity", vgr1Activity);
+    state.put("vgr1IsIdle",vacuumGripper1.isIdle());
+    state.put("vgr2Activity", vgr2Activity);
+    state.put("vgr2IsIdle",vacuumGripper2.isIdle());
+
+    return state;
+  }
   private void process() {
     if (multiProcessingStation.isTokenAtFeed() &&
         !mpsActive &&
