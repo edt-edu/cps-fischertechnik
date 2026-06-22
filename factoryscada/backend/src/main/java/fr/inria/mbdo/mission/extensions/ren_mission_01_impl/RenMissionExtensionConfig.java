@@ -25,6 +25,7 @@ import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMach
 import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessingStationMachine;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
+import io.github.mbdo.factoryscada.service.MachineNameMappingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,6 +37,7 @@ import java.util.Map;
 public class RenMissionExtensionConfig implements MissionExtensionConfig {
 
     private final MqttMessageRouter mqttRouter;
+    private final MachineNameMappingService machineNameMapping;
 
     private final ConveyorBeltNominalMissionActions cbActions;
     private final SortingLineNominalMissionActions slActions;
@@ -49,8 +51,9 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
     private Map<String, AbstractMachineAdapter> machineAdapters;
 
     @Autowired
-    public RenMissionExtensionConfig(MqttMessageRouter mqttRouter) {
+    public RenMissionExtensionConfig(MqttMessageRouter mqttRouter, MachineNameMappingService machineNameMapping) {
         this.mqttRouter = mqttRouter;
+        this.machineNameMapping = machineNameMapping;
 
         this.cbActions = new ConveyorBeltNominalMissionActionsImpl();
         this.slActions = new SortingLineNominalMissionActionsImpl();
@@ -82,11 +85,12 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
 
     private List<AbstractMissionStrategy> buildMachineMissions() {
 
-        ConveyorBeltAdapterImpl cb = adapter("I1ConveyorBelt01");
-        SortingLineAdapterImpl sl = adapter("I1SortingLine01");
-        MultiProcessingStationAdapterImpl mps = adapter("I1MultiProcessing01");
-        VacuumGripperAdapterImpl vgr1 = adapter("I1VacuumGripper01");
-        VacuumGripperAdapterImpl vgr2 = adapter("I1VacuumGripper02");
+
+        ConveyorBeltAdapterImpl cb = adapter("REN_MISSION_01/CB01");
+        SortingLineAdapterImpl sl = adapter("REN_MISSION_01/SL01");
+        MultiProcessingStationAdapterImpl mps = adapter("REN_MISSION_01/MPS01");
+        VacuumGripperAdapterImpl vgr1 = adapter("REN_MISSION_01/VGR01");
+        VacuumGripperAdapterImpl vgr2 = adapter("REN_MISSION_01/VGR02");
         ZoneAdapterImpl zoneCB = adapter("ZoneCB");
         ZoneAdapterImpl zoneMPS = adapter("ZoneMPS");
 
@@ -140,6 +144,31 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
     @Override
     public MissionExtensionConfig withMachineMapping(Map<String, AbstractMachine> machines) {
         Map<String, AbstractMachineAdapter> adapters = new HashMap<>();
+
+        final List<String> missionsMachinesLogicalNames = missionMachinesLogicalNames();
+        // for machines in list of machine logical names used by the mission
+        for(String machineLogicalName : missionsMachinesLogicalNames) {
+            // find the corresponding machine in the scada configuration
+            String machineId = machineNameMapping.getMachineForLogicalName(machineLogicalName);
+            AbstractMachine machine = machines.get(machineId);
+            if (machine == null) {
+                throw new IllegalStateException(machineLogicalName+"->"+machineId+" machine missing in configuration");
+            }
+            AbstractMachineAdapter adapter = switch (machine) {
+                case ConveyorBeltMachine cb -> new ConveyorBeltAdapterImpl(machineLogicalName, mqttRouter,
+                    "PLC/+/ConveyorBelt/" + machineId + "/measurements/input/#");
+                case SortingLineMachine sl -> new SortingLineAdapterImpl(machineLogicalName, mqttRouter,
+                    "PLC/+/SortingLine/" + machineId + "/measurements/input/#");
+                case MultiProcessingStationMachine mps -> new MultiProcessingStationAdapterImpl(machineLogicalName, mqttRouter,
+                    "PLC/+/MultiProcessing/" + machineId + "/measurements/input/#");
+                case VacuumGripperMachine vg -> new VacuumGripperAdapterImpl(machineLogicalName, mqttRouter,
+                    "PLC/+/VacuumGripper/" + machineId + "/measurements/input/#");
+                case HighBayWarehouseMachine hbw -> null;
+                default -> null;
+            };
+            adapters.put(machineLogicalName, adapter);
+        }
+/*
         for (Map.Entry<String, AbstractMachine> entry : machines.entrySet()) {
             String machineId = entry.getKey();
             AbstractMachine machine = entry.getValue();
@@ -156,7 +185,7 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
                 default -> null;
             };
             adapters.put(entry.getKey(), adapter);
-        }
+        }*/
 
         // Fixed adapters
         adapters.put("ZoneCB", new ZoneAdapterImpl("ZoneCB"));
@@ -167,5 +196,18 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
         this.factoryMissions = buildFactoryMissions();
 
         return this;
+    }
+
+    /**
+     * list the logical Names of the Machines handled by this mission configuration
+     * physical machine name can be then retrieved later via the {@link io.github.mbdo.factoryscada.service.MachineNameMappingService}
+     * @return a list of machine logical names
+     */
+    public List<String> missionMachinesLogicalNames() {
+        return List.of("REN_MISSION_01/CB01",
+            "REN_MISSION_01/SL01",
+            "REN_MISSION_01/MPS01",
+            "REN_MISSION_01/VGR01",
+            "REN_MISSION_01/VGR02");
     }
 }

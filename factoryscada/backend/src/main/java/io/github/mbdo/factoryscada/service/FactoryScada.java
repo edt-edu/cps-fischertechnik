@@ -56,7 +56,7 @@ public class FactoryScada {
     /**
      * data coming from the configuration yaml file, usually : "configuration.yml"
      */
-    private final FactoryScadaConfiguration factoryScadaConfiguration;
+    private final FactoryScadaConfigurationProvider factoryScadaConfigurationProvider;
     /**
      * contains the currently controlled PLC and machines ()
      */
@@ -70,7 +70,7 @@ public class FactoryScada {
      * data coming from the mission configuration yaml file, usually :
      * "missions-configuration.yml"
      */
-    private final FactoryMissionsParallelized_dto missionsParallelized_dto;
+    private final FactoryMissionsParallelizedProvider missionsParallelizedProvider;
     private final Map<String, CommandStatus> machineLastCommandStatusMap = new HashMap<>();
     private final Map<String, MachineStatus> machineLastMachineStatusMap = new HashMap<>();
     private final SimpMessagingTemplate template;
@@ -92,10 +92,12 @@ public class FactoryScada {
     public Map<String, Integer> sessionLogLimits = new ConcurrentHashMap<>();
 
     @Autowired
-    public FactoryScada(SimpMessagingTemplate template, AppEnvironment appEnvironment,
+    public FactoryScada(FactoryScadaConfigurationProvider factoryScadaConfigurationProvider, FactoryMissionsParallelizedProvider missionsParallelizedProvider, SimpMessagingTemplate template, AppEnvironment appEnvironment,
                         ApplicationContext applicationContext, WebSocketPublisher webSocketPublisher,
                         @Value("${log.limit:500}") int logLimit, MqttConfig mqttConfig, MqttPublisherService rawMqttOutboundGateway,
                         MqttInboundRouterService mqttInboundRouterService, MissionExtensionConfig missionExtensionConfig) {
+        this.factoryScadaConfigurationProvider = factoryScadaConfigurationProvider;
+        this.missionsParallelizedProvider = missionsParallelizedProvider;
         this.applicationContext = applicationContext;
         this.appEnvironment = appEnvironment;
         this.template = template;
@@ -107,20 +109,19 @@ public class FactoryScada {
         this.mqttInboundRouter = mqttInboundRouterService;
         this.factoryScadaInstance = factoryInstance();
         this.commandPlaceholder = commandPlaceholder();
-        this.factoryScadaConfiguration = factoryConfiguration();
         this.logLimit = logLimit;
         this.frontendLogsList = new BoundedLogBuffer<>(logLimit);
         this.missionExtensionConfig = missionExtensionConfig.withMachineMapping(this.factoryScadaInstance.machines());
 
         // Initialization and validation of mission graph
-        this.missionsParallelized_dto = missionsParallelized();
-        for (MissionParallelized_dto mission : this.missionsParallelized_dto.getMissions()) {
+        FactoryMissionsParallelized_dto missionsParallelized_dto = missionsParallelizedProvider.getMissionsParallelized();
+        for (MissionParallelized_dto mission : missionsParallelizedProvider.getMissionsParallelized().getMissions()) {
             InitializerVisitor resolver = new InitializerVisitor(mission.getNodes());
             for (Node_dto node : mission.getNodes()) {
                 node.accept(resolver);
             }
         }
-        this.executerVisitor = new ExecuterVisitor(this, this.missionsParallelized_dto, this.template);
+        this.executerVisitor = new ExecuterVisitor(this, missionsParallelized_dto, this.template);
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -155,20 +156,7 @@ public class FactoryScada {
         log.info("Mission extension adapters bound to {} machines", factoryScadaInstance.machines().size());
     }
 
-    /**
-     * Retrieves the factory configuration by converting a YAML file located at the
-     * specified path
-     * into an instance of {@link FactoryScadaConfiguration} using Jackson
-     * ObjectMapper.
-     *
-     * @return The FactoryConfiguration instance parsed from the YAML file.
-     * @throws RuntimeException If there is an error during YAML parsing or file
-     *                          reading.
-     */
-    private FactoryScadaConfiguration factoryConfiguration() {
-        return convertYamlToObject(applicationContext, appEnvironment.getConfigurationFilePath(),
-            FactoryScadaConfiguration.class);
-    }
+
 
     /**
      * Creates a {@link FactoryScadaInstance} based on the provided
@@ -185,7 +173,7 @@ public class FactoryScada {
      */
     private FactoryScadaInstance factoryInstance() {
         @Valid
-        FactoryScadaConfiguration factoryScadaConfiguration = factoryConfiguration();
+        FactoryScadaConfiguration factoryScadaConfiguration = factoryScadaConfigurationProvider.getFactoryScadaConfiguration();
         Map<String, Protocol> controllers = new HashMap<>();
         Map<String, AbstractMachine> machines = new HashMap<>();
 
@@ -416,21 +404,6 @@ public class FactoryScada {
         return result;
     }
 
-    /**
-     * Retrieves the missions parallelized configuration by converting a YAML file
-     * located at the specified path
-     * into an instance of {@link FactoryScadaConfiguration} using Jackson
-     * ObjectMapper.
-     *
-     * @return The missions parallelizedConfiguration instance parsed from the YAML
-     * file.
-     * @throws RuntimeException If there is an error during YAML parsing or file
-     *                          reading.
-     */
-    private FactoryMissionsParallelized_dto missionsParallelized() {
-        return convertYamlToObject(applicationContext, appEnvironment.getMissionsConfigurationParallelizedFilePath(),
-            FactoryMissionsParallelized_dto.class);
-    }
 
     /**
      * This function is used to add logs in the list containing all frontend logs
