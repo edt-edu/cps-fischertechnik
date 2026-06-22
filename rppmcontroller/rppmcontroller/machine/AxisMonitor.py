@@ -76,9 +76,9 @@ class NamedAxisMonitor:
         """
         penalty = 0
         for deviation in self.monitor.get_recorded_deviations():
-            if deviation == Deviation.SMALL:
+            if deviation is Deviation.SMALL:
                 penalty += self.parameters.minor_deviation_penalty
-            elif deviation == Deviation.HIGH:
+            elif deviation is Deviation.HIGH:
                 penalty += self.parameters.major_deviation_penalty
         self.__debug(f"Total penalty: {penalty}")
         return penalty
