@@ -443,6 +443,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.stop_CycleStep()
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
 
+        # ensure movement is not blocked
         error = self.__monitor_axis_values()
         if error is not None:
             self.stop_CycleStep()
@@ -469,12 +470,12 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             return None
 
         if self.__horizontal_axis_monitor.record_and_action_is_required(
-            self.pwmVertical if self.vacuumActArmOut or self.vacuumActArmIn
+            self.pwmHorizontal if self.vacuumActArmOut or self.vacuumActArmIn
             else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on horizontal axis")
         if self.__vertical_axis_monitor.record_and_action_is_required(
-            self.pwmHorizontal if self.vacuumActVerticalUp or
+            self.pwmVertical if self.vacuumActVerticalUp or
                                   self.vacuumActVerticalDown else 0):
             return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
                                    "too many deviations on vertical axis")
