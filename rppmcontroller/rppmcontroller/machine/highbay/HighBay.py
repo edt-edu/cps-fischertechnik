@@ -616,6 +616,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
 
         self.stop_runners()
 
+        self.__clear_axis_monitor_buffers()
+
         return CycleStepResult(CycleStepResultEnum.DONE)
 
     @runner_augment_function()

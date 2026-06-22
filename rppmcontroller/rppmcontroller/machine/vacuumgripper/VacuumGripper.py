@@ -525,6 +525,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.pwmVertical = self.parameters.pwm_standard_speed
 
         self.stop_runners()
+        
+        # since all movement is stopped, the go_to_config_CycleStep method is
+        #  probably not called anmore thus we lose our track of time.
+        # To avoid problems, we clear the buffers.
+        self.__clear_axis_monitor_buffers()
 
         return CycleStepResult.done()
 
