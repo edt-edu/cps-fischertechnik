@@ -38,6 +38,15 @@ To build the project, follow these steps:
       ```
     - This command will compile the code, run the tests, and assemble the necessary artifacts.
 
+2. **Deploy to local maven**
+
+	
+    - From the project's root directory, execute the following command:
+      ```sh
+      ./gradlew publishToMavenLocal
+      ```
+    - This command will copy the jar in your ~/.m2/repository for use by maven.
+
 ## Configuration
 
 The application uses several small yaml based dsl for configuration.

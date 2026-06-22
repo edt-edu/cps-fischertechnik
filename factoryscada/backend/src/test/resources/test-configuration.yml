@@ -1,0 +1,38 @@
+# Configuration (00)
+
+configuration:
+  name: "configuration"
+
+  controllers:
+    - name: "plc-1"
+      host: '127.0.0.1'
+      commandPort: 6001
+      notificationPort: 6011
+      machines:
+        - type: "vacuumGripper"
+          name: "VacuumGripper01"
+        - type: "vacuumGripper"
+          name: "VacuumGripper02"
+        - type: "conveyorBelt"
+          name: "ConveyorBelt01"
+        - type: "sortingLine"
+          name: "SortingLine01"
+        - type: "multiProcessingStation"
+          name: "MultiProcessing01"
+        - type: "punchingMachine"
+          name: "PunchingMachine01"
+        - type: "highBayWarehouse"
+          name: "HighBay01"
+        - type: "indexedLine"
+          name: "IndexedLine01"
+  machineNameMappings:
+    - logicalName: "REN_MISSION_01/SL01"
+      machineName: "SortingLine01"
+    - logicalName: "REN_MISSION_01/VGR02"
+      machineName: "VacuumGripper02"
+    - logicalName: "REN_MISSION_01/CB01"
+      machineName: "ConveyorBelt01"
+    - logicalName: "REN_MISSION_01/VGR01"
+      machineName: "VacuumGripper01"
+    - logicalName: "REN_MISSION_01/MPS01"
+      machineName: "MultiProcessing01"

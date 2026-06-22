@@ -12,6 +12,7 @@ import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import io.github.mbdo.factoryscada.mqtt.MqttPublisherService;
 import io.github.mbdo.factoryscada.service.FactoryScada;
+import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
 import io.github.mbdo.factoryscada.service.MachineNameMappingService;
 import org.junit.jupiter.api.Test;
 
@@ -123,7 +124,8 @@ class DemoTest {
 
   private static DemoFixture createDemoFixture() {
     FactoryScada factoryScada = mock(FactoryScada.class);
-    when(factoryScada.getFactoryScadaConfiguration()).thenReturn(new FactoryScadaConfiguration(
+    FactoryScadaConfigurationProvider factoryScadaConfigurationProvider = mock(FactoryScadaConfigurationProvider.class);
+    when(factoryScadaConfigurationProvider.getFactoryScadaConfiguration()).thenReturn(new FactoryScadaConfiguration(
             "configuration",
             null,
             List.of(new FactoryScadaConfiguration.ControllerConfiguration( "plc1", "localhost", 6001, 6011,
@@ -141,7 +143,7 @@ class DemoTest {
                     new FactoryScadaConfiguration.MachineNameMapping("DynamicMission/Demo/MPS","I1MultiProcessing01")
             )
     ));
-    MachineNameMappingService machineNameMapping = new MachineNameMappingService(factoryScada);
+    MachineNameMappingService machineNameMapping = new MachineNameMappingService(factoryScadaConfigurationProvider);
     SortingLineMachine sortingLine = mock(SortingLineMachine.class);
     VacuumGripperMachine vacuumGripper2 = mock(VacuumGripperMachine.class);
     ConveyorBeltMachine conveyorBelt = mock(ConveyorBeltMachine.class);
@@ -149,7 +151,7 @@ class DemoTest {
     MultiProcessingStationMachine multiProcessingStation = mock(MultiProcessingStationMachine.class);
     MqttPublisherService mqttPublisher = mock(MqttPublisherService.class);
     Demo demo = new Demo(factoryScada, machineNameMapping, mqttPublisher);
-    BrokenCBDemo brokenCBDemo = new BrokenCBDemo(factoryScada,machineNameMapping, mqttPublisher);
+    BrokenCBDemo brokenCBDemo = new BrokenCBDemo(factoryScada, machineNameMapping, mqttPublisher);
     DynamicMissionService service = new DynamicMissionService(factoryScada, demo, brokenCBDemo);
     DemoFixture fixture = new DemoFixture(
         service,

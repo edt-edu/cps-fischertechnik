@@ -16,23 +16,24 @@ import java.util.List;
 @Slf4j
 @Service
 public class MachineNameMappingService {
-    private final FactoryScada factoryScada;
+
+    private final FactoryScadaConfigurationProvider factoryScadaConfigurationProvider;
 
     private final HashMap<String, String> logicalNameToMachineName = new HashMap<>();
     private final HashMap<String, List<String>> machineNameToLogicalNames = new HashMap<>();
-    
-    public MachineNameMappingService(FactoryScada factoryScada) {
-        this.factoryScada = factoryScada;
+
+    public MachineNameMappingService(FactoryScadaConfigurationProvider factoryScadaConfigurationProvider) {
+        this.factoryScadaConfigurationProvider = factoryScadaConfigurationProvider;
         loadMappings();
     }
 
     private void loadMappings() {
-        final List<FactoryScadaConfiguration.MachineNameMapping> mappings = factoryScada.getFactoryScadaConfiguration().machineNameMappings();
+        final List<FactoryScadaConfiguration.MachineNameMapping> mappings = factoryScadaConfigurationProvider.getFactoryScadaConfiguration().machineNameMappings();
         if(mappings == null || mappings.isEmpty()) {
             log.warn("No Machine name mapping found, please verify your factory configuration file");
             return;
         }
-        for(FactoryScadaConfiguration.MachineNameMapping mapping : factoryScada.getFactoryScadaConfiguration().machineNameMappings()){
+        for(FactoryScadaConfiguration.MachineNameMapping mapping : factoryScadaConfigurationProvider.getFactoryScadaConfiguration().machineNameMappings()){
             logicalNameToMachineName.put(mapping.logicalName(), mapping.machineName());
             if(!machineNameToLogicalNames.containsKey(mapping.machineName())){
                 machineNameToLogicalNames.put(mapping.machineName(), new ArrayList<>());

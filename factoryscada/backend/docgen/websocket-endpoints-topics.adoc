@@ -30,22 +30,6 @@
 |<<incoming_sortingline-machinename-command-status,/sortingLine/{machineName}/command-status>>
 |<<outgoing_topic-machinename-command-status,/topic/{machineName}/command-status>>
 
-|FactoryScadaController.getFactoryInstance()
-|<<incoming_factory-instance,/factory/instance>>
-|<<outgoing_topic-factory-instance,/topic/factory-instance>>
-
-|FactoryScadaController.handleUnmappedMessage()
-|<<incoming_factory,/factory**>>
-|  
-
-|FactoryScadaController.getFactoryConfiguration()
-|<<incoming_factory-configuration,/factory/configuration>>
-|<<outgoing_topic-factory-configuration,/topic/factory-configuration>>
-
-|FactoryScadaController.getCommandPlaceholder()
-|<<incoming_factory-placeholder,/factory/placeholder>>
-|<<outgoing_topic-command-placeholder,/topic/command-placeholder>>
-
 |MultiProcessingStationController.executeSetupCommand()
 |<<incoming_multiprocessingstation-machinename-command-setup,/multiProcessingStation/{machineName}/command/setup>>
 |  
@@ -186,54 +170,6 @@
 |<<incoming_dynamic-mission-missions,/dynamic-mission/missions>>
 |<<outgoing_topic-dynamic-missions,/topic/dynamic-missions>>
 
-|IndexedLineController.receiveMoveToMillCommand()
-|<<incoming_indexedline-machinename-command-move-to-mill,/indexedLine/{machineName}/command/move_to_mill>>
-|  
-
-|IndexedLineController.receiveProcessCommand()
-|<<incoming_indexedline-machinename-command-process,/indexedLine/{machineName}/command/process>>
-|  
-
-|IndexedLineController.receiveMillCommand()
-|<<incoming_indexedline-machinename-command-mill,/indexedLine/{machineName}/command/mill>>
-|  
-
-|IndexedLineController.receiveMoveToDrillCommand()
-|<<incoming_indexedline-machinename-command-move-to-drill,/indexedLine/{machineName}/command/move_to_drill>>
-|  
-
-|IndexedLineController.handleUnmappedMessage()
-|<<incoming_indexedline,/indexedLine**>>
-|  
-
-|IndexedLineController.receiveStopCommand()
-|<<incoming_indexedline-machinename-command-stop,/indexedLine/{machineName}/command/stop>>
-|  
-
-|IndexedLineController.receiveDebugCommand()
-|<<incoming_indexedline-machinename-command-debug,/indexedLine/{machineName}/command/debug>>
-|  
-
-|IndexedLineController.getMachineStatus()
-|<<incoming_indexedline-machinename-machine-status,/indexedLine/{machineName}/machine-status>>
-|<<outgoing_topic-machinename-machine-status,/topic/{machineName}/machine-status>>
-
-|IndexedLineController.receiveDrillCommand()
-|<<incoming_indexedline-machinename-command-drill,/indexedLine/{machineName}/command/drill>>
-|  
-
-|IndexedLineController.receiveMoveToOutputCommand()
-|<<incoming_indexedline-machinename-command-move-to-output,/indexedLine/{machineName}/command/move_to_output>>
-|  
-
-|IndexedLineController.receiveProcess1Command()
-|<<incoming_indexedline-machinename-command-process1,/indexedLine/{machineName}/command/process1>>
-|  
-
-|IndexedLineController.getCommandStatus()
-|<<incoming_indexedline-machinename-command-status,/indexedLine/{machineName}/command-status>>
-|<<outgoing_topic-machinename-command-status,/topic/{machineName}/command-status>>
-
 |VacuumGripperController.executeSetupCommand()
 |<<incoming_vacuumgripper-machinename-command-setup,/vacuumGripper/{machineName}/command/setup>>
 |  
@@ -296,10 +232,6 @@
 
 |VacuumGripperController.executeGoToPositionCommand()
 |<<incoming_vacuumgripper-machinename-command-go-to-position,/vacuumGripper/{machineName}/command/go_to_position>>
-|  
-
-|LogsWebSocketController.requestFrontendLogs()
-|<<incoming_logs-request,/logs/request>>
 |  
 
 |HighBayWarehouseController.executeSetupCommand()
@@ -372,6 +304,106 @@
 
 |HighBayWarehouseController.executeVerticalToCommand()
 |<<incoming_highbaywarehouse-machinename-command-vertical-to,/highBayWarehouse/{machineName}/command/vertical_to>>
+|  
+
+|FactoryScadaController.getFactoryInstance()
+|<<incoming_factory-instance,/factory/instance>>
+|<<outgoing_topic-factory-instance,/topic/factory-instance>>
+
+|FactoryScadaController.handleUnmappedMessage()
+|<<incoming_factory,/factory**>>
+|  
+
+|FactoryScadaController.getFactoryConfiguration()
+|<<incoming_factory-configuration,/factory/configuration>>
+|<<outgoing_topic-factory-configuration,/topic/factory-configuration>>
+
+|FactoryScadaController.getCommandPlaceholder()
+|<<incoming_factory-placeholder,/factory/placeholder>>
+|<<outgoing_topic-command-placeholder,/topic/command-placeholder>>
+
+|IndexedLineController.receiveMoveToMillCommand()
+|<<incoming_indexedline-machinename-command-move-to-mill,/indexedLine/{machineName}/command/move_to_mill>>
+|  
+
+|IndexedLineController.receiveProcessCommand()
+|<<incoming_indexedline-machinename-command-process,/indexedLine/{machineName}/command/process>>
+|  
+
+|IndexedLineController.receiveMillCommand()
+|<<incoming_indexedline-machinename-command-mill,/indexedLine/{machineName}/command/mill>>
+|  
+
+|IndexedLineController.receiveMoveToDrillCommand()
+|<<incoming_indexedline-machinename-command-move-to-drill,/indexedLine/{machineName}/command/move_to_drill>>
+|  
+
+|IndexedLineController.handleUnmappedMessage()
+|<<incoming_indexedline,/indexedLine**>>
+|  
+
+|IndexedLineController.receiveStopCommand()
+|<<incoming_indexedline-machinename-command-stop,/indexedLine/{machineName}/command/stop>>
+|  
+
+|IndexedLineController.receiveDebugCommand()
+|<<incoming_indexedline-machinename-command-debug,/indexedLine/{machineName}/command/debug>>
+|  
+
+|IndexedLineController.getMachineStatus()
+|<<incoming_indexedline-machinename-machine-status,/indexedLine/{machineName}/machine-status>>
+|<<outgoing_topic-machinename-machine-status,/topic/{machineName}/machine-status>>
+
+|IndexedLineController.receiveDrillCommand()
+|<<incoming_indexedline-machinename-command-drill,/indexedLine/{machineName}/command/drill>>
+|  
+
+|IndexedLineController.receiveMoveToOutputCommand()
+|<<incoming_indexedline-machinename-command-move-to-output,/indexedLine/{machineName}/command/move_to_output>>
+|  
+
+|IndexedLineController.receiveProcess1Command()
+|<<incoming_indexedline-machinename-command-process1,/indexedLine/{machineName}/command/process1>>
+|  
+
+|IndexedLineController.getCommandStatus()
+|<<incoming_indexedline-machinename-command-status,/indexedLine/{machineName}/command-status>>
+|<<outgoing_topic-machinename-command-status,/topic/{machineName}/command-status>>
+
+|LogsWebSocketController.requestFrontendLogs()
+|<<incoming_logs-request,/logs/request>>
+|  
+
+|MissionExtensionController.getConfigurationStomp()
+|<<incoming_mission-extension-configuration,/mission-extension/configuration>>
+|  
+
+|MissionExtensionController.stopGlobalMissionStomp()
+|<<incoming_mission-extension-global-stop,/mission-extension/global/stop>>
+|  
+
+|MissionExtensionController.stopMissionStomp()
+|<<incoming_mission-extension-stop,/mission-extension/stop>>
+|  
+
+|MissionExtensionController.startMissionStomp()
+|<<incoming_mission-extension-start,/mission-extension/start>>
+|  
+
+|MissionExtensionController.stopActiveMissionStomp()
+|<<incoming_mission-extension-stop-active,/mission-extension/stop-active>>
+|  
+
+|MissionExtensionController.startGlobalMissionStomp()
+|<<incoming_mission-extension-global-start,/mission-extension/global/start>>
+|  
+
+|MissionExtensionController.getLogsStomp()
+|<<incoming_mission-extension-logs,/mission-extension/logs>>
+|  
+
+|MissionExtensionController.setGlobalMissionMachineOverrideStomp()
+|<<incoming_mission-extension-global-override,/mission-extension/global/override>>
 |  
 
 |MissionOrchestratorController.stopMission()
@@ -2743,6 +2775,169 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_mission-extension-configuration]]
+===  Incoming Topic: `/mission-extension/configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.getConfigurationStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-logs]]
+===  Incoming Topic: `/mission-extension/logs`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.getLogsStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-start]]
+===  Incoming Topic: `/mission-extension/start`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.startMissionStomp()`
+
+==== Parameters
+
+- `command` (MissionExecutionCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExecutionCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-stop]]
+===  Incoming Topic: `/mission-extension/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopMissionStomp()`
+
+==== Parameters
+
+- `command` (MissionExecutionCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExecutionCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-stop-active]]
+===  Incoming Topic: `/mission-extension/stop-active`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopActiveMissionStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-global-start]]
+===  Incoming Topic: `/mission-extension/global/start`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.startGlobalMissionStomp()`
+
+==== Parameters
+
+- `command` (GlobalMissionStartCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:GlobalMissionStartCommandDTO",
+  "properties" : {
+    "globalMissionName" : {
+      "type" : "string"
+    },
+    "machineOverrides" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "string"
+      }
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-global-override]]
+===  Incoming Topic: `/mission-extension/global/override`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.setGlobalMissionMachineOverrideStomp()`
+
+==== Parameters
+
+- `command` (GlobalMissionMachineOverrideCommandDTO)
+
+==== Request Payload
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:GlobalMissionMachineOverrideCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_mission-extension-global-stop]]
+===  Incoming Topic: `/mission-extension/global/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopGlobalMissionStomp()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
 [[incoming_factorymission-command-start-missionname]]
 ===  Incoming Topic: `/factoryMission/command/start/{missionName}`
 
@@ -2792,7 +2987,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -2801,7 +2996,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -2813,7 +3008,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -2822,7 +3017,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
@@ -2896,7 +3091,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -2905,7 +3100,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -2917,7 +3112,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -2926,7 +3121,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
@@ -5621,42 +5816,6 @@ NOTE: This endpoint does not send a response back via a topic.
 == Outgoing Topics
 
 
-=== Outgoing Topic: `/topic/controller-feedbacks`
-_Broadcasts raw feedback from the controller_
-
-Payload: `String`
-{
-  "type" : "string"
-}
-
-=== Outgoing Topic: `/topic/frontend-logs`
-_All logs that should appear in the frontend_
-
-Payload: `String`
-{
-  "type" : "string"
-}
-
-=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
-_Broadcasts PLC connection status updates_
-
-Payload: `PlcConnectionStatusDto`
-{
-  "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
-  "properties" : {
-    "controllerName" : {
-      "type" : "string"
-    },
-    "commandPortConnected" : {
-      "type" : "boolean"
-    },
-    "notificationPortConnected" : {
-      "type" : "boolean"
-    }
-  }
-}
-
 === Outgoing Topic: `/topic/{machineName}/command-status`
 _Broadcasts Command status updates_
 
@@ -5731,6 +5890,42 @@ Payload: `CommandStatusDTO`
       "type" : "string"
     }
   }
+}
+
+=== Outgoing Topic: `/topic/frontend-logs`
+_All logs that should appear in the frontend_
+
+Payload: `String`
+{
+  "type" : "string"
+}
+
+=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
+_Broadcasts PLC connection status updates_
+
+Payload: `PlcConnectionStatusDto`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
+}
+
+=== Outgoing Topic: `/topic/controller-feedbacks`
+_Broadcasts raw feedback from the controller_
+
+Payload: `String`
+{
+  "type" : "string"
 }
 [[outgoing_topic-machinename-command-status]]
 === Outgoing Topic: `/topic/{machineName}/command-status`
@@ -6235,7 +6430,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -6244,7 +6439,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -6256,7 +6451,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -6265,7 +6460,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {
@@ -6350,7 +6545,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ----
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:FactoryMissionsParallelized_dto",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:FactoryMissionsParallelized_dto",
   "properties" : {
     "name" : {
       "type" : "string"
@@ -6359,7 +6554,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
       "type" : "array",
       "items" : {
         "type" : "object",
-        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:MissionParallelized_dto",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:MissionParallelized_dto",
         "properties" : {
           "name" : {
             "type" : "string"
@@ -6371,7 +6566,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
             "type" : "array",
             "items" : {
               "type" : "object",
-              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
               "properties" : {
                 "type" : {
                   "type" : "string"
@@ -6380,7 +6575,7 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
                   "type" : "array",
                   "items" : {
                     "type" : "object",
-                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dtos:Node_dto"
+                    "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
                   }
                 },
                 "id" : {

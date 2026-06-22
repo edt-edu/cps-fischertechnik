@@ -1,7 +1,7 @@
-import {Component} from '@angular/core';
-import {RouterOutlet} from "@angular/router";
-import {MenubarModule} from 'primeng/menubar';
-import {MenuItem} from 'primeng/api';
+import { Component } from '@angular/core';
+import { RouterOutlet } from "@angular/router";
+import { MenubarModule } from 'primeng/menubar';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -37,7 +37,7 @@ export class DashboardLayoutComponent {
           {
             label: 'Machine Command',
             icon: 'pi pi-cog',
-          //  icon: 'pi pi-sliders-h',
+            //  icon: 'pi pi-sliders-h',
             routerLink: 'direct-command'
           },
           {
@@ -56,7 +56,12 @@ export class DashboardLayoutComponent {
         label: 'Dynamic Mission',
         icon: 'pi pi-sitemap',
         routerLink: 'dynamic-mission'
-      }
+      },
+      {
+        label: 'Mission Extension',
+        icon: 'pi pi-sitemap',
+        routerLink: 'mission-extension'
+      },
     ];
   }
 }
