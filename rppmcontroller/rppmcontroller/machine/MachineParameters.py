@@ -37,7 +37,7 @@ class AxisMonitorParameters:
     expected one"""
     major_deviation_penalty: int = 2
     """The amount of penalty points for when the axis has not moved at all"""
-    penalty_threshold: int = 20
+    penalty_threshold: int = 400
     """The amount of penalty points that needs to be reached for the controller
     to take action and abort the current command or consider it completed.
     The exact kind of action taken may be machine-specific."""
