@@ -11,7 +11,7 @@ from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
-from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor, CycleData)
+from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor)
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -74,7 +74,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.__axisVertical,
             f"{id1} vertical axis")
         rot_writer = CSVWriter(f"{id1}_rot.csv")
-        CycleData.add_csv_header(rot_writer)
+        NamedAxisMonitor.add_csv_header(rot_writer)
         self.__rotational_axis_monitor = NamedAxisMonitor.new(
             parameters.rotational_axis_monitor_parameters,
             self.__axisRot,
@@ -525,7 +525,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.pwmVertical = self.parameters.pwm_standard_speed
 
         self.stop_runners()
-        
+
         # since all movement is stopped, the go_to_config_CycleStep method is
         #  probably not called anmore thus we lose our track of time.
         # To avoid problems, we clear the buffers.

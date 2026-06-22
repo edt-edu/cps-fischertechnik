@@ -26,6 +26,8 @@ class NamedAxisMonitor:
     """The monitored Axis"""
     axis_name: str
     """The name of the Axis, for debugging purposes"""
+    csv_writer: CSVWriter | None = None
+    """An optional writer to write recorded data to"""
 
     @staticmethod
     def new(parameters: AxisMonitorParameters,
@@ -37,13 +39,14 @@ class NamedAxisMonitor:
         :param parameters: Configuration for the AxisMonitor
         :param axis: The Axis to monitor
         :param axis_name: The name of the Axis, for debugging purposes
-        :param csv_writer: An optional writer to write the recorded data to.
+        :param csv_writer: An optional writer to write the recorded data to
         :return: The created AxisContainingMonitor
         """
-        return NamedAxisMonitor(AxisMonitor.new(parameters, csv_writer),
+        return NamedAxisMonitor(AxisMonitor.new(parameters),
                                 parameters,
                                 axis,
-                                axis_name)
+                                axis_name,
+                                csv_writer)
 
     def __debug(self, msg: str) -> None:
         logging.debug(f"[{self.axis_name}] {msg}")
@@ -93,9 +96,25 @@ class NamedAxisMonitor:
         """
         deviation = self.monitor.record(self.axis.counterValueCurrent,
                                         current_pwm_value)
+        last_recorded_data = self.monitor.last_recorded_data
+        if last_recorded_data is not None:
+            self.__log_to_csv(last_recorded_data)
         if deviation != Deviation.NONE:
             self.__debug(f"Recorded {deviation}")
         return deviation
+
+    def __log_to_csv(self, data: CycleData):
+        if self.csv_writer is not None:
+            self.csv_writer.write([data.counter_value, data.pwm_value, data.moved_distance, str(data.deviation), self.calculate_total_penalty()])
+
+    @staticmethod
+    def add_csv_header(csv_writer: CSVWriter):
+        """Add a header to the csv writer for the kind of data logged by this"""
+        csv_writer.write(["counter_value",
+                          "pwm_value",
+                          "moved_distance",
+                          "deviation",
+                          "total_penalty"])
 
 
 class AxisMonitor:
@@ -104,25 +123,21 @@ class AxisMonitor:
     """
 
     @staticmethod
-    def new(parameters: AxisMonitorParameters,
-            csv_writer: CSVWriter | None = None) -> AxisMonitor:
+    def new(parameters: AxisMonitorParameters) -> AxisMonitor:
         """
         Create a new AxisMonitor from AxisMonitorParameters and an Axis
         :param parameters: The AxisMonitorParameters to configure the
             AxisMonitor
-        :param csv_writer: An optional writer to write the recorded data to.
         :return: The created AxisMonitor
         """
         return AxisMonitor(parameters.cycles_to_monitor,
                            parameters.required_cycles_to_average,
-                           parameters.movement_tolerance,
-                           csv_writer)
+                           parameters.movement_tolerance)
 
     def __init__(self,
                  cycles_to_monitor: int,
                  required_cycles_to_average: int,
-                 movement_tolerance: int,
-                 csv_writer: CSVWriter | None = None):
+                 movement_tolerance: int):
         """
         Create a new AxisMonitor
         :param cycles_to_monitor: Number of cycles for that will be stored,
@@ -136,8 +151,6 @@ class AxisMonitor:
             cycles to monitor.
         :param movement_tolerance: Movement below this threshold will be
             treated like the axis didn't move at all.
-        :param csv_writer: An optional writer to write the recorded data to.
-            The header should be set to the fields of CycleData.
         """
 
         self.__buffer: list[CycleData] = []
@@ -156,8 +169,8 @@ class AxisMonitor:
         self.__movement_tolerance = movement_tolerance
         """Movement below this threshold will be
         treated like the axis didn't move at all."""
-        self.__csv_writer = csv_writer
-        """csv writer for logging recorded CycleData"""
+        self.__last_recorded_data: CycleData | None = None
+        """The last data that was recorded"""
 
         if cycles_to_monitor < 1:
             raise ValueError("At least one cycle must be monitored")
@@ -165,6 +178,10 @@ class AxisMonitor:
         if required_cycles_to_average > cycles_to_monitor:
             raise ValueError("Required cycles to average must not exceed the "
                              "number of cycles to monitor")
+
+    @property
+    def last_recorded_data(self) -> CycleData | None:
+        return self.__last_recorded_data
 
     def record(self,
                current_counter_value: int,
@@ -205,12 +222,8 @@ class AxisMonitor:
                              moved_distance,
                              deviation)
         self.__push_to_buffer(new_data)
-        self.__log_to_csv(new_data)
+        self.__last_recorded_data = new_data
         return deviation
-
-    def __log_to_csv(self, data: CycleData):
-        if self.__csv_writer is not None:
-            self.__csv_writer.write([data.counter_value, data.pwm_value, data.moved_distance, str(data.deviation)])
 
     def get_recorded_deviations(self) -> list[Deviation]:
         """
@@ -344,11 +357,6 @@ class CycleData:
     """The moved distance since the last cycle"""
     deviation: Deviation
     """How much the moved distance deviates from the expected movement"""
-
-    @staticmethod
-    def add_csv_header(csv_writer: CSVWriter):
-        """Add a header to the csv writer for this datatype"""
-        csv_writer.write(["counter_value", "pwm_value", "moved_distance", "deviation"])
 
 
 class Deviation(Enum):
