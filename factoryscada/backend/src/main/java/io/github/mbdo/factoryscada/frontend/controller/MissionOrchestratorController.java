@@ -44,6 +44,7 @@ public class MissionOrchestratorController {
         this.factoryScada = beanFactory.getBean(FactoryScada.class);
         this.factoryScadaInstance = factoryScada.getFactoryScadaInstance();
         this.factoryScadaConfigurationProvider = beanFactory.getBean(FactoryScadaConfigurationProvider.class);
+        this.factoryMissionsParallelizedProvider = beanFactory.getBean(FactoryMissionsParallelizedProvider.class);
     }
 
     @MessageMapping("/mission-configuration")
