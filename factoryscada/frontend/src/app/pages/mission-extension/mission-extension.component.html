@@ -1,0 +1,103 @@
+<p-tabView>
+  <!-- Tab 1: Global Mission -->
+  <p-tabPanel header="Mission">
+    <div class="tab-content">
+      <!-- Selector + buttons in one row -->
+      <div class="global-controls">
+        <p-dropdown [options]="globalMissions" [(ngModel)]="selectedGlobalMissionName" optionLabel="name"
+          optionValue="name" (onChange)="onGlobalMissionSelected()" [showClear]="true"
+          placeholder="Select a global mission" [style]="{ width: '18rem' }" />
+
+        <p-button label="Start" icon="pi pi-play" (click)="onStartGlobalMission()"
+          [disabled]="!selectedGlobalMission || isGlobalMissionActive" severity="success" size="small" />
+        <p-button label="Stop" icon="pi pi-stop" (click)="onStopGlobalMission()" [disabled]="!isGlobalMissionActive"
+          severity="danger" size="small" />
+
+        @if (isGlobalMissionActive) {
+        <span class="status-badge active">Running</span>
+        }
+
+        @if (selectedGlobalMission) {
+        <span class="description-inline">{{ selectedGlobalMission.description }}</span>
+        }
+      </div>
+
+      <!-- Mission details when running or when logs exist from a previous run -->
+      @if (shouldShowMissionsDetail) {
+      <div class="missions-detail">
+        @for (entry of missionDisplayEntries; track entry.mission) {
+        <p-panel [toggleable]="true" [collapsed]="true" styleClass="mission-panel">
+          <ng-template pTemplate="header">
+            <div class="panel-header-content">
+              <span class="panel-mission-name">{{ entry.mission }}</span>
+              <span class="panel-state" [class.idle]="!isMissionCommandRunning(entry.mission)">
+                {{ getMissionActiveState(entry.mission) || '—' }}
+              </span>
+              <span class="panel-command" [class.executing]="isMissionCommandRunning(entry.mission)">
+                @if (isMissionCommandRunning(entry.mission)) {
+                  <i class="pi pi-spin pi-spinner"></i>
+                } @else {
+                  Idle
+                }
+              </span>
+              <span class="panel-separator"></span>
+              <span class="panel-machines">
+                @for (m of getMissionMachines(entry.mission); track m) {
+                <span class="machine-id">{{ m }}</span>
+                }
+              </span>
+            </div>
+          </ng-template>
+          <!-- Collapsed content: logs only -->
+          <div class="log-list" #logList>
+            @for (log of getMissionLogs(entry.mission); track $index) {
+            <div class="log-entry">
+              <span class="log-msg">{{ log }}</span>
+            </div>
+            }
+            @if (getMissionLogs(entry.mission).length === 0) {
+            <div class="log-entry empty">No activity yet</div>
+            }
+          </div>
+        </p-panel>
+        }
+      </div>
+      }
+    </div>
+  </p-tabPanel>
+
+  <!-- Tab 2: Machine Individual Mission -->
+  <p-tabPanel header="Machine Individual Mission">
+    <div class="tab-content">
+      <div class="individual-controls">
+        <p-dropdown [options]="allMissionOptions" [(ngModel)]="selectedIndividualMissionName" optionLabel="name"
+          optionValue="name" (onChange)="onIndividualMissionSelected()" [showClear]="true"
+          placeholder="Select a mission" [style]="{ width: '16rem' }" />
+        <p-dropdown [options]="compatibleMachines" [(ngModel)]="selectedIndividualMachineName" optionLabel="name"
+          optionValue="name" [disabled]="!selectedIndividualMissionName" placeholder="Select a machine"
+          [style]="{ width: '14rem' }" />
+        <p-button label="Start" icon="pi pi-play" (click)="onStartIndividualMission()" [disabled]="!canStartIndividual"
+          severity="success" size="small" />
+        <p-button label="Stop" icon="pi pi-stop" (click)="onStopIndividualMission()" [disabled]="!canStopIndividual"
+          severity="danger" size="small" />
+      </div>
+
+      @if (selectedIndividualMissionName) {
+      <p class="description-inline">{{ selectedIndividualMissionDescription }}</p>
+      }
+
+      @if (hasAnyRunningMission) {
+      <div class="running-missions">
+        <span class="label">Running:</span>
+        @for (machine of machines; track machine.name) {
+        @if (machine.activeMissionName) {
+        <span class="running-chip">{{ machine.name }}: {{ machine.activeMissionName }}</span>
+        }
+        }
+      </div>
+      }
+    </div>
+  </p-tabPanel>
+</p-tabView>
+
+<app-log-table-widget />

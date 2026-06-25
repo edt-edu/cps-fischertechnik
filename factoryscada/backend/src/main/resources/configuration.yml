@@ -32,8 +32,8 @@ configuration:
   #       - type: "multiProcessingStation"
   #         name: "MultiProcessing01"
   #       - type: "highBayWarehouse"
-  #         name: "HighBayWarehouse01" 
-    
+  #         name: "HighBayWarehouse01"
+
 #    - name: "plc-4"
 #      host: 'localhost'
 #      commandPort: 6001
@@ -85,3 +85,14 @@ configuration:
       machineName: "I1VacuumGripper01"
     - logicalName: "DynamicMission/Demo/MPS"
       machineName: "I1MultiProcessing01"
+      ####
+    - logicalName: "REN_MISSION_01/SL01"
+      machineName: "SortingLine01"
+    - logicalName: "REN_MISSION_01/VGR02"
+      machineName: "VacuumGripper02"
+    - logicalName: "REN_MISSION_01/CB01"
+      machineName: "ConveyorBelt01"
+    - logicalName: "REN_MISSION_01/VGR01"
+      machineName: "VacuumGripper01"
+    - logicalName: "REN_MISSION_01/MPS01"
+      machineName: "MultiProcessing01"

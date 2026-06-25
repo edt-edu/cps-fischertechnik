@@ -53,14 +53,26 @@ public class VacuumGripperMachine extends AbstractMachine {
         new MoveCommand(this, moveDTO).execute();
     }
 
+    public void pick(Position position) {
+        pick(createCommandDTO("pick", position.toParameter()));
+    }
+
     public void pick(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> pickDTO) {
         log.info("Picking with vacuum gripper {}", pickDTO);
         new PickCommand(this, pickDTO).execute();
     }
 
+    public void place(Position position) {
+        place(createCommandDTO("place", position.toParameter()));
+    }
+
     public void place(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> placeDTO) {
         log.info("Placing with vacuum gripper {}", placeDTO);
         new PlaceCommand(this, placeDTO).execute();
+    }
+
+    public void goToPosition(Position position) {
+        go_to_position(createCommandDTO("go_to_position", position.toParameter()));
     }
 
     public void setup() {
@@ -72,14 +84,26 @@ public class VacuumGripperMachine extends AbstractMachine {
         new SetupCommand(this, setupDTO).execute();
     }
 
+    public void statusRequest() {
+        status(createCommandDTO("statusRequest"));
+    }
+
     public void status(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> statusDTO) {
         log.info("Checking status of vacuum gripper {}", statusDTO);
         new StatusCommand(this, statusDTO).execute();
     }
 
+    public void grip() {
+        grip(createCommandDTO("grip"));
+    }
+
     public void grip(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> gripDTO) {
         log.info("Activate grip of the vacuum gripper {}", gripDTO);
         new GripCommand(this, gripDTO).execute();
+    }
+
+    public void release() {
+        release(createCommandDTO("release"));
     }
 
     public void release(@Valid @NotNull final GenericMachineCommandDTO<VacuumGripperMachine> releaseDTO) {

@@ -45,6 +45,10 @@ public class ConveyorBeltMachine extends AbstractMachine {
         return "CONVEYOR";
     }
 
+    public void moveToSensor() {
+        moveToSensor(DirectionKind.FORWARD);
+    }
+
     public void moveToSensor(DirectionKind direction) {
         moveToSensor(createCommandDTO("move_to_sensor", Parameter.direction(direction)));
     }
@@ -54,9 +58,17 @@ public class ConveyorBeltMachine extends AbstractMachine {
         new MoveToSensor(this, forwardLeaveDTO).execute();
     }
 
+    public void moveNbSteps() {
+        moveNbSteps(createCommandDTO("move_nb_steps"));
+    }
+
     public void moveNbSteps(@Valid @NotNull final GenericMachineCommandDTO<ConveyorBeltMachine> gotoConfigDTO) {
         log.info("Goto config conveyor {}", gotoConfigDTO);
         new MoveNbStepsCommand(this, gotoConfigDTO).execute();
+    }
+
+    public void moveOut() {
+        moveOut(createCommandDTO("move_out"));
     }
 
     public void moveOut(@Valid @NotNull final GenericMachineCommandDTO<ConveyorBeltMachine> moveDTO) {

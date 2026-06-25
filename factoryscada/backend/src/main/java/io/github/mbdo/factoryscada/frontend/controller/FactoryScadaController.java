@@ -3,6 +3,7 @@ package io.github.mbdo.factoryscada.frontend.controller;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.service.FactoryScada;
+import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
@@ -23,7 +24,7 @@ public class FactoryScadaController {
     private final BeanFactory beanFactory;
 
     protected FactoryScadaInstance factoryScadaInstance;
-    protected FactoryScadaConfiguration factoryScadaConfiguration;
+    protected FactoryScadaConfigurationProvider factoryScadaConfigurationProvider;
     protected Map<String, Map<String, String>> commandPlaceholder;
 
     @Autowired
@@ -35,7 +36,7 @@ public class FactoryScadaController {
     private void init() {
         FactoryScada factoryScada = beanFactory.getBean(FactoryScada.class);
         this.factoryScadaInstance = factoryScada.getFactoryScadaInstance();
-        this.factoryScadaConfiguration = factoryScada.getFactoryScadaConfiguration();
+        this.factoryScadaConfigurationProvider = beanFactory.getBean(FactoryScadaConfigurationProvider.class);
         this.commandPlaceholder = factoryScada.getCommandPlaceholder();
     }
 
@@ -50,7 +51,7 @@ public class FactoryScadaController {
     @SendTo("/topic/factory-configuration")
     public FactoryScadaConfiguration getFactoryConfiguration() {
         log.info("Received WS request on /factory/configuration");
-        return factoryScadaConfiguration;
+        return factoryScadaConfigurationProvider.getFactoryScadaConfiguration();
     }
 
     @MessageMapping("/instance")
@@ -59,7 +60,7 @@ public class FactoryScadaController {
         log.info("Received WS request on /factory/factory/instance");
         return factoryScadaInstance;
     }
-    
+
     @MessageMapping("**")
     public void handleUnmappedMessage(
     		@Header("simpDestination") String destination,

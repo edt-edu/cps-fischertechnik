@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.frontend.controller;
 
+import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -9,7 +10,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
-import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.service.FactoryScada;
@@ -22,13 +22,13 @@ import lombok.extern.slf4j.Slf4j;
 @MessageMapping("/plc")
 public class PlcController {
 
-	
+
     private final BeanFactory beanFactory;
 
     protected FactoryScada factoryScada;
     protected FactoryScadaInstance factoryScadaInstance;
-    protected FactoryScadaConfiguration factoryScadaConfiguration;
-    
+    protected FactoryScadaConfigurationProvider factoryScadaConfigurationProvider;
+
     @Autowired
     public PlcController(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
@@ -38,9 +38,9 @@ public class PlcController {
     private void init() {
         this.factoryScada = beanFactory.getBean(FactoryScada.class);
         this.factoryScadaInstance = factoryScada.getFactoryScadaInstance();
-        this.factoryScadaConfiguration = factoryScada.getFactoryScadaConfiguration();
+        this.factoryScadaConfigurationProvider = beanFactory.getBean(FactoryScadaConfigurationProvider.class);
     }
-    
+
     @MessageMapping("/{plcName}/plc-connection")
     @SendTo("/topic/{plcName}/plc-connection-status")
     public PlcConnectionStatusDto getPlcConnectionStatus(
@@ -60,7 +60,7 @@ public class PlcController {
         //this.factoryScada.getTemplate().convertAndSend("/topic/"+plcName+"/plc-connection-status", topicDto);
         return topicDto;
     }
-    
+
     @MessageMapping("**")
     public void handleUnmappedMessage(
     		@Header("simpDestination") String destination,

@@ -1,14 +1,12 @@
 package io.github.mbdo.factoryscada.frontend.controller;
 
-import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
-import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
-import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
-import io.github.mbdo.factoryscada.domains.mission.dtos.FactoryMissionsParallelized_dto;
-import io.github.mbdo.factoryscada.domains.mission.dtos.Node_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.FactoryMissionsParallelized_dto;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Node_dto;
+import io.github.mbdo.factoryscada.service.FactoryMissionsParallelizedProvider;
 import io.github.mbdo.factoryscada.service.FactoryScada;
+import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +20,6 @@ import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 
 @Slf4j
@@ -34,8 +31,9 @@ public class MissionOrchestratorController {
 
     protected FactoryScada factoryScada;
     protected FactoryScadaInstance factoryScadaInstance;
-    protected FactoryScadaConfiguration factoryScadaConfiguration;
-    
+    protected FactoryScadaConfigurationProvider factoryScadaConfigurationProvider;
+    protected FactoryMissionsParallelizedProvider factoryMissionsParallelizedProvider;
+
     @Autowired
     public MissionOrchestratorController(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
@@ -45,14 +43,14 @@ public class MissionOrchestratorController {
     private void init() {
         this.factoryScada = beanFactory.getBean(FactoryScada.class);
         this.factoryScadaInstance = factoryScada.getFactoryScadaInstance();
-        this.factoryScadaConfiguration = factoryScada.getFactoryScadaConfiguration();
+        this.factoryScadaConfigurationProvider = beanFactory.getBean(FactoryScadaConfigurationProvider.class);
     }
 
     @MessageMapping("/mission-configuration")
     @SendTo("/topic/mission-configuration")
     public FactoryMissionsParallelized_dto getFactoryMissionsConfiguration() {
         log.info("Received WS request on /factoryMission/mission-configuration");
-        return factoryScada.getMissionsParallelized_dto();
+        return factoryMissionsParallelizedProvider.getMissionsParallelized();
     }
 
     @MessageMapping("/actual-command-executing")
@@ -79,7 +77,7 @@ public class MissionOrchestratorController {
         log.info("Received WS request on /factoryMission/command/stop/");
         return factoryScada.getExecuterVisitor().stopMission();
     }
-    
+
     @MessageMapping("/status")
     @SendTo("/topic/mission-status")
     public String getMissionStatus(
