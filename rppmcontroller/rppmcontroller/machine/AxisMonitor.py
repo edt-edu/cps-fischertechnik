@@ -69,8 +69,28 @@ class NamedAxisMonitor:
         :return: `True` if the controller should take action in response to the
             recorded deviations
         """
-        return (self.calculate_total_penalty() >=
-                self.parameters.penalty_threshold)
+        total_penalty = self.calculate_total_penalty()
+        penalty_threshold = self.parameters.penalty_threshold
+        maximum_possible_penalty = self.calculate_maximum_possible_penalty()
+        if (penalty_threshold > maximum_possible_penalty and
+            total_penalty > maximum_possible_penalty / 2):
+            logging.warning(f"Penalty threshold of {penalty_threshold} "
+                            f"exceeds the maximum possible penalty of "
+                            f"{maximum_possible_penalty}. "
+                            f"This axis-monitor will never take action!")
+
+        return total_penalty >= penalty_threshold
+
+    def calculate_maximum_possible_penalty(self) -> int:
+        """
+        Calculates the highest possible penalty which can ever be achieved for
+        the parameter configuration of this. This is a theoretical limit and
+        the total penalty can never exceed this value.
+        :return: The maximum possible total penalty
+        """
+        return self.parameters.cycles_to_monitor * max(
+            self.parameters.minor_deviation_penalty,
+            self.parameters.major_deviation_penalty)
 
     def calculate_total_penalty(self) -> int:
         """
@@ -105,11 +125,16 @@ class NamedAxisMonitor:
 
     def __log_to_csv(self, data: CycleData):
         if self.csv_writer is not None:
-            self.csv_writer.write([data.counter_value, data.pwm_value, data.moved_distance, str(data.deviation), self.calculate_total_penalty()])
+            self.csv_writer.write([data.counter_value,
+                                   data.pwm_value,
+                                   data.moved_distance,
+                                   str(data.deviation),
+                                   self.calculate_total_penalty()])
 
     @staticmethod
     def add_csv_header(csv_writer: CSVWriter):
-        """Add a header to the csv writer for the kind of data logged by this"""
+        """Add a header to the csv writer for the kind of data logged by
+        this"""
         csv_writer.write(["counter_value",
                           "pwm_value",
                           "moved_distance",
@@ -226,6 +251,7 @@ class AxisMonitor:
         return deviation
 
     def get_recorded_deviations(self) -> list[Deviation]:
+        # noinspection PyUnresolvedReferences,GrazieInspection,GrazieStyle
         """
         Gets all recorded deviations of the monitored cycles.
 
