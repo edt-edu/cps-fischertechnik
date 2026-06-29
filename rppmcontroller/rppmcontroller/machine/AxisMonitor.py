@@ -8,6 +8,7 @@ from typing import TypeVar
 
 from rppmcontroller.machine.Axis import Axis
 from rppmcontroller.machine.MachineParameters import AxisMonitorParameters
+from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.utils.csv import CSVWriter
 
 
@@ -106,7 +107,7 @@ class NamedAxisMonitor:
         self.__debug(f"Total penalty: {penalty}")
         return penalty
 
-    def record(self, current_pwm_value) -> Deviation:
+    def record(self, current_pwm_value: int) -> Deviation:
         """
         Records the current counter-value of the axis for the given pwm value.
         For more details see AxisMonitor.record()
@@ -114,6 +115,9 @@ class NamedAxisMonitor:
             is moved
         :return: The recorded deviation
         """
+        if not self.monitor.is_ready_to_record():
+            return Deviation.NONE
+
         deviation = self.monitor.record(self.axis.counterValueCurrent,
                                         current_pwm_value)
         last_recorded_data = self.monitor.last_recorded_data
@@ -157,12 +161,14 @@ class AxisMonitor:
         """
         return AxisMonitor(parameters.cycles_to_monitor,
                            parameters.required_cycles_to_average,
-                           parameters.movement_tolerance)
+                           parameters.movement_tolerance,
+                           parameters.measurement_interval)
 
     def __init__(self,
                  cycles_to_monitor: int,
                  required_cycles_to_average: int,
-                 movement_tolerance: int):
+                 movement_tolerance: int,
+                 measurement_delay: float = 0):
         """
         Create a new AxisMonitor
         :param cycles_to_monitor: Number of cycles for that will be stored,
@@ -176,6 +182,8 @@ class AxisMonitor:
             cycles to monitor.
         :param movement_tolerance: Movement below this threshold will be
             treated like the axis didn't move at all.
+        :param measurement_delay: Number of seconds that must pass before a
+            new recorded measurement is actually recorded.
         """
 
         self.__buffer: list[CycleData] = []
@@ -196,6 +204,8 @@ class AxisMonitor:
         treated like the axis didn't move at all."""
         self.__last_recorded_data: CycleData | None = None
         """The last data that was recorded"""
+        self.__measurement_timer = Timer(measurement_delay)
+        """Timer which must expire before a new measurement is recorded"""
 
         if cycles_to_monitor < 1:
             raise ValueError("At least one cycle must be monitored")
@@ -208,6 +218,15 @@ class AxisMonitor:
     def last_recorded_data(self) -> CycleData | None:
         return self.__last_recorded_data
 
+    def is_ready_to_record(self) -> bool:
+        """
+        Checks whether the measurement-delay since the last measurement has
+        expired and thus a new measurement can be recorded.
+        :return: Whether a new measurement can be recorded
+        """
+        return (not self.__measurement_timer.is_started() or
+                self.__measurement_timer.elapsed())
+
     def record(self,
                current_counter_value: int,
                current_pwm_value: int) -> Deviation:
@@ -218,12 +237,21 @@ class AxisMonitor:
         deviates from the expected axis movement. The recorded deviation will
         be returned but can also be accessed via the
         `get_recorded_deviations()` method.
+
+        If the measurement-delay since the last measurement has not been
+        exceeded yet, no measurement will be recorded. As a result, no
+        deviation will be returned. One can check whether a new measurement
+        will be accepted with the `is_ready_to_record()` method.
+
         :param current_counter_value: The current value of the axis encoder
             counter.
         :param current_pwm_value: The current pwm value with which the axis
             will move now. Set to 0 to indicate that the axis will not move.
         :return: The recorded deviation
         """
+        if not self.is_ready_to_record():
+            return Deviation.NONE
+
         direct_previous_data = self.__get_last_pushed_data()
         deviation = None
         moved_distance = None
