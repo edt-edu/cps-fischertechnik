@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 from enum import Enum
-from typing import Union, Tuple, Optional
+from typing import Tuple, Optional
 
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.MaxValueExceededError import MaxValueExceededError
@@ -142,7 +144,7 @@ class Axis:
             else None
 
 
-    def gotoAxisConfig(self, axis_config: AxisConfig) -> bool:
+    def gotoAxisConfig(self, axis_config: AxisConfig) -> bool | Tuple[bool, PlusMinusStop | None]:
         """
         Set the outputs to move towards the specified axis_config
 
@@ -151,7 +153,7 @@ class Axis:
         """
         return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
 
-    def gotoConfig(self, end_pos: bool, counter_goal: int) -> Union[bool, Tuple[bool, Optional[PlusMinusStop]]]:
+    def gotoConfig(self, end_pos: bool, counter_goal: int) -> bool | Tuple[bool, PlusMinusStop | None]:
         """
         Set outputs to reach the wanted counter-goal for that axis.
 
@@ -174,9 +176,9 @@ class Axis:
 
         target_reached = False
         direction = None
-        #if you want to use the limit switch, always set up counterGoal
         if end_pos:
             if not self.__end_pos:
+                self.__counter.counter = self.__counter_input
                 self.__output_minus = True
                 self.__output_plus = False
                 if isinstance(self.__counter, ImpulseCounter):
@@ -211,15 +213,15 @@ class Axis:
 
             counterPos = self.howtoCounterPos(counter_goal, self.__counter.counter, self.tolerance)
             # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
-            if counterPos == PlusMinusStop.PLUS:
+            if counterPos is PlusMinusStop.PLUS:
                 self.__output_minus = False
                 self.__output_plus = True
                 direction = PlusMinusStop.PLUS
-            elif counterPos == PlusMinusStop.MINUS:
+            elif counterPos is PlusMinusStop.MINUS:
                 self.__output_minus = True
                 self.__output_plus = False
                 direction = PlusMinusStop.MINUS
-            elif counterPos == PlusMinusStop.STOP:
+            elif counterPos is PlusMinusStop.STOP:
                 self.__output_minus = False
                 self.__output_plus = False
                 target_reached = True

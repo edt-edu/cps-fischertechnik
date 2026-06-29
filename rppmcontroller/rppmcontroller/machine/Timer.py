@@ -78,7 +78,7 @@ class Timer:
 
     def reset(self, start: bool = False) -> None:
         """
-        Reset this timer. Optionally start it again.
+        Reset this timer. Optionally, start it again.
         :param start: Whether to start the timer again immediately
         :return: None
         """

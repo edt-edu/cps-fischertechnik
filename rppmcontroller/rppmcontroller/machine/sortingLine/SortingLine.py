@@ -21,6 +21,7 @@ from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
+from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
 class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
@@ -240,18 +241,14 @@ class SortingLine(Machine, TransitioningMachine[SortingLineConfig]):
         self.__sortingLineSensWhiteDetector = value
 
     def sensorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-
-        return f"ConvSens[{s(self.sortingLineSensInputLightBarrier)}, {s(self.sortingLineSensMiddleLightBarrier)}], " + \
-               f"ColoSens[{s(self.sortingLineSensWhiteLightBarrier)}, {s(self.sortingLineSensBlueLightBarrier)}, {s(self.sortingLineSensRedLightBarrier)}], " + \
-               f"DeteColo[{s(self.sortingLineSensColorDetector)}, {s(self.sortingLineSensBlueDetector)}, {s(self.sortingLineSensRedDetector)}, {s(self.sortingLineSensWhiteDetector)}], " + \
+        return f"ConvSens[{shortBoolStr(self.sortingLineSensInputLightBarrier)}, {shortBoolStr(self.sortingLineSensMiddleLightBarrier)}], " + \
+               f"ColoSens[{shortBoolStr(self.sortingLineSensWhiteLightBarrier)}, {shortBoolStr(self.sortingLineSensBlueLightBarrier)}, {shortBoolStr(self.sortingLineSensRedLightBarrier)}], " + \
+               f"DeteColo[{shortBoolStr(self.sortingLineSensColorDetector)}, {shortBoolStr(self.sortingLineSensBlueDetector)}, {shortBoolStr(self.sortingLineSensRedDetector)}, {shortBoolStr(self.sortingLineSensWhiteDetector)}], " + \
                f"Counter[{self.sortingLineSensImpulseCounterRaw}]"
 
     def actuatorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-
-        return f"Conveyor[{s(self.sortingLineActMotorConveyor)}], " + \
-               f"CompValv[{s(self.sortingLineActCompressorOn)}, {s(self.sortingLineActWhiteEjector)}, {s(self.sortingLineActRedEjector)}, {s(self.sortingLineActBlueEjector)}]"
+        return f"Conveyor[{shortBoolStr(self.sortingLineActMotorConveyor)}], " + \
+               f"CompValv[{shortBoolStr(self.sortingLineActCompressorOn)}, {shortBoolStr(self.sortingLineActWhiteEjector)}, {shortBoolStr(self.sortingLineActRedEjector)}, {shortBoolStr(self.sortingLineActBlueEjector)}]"
 
 
     def inputStatus(self) -> Dict[str, Any]:

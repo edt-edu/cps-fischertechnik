@@ -1,7 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
-from rppmcontroller.machine.MachineParameters import MachineParameters
+from rppmcontroller.machine.MachineParameters import (MachineParameters,
+                                                      AxisMonitorParameters)
 
 
 @dataclass
@@ -15,11 +16,13 @@ class HighBayParameters(MachineParameters):
     conveyor_column: int = 70
     """The encoder value of the horizontal position of the column"""
     right_column: int = 1550
-    """The encoder value of the horizontal position of the column closest to the conveyor"""
+    """The encoder value of the horizontal position of the column closest to
+    the conveyor"""
     middle_column: int = 2700
     """The encoder value of the horizontal position of the middle column"""
     left_column: int = 3900
-    """The encoder value of the horizontal position of the column furthest from the conveyor"""
+    """The encoder value of the horizontal position of the column furthest
+    from the conveyor"""
     conveyor_row: int = 1450
     """The encoder value of the vertical conveyor position"""
     bottom_row: int = 1700
@@ -64,6 +67,12 @@ class HighBayParameters(MachineParameters):
     The maximum encoder counter value for the horizontal axis.
     This value is limited by the physical setup.
     """
+    vertical_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
+    """Configuration for the vertical axis monitor"""
+    horizontal_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
+    """Configuration for the horizontal axis monitor"""
 
     def add_horizontal_offset(self, offset: int) -> None:
         """

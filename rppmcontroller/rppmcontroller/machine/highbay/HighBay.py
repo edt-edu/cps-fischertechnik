@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from enum import Enum
 from typing import Dict, Any, Union, Callable, Optional, List
@@ -10,6 +12,7 @@ from rppmcontroller.behavior.decoratorFunctions import (cycle_step_function,
                                                         runner_augment_function)
 from rppmcontroller.machine.Axis import AxisType, Axis
 from rppmcontroller.machine.AxisConfig import AxisConfig
+from rppmcontroller.machine.AxisMonitor import NamedAxisMonitor
 from rppmcontroller.machine.ConveyorState import ConveyorState
 from rppmcontroller.machine.Machine import Machine
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
@@ -19,6 +22,7 @@ from rppmcontroller.machine.highbay.HighBayConfig import HighBayConfig
 from rppmcontroller.machine.highbay.HighBayParameters import HighBayParameters
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
+from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
 class Column(Enum):
@@ -90,9 +94,17 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__highbaySensHorizontalEncoderCounter = 0
         self.__highbaySensVerticalEncoderCounter = 0
         self.__axisHorizontal = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
-        self.__axisVertical = Axis(AxisType.Encoder, 10, parameters.max_vertical_counter_value)
+        self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
         self.__horizontal_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
+        self.__horizontal_axis_monitor = NamedAxisMonitor.new(
+            parameters.horizontal_axis_monitor_parameters,
+            self.__axisHorizontal,
+            f"{id1} horizontal axis")
+        self.__vertical_axis_monitor = NamedAxisMonitor.new(
+            parameters.vertical_axis_monitor_parameters,
+            self.__axisVertical,
+            f"{id1} vertical axis")
 
         dictMap = {
             RequestedParameter.REFERENCESWITCHHORIZONTALAXIS:
@@ -350,18 +362,16 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         return self.__vertical_reset_helper
 
     def sensorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
         return (f"Counter: [{self.highbaySensHorizontalEncoderCounter}, {self.highbaySensVerticalEncoderCounter}], "
-                f"Cantilev: [{s(self.highbaySensCantileverBack)}, {s(self.highbaySensCantileverFront)}], "
-                f"SensorHV: [{s(self.highbaySensHorizontal)}, {s(self.highbaySensVertical)}], "
-                f"SensConv: [{s(self.highbaySensInside)}, {s(self.highbaySensOutside)}]")
+                f"Cantilev: [{shortBoolStr(self.highbaySensCantileverBack)}, {shortBoolStr(self.highbaySensCantileverFront)}], "
+                f"SensorHV: [{shortBoolStr(self.highbaySensHorizontal)}, {shortBoolStr(self.highbaySensVertical)}], "
+                f"SensConv: [{shortBoolStr(self.highbaySensInside)}, {shortBoolStr(self.highbaySensOutside)}]")
 
     def actuatorStatusString(self) -> str:
-        s = lambda b: "T" if b else "F"
-        return (f"Vertical: [{s(self.highbayActUp)}, {s(self.highbayActDown)}], "
-                f"Horizont: [{s(self.highbayActHorizontalToRack)}, {s(self.highbayActHorizontalToConveyor)}], "
-                f"Cantilev: [{s(self.highbayActCantileverBackward)}, {s(self.highbayActCantileverForward)}], "
-                f"Conveyor: [{s(self.highbayActConveyorBackward)}, {s(self.highbayActConveyorForward)}], "
+        return (f"Vertical: [{shortBoolStr(self.highbayActUp)}, {shortBoolStr(self.highbayActDown)}], "
+                f"Horizont: [{shortBoolStr(self.highbayActHorizontalToRack)}, {shortBoolStr(self.highbayActHorizontalToConveyor)}], "
+                f"Cantilev: [{shortBoolStr(self.highbayActCantileverBackward)}, {shortBoolStr(self.highbayActCantileverForward)}], "
+                f"Conveyor: [{shortBoolStr(self.highbayActConveyorBackward)}, {shortBoolStr(self.highbayActConveyorForward)}], "
                 f"PWM_VHR[{self.pwmVertical}, {self.pwmHorizontal}]")
 
     def inputStatus(self) -> Dict[str, Any]:
@@ -489,7 +499,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+            res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                    "cantilever needs to be retracted for "
                                    "mayor arm movement")
         elif arm_movement is not ArmMovement.IDLE:
@@ -500,7 +510,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
                 self.__axisHorizontal.outputminus)
             self.highbayActUp = self.__axisVertical.outputminus
             self.highbayActDown = self.__axisVertical.outputplus
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+            res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                    "arm needs to be moved")
         elif (
             config.cantilever_extended and not
@@ -511,7 +521,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+            res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                    "cantilever needs to be extended")
         elif (
             not config.cantilever_extended and not
@@ -522,7 +532,7 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
-            return CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
+            res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE,
                                    "cantilever needs to be retracted")
         else:
             self.highbayActCantileverForward = False
@@ -531,7 +541,42 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
             self.highbayActHorizontalToConveyor = False
             self.highbayActUp = False
             self.highbayActDown = False
-            return CycleStepResult(CycleStepResultEnum.DONE)
+            res = CycleStepResult(CycleStepResultEnum.DONE)
+
+        error = self.__monitor_axis_values()
+        if error is not None:
+            self.stop_CycleStep()
+            self.__clear_axis_monitor_buffers()
+            return error
+        return res
+
+    def __monitor_axis_values(self) -> CycleStepResult | None:
+        """
+        Monitors the movement of all axes and returns an error if the
+        deviations are too high.
+        :return: None if no error, otherwise a CycleStepResult with
+        the error
+        """
+        if not self.isInitialized:
+            # we only get zero values if we are not initialized, which would
+            # cause mostly false high deviations.
+            return None
+
+        if self.__horizontal_axis_monitor.record_and_action_is_required(
+            self.pwmHorizontal if self.highbayActHorizontalToRack or
+                                  self.highbayActHorizontalToConveyor else 0):
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
+                                   "too many deviations on horizontal axis")
+        if self.__vertical_axis_monitor.record_and_action_is_required(
+            self.pwmVertical if self.highbayActUp or self.highbayActDown
+            else 0):
+            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR,
+                                   "too many deviations on vertical axis")
+        return None
+
+    def __clear_axis_monitor_buffers(self):
+        self.__horizontal_axis_monitor.monitor.clear()
+        self.__vertical_axis_monitor.monitor.clear()
 
     def internalStatus(self) -> Dict[str, Any]:
         return {"isExecuting": self.isExecuting}
@@ -570,6 +615,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__axisHorizontal.resetDirection()
 
         self.stop_runners()
+
+        self.__clear_axis_monitor_buffers()
 
         return CycleStepResult(CycleStepResultEnum.DONE)
 

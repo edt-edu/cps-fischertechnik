@@ -4,7 +4,8 @@ from typing import Optional, Dict
 
 from typing_extensions import Self
 
-from rppmcontroller.machine.MachineParameters import MachineParameters
+from rppmcontroller.machine.MachineParameters import (MachineParameters,
+                                                      AxisMonitorParameters)
 from rppmcontroller.machine.Position import Position
 
 
@@ -86,6 +87,15 @@ class VacuumGripperParameters(MachineParameters):
     Offset how much lower to go when pressuring a position.
     Used in e.g. picking or placing.
     """
+    horizontal_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
+    """Configuration for the horizontal axis monitor"""
+    vertical_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
+    """Configuration for the vertical axis monitor"""
+    rotational_axis_monitor_parameters: AxisMonitorParameters = field(
+        default_factory=lambda: AxisMonitorParameters())
+    """Configuration for the rotational axis monitor"""
 
     def derive_over_positions(self) -> Self:
         """
@@ -106,10 +116,10 @@ class VacuumGripperParameters(MachineParameters):
                                 f"already exists.")
                 continue
 
-            self.named_positions[hover_positon_name] = Position(rot=position.rot,
-                                                  vertical=position.vertical
-                                                           - self.hover_offset,
-                                                  horizontal=0,
-                                                  meaning=position.meaning)
+            self.named_positions[
+                hover_positon_name] = Position(rot=position.rot,
+                                               vertical=position.vertical
+                                                        - self.hover_offset,
+                                               horizontal=0,
+                                               meaning=position.meaning)
         return self
-

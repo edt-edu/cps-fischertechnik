@@ -29,6 +29,24 @@ class CycleStepResult:
         self._info: str = info
         self._subCycleStepResult : Optional[Tuple[str, CycleStepResult]] = subCycleStepResult
 
+    def clone(self) -> CycleStepResult:
+        """
+        Creates a deep clone of this instance
+
+        Note that there are no guarantees that the clone will have the same
+        type as the original nor attributes of child classes copied.
+        :return: A CycleStepResult with the same CycleStepResult-attributes
+            as this one
+        """
+        result = self.result # no deep copy needed
+        info = self.info # no deep copy needed
+        if self.subCycleStepResult is not None:
+            cmd, sub_result = self.subCycleStepResult
+            sub_result = (cmd, sub_result.clone())
+        else:
+            sub_result = None
+        return CycleStepResult(result, info, sub_result)
+
     @property
     def result(self) -> CycleStepResultEnum:
         return self._result
