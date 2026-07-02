@@ -25,14 +25,35 @@ class NamedAxisMonitorTestSuite(unittest.TestCase):
 
         self.assertEqual(20, monitor.calculate_maximum_possible_penalty())
 
-        # one step more is required since the first step wouldn't be a high deviation
+        # one step more is required since the first step wouldn't be a high
+        # deviation
         for step in range(CYCLES_TO_MONITOR + 1):
             monitor.record(100)
 
         deviations = monitor.monitor.get_recorded_deviations()
         self.assertEqual(CYCLES_TO_MONITOR, len(deviations))
-        self.assertTrue(all(deviation is Deviation.HIGH for deviation in deviations))
+        self.assertTrue(all(
+            deviation is Deviation.HIGH for deviation in deviations))
         self.assertEqual(20, monitor.calculate_total_penalty())
+
+    def test_penalization_cycle_length(self):
+        monitor = self.monitor
+
+        deviation = monitor.record(100)
+        self.assertEqual(Deviation.NONE, deviation)
+        deviation = monitor.record(100)
+        self.assertEqual(Deviation.HIGH, deviation)
+
+        self.assertEqual(monitor.parameters.major_deviation_penalty,
+                         monitor.calculate_total_penalty())
+
+        for step in range(monitor.parameters.cycles_to_penalize):
+            monitor.axis.update(False, monitor.axis.counterinput + monitor.parameters.movement_tolerance)
+            monitor.axis.gotoConfig(False, 0) # this updates the internal counter-value
+            deviation = monitor.record(100)
+            self.assertEqual(Deviation.NONE, deviation, f"got deviation in step {step}")
+
+        self.assertEqual(0, monitor.calculate_total_penalty())
 
 if __name__ == '__main__':
     unittest.main()
