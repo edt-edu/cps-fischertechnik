@@ -43,6 +43,10 @@ class NamedAxisMonitor:
         :param csv_writer: An optional writer to write the recorded data to
         :return: The created AxisContainingMonitor
         """
+        if parameters.cycles_to_penalize > parameters.cycles_to_monitor:
+            raise ValueError("Number of penalized cycles must not exceed the "
+                             "number of cycles to monitor")
+
         return NamedAxisMonitor(AxisMonitor.new(parameters),
                                 parameters,
                                 axis,
@@ -89,7 +93,7 @@ class NamedAxisMonitor:
         the total penalty can never exceed this value.
         :return: The maximum possible total penalty
         """
-        return self.parameters.cycles_to_monitor * max(
+        return self.parameters.cycles_to_penalize * max(
             self.parameters.minor_deviation_penalty,
             self.parameters.major_deviation_penalty)
 
@@ -99,11 +103,20 @@ class NamedAxisMonitor:
         :return: The total penalty
         """
         penalty = 0
+        penalized_cycles = 0
         for deviation in self.monitor.get_recorded_deviations():
+            if penalized_cycles >= self.parameters.cycles_to_penalize:
+                break
+
             if deviation is Deviation.SMALL:
                 penalty += self.parameters.minor_deviation_penalty
             elif deviation is Deviation.HIGH:
                 penalty += self.parameters.major_deviation_penalty
+            else:
+                continue
+
+            penalized_cycles += 1
+
         self.__debug(f"Total penalty: {penalty}")
         return penalty
 
