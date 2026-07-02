@@ -23,6 +23,8 @@ class AxisMonitorParameters:
     Generic parameters for an AxisMonitor
     """
 
+    log_to_csv: bool = False
+    """Whether to log the monitored data to a CSV file"""
     cycles_to_monitor: int = 30
     """Number of cycles for that will be stored, whether axis movement was
     successful. Those will be used to calculate the average moved distance."""
