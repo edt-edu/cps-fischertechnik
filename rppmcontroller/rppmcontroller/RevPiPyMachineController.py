@@ -322,13 +322,11 @@ class RevPiPyMachineController(ABC):
             logging.warning(f"command not supported: cannot find "
                             f"function"
                             f" {message_type}.{command_function_name}")
-            self.sendCommandFeedbackOnChange(machine,
-                                             None,
-                                             CycleStepResult(
-                                                 CycleStepResultEnum.ABORTED_ERROR,
-                                                 f"Invalid Command "
-                                                 f"{message_name} "
-                                                 f"{message.commandId}"))
+            self.send_command_feedback(machine,
+                                       message.commandId,
+                                       abort(f"Invalid Command "
+                                             f"{message_name} "
+                                             f"{message.commandId}"))
             return
 
         # apply parameter modifications
@@ -339,9 +337,10 @@ class RevPiPyMachineController(ABC):
             named_position = e.named_position
             logging.warning(f"Cannot resolve named position '"
                             f"{named_position}' for {machine.id}")
-            self.sendCommandFeedbackOnChange(machine, None, CycleStepResult(
-                CycleStepResultEnum.ABORTED_ERROR,
-                f"Unknown named position: {named_position}"))
+            self.send_command_feedback(machine,
+                                       message.commandId,
+                                       abort(f"Unknown named position "
+                                             f"{named_position}"))
             return
 
         logging.debug("Applying machine-specific parameter modifications")
@@ -366,13 +365,11 @@ class RevPiPyMachineController(ABC):
         cycle_step_function = self.cast_to_callable(command_function_return_value)
         if cycle_step_function is None:
             # abort if the function did not return a callable
-            self.sendCommandFeedbackOnChange(machine,
-                                             None,
-                                             CycleStepResult(
-                                                 CycleStepResultEnum.ABORTED_ERROR,
-                                                 f"Invalid Command "
-                                                 f"{message_name} "
-                                                 f"{message.commandId}"))
+            self.send_command_feedback(machine,
+                                       message.commandId,
+                                       abort(f"Invalid Command "
+                                             f"{message_name} "
+                                             f"{message.commandId}"))
             return
 
         # send interruption feedback for the previously running
@@ -624,16 +621,12 @@ class RevPiPyMachineController(ABC):
 
                 # removes currentlyExecuting function once it indicates it is finished
                 # logging.debug(f"{ret}")
+                self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
                 # we use "not must continue" since is_done() wouldn't handle the abort case
                 if not ret.must_continue():
-                    self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
                     logging.debug(f'removing {cycleStepCommand.displayName} from currentlyExecuting')
                     self.currentlyExecuting[key] = None
                     logging.debug(f'isExecuting = {key.isExecuting}')
-                else:
-                    # continue
-                    # maybe the res is different from previous, so it should be published
-                    self.sendCommandFeedbackOnChange(key, cycleStepCommand, ret)
             # logging.debug("after command evaluation")
             # LEGACY :  TO BE REMOVED AFTER FULL REFACTORY remove currentlyExecuting function once it is finished
             if (key.machineFeedback() == MachineStatus.INITIALIZED_IDLE or key.machineFeedback() == MachineStatus.UNINITIALIZED_IDLE) and cycleStepCommand is not None:
@@ -698,17 +691,9 @@ class RevPiPyMachineController(ABC):
         if result_changed:
             cycleStepCommand = self.currentlyExecuting[machine]
             if cycleStepCommand is not None:
-                jsonid = cycleStepCommand.commandId
-                subResult = lastResult.subCycleStepResult
-                if subResult is not None:
-                    info = f'{lastResult.info}\nLast subCycleStepResult: {subResult[1].info} {subResult[1].result}'
-                else:
-                    info = f'{lastResult.info}'
-                f = CommandFeedback("COMMAND_FEEDBACK", jsonid, lastResult.result.name,  info)
-                logging.debug(f'CommandFeedback {f}')
-                j = JSONOutput(machine.id, time.time(), f)
-                self.outputBuffer.put(j, block=False)
-                self.MQTT.publishEvent(self.plcId, machine.machineTypeName(), machine.id, EventKind.EMITTED, "command_feedback", JSONParser.parse(f))
+                self.send_command_feedback(machine,
+                                           cycleStepCommand.commandId,
+                                           lastResult)
 
         else:
             logging.debug(f'identical CycleStepResult for machine {machine.id} {self.commandFeedback[machine]} == {lastResult}')
@@ -720,8 +705,39 @@ class RevPiPyMachineController(ABC):
             self.commandFeedback[machine] = CommandResult(lastCommand, result)
             logging.debug(f'stored CommandResult for machine {machine.id} {lastCommand} {result}')
 
+    def send_command_feedback(self,
+                              machine: Machine,
+                              command_id: str,
+                              result: CycleStepResult) -> None:
+        """
+        Send command feedback for a specific command
+
+        :param machine: The machine that the command was meant for
+        :param command_id: The id of the command
+        :param result: The feedback to send
+        :return: None
+        """
+        sub_result = result.subCycleStepResult
+        info = f"{result.info}"
+        if sub_result is not None:
+            info += (f"\nSubCycleStepResult: {sub_result[1].info} "
+                     f"{sub_result[1].result}")
+        command_feedback = CommandFeedback("COMMAND_FEEDBACK",
+                                           command_id,
+                                           result.result.name,
+                                           info)
+        logging.debug(f"CommandFeedback: {command_feedback}")
+        json_output = JSONOutput(machine.id, time.time(), command_feedback)
+        self.outputBuffer.put(json_output, block=False)
+        self.MQTT.publishEvent(self.plcId,
+                               machine.machineTypeName(),
+                               machine.id,
+                               EventKind.EMITTED,
+                               "command_feedback",
+                               JSONParser.parse(command_feedback))
+
     def publishMQTTMeasurementStatus(self) -> None:
-        """for each machines publish the input, output and internal measurements/status to MQTT if the MQTT is set
+        """for each machine publish the input, output, and internal measurements/status to MQTT if the MQTT is set
         """
         for m in self.machines:
             currentInputStatus = m.inputStatus()
@@ -789,6 +805,9 @@ class RevPiPyMachineController(ABC):
             m.decrementNbMinimumRequiredExecutionCycles()
         logging.log(TRACE, "[main loop] Sleeping...")
         time.sleep(self.mainLoopDelay)
+
+def abort(info: str) -> CycleStepResult:
+    return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, info)
 
 # Create an empty list
 socket_list : List[socket.socket] = []
