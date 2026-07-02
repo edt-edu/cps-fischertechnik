@@ -36,23 +36,55 @@ class NamedAxisMonitorTestSuite(unittest.TestCase):
             deviation is Deviation.HIGH for deviation in deviations))
         self.assertEqual(20, monitor.calculate_total_penalty())
 
-    def test_penalization_cycle_length(self):
+    def test_penalization_cycle(self):
         monitor = self.monitor
+        pwm = 100
 
-        deviation = monitor.record(100)
+        deviation = monitor.record(pwm)
         self.assertEqual(Deviation.NONE, deviation)
-        deviation = monitor.record(100)
+        deviation = monitor.record(pwm)
+        self.assertEqual(Deviation.HIGH, deviation)
+        deviation = monitor.record(pwm)
         self.assertEqual(Deviation.HIGH, deviation)
 
-        self.assertEqual(monitor.parameters.major_deviation_penalty,
+        self.assertEqual(2 * monitor.parameters.major_deviation_penalty,
                          monitor.calculate_total_penalty())
 
         for step in range(monitor.parameters.cycles_to_penalize):
-            monitor.axis.update(False, monitor.axis.counterinput + monitor.parameters.movement_tolerance)
-            monitor.axis.gotoConfig(False, 0) # this updates the internal counter-value
-            deviation = monitor.record(100)
-            self.assertEqual(Deviation.NONE, deviation, f"got deviation in step {step}")
+            monitor.axis.update(False,
+                                monitor.axis.counterinput + 100 *
+                                monitor.parameters.movement_tolerance)
+            deviation = monitor.record(pwm)
+            self.assertEqual(Deviation.NONE,
+                             deviation,
+                             f"got deviation in step {step}")
 
+        self.assertEqual(0, monitor.calculate_total_penalty())
+
+        monitor.axis.update(False,
+                            monitor.axis.counterinput +
+                            monitor.parameters.movement_tolerance)
+        deviation = monitor.record(pwm)
+        self.assertEqual(Deviation.SMALL, deviation)
+        self.assertEqual(monitor.parameters.minor_deviation_penalty,
+                         monitor.calculate_total_penalty())
+
+        for step in range(monitor.parameters.cycles_to_penalize - 1):
+            monitor.axis.update(False,
+                                monitor.axis.counterinput + 100 *
+                                monitor.parameters.movement_tolerance)
+            deviation = monitor.record(pwm)
+            self.assertEqual(Deviation.NONE,
+                             deviation,
+                             f"got deviation in step {step}")
+            self.assertEqual(monitor.parameters.minor_deviation_penalty,
+                             monitor.calculate_total_penalty())
+
+        monitor.axis.update(False,
+                            monitor.axis.counterinput + 100 *
+                            monitor.parameters.movement_tolerance)
+        deviation = monitor.record(pwm)
+        self.assertEqual(Deviation.NONE, deviation)
         self.assertEqual(0, monitor.calculate_total_penalty())
 
 if __name__ == '__main__':
