@@ -276,6 +276,7 @@ class AxisMonitor:
                              deviation)
         self.__push_to_buffer(new_data)
         self.__last_recorded_data = new_data
+        self.__measurement_timer.start()
         return deviation
 
     def get_recorded_deviations(self) -> list[Deviation]:
