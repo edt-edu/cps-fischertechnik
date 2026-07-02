@@ -24,6 +24,7 @@ from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import \
 from rppmcontroller.protocol.decoratorFunctions import \
     protocol_command_function
 from rppmcontroller.utils.CyclicWaiter import CyclicWaiter
+from rppmcontroller.utils.csv import CSVWriter
 from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
@@ -67,15 +68,20 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__horizontal_axis_monitor = NamedAxisMonitor.new(
             parameters.horizontal_axis_monitor_parameters,
             self.__axisArm,
-            f"{id1} horizontal axis")
+            f"{id1} horizontal axis",
+            CSVWriter(f"{id1}_horizotal.csv"),
+        )
         self.__vertical_axis_monitor = NamedAxisMonitor.new(
             parameters.vertical_axis_monitor_parameters,
             self.__axisVertical,
-            f"{id1} vertical axis")
+            f"{id1} vertical axis",
+            CSVWriter(f"{id1}_vertical.csv"),
+        )
         self.__rotational_axis_monitor = NamedAxisMonitor.new(
             parameters.rotational_axis_monitor_parameters,
             self.__axisRot,
             f"{id1} rotational axis",
+            CSVWriter(f"{id1}_rotational.csv"),
         )
 
         dictMap = {RequestedParameter.REFERENCESWITCHVERTICALAXIS: self.__vacuumSensVerticalEndUp,

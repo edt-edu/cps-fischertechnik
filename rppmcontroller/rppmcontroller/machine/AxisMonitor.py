@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os.path
 from dataclasses import dataclass
 from enum import Enum
 from math import sqrt
@@ -12,7 +13,7 @@ from rppmcontroller.machine.Timer import Timer
 from rppmcontroller.utils.csv import CSVWriter
 
 
-@dataclass
+@dataclass(frozen=True)
 class NamedAxisMonitor:
     """
     A wrapper around an AxisMonitor that also wraps the monitored Axis and
@@ -27,7 +28,7 @@ class NamedAxisMonitor:
     """The monitored Axis"""
     axis_name: str
     """The name of the Axis, for debugging purposes"""
-    csv_writer: CSVWriter | None = None
+    csv_writer: CSVWriter | None
     """An optional writer to write recorded data to"""
 
     @staticmethod
@@ -43,6 +44,19 @@ class NamedAxisMonitor:
         :param csv_writer: An optional writer to write the recorded data to
         :return: The created AxisContainingMonitor
         """
+        if parameters.cycles_to_penalize > parameters.cycles_to_monitor:
+            raise ValueError("Number of penalized cycles must not exceed the "
+                             "number of cycles to monitor")
+
+        if csv_writer is not None:
+            # delete old data to avoid data clutter
+            if os.path.exists(csv_writer.path):
+                os.remove(csv_writer.path)
+
+            # add header if we intend to log data
+            if parameters.log_to_csv:
+                NamedAxisMonitor.add_csv_header(csv_writer)
+
         return NamedAxisMonitor(AxisMonitor.new(parameters),
                                 parameters,
                                 axis,
@@ -89,7 +103,7 @@ class NamedAxisMonitor:
         the total penalty can never exceed this value.
         :return: The maximum possible total penalty
         """
-        return self.parameters.cycles_to_monitor * max(
+        return self.parameters.cycles_to_penalize * max(
             self.parameters.minor_deviation_penalty,
             self.parameters.major_deviation_penalty)
 
@@ -99,11 +113,20 @@ class NamedAxisMonitor:
         :return: The total penalty
         """
         penalty = 0
+        penalized_cycles = 0
         for deviation in self.monitor.get_recorded_deviations():
+            if penalized_cycles >= self.parameters.cycles_to_penalize:
+                break
+
             if deviation is Deviation.SMALL:
                 penalty += self.parameters.minor_deviation_penalty
             elif deviation is Deviation.HIGH:
                 penalty += self.parameters.major_deviation_penalty
+            else:
+                continue
+
+            penalized_cycles += 1
+
         self.__debug(f"Total penalty: {penalty}")
         return penalty
 
@@ -128,7 +151,7 @@ class NamedAxisMonitor:
         return deviation
 
     def __log_to_csv(self, data: CycleData):
-        if self.csv_writer is not None:
+        if self.csv_writer is not None and self.parameters.log_to_csv:
             self.csv_writer.write([data.counter_value,
                                    data.pwm_value,
                                    data.moved_distance,
@@ -276,6 +299,7 @@ class AxisMonitor:
                              deviation)
         self.__push_to_buffer(new_data)
         self.__last_recorded_data = new_data
+        self.__measurement_timer.start()
         return deviation
 
     def get_recorded_deviations(self) -> list[Deviation]:
