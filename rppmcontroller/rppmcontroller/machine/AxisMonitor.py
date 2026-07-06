@@ -312,7 +312,7 @@ class AxisMonitor:
 
         :return: All recorded deviations of the monitored cycles
         """
-        return [data.deviation for data in self.__buffer]
+        return [data.deviation for data in self.__buffer[self.__buffer_head:] + self.__buffer[:self.__buffer_head]]
 
     def clear(self) -> None:
         """
