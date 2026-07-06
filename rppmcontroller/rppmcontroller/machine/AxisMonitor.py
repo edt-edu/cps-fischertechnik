@@ -113,19 +113,16 @@ class NamedAxisMonitor:
         :return: The total penalty
         """
         penalty = 0
-        penalized_cycles = 0
-        for deviation in self.monitor.get_recorded_deviations():
-            if penalized_cycles >= self.parameters.cycles_to_penalize:
-                break
 
+        recorded_deviations = self.monitor.get_recorded_deviations()
+        # wacky python syntax that retrieves the last N elements of a list
+        deviations_to_penalize = recorded_deviations[
+            -self.parameters.cycles_to_penalize:]
+        for deviation in deviations_to_penalize:
             if deviation is Deviation.SMALL:
                 penalty += self.parameters.minor_deviation_penalty
             elif deviation is Deviation.HIGH:
                 penalty += self.parameters.major_deviation_penalty
-            else:
-                continue
-
-            penalized_cycles += 1
 
         self.__debug(f"Total penalty: {penalty}")
         return penalty
@@ -141,7 +138,7 @@ class NamedAxisMonitor:
         if not self.monitor.is_ready_to_record():
             return Deviation.NONE
 
-        deviation = self.monitor.record(self.axis.counterValueCurrent,
+        deviation = self.monitor.record(self.axis.counterinput,
                                         current_pwm_value)
         last_recorded_data = self.monitor.last_recorded_data
         if last_recorded_data is not None:
@@ -315,7 +312,7 @@ class AxisMonitor:
 
         :return: All recorded deviations of the monitored cycles
         """
-        return [data.deviation for data in self.__buffer]
+        return [data.deviation for data in self.__buffer[self.__buffer_head:] + self.__buffer[:self.__buffer_head]]
 
     def clear(self) -> None:
         """
