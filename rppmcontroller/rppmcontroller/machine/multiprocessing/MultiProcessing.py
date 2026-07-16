@@ -93,6 +93,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
         self.__multiProcessingActLowerValve = False
         self.__multiProcessingValveOvenDoor = False
         self.__multiProcessingValveFeeder = False
+
         dictMap = {RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONVACUUM: self.__multiProcessingSensTurntablePosVacuum,
                    RequestedParameter.REFERENCESWITCHTURNTABLEPOSITIONBELT: self.__multiProcessingSensTurntablePosBelt,
                    RequestedParameter.LIGHTBARRIERENDOFCONVEYORBELT: self.__multiProcessingSensEndConveyor,
@@ -167,7 +168,7 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
 
         return res
 
-
+    # ------------------ Input Properties ------------------
 
     @property
     def multiProcessingSensTurntablePosVacuum(self) -> bool:
@@ -240,6 +241,8 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     @multiProcessingSensOvenFeederIn.setter
     def multiProcessingSensOvenFeederIn(self, value: bool):
         self.__multiProcessingSensOvenFeederIn = value
+
+    # ------------------ Output Properties ------------------
 
     @property
     def multiProcessingActRotClockwise(self) -> bool:
@@ -352,6 +355,14 @@ class MultiProcessing(Machine, TransitioningMachine[MultiProcessingConfig]):
     @multiProcessingValveFeeder.setter
     def multiProcessingValveFeeder(self, value: bool):
         self.__multiProcessingValveFeeder = value
+
+    @property
+    def pwmTurntable(self) -> int:
+        return self.parameters.pwm_turntable_default
+
+    @property
+    def pwmHorizontal(self) -> int:
+        return self.parameters.pwm_horizontal_default
 
     @property
     def turn_table_direction(self) -> TurnTableDirection:
