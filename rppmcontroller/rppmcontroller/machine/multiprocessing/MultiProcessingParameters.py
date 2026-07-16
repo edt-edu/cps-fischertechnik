@@ -13,3 +13,11 @@ class MultiProcessingParameters(MachineParameters):
 
     When not set, a setup is considered to be "safe".
     """
+    pwm_turntable_default: int = 30
+    """
+    The reduced speed used in turntable PWM.
+    """
+    pwm_horizontal_default: int = 100
+    """
+    The reduced speed used in vacuum horizontal PWM.
+    """
