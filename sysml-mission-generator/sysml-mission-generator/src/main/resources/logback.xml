@@ -1,0 +1,25 @@
+<configuration>
+
+    <!-- Console appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss} %-5level %logger - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Reduce verbosity for noisy frameworks -->
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="ERROR"/>
+    <logger name="org.eclipse.syson.application" level="WARN"/>
+    <logger name="org.eclipse.syson.sysml" level="INFO"/>
+
+    <!-- keep detailed logs -->
+    <logger name="fr.inria" level="DEBUG"/>
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
