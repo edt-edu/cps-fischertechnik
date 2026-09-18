@@ -1,8 +1,0 @@
-{
-    "chat.tools.terminal.autoApprove": {
-        "mvn -DskipTests=true -q clean": true,
-        "mvn -q -Dtest=SysmlMissionGeneratorTest test": true
-    },
-    "java.debug.settings.onBuildFailureProceed": true,
-    "java.configuration.updateBuildConfiguration": "disabled"
-}

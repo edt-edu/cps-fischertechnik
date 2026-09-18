@@ -4,131 +4,74 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>fr.inria.mbdo.mission</groupId>
-		<artifactId>sysml-mission-generator-root</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>sysml-mission-generator</artifactId>
 
-	<name>sysml-mission-generator</name>
-	<!-- FIXME change it to the project's website -->
-	<url>http://www.example.com</url>
+	<groupId>fr.inria.mbdo.mission</groupId>
+	<artifactId>sysml-mission-generator-root</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>sysml-mission-runtime</module>
+		<module>sysml-mission-generator</module>
+		<module>sysml-mission-generator-maven-plugin</module>
+	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
 		<java.version>21</java.version>
-		<maven.compiler.release>21</maven.compiler.release>
+
+		<maven.api.version>3.9.6</maven.api.version>
+		<maven.plugin.tools.version>3.11.0</maven.plugin.tools.version>
 		<sirius.web.version>2026.3.0</sirius.web.version>
 		<syson.version>2026.3.0</syson.version>
 	</properties>
-
-
+	<repositories>
+		<repository>
+			<id>central</id>
+			<url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>github-sirius-emfjson</id>
+			<url>https://maven.pkg.github.com/eclipse-sirius/sirius-emf-json</url>
+		</repository>
+		<repository>
+			<id>github-sirius-web</id>
+			<url>https://maven.pkg.github.com/eclipse-sirius/sirius-web</url>
+		</repository>
+		<repository>
+			<id>github-syson</id>
+			<url>https://maven.pkg.github.com/eclipse-syson/syson</url>
+		</repository>
+	</repositories>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.junit</groupId>
-				<artifactId>junit-bom</artifactId>
-				<version>5.11.0</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sysml-mission-runtime</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>sysml-mission-generator</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.maven</groupId>
+				<artifactId>maven-core</artifactId>
+				<version>${maven.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven</groupId>
+				<artifactId>maven-plugin-api</artifactId>
+				<version>${maven.api.version}</version>
+				<scope>provided</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>fr.inria.mbdo.mission</groupId>
-			<artifactId>sysml-mission-runtime</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.5.6</version>
-		</dependency>
-		<!-- syson -->
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-application</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-sysml-metamodel</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-sysml-metamodel-edit</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-services</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-sysml-import</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-sysml-export</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.syson</groupId>
-			<artifactId>syson-sysml-validation</artifactId>
-			<version>${syson.version}</version>
-		</dependency>
-		<!-- code generation -->
-		<dependency>
-			<groupId>com.palantir.javapoet</groupId>
-			<artifactId>javapoet</artifactId>
-			<version>0.14.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>info.picocli</groupId>
-			<artifactId>picocli</artifactId>
-			<version>4.7.6</version>
-		</dependency>
-
-		<dependency>
-			<groupId>info.picocli</groupId>
-			<artifactId>picocli-codegen</artifactId>
-			<version>4.7.6</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- Tests -->
-		<!-- Optionally: parameterized tests support -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>5.11.0</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.46</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<pluginManagement><!-- lock down plugins versions to avoid using Maven
 			defaults (may be moved to parent pom) -->
@@ -177,75 +120,5 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		<plugins>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.12</version>
-				<executions>
-					<execution>
-						<id>prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>report</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>1.18.46</version>
-						</path>
-					</annotationProcessorPaths>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.6.0</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>fr.inria.mbdo.mission.SysmlMissionGeneratorCLI</mainClass>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-							</transformers>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
-							<shadedArtifactAttached>true</shadedArtifactAttached>
-							<shadedClassifierName>cli</shadedClassifierName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
 </project>
