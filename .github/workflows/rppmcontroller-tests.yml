@@ -1,9 +1,10 @@
 # this workflow is used to test the rppm-controller on a pull request and on push to the main branch
 name: rppm-controller-test
 on:
-  paths:
-      - ".github/workflows/rppmcontroller-tests.yml"
-      - "rppmcontroller/**"
+  push:
+    paths:
+        - ".github/workflows/rppmcontroller-tests.yml"
+        - "rppmcontroller/**"
   pull_request:
     paths:
       - ".github/workflows/rppmcontroller-tests.yml"
