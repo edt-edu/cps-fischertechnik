@@ -49,15 +49,26 @@ jobs:
           coverage report
           coverage xml
           coverage html
+          COVERAGE=$(coverage report --format=total)
           {
             echo "## Code coverage"
             echo
             echo "**Total coverage: ${COVERAGE}%**"
             echo 
+            echo "<details>"
+            echo "<summary>Show detailed coverage report</summary>"
             coverage report --format=markdown 
+            echo
+            echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Keep raw reports, equivalent to GitLab artifacts
+      - name: Publish test results
+        if: ${{ !cancelled() }}
+        uses: step-security/publish-unit-test-result-action@v2
+        with:
+          files: rppmcontroller/report.xml
+          check_name: RPPM Controller tests
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v7
