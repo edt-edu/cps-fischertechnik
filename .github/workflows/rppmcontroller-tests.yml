@@ -48,15 +48,14 @@ jobs:
         run: |
           coverage report
           coverage xml
-
-      # GitHub native code coverage
-      - name: Upload coverage to GitHub
-        if: success()
-        uses: actions/upload-code-coverage@v1
-        with:
-          file: rppmcontroller/coverage.xml
-          language: Python
-          label: code-coverage/rppmcontroller
+          coverage html
+          {
+            echo "## Code coverage"
+            echo
+            echo "**Total coverage: ${COVERAGE}%**"
+            echo 
+            coverage report --format=markdown 
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Keep raw reports, equivalent to GitLab artifacts
       - name: Upload test reports
@@ -67,3 +66,4 @@ jobs:
           path: |
             rppmcontroller/report.xml
             rppmcontroller/coverage.xml
+            rppmcontroller/htmlcov/
