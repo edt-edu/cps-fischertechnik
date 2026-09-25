@@ -1,5 +1,6 @@
 name: Release RPPM Controller
-
+# In order to create a realease, you must create a tag in the format `rppmcontroller_<version>`, e.g. `rppmcontroller_1.0.0`.
+# the version in the tag must match the version in the package metadata (pyproject.toml -> __init__.py).
 on:
   push:
     tags:
