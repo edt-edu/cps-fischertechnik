@@ -20,7 +20,10 @@ concurrency:
 permissions:
   contents: read
   checks: write
-
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
 jobs:
   backend-build:
     name: Factory SCADA backend
