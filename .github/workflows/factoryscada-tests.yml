@@ -36,6 +36,7 @@ jobs:
 
       - name: Set up Java
         uses: actions/setup-java@v7
+        with:
           distribution: temurin
           java-version: "21"
           cache: gradle
