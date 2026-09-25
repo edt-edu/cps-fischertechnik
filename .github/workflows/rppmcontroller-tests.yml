@@ -56,7 +56,7 @@ jobs:
             echo "**Total coverage: ${COVERAGE}%**"
             echo 
             echo "<details>"
-            echo "<summary>Show detailed coverage report</summary>"
+            echo "<summary>Expand for details</summary>"
             echo 
             coverage report --format=markdown 
             echo
