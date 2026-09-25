@@ -57,6 +57,7 @@ jobs:
             echo 
             echo "<details>"
             echo "<summary>Show detailed coverage report</summary>"
+            echo 
             coverage report --format=markdown 
             echo
             echo "</details>"
@@ -64,10 +65,13 @@ jobs:
 
       - name: Publish test results
         if: ${{ !cancelled() }}
-        uses: step-security/publish-unit-test-result-action@v2
+        uses: dorny/test-reporter@v3
         with:
-          files: rppmcontroller/report.xml
-          check_name: RPPM Controller tests
+          name: RPPM Controller tests
+          path: rppmcontroller/report.xml
+          reporter: python-xunit
+          list-suites: all
+          list-tests: failed
 
       - name: Upload test reports
         if: always()
