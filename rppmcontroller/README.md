@@ -17,7 +17,7 @@ You should use a virtual environment `conda` or `venv`
 use conda environment (where my-env is he name of the environment in the environment.yml file)
 
 ```sh
-# list avalible env
+# list avalaible env
 conda env list
 # Create a conda environment with the required packages for this project:
 conda env create -f environment.yml

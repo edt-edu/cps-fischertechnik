@@ -1,0 +1,78 @@
+name: Release RPPM Controller
+# In order to create a realease, you must create a tag in the format `rppmcontroller_<version>`, e.g. `rppmcontroller_1.0.0`.
+# the version in the tag must match the version in the package metadata (pyproject.toml -> __init__.py).
+on:
+  push:
+    tags:
+      - "rppmcontroller_*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: rppmcontroller
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.x"
+
+      - name: Install build
+        run: python -m pip install --upgrade build
+
+      - name: Build
+        run: python -m build
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#rppmcontroller_}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check package version matches tag
+        shell: bash
+        run: |
+          TAG_VERSION=${{ steps.version.outputs.version }}
+
+          PACKAGE_VERSION=$(python - <<'PY'
+          import glob
+          import zipfile
+
+          wheel = glob.glob("dist/*.whl")[0]
+
+          with zipfile.ZipFile(wheel) as z:
+              metadata = next(
+                  name for name in z.namelist()
+                  if name.endswith(".dist-info/METADATA")
+              )
+              for line in z.read(metadata).decode().splitlines():
+                  if line.startswith("Version: "):
+                      print(line.removeprefix("Version: "))
+                      break
+              else:
+                  raise SystemExit("Version not found in wheel metadata")
+          PY
+          )
+
+          echo "Tag version:     $TAG_VERSION"
+          echo "Package version: $PACKAGE_VERSION"
+
+          test "$TAG_VERSION" = "$PACKAGE_VERSION" || {
+            echo "::error::Tag version '$TAG_VERSION' does not match package version '$PACKAGE_VERSION'"
+            exit 1
+          }
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/* \
+            --title "RPPM Controller ${{ steps.version.outputs.version }}" \
+            --notes "Release of RPPM Controller version ${{ steps.version.outputs.version }}."
