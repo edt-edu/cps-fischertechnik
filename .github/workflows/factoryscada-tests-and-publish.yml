@@ -3,13 +3,13 @@ name: Factory SCADA tests and publish
 on:
   push:
     paths:
-      - ".github/workflows/factoryscada-tests.yml"
+      - ".github/workflows/factoryscada-tests-and-publish.yml"
       - "factoryscada/backend/**"
       - "factoryscada/frontend/**"
 
   pull_request:
     paths:
-      - ".github/workflows/factoryscada-tests.yml"
+      - ".github/workflows/factoryscada-tests-and-publish.yml"
       - "factoryscada/backend/**"
       - "factoryscada/frontend/**"
 
