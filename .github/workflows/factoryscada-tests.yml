@@ -1,0 +1,99 @@
+name: Factory SCADA tests
+
+on:
+  push:
+    paths:
+      - ".github/workflows/factoryscada-tests.yml"
+      - "factoryscada/backend/**"
+      - "factoryscada/frontend/**"
+
+  pull_request:
+    paths:
+      - ".github/workflows/factoryscada-tests.yml"
+      - "factoryscada/backend/**"
+      - "factoryscada/frontend/**"
+
+concurrency:
+  group: factoryscada-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  backend:
+    name: Factory SCADA backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: factoryscada/backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+          cache-dependency-path: |
+            factoryscada/backend/*.gradle*
+            factoryscada/backend/gradle.properties
+            factoryscada/backend/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Build and test
+        run: ./gradlew build
+
+      - name: Publish test results
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: Factory SCADA backend tests
+          path: factoryscada/backend/build/test-results/**/TEST-*.xml
+          reporter: java-junit
+          list-suites: all
+          list-tests: failed
+
+      - name: Upload backend JAR
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: factoryscada-backend
+          path: factoryscada/backend/build/libs/*.jar
+
+  frontend:
+    name: Factory SCADA frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: factoryscada/frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload frontend build
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: factoryscada-frontend
+          path: factoryscada/frontend/dist/
+          if-no-files-found: ignore
