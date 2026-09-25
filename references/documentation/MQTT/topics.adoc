@@ -1,671 +1,253 @@
-= Machine Sensors MQTT Documentation
+= Machine MQTT Topics and PLC Ports
 :doctype: book
 :toc: macro
 :toclevels: 2
+:vg: PLC/$plcId/VacuumGripper/$machineId/measurements
+:mp: PLC/$plcId/MultiProcessing/$machineId/measurements
+:cb: PLC/$plcId/ConveyorBelt/$machineId/measurements
+:hb: PLC/$plcId/HighBay/$machineId/measurements
+:pm: PLC/$plcId/PunchingMachine/$machineId/measurements
+:sl: PLC/$plcId/SortingLine/$machineId/measurements
+:il: PLC/$plcId/IndexedLine/$machineId/measurements
+
+toc::[]
 
 == Overview
-This document describes the MQTT topics used for publishing the state of sensors in different types of machines.
 
-== Server
-* URL: mqtt://broker.example.com:1883
-* Protocol: MQTT
+This document lists the PLC ports and MQTT measurement topics for each station.
+`$plcId` and `$machineId` stand for the configured PLC ID and the machine instance ID.
+For example, the conveyor feed sensor of `ConveyorBelt01` on `LocalDevPLC` is published at `PLC/LocalDevPLC/ConveyorBelt/ConveyorBelt01/measurements/input/conveyorSensFeed`.
+The machine type and status key are case-sensitive.
+
+Each measurement has its own topic under `PLC/$plcId/$machineType/$machineId/measurements/$statusKind/$statusKey`.
+`$statusKind` is `input`, `output`, or `internal`. When a status group changes, its measurements are published with QoS 2 and message retention.
+The payload has this form:
+
+[source,json]
+----
+{
+  "value": true,
+  "timestamp": "2026-09-25T12:00:00+00:00Z"
+}
+----
+
+`value` is a Boolean, integer, or string according to the measurement.
+The timestamp is generated in UTC and includes both the `+00:00` offset and a trailing `Z`.
+These topics report measurements and actuator state.
+Commands can not be send through MQTT, as `output` topics do not accept MQTT commands.
+
+`I`, `A`, and `B` denote PLC inputs, `Q` denotes a PLC output, and `Virtual` denotes a derived value.
+`input` and `output` in MQTT paths are from the PLC's perspective.
+`—` means that no MQTT measurement topic is available for that port.
+Individual encoder impulse channels have no measurement topic and their aggregate counters appear as `Virtual` values.
 
 == Topics
 
 === Conveyor Belt
 
-==== Topic: `conveyorBelt/{id}/sensor/LightBarrierFeedStation`
-*Description*: Topic for publishing LightBarrierFeedStation sensor data of conveyor belts.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `conveyorBelt/{id}/sensor/LightBarrierSwapStation`
-*Description*: Topic for publishing LightBarrierSwapStation sensor data of conveyor belts.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `conveyorBelt/{id}/sensor/PulseCounter`
-*Description*: Topic for publishing PulseCounter sensor data of conveyor belt machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `conveyorBelt/{id}/action/MotorConveyorBeltForward`
-*Description*: Topic for publishing MotorConveyorBeltForward output state of conveyor belt machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `conveyorBelt/{id}/action/MotorConveyorBeltBackward`
-*Description*: Topic for publishing MotorConveyorBeltBackward output state of conveyor belt machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Phototransistor, feed station |Boolean |`{cb}/input/conveyorSensFeed`
+|I2 |Phototransistor, swap station |Boolean |`{cb}/input/conveyorSensSwap`
+|I3 |Pulse button / impulse sensor |Boolean |`{cb}/input/conveyorSensImpulse`
+|Q1 |Motor conveyor belt forward |Boolean |`{cb}/output/conveyorActForward`
+|Q2 |Motor conveyor belt backward |Boolean |`{cb}/output/conveyorActBackward`
+|===
 
 === Sorting Line
 
-==== Topic: `sortingLine/{id}/sensor/PulseCounter`
-*Description*: Topic for publishing PulseCounter sensor data of sorting lines.
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Pulse counter, raw |Integer |`{sl}/input/sortingLineSensImpulseCounterRaw`
+|I2 |Light barrier, inlet |Boolean |`{sl}/input/sortingLineSensInputLightBarrier`
+|I3 |Light barrier, behind color sensor |Boolean |`{sl}/input/sortingLineSensMiddleLightBarrier`
+|A4 |Color sensor |Integer |—
+|I5 |Light barrier, white |Boolean |`{sl}/input/sortingLineSensWhiteLightBarrier`
+|I6 |Light barrier, red |Boolean |`{sl}/input/sortingLineSensRedLightBarrier`
+|I7 |Light barrier, blue |Boolean |`{sl}/input/sortingLineSensBlueLightBarrier`
+|Q1 |Motor conveyor belt |Boolean |`{sl}/output/sortingLineActMotorConveyor`
+|Q2 |Compressor |Boolean |`{sl}/output/sortingLineActCompressorOn`
+|Q3 |Valve, first ejector (white) |Boolean |`{sl}/output/sortingLineActWhiteEjector`
+|Q4 |Valve, second ejector (red) |Boolean |`{sl}/output/sortingLineActRedEjector`
+|Q5 |Valve, third ejector (blue) |Boolean |`{sl}/output/sortingLineActBlueEjector`
+|===
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "number",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/sensor/LightBarrierInlet`
-*Description*: Topic for publishing LightBarrierInlet sensor data of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/sensor/LightBarrierBehindColorSensor`
-*Description*: Topic for publishing LightBarrierBehindColorSensor sensor data of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/sensor/LightBarrierWhite`
-*Description*: Topic for publishing LightBarrierWhite sensor data of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/sensor/LightBarrierRed`
-*Description*: Topic for publishing LightBarrierRed sensor data of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/sensor/LightBarrierBlue`
-*Description*: Topic for publishing LightBarrierBlue sensor data of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/action/MotorConveyorBelt`
-*Description*: Topic for publishing MotorConveyorBelt output state of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/action/Compressor`
-*Description*: Topic for publishing Compressor output state of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/action/ValveFirstEjectorWhite`
-*Description*: Topic for publishing ValveFirstEjectorWhite output state of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/action/ValveSecondEjectorRed`
-*Description*: Topic for publishing ValveSecondEjectorRed output state of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `sortingLine/{id}/action/ValveThirdEjectorBlue`
-*Description*: Topic for publishing ValveThirdEjectorBlue output state of sorting lines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
 === Vacuum Gripper
 
-==== Topic: `vacuumGripper/{id}/sensor/ReferenceSwitchVerticalAxis`
-*Description*: Topic for publishing ReferenceSwitchVerticalAxis sensor data of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/sensor/ReferenceSwitchHorizontalAxis`
-*Description*: Topic for publishing ReferenceSwitchHorizontalAxis sensor data of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/sensor/ReferenceSwitchRotate`
-*Description*: Topic for publishing ReferenceSwitchRotate sensor data of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/sensor/VerticalAxisStep`
-*Description*: Topic for publishing VerticalAxisStep counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "integer",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/sensor/HorizontalAxisStep`
-*Description*: Topic for publishing HorizontalAxisStep counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "integer",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/sensor/RotateStep`
-*Description*: Topic for publishing RotateStep counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "integer",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/MotorVerticalAxisUp`
-*Description*: Topic for publishing MotorVerticalAxisUp counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/MotorVerticalAxisDown`
-*Description*: Topic for publishing MotorVerticalAxisDown counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/MotorHorizontalAxisBackward`
-*Description*: Topic for publishing MotorHorizontalAxisBackward counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/MotorHorizontalAxisForward`
-*Description*: Topic for publishing MotorHorizontalAxisForward counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/MotorRotateClockwise`
-*Description*: Topic for publishing MotorRotateClockwise counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/MotorRotateCounterClockwise`
-*Description*: Topic for publishing MotorRotateCounterClockwise counter value of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/Compressor`
-*Description*: Topic for publishing Compressor output state of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `vacuumGripper/{id}/action/ValveVacuum`
-*Description*: Topic for publishing ValveVacuum output state of vacuum grippers.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Reference switch, vertical axis |Boolean |`{vg}/input/vacuumSensVerticalEndUp`
+|I2 |Reference switch, horizontal axis |Boolean |`{vg}/input/vacuumSensArmEndIn`
+|I3 |Reference switch, rotation |Boolean |`{vg}/input/vacuumSensRotEnd`
+|B1 |Vertical encoder, impulse 1 |Boolean |—
+|B2 |Vertical encoder, impulse 2 |Boolean |—
+|B3 |Horizontal encoder, impulse 1 |Boolean |—
+|B4 |Horizontal encoder, impulse 2 |Boolean |—
+|B5 |Rotation encoder, impulse 1 |Boolean |—
+|B6 |Rotation encoder, impulse 2 |Boolean |—
+|Virtual (B1/B2) |Vertical encoder counter |Integer |`{vg}/input/vacuumSensVerticalEncoderCounter`
+|Virtual (B3/B4) |Horizontal encoder counter |Integer |`{vg}/input/vacuumSensArmEncoderCounter`
+|Virtual (B5/B6) |Rotation encoder counter |Integer |`{vg}/input/vacuumSensRotEncoderCounter`
+|Q1 |Motor vertical axis up |Boolean |`{vg}/output/vacuumActVerticalUp`
+|Q2 |Motor vertical axis down |Boolean |`{vg}/output/vacuumActVerticalDown`
+|Q3 |Motor horizontal axis backward / arm in |Boolean |`{vg}/output/vacuumActArmIn`
+|Q4 |Motor horizontal axis forward / arm out |Boolean |`{vg}/output/vacuumActArmOut`
+|Q5 |Motor rotate clockwise / right |Boolean |`{vg}/output/vacuumActRotRight`
+|Q6 |Motor rotate counterclockwise / left |Boolean |`{vg}/output/vacuumActRotLeft`
+|Q7 |Compressor |Boolean |`{vg}/output/vacuumActCompressorOn`
+|Q8 |Vacuum valve |Boolean |`{vg}/output/vacuumActValve`
+|===
 
 === Multi Processing
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchTurntablePositionVacuum`
-*Description*: Topic for publishing ReferenceSwitchTurntablePositionVacuum sensor data of multi-processing machines.
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Reference switch, turntable at vacuum |Boolean |`{mp}/input/multiProcessingSensTurntablePosVacuum`
+|I2 |Reference switch, turntable at belt |Boolean |`{mp}/input/multiProcessingSensTurntablePosBelt`
+|I3 |Light barrier, end of conveyor belt |Boolean |`{mp}/input/multiProcessingSensEndConveyor`
+|I4 |Reference switch, turntable at saw |Boolean |`{mp}/input/multiProcessingSensTurntablePosSaw`
+|I5 |Reference switch, vacuum at turntable |Boolean |`{mp}/input/multiProcessingSensVacuumGripperAtTurntable`
+|I6 |Reference switch, oven feeder inside |Boolean |`{mp}/input/multiProcessingSensOvenFeederIn`
+|I7 |Reference switch, oven feeder outside |Boolean |`{mp}/input/multiProcessingSensOvenFeederOut`
+|I8 |Reference switch, vacuum at oven |Boolean |`{mp}/input/multiProcessingSensVacuumGripperAtOven`
+|I9 |Light barrier, oven |Boolean |`{mp}/input/multiProcessingSensOven`
+|Q1 (M1) |Motor turntable clockwise |Boolean |`{mp}/output/multiProcessingActRotClockwise`
+|Q2 (M1) |Motor turntable counterclockwise |Boolean |`{mp}/output/multiProcessingActRotCounterclockwise`
+|Q3 (M2) |Motor conveyor belt forward |Boolean |`{mp}/output/multiProcessingActConveyorForward`
+|Q4 (M3) |Motor saw |Boolean |`{mp}/output/multiProcessingActSaw`
+|Q5 (M4) |Motor oven feeder retract |Boolean |`{mp}/output/multiProcessingActOvenInward`
+|Q6 (M4) |Motor oven feeder extend |Boolean |`{mp}/output/multiProcessingActOvenOutward`
+|Q7 (M5) |Motor vacuum towards oven |Boolean |`{mp}/output/multiProcessingActGripperToOven`
+|Q8 (M5) |Motor vacuum towards turntable |Boolean |`{mp}/output/multiProcessingActGripperToTurntable`
+|Q9 |Oven light |Boolean |`{mp}/output/multiProcessingOvenLight`
+|Q10 |Compressor |Boolean |`{mp}/output/multiProcessingCompressor`
+|Q11 |Vacuum valve |Boolean |`{mp}/output/multiProcessingValveVacuum`
+|Q12 |Lowering valve |Boolean |`{mp}/output/multiProcessingActLowerValve`
+|Q13 |Oven door valve |Boolean |`{mp}/output/multiProcessingValveOvenDoor`
+|Q14 |Feeder valve |Boolean |`{mp}/output/multiProcessingValveFeeder`
+|===
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
+=== High Bay
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchTurntablePositionBelt`
-*Description*: Topic for publishing ReferenceSwitchTurntablePositionBelt sensor data of multi-processing machines.
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Reference switch, horizontal axis |Boolean |`{hb}/input/highbaySensHorizontal`
+|I2 |Light barrier, inside |Boolean |`{hb}/input/highbaySensInside`
+|I3 |Light barrier, outside |Boolean |`{hb}/input/highbaySensOutside`
+|I4 |Reference switch, vertical axis |Boolean |`{hb}/input/highbaySensVertical`
+|A1 |Trail sensor, lower |Boolean |—
+|A2 |Trail sensor, upper |Boolean |—
+|B1 |Horizontal encoder, impulse 1 |Boolean |—
+|B2 |Horizontal encoder, impulse 2 |Boolean |—
+|B3 |Vertical encoder, impulse 1 |Boolean |—
+|B4 |Vertical encoder, impulse 2 |Boolean |—
+|I5 |Reference switch, cantilever front |Boolean |`{hb}/input/highbaySensCantileverFront`
+|I6 |Reference switch, cantilever back |Boolean |`{hb}/input/highbaySensCantileverBack`
+|Virtual (B3/B4) |Vertical encoder counter |Integer |`{hb}/input/highbaySensVerticalEncoderCounter`
+|Virtual (B1/B2) |Horizontal encoder counter |Integer |`{hb}/input/highbaySensHorizontalEncoderCounter`
+|Q1 |Motor conveyor belt forward |Boolean |`{hb}/output/highbayActConveyorForward`
+|Q2 |Motor conveyor belt backward |Boolean |`{hb}/output/highbayActConveyorBackward`
+|Q3 |Motor horizontal towards rack |Boolean |`{hb}/output/highbayActHorizontalToRack`
+|Q4 |Motor horizontal towards conveyor belt |Boolean |`{hb}/output/highbayActHorizontalToConveyor`
+|Q5 |Motor vertical axis downward |Boolean |`{hb}/output/highbayActDown`
+|Q6 |Motor vertical axis upward |Boolean |`{hb}/output/highbayActUp`
+|Q7 |Motor cantilever forward |Boolean |`{hb}/output/highbayActCantileverForward`
+|Q8 |Motor cantilever backward |Boolean |`{hb}/output/highbayActCantileverBackward`
+|===
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
+=== Punching Machine
 
-==== Topic: `multiProcessing/{id}/sensor/LightBarrierEndOfConveyorBelt`
-*Description*: Topic for publishing LightBarrierEndOfConveyorBelt sensor data of multi-processing machines.
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Phototransistor, goods in/out |Boolean |`{pm}/input/punchingMachineSensGoods`
+|I2 |Phototransistor, punching machine |Boolean |`{pm}/input/punchingMachineSensMachine`
+|I3 |Switch, punching machine up |Boolean |`{pm}/input/punchingMachineSensUp`
+|I4 |Switch, punching machine down |Boolean |`{pm}/input/punchingMachineSensDown`
+|Q1 |Motor conveyor belt forward |Boolean |`{pm}/output/punchingMachineActConveyorForward`
+|Q2 |Motor conveyor belt backward |Boolean |`{pm}/output/punchingMachineActConveyorBackward`
+|Q3 |Motor punching machine up |Boolean |`{pm}/output/punchingMachineActUp`
+|Q4 |Motor punching machine down |Boolean |`{pm}/output/punchingMachineActDown`
+|===
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
+=== Indexed Line
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchTurntablePositionSaw`
-*Description*: Topic for publishing ReferenceSwitchTurntablePositionSaw sensor data of multi-processing machines.
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Push button, slider 1 front |Boolean |`{il}/input/indexedLineSensSlider1Front`
+|I2 |Push button, slider 1 rear |Boolean |`{il}/input/indexedLineSensSlider1Rear`
+|I3 |Push button, slider 2 front |Boolean |`{il}/input/indexedLineSensSlider2Front`
+|I4 |Push button, slider 2 rear |Boolean |`{il}/input/indexedLineSensSlider2Rear`
+|I5 |Phototransistor, slider 1 |Boolean |`{il}/input/indexedLineSensSlider1`
+|I6 |Phototransistor, milling machine |Boolean |`{il}/input/indexedLineSensMilling`
+|I7 |Phototransistor, loading station |Boolean |`{il}/input/indexedLineSensLoading`
+|I8 |Phototransistor, drilling machine |Boolean |`{il}/input/indexedLineSensDrilling`
+|I9 |Phototransistor, conveyor belt swap |Boolean |`{il}/input/indexedLineSensSwap`
+|Q1 |Motor slider 1 backward |Boolean |`{il}/output/indexedLineActSlider1Backward`
+|Q2 |Motor slider 1 forward |Boolean |`{il}/output/indexedLineActSlider1Forward`
+|Q3 |Motor slider 2 backward |Boolean |`{il}/output/indexedLineActSlider2Backward`
+|Q4 |Motor slider 2 forward |Boolean |`{il}/output/indexedLineActSlider2Forward`
+|Q5 |Motor conveyor belt feed |Boolean |`{il}/output/indexedLineActFeedConveyor`
+|Q6 |Motor conveyor belt milling machine |Boolean |`{il}/output/indexedLineActMillingConveyor`
+|Q7 |Motor milling machine |Boolean |`{il}/output/indexedLineActMilling`
+|Q8 |Motor conveyor belt drilling machine |Boolean |`{il}/output/indexedLineActDrillingConveyor`
+|Q9 |Motor drilling machine |Boolean |`{il}/output/indexedLineActDrilling`
+|Q10 |Motor conveyor belt swap |Boolean |`{il}/output/indexedLineActSwapConveyor`
+|===
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
+=== 3D-Gripper
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchVacuumPositionTurntable`
-*Description*: Topic for publishing ReferenceSwitchVacuumPositionTurntable sensor data of multi-processing machines.
+No MQTT measurement topics are available for this station.
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
+[cols="1,3,1,6",options="header"]
+|===
+|PLC port |Signal |Value |MQTT topic
+|I1 |Reference switch, claw |Boolean |—
+|I2 |Pulse counter, gripper |Integer |—
+|I3 |Reference switch, grip arm |Boolean |—
+|I4 |Pulse counter, grip arm |Integer |—
+|I5 |Reference switch, vertical axis |Boolean |—
+|I6 |Reference switch, turntable |Boolean |—
+|B1 |Vertical axis encoder, impulse 1 |Boolean |—
+|B2 |Vertical axis encoder, impulse 2 |Boolean |—
+|B3 |Turntable encoder, impulse 1 |Boolean |—
+|B4 |Turntable encoder, impulse 2 |Boolean |—
+|Virtual |Vertical position |Integer |—
+|Virtual |Rotation position |Integer |—
+|Q1 (M1) |Motor gripper open |Boolean |—
+|Q2 (M1) |Motor gripper close |Boolean |—
+|Q3 (M2) |Motor grip arm forward |Boolean |—
+|Q4 (M2) |Motor grip arm backward |Boolean |—
+|Q5 (M3) |Motor vertical axis down |Boolean |—
+|Q6 (M3) |Motor vertical axis up |Boolean |—
+|Q7 (M4) |Motor turntable right |Boolean |—
+|Q8 (M4) |Motor turntable left |Boolean |—
+|===
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchOvenFeederInside`
-*Description*: Topic for publishing ReferenceSwitchOvenFeederInside sensor data of multi-processing machines.
+=== Controller status without a PLC port
 
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
+These additional status values do not have a PLC port.
 
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchOvenFeederOutside`
-*Description*: Topic for publishing ReferenceSwitchOvenFeederOutside sensor data of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/sensor/ReferenceSwitchVacuumPositionOven`
-*Description*: Topic for publishing ReferenceSwitchVacuumPositionOven sensor data of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/sensor/LightBarrierOven`
-*Description*: Topic for publishing LightBarrierOven sensor data of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorTurntableClockwise`
-*Description*: Topic for publishing MotorTurntableClockwise output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorTurntableCounterClockwise`
-*Description*: Topic for publishing MotorTurntableCounterClockwise output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorConveyorBelt`
-*Description*: Topic for publishing MotorConveyorBelt output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorSaw`
-*Description*: Topic for publishing MotorSaw output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorOvenFeederRetract`
-*Description*: Topic for publishing MotorOvenFeederRetract output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorOvenFeederExtend`
-*Description*: Topic for publishing MotorOvenFeederExtend output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorVacuumTowardsOven`
-*Description*: Topic for publishing MotorVacuumTowardsOven output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/MotorVacuumTowardsTurntable`
-*Description*: Topic for publishing MotorVacuumTowardsTurntable output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/LightOven`
-*Description*: Topic for publishing LightOven output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/Compressor`
-*Description*: Topic for publishing Compressor output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/ValveVacuum`
-*Description*: Topic for publishing ValveVacuum output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/ValveLowering`
-*Description*: Topic for publishing ValveLowering output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/ValveOvenDoor`
-*Description*: Topic for publishing ValveOvenDoor output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/ValveFeeder`
-*Description*: Topic for publishing ValveFeeder output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
-==== Topic: `multiProcessing/{id}/action/Compressor`
-*Description*: Topic for publishing Compressor output state of multi-processing machines.
-
-*Payload*:
-[source,json]
-----
-{
-  "value": "boolean",
-  "timestamp": "string (format: date-time)"
-}
-----
-
+[cols="2,1,4",options="header"]
+|===
+|Machine |Value |MQTT topic
+|Conveyor Belt |Boolean |`{cb}/internal/isExecuting`
+|Sorting Line |Boolean |`{sl}/internal/isExecuting`
+|Sorting Line |String |`{sl}/internal/colorToEject`
+|Vacuum Gripper |Boolean |`{vg}/internal/isExecuting`
+|Vacuum Gripper |PWM value |`{vg}/output/pwmVertical`
+|Vacuum Gripper |PWM value |`{vg}/output/pwmHorizontal`
+|Vacuum Gripper |PWM value |`{vg}/output/pwmRotational`
+|Multi Processing |Boolean |`{mp}/internal/isExecuting`
+|High Bay |Boolean |`{hb}/internal/isExecuting`
+|High Bay |PWM value |`{hb}/output/pwmVertical`
+|High Bay |PWM value |`{hb}/output/pwmHorizontal`
+|Punching Machine |Boolean |`{pm}/internal/isExecuting`
+|Indexed Line |Boolean |`{il}/internal/isExecuting`
+|===
