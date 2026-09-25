@@ -98,7 +98,14 @@ jobs:
         run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Keep only latest snapshot
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'io.github.mbdo.factoryscada'
+          package-type: 'maven'
+          min-versions-to-keep: 1
+          delete-only-pre-release-versions: 'true'
+          
   frontend-build:
     name: Factory SCADA frontend
     runs-on: ubuntu-latest
