@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" output="bin/test" path="src/test/resources">
+		<attributes>
+			<attribute name="gradle_scope" value="test"/>
+			<attribute name="gradle_used_by_scope" value="test"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" output="bin/test" path="src/test/java">
 		<attributes>
 			<attribute name="gradle_scope" value="test"/>
@@ -7,7 +14,7 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="**" kind="src" output="bin/main" path="src/main/resources">
+	<classpathentry kind="src" output="bin/main" path="src/main/resources">
 		<attributes>
 			<attribute name="gradle_scope" value="main"/>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
@@ -32,13 +39,5 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-integration/3.3.0/e0402a7b9507b91a9d6b8acc85614bd5ce67f755/spring-boot-starter-integration-3.3.0.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-integration/3.3.0/f208727cce33630ee9f995e365d8d64cac2fc9f3/spring-boot-starter-integration-3.3.0-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-aop/3.3.0/f160f43a3f58618c92677d249a64def02a76830c/spring-boot-starter-aop-3.3.0.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-aop/3.3.0/6851d331388536a8a2a4a29a869772669a12404a/spring-boot-starter-aop-3.3.0-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.integration/spring-integration-mqtt/6.3.0/3ac1e37f7013b3ab477e022398920a8fb8fb4e60/spring-integration-mqtt-6.3.0.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.integration/spring-integration-mqtt/6.3.0/c972bdbc3e031d5924332943bda3c94fc68a24ae/spring-integration-mqtt-6.3.0-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.integration/spring-integration-core/6.3.0/4f1aefe2abd4bb7936b836946acc0c8cb841b034/spring-integration-core-6.3.0.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.integration/spring-integration-core/6.3.0/7f778e4900e59d0b20b8eb54ba9ad1d42041002e/spring-integration-core-6.3.0-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework/spring-tx/6.1.8/1f0249f1785d39f9e21694aaeb4b02916abda632/spring-tx-6.1.8.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework/spring-tx/6.1.8/c63d942814806a7058b238f514fb082d4ec58a45/spring-tx-6.1.8-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.eclipse.paho/org.eclipse.paho.client.mqttv3/1.2.5/1546cfc794449c39ad569853843a930104fdc297/org.eclipse.paho.client.mqttv3-1.2.5.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.eclipse.paho/org.eclipse.paho.client.mqttv3/1.2.5/84b4c91988da0a6e20ae5ac622b3b053492ecb51/org.eclipse.paho.client.mqttv3-1.2.5-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.aspectj/aspectjweaver/1.9.22/10736ab74a53af5e2e1b07e76335a5391526b6f8/aspectjweaver-1.9.22.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.aspectj/aspectjweaver/1.9.22/a758110d3287c33e6fe15795a20ee48e59863861/aspectjweaver-1.9.22-sources.jar"/>
-	<classpathentry kind="lib" path="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.retry/spring-retry/2.0.6/812ca80eb5f418c679cb239d2d009c4bf075f3a/spring-retry-2.0.6.jar" sourcepath="/home/dvojtise/.gradle/caches/modules-2/files-2.1/org.springframework.retry/spring-retry/2.0.6/84c33299da0e8f93c371d462d576f92e2d937238/spring-retry-2.0.6-sources.jar"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>

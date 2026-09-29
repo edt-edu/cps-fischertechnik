@@ -1,6 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.customevents.AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.customevents.AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.ConveyorCommandKind;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltcommands.DirectionKind;
 import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
@@ -132,8 +132,8 @@ public abstract class AbstractConveyorBeltMachineAdapter extends AbstractMachine
   public abstract void statusRequest();
 
   private void checkAndFireAcceptWhenEvents() {
-    if (((this.conveyorSensFeed == true) && (this.conveyorSensSwap == false))) {
-      publish(new AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent());
+    if (((this.conveyorSensFeed == false) && (this.conveyorSensSwap == true))) {
+      publish(new AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent());
     }
   }
 }

@@ -78,6 +78,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
+        commandSent("stop()");
         isExecuting = true;
         realMachine.stop();
     }
@@ -85,6 +86,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void setup() {
         log.info("[{}] setup()", id);
+        commandSent("setup()");
         isExecuting = true;
         realMachine.setup();
     }
@@ -92,6 +94,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void process1() {
         log.info("[{}] process1()", id);
+        commandSent("process1()");
         isExecuting = true;
         realMachine.process1();
     }
@@ -99,6 +102,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void process() {
         log.info("[{}] process()", id);
+        commandSent("process()");
         isExecuting = true;
         realMachine.process();
     }
@@ -106,6 +110,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void moveToSafePosition() {
         log.info("[{}] moveToSafePosition()", id);
+        commandSent("moveToSafePosition()");
         isExecuting = true;
         realMachine.moveToSafePosition();
     }
@@ -113,6 +118,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenLoad() {
         log.info("[{}] ovenLoad()", id);
+        commandSent("ovenLoad()");
         isExecuting = true;
         realMachine.ovenLoad();
     }
@@ -120,6 +126,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenUnload() {
         log.info("[{}] ovenUnload()", id);
+        commandSent("ovenUnload()");
         isExecuting = true;
         realMachine.ovenUnload();
     }
@@ -127,6 +134,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenHeat() {
         log.info("[{}] ovenHeat()", id);
+        commandSent("ovenHeat()");
         isExecuting = true;
         realMachine.ovenHeat();
     }
@@ -134,6 +142,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenProcess() {
         log.info("[{}] ovenProcess()", id);
+        commandSent("ovenProcess()");
         isExecuting = true;
         realMachine.ovenProcess();
     }
@@ -141,6 +150,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void armMove() {
         log.info("[{}] armMove()", id);
+        commandSent("armMove()");
         isExecuting = true;
         realMachine.armMove();
     }
@@ -148,6 +158,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void armPick() {
         log.info("[{}] armPick()", id);
+        commandSent("armPick()");
         isExecuting = true;
         realMachine.armPick();
     }
@@ -155,6 +166,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void armPlace() {
         log.info("[{}] armPlace()", id);
+        commandSent("armPlace()");
         isExecuting = true;
         realMachine.armPlace();
     }
@@ -162,6 +174,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void turntableRotate() {
         log.info("[{}] turntableRotate()", id);
+        commandSent("turntableRotate()");
         isExecuting = true;
         realMachine.turntableRotate();
     }
@@ -169,6 +182,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void turntableEject() {
         log.info("[{}] turntableEject()", id);
+        commandSent("turntableEject()");
         isExecuting = true;
         realMachine.turntableEject();
     }
@@ -176,6 +190,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void conveyorMoveToSensor() {
         log.info("[{}] conveyorMoveToSensor()", id);
+        commandSent("conveyorMoveToSensor()");
         isExecuting = true;
         realMachine.conveyorMoveToSensor();
     }
@@ -183,6 +198,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void conveyorMoveOut() {
         log.info("[{}] conveyorMoveOut()", id);
+        commandSent("conveyorMoveOut()");
         isExecuting = true;
         realMachine.conveyorMoveOut();
     }
@@ -190,6 +206,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void sawCut() {
         log.info("[{}] sawCut()", id);
+        commandSent("sawCut()");
         isExecuting = true;
         realMachine.sawCut();
     }

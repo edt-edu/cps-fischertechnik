@@ -604,6 +604,15 @@ public class JavaTransformer {
         }
     }
 
+    /** Whether a message is defined in the same system (root namespace) as a machine. */
+    private boolean sameSystem(MachineIR machine, MachineMessageRefIR messageRef) {
+        MachineMessageIR message = irRepository.getMessages().get(messageRef.name());
+        if (machine == null || message == null) {
+            return false;
+        }
+        return machine.getNamespace().split("::")[0].equals(message.getNamespace().split("::")[0]);
+    }
+
     private Map<TypeName, MachineRefIR> resolveEventEmitters(List<MachineRefIR> machineRefs) {
         Map<TypeName, MachineRefIR> emitters = new LinkedHashMap<>();
 
@@ -667,6 +676,16 @@ public class JavaTransformer {
                 if (trigger instanceof TransitionTriggerWhenIR triggerWhen) {
                     MachineRefIR associatedMachine = triggerWhen.getAssociatedMachine();
                     if (associatedMachine != null && associatedMachine.name().equals(machineRef.name())) {
+                        subscribedEventTypes.add(triggerType);
+                    }
+                    continue;
+                }
+
+                // "accept <message> via <machine>": subscribe on that machine only
+                if (trigger instanceof TransitionTriggerSimpleIR triggerSimple
+                        && triggerSimple.getViaMachineName() != null
+                        && machineRefs.stream().anyMatch(ref -> ref.name().equals(triggerSimple.getViaMachineName()))) {
+                    if (triggerSimple.getViaMachineName().equals(machineRef.name())) {
                         subscribedEventTypes.add(triggerType);
                     }
                     continue;
@@ -955,8 +974,20 @@ public class JavaTransformer {
 
                 TypeName messageType = typeTable.resolve(messageRef.type());
 
-                Map<TypeName, MachineRefIR> emitters = resolveEventEmitters(machineRefs);
-                MachineRefIR machineRef = emitters.get(messageType);
+                // A message is published on the adapter of the mission machine whose system defines it (subscriptions
+                // follow the same rule). When several machines qualify (e.g. two zones for a zone message), the one
+                // named by "send <message> to <machine>" is used.
+                MachineRefIR machineRef = resolveEventEmitters(machineRefs).get(messageType);
+                if (sendToAction.getTo() != null) {
+                    String toName = sendToAction.getTo().name();
+                    Optional<MachineRefIR> namedReceiver = machineRefs.stream()
+                            .filter(ref -> ref.name().equals(toName))
+                            .filter(ref -> sameSystem(resolveMachine(ref), messageRef))
+                            .findFirst();
+                    if (namedReceiver.isPresent()) {
+                        machineRef = namedReceiver.get();
+                    }
+                }
                 if (machineRef == null) {
                     throw new IllegalStateException("Transition " + transition.getQualifiedName()
                             + " has a send action without a resolvable emitter");

@@ -16,6 +16,12 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
     private static final Logger logger = LoggerFactory.getLogger(AbstractMissionStrategy.class);
     private Consumer<String> logListener = s -> {};
 
+    /**
+     * Mission whose state machine is executing on this thread (starting, or handling an event). Machine commands
+     * are sent synchronously from its transition effects, so they are logged in that mission.
+     */
+    private static final ThreadLocal<AbstractMissionStrategy> EXECUTING_MISSION = new ThreadLocal<>();
+
     protected AbstractMissionStrategy() {
         this.runtime = new RuntimeInstance();
     }
@@ -34,7 +40,7 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
     public void start() {
         logger.info("{} starting", getName());
         log("started");
-        runtime.start();
+        executing(runtime::start);
     }
 
     @Override
@@ -53,7 +59,31 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
     public void onEvent(Event event) {
         logger.info("{} received event {}", getName(), event.getClass().getSimpleName());
         log("event: " + event.getClass().getSimpleName());
-        runtime.dispatch(event);
+        executing(() -> runtime.dispatch(event));
+    }
+
+    private void executing(Runnable execution) {
+        AbstractMissionStrategy previous = EXECUTING_MISSION.get();
+        EXECUTING_MISSION.set(this);
+        try {
+            execution.run();
+        } finally {
+            if (previous == null) {
+                EXECUTING_MISSION.remove();
+            } else {
+                EXECUTING_MISSION.set(previous);
+            }
+        }
+    }
+
+    /**
+     * Logs a command sent to a machine in the mission that sent it, if any (see {@link AbstractMachineAdapter#commandSent}).
+     */
+    static void logCommandOfExecutingMission(String command) {
+        AbstractMissionStrategy mission = EXECUTING_MISSION.get();
+        if (mission != null) {
+            mission.log("command: " + command);
+        }
     }
 
     public String getActiveStateName() {

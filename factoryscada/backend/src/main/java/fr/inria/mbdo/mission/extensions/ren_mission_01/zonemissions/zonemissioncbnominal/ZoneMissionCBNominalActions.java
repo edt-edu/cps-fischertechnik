@@ -1,14 +1,8 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal;
 
-import fr.inria.mbdo.mission.runtime.rtc.event.Event;
-
 /**
  * From ZoneMissions::ZoneMissionCBNominal
  * Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission
  */
 public interface ZoneMissionCBNominalActions {
-  /**
-   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:null::sendAcquireResponseEventMessage
-   */
-  void sendAcquireResponseEventMessage(Event event);
 }

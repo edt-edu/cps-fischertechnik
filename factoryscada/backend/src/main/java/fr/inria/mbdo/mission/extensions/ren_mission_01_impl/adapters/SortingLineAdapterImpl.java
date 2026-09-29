@@ -74,6 +74,7 @@ public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
     @Override
     public void eject() {
         log.info("[{}] eject()", id);
+        commandSent("eject()");
         isExecuting = true;
         realMachine.eject();
     }
@@ -81,6 +82,7 @@ public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
+        commandSent("stop()");
         isExecuting = true;
         realMachine.stop();
 

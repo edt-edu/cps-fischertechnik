@@ -50,6 +50,16 @@ public class AbstractMachineAdapter implements MachineAdapter {
         }
     }
 
+    /**
+     * To be called by adapters when they send a command to their machine: the command is shown in the logs of
+     * the mission that sent it.
+     *
+     * @param command the command and its parameters, e.g. {@code pick(Position3D[vertical=1400.0, ...])}
+     */
+    protected void commandSent(String command) {
+        AbstractMissionStrategy.logCommandOfExecutingMission(id + " " + command);
+    }
+
     public <E extends Event> void subscribe(Class<E> eventType, Consumer<E> handler) {
         subscribers.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>()).add(handler);
 

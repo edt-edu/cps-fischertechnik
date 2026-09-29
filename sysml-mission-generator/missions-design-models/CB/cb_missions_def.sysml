@@ -17,7 +17,8 @@ package ConveyorBeltMissions {
         then Idle;
 
         state Idle;
-        accept when conveyorBelt.conveyorSensFeed == true and conveyorBelt.conveyorSensSwap == false
+        // light barriers are active-low (false = token present): token at the feed and swap free
+        accept when conveyorBelt.conveyorSensFeed == false and conveyorBelt.conveyorSensSwap == true
             do conveyorBelt.moveToSensor
             then MovingToSensor;
 

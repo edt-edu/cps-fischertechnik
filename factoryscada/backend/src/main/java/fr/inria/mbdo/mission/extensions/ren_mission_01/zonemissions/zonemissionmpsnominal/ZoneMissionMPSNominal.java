@@ -1,4 +1,4 @@
-package fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal;
+package fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
@@ -16,13 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * From ZoneMissions::ZoneMissionCBNominal
- * Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission
+ * From ZoneMissions::ZoneMissionMPSNominal
+ * Mission for managing zone acquirement on the Multi Processing Station between VGR2 and the MPS for nominal mission
  */
-public class ZoneMissionCBNominal extends AbstractMissionStrategy {
-  private static final Logger logger = LoggerFactory.getLogger("ZoneMissionCBNominal");
+public class ZoneMissionMPSNominal extends AbstractMissionStrategy {
+  private static final Logger logger = LoggerFactory.getLogger("ZoneMissionMPSNominal");
 
-  public static final String DOT_SCHEMA = "digraph ZoneMissionCBNominal {\n"
+  public static final String DOT_SCHEMA = "digraph ZoneMissionMPSNominal {\n"
       + "    fontname=\"Helvetica,Arial,sans-serif\"\n"
       + "    node [fontname=\"Helvetica,Arial,sans-serif\"]\n"
       + "    edge [fontname=\"Helvetica,Arial,sans-serif\"]\n"
@@ -40,11 +40,11 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
       + "    \"IdleBusyRequested\" -> \"IdleBusy\" [label=\"ReleaseRequestEventMessage / send ZonesSystem::ZonesMessages::AcquireResponseEventMessage -> zone\"];\n"
       + "}";
 
-  private final ZoneMissionCBNominalActions actions;
+  private final ZoneMissionMPSNominalActions actions;
 
   private final Zone zone;
 
-  public ZoneMissionCBNominal(Zone zone, ZoneMissionCBNominalActions actions) {
+  public ZoneMissionMPSNominal(Zone zone, ZoneMissionMPSNominalActions actions) {
     this.zone = zone;
     this.actions = actions;
 
@@ -67,7 +67,7 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
 
   @Override
   public String getName() {
-    return "ZoneMissionCBNominal";
+    return "ZoneMissionMPSNominal";
   }
 
   @Override
@@ -77,7 +77,7 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
 
   @Override
   public String getDescription() {
-    return "Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission";
+    return "Mission for managing zone acquirement on the Multi Processing Station between VGR2 and the MPS for nominal mission";
   }
 
   public static String toDot() {

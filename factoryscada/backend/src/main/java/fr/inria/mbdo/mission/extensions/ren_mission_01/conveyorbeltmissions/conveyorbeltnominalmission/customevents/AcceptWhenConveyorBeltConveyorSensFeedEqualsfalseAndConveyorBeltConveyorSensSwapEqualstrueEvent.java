@@ -6,8 +6,8 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
  * Generated accept-when event trigger for runtime transitions.
  * SysML source:
  * <pre>{@code
- * conveyorBelt.conveyorSensFeed == true and conveyorBelt.conveyorSensSwap == false
+ * conveyorBelt.conveyorSensFeed == false and conveyorBelt.conveyorSensSwap == true
  * }</pre>
  */
-public final class AcceptWhenConveyorBeltConveyorSensFeedEqualstrueAndConveyorBeltConveyorSensSwapEqualsfalseEvent implements Event {
+public final class AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent implements Event {
 }

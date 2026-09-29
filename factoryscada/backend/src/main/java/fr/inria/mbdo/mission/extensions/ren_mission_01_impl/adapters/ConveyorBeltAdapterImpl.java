@@ -80,6 +80,7 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
+        commandSent("stop()");
         isExecuting = true;
         isExecuting = true;
         realMachine.stop();
@@ -88,6 +89,7 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
     @Override
     public void moveNbSteps() {
         log.info("[{}] moveNbSteps()", id);
+        commandSent("moveNbSteps()");
         isExecuting = true;
         isExecuting = true;
         realMachine.moveNbSteps();
@@ -96,6 +98,7 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
     @Override
     public void moveToSensor() {
         log.info("[{}] moveToSensor()", id);
+        commandSent("moveToSensor()");
         isExecuting = true;
         isExecuting = true;
         realMachine.moveToSensor();
@@ -104,6 +107,7 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
     @Override
     public void moveOut() {
         log.info("[{}] moveOut()", id);
+        commandSent("moveOut()");
         isExecuting = true;
         isExecuting = true;
         realMachine.moveOut();

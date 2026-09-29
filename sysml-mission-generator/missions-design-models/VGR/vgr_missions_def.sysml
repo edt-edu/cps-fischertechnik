@@ -8,6 +8,7 @@ package VacuumGripperMissions {
     private import ZonesSystem::Zone;
     private import ZonesSystem::ZonesMessages::*;
     private import MultiProcessingStationSystem::MultiProcessingStationMessages::*;
+    private import ConveyorBeltSystem::ConveyorBeltMessages::*;
     private import ScalarValues::*;
 
     state def VacuumGripper1NominalMission {
@@ -114,14 +115,12 @@ package VacuumGripperMissions {
         in zoneMPS : ZonesSystem::Zone;
 
         action gotoStandby : GoToPosition;
-        action gotoCBSwap : GoToPosition;
         action pickCBswap : Pick;
-        action gotoMPSin : GoToPosition;
         action placeMPSin : Place;
 
         action releaseCBZoneAndAcquireMPSZone {
             send new ReleaseRequestEventMessage() to zoneCB;
-            send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneMPS;
+            send new AcquireRequestEventMessage() to zoneMPS;
         }
 
         entry vacuumGripper.setup;
@@ -133,36 +132,32 @@ package VacuumGripperMissions {
         state GotoStandbyCMD;
         accept VGRCommandSuccessEventMessage then Idle;
 
+        // The conveyor belt tells VGR2 that a token arrived at the swap (ConveyorBeltNominalMission).
+        // VGR2 then waits for the CB zone, so that it never works over the belt at the same time as VGR1.
         state Idle;
-        accept InputFreeEventMessage
-            do send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneCB
+        accept SwapBusyEventMessage via vacuumGripper
+            do send new AcquireRequestEventMessage() to zoneCB
             then WaitForCBZoneAcquisition;
 
         state WaitForCBZoneAcquisition;
-        accept AcquireResponseEventMessage do gotoCBSwap then GotoCBswapCMD;
-
-        state GotoCBswapCMD;
-        accept AcquireResponseEventMessage do pickCBswap then PickCBswapCMD;
+        accept AcquireResponseEventMessage via zoneCB do pickCBswap then PickCBswapCMD;
 
         state PickCBswapCMD;
-        accept VGRCommandSuccessEventMessage do gotoStandby then ReleaseCBZone;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do gotoStandby then ReleaseCBZone;
 
         state ReleaseCBZone;
-        accept VGRCommandSuccessEventMessage
+        accept VGRCommandSuccessEventMessage via vacuumGripper
             do releaseCBZoneAndAcquireMPSZone
             then WaitForMPSZoneAcquisition;
 
         state WaitForMPSZoneAcquisition;
-        accept AcquireResponseEventMessage do gotoMPSin then GotoMPSinCMD;
-
-        state GotoMPSinCMD;
-        accept VGRCommandSuccessEventMessage do placeMPSin then PlaceMPSinCMD;
+        accept AcquireResponseEventMessage via zoneMPS do placeMPSin then PlaceMPSinCMD;
 
         state PlaceMPSinCMD;
-        accept VGRCommandSuccessEventMessage do gotoStandby then ReleaseMPSZone;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do gotoStandby then ReleaseMPSZone;
 
         state ReleaseMPSZone;
-        accept VGRCommandSuccessEventMessage
+        accept VGRCommandSuccessEventMessage via vacuumGripper
             do send new ReleaseRequestEventMessage() to zoneMPS
             then GotoStandbyCMD;
     }

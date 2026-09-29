@@ -1,24 +1,62 @@
 package ZoneMissions {
+    private import Common::*;
+    private import ZonesSystem::*;
     private import ZonesSystem::ZonesMessages::*;
 
     state def ZoneMissionCBNominal {
         doc
         /* Mission for managing zone acquirement on Conveyor Belt between VGR1 and VGR2 for nominal mission */
 
-        action def sendAcquireResponseEventMessage {
-            in request : AcquireRequestEventMessage;
-
-            send new AcquireResponseEventMessage() to request.sender;
-        }
+        // The zone adapter is the channel shared with the grippers: they send their acquire / release requests to
+        // it and wait for the acquire response on it (see VacuumGripper missions: "... to zoneCB", "via zoneCB").
+        // A request received while the zone is busy is kept, and answered when the zone is released.
+        @MainMachineMetadata about zone;
+        in zone : ZonesSystem::Zone;
 
         entry;
         then IdleFree;
 
         state IdleFree;
-        accept AcquireRequestEventMessage do action sendAcquireResponseEventMessage then IdleBusy;
+        accept AcquireRequestEventMessage via zone
+            do send new AcquireResponseEventMessage() to zone
+            then IdleBusy;
 
         state IdleBusy;
-        accept ReleaseRequestEventMessage then IdleFree;
+        accept ReleaseRequestEventMessage via zone then IdleFree;
+        accept AcquireRequestEventMessage via zone then IdleBusyRequested;
+
+        state IdleBusyRequested;
+        accept ReleaseRequestEventMessage via zone
+            do send new AcquireResponseEventMessage() to zone
+            then IdleBusy;
+    }
+
+    state def ZoneMissionMPSNominal {
+        doc
+        /* Mission for managing zone acquirement on the Multi Processing Station between VGR2 and the MPS for nominal mission */
+
+        // The zone adapter is the channel shared with the grippers: they send their acquire / release requests to
+        // it and wait for the acquire response on it (see VacuumGripper2NominalMission: "... to zoneMPS", "via zoneMPS").
+        // A request received while the zone is busy is kept, and answered when the zone is released.
+        @MainMachineMetadata about zone;
+        in zone : ZonesSystem::Zone;
+
+        entry;
+        then IdleFree;
+
+        state IdleFree;
+        accept AcquireRequestEventMessage via zone
+            do send new AcquireResponseEventMessage() to zone
+            then IdleBusy;
+
+        state IdleBusy;
+        accept ReleaseRequestEventMessage via zone then IdleFree;
+        accept AcquireRequestEventMessage via zone then IdleBusyRequested;
+
+        state IdleBusyRequested;
+        accept ReleaseRequestEventMessage via zone
+            do send new AcquireResponseEventMessage() to zone
+            then IdleBusy;
     }
 
     // doc

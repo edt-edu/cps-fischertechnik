@@ -305,7 +305,8 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
 
         String explicitMessageTypeQName = resolveExplicitAcceptMessageTypeQName(accept);
         if (explicitMessageTypeQName != null) {
-            return new TransitionTriggerSimpleIR(meta(transition), new Ref<>(explicitMessageTypeQName));
+            return new TransitionTriggerSimpleIR(meta(transition), new Ref<>(explicitMessageTypeQName),
+                    referencedFeatureName(accept.getReceiverArgument()));
         }
 
         Expression payloadArg = accept.getPayloadArgument();
@@ -405,6 +406,23 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
         }
     }
 
+    /** Name of the feature an expression refers to (e.g. {@code zoneCB} in {@code to zoneCB} or {@code via zoneCB}). */
+    private String referencedFeatureName(Element expression) {
+        if (expression == null) {
+            return null;
+        }
+        if (expression instanceof FeatureReferenceExpression featureReference) {
+            return featureReference.getReferent() == null ? null : featureReference.getReferent().getName();
+        }
+        for (Element owned : expression.getOwnedElement()) {
+            String name = referencedFeatureName(owned);
+            if (name != null) {
+                return name;
+            }
+        }
+        return null;
+    }
+
     private String resolveExplicitAcceptMessageTypeQName(AcceptActionUsage accept) {
         if (accept == null) {
             return null;
@@ -462,7 +480,11 @@ public class ToIrSwitch extends SysmlSwitch<List<ElementIR>> {
                 logger.warn("SendActionUsage has unresolvable payload type (constructor expression?), skipping: {}",
                         sau.eClass().getName());
             } else {
-                String receiverName = sau.getSenderArgument().getResult().getName();
+                // "send <message> to <machine>": the machine is the referent of the receiver argument
+                String referencedReceiver = referencedFeatureName(sau.getReceiverArgument());
+                String receiverName = referencedReceiver != null
+                        ? referencedReceiver
+                        : sau.getSenderArgument().getResult().getName();
                 TypeRef messageTypeRef = toTypeRef(payloadTypes);
                 MachineRefIR senderMachine = machineRefs.stream()
                         .filter(ref -> ref.name().equals(receiverName)).findFirst()

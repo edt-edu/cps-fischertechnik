@@ -2,6 +2,8 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.ConveyorBeltNominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.FeedFreeEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.SwapBusyEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 import org.slf4j.Logger;
@@ -17,6 +19,10 @@ public class ConveyorBeltNominalMissionActionsImpl implements ConveyorBeltNomina
 
     @Override
     public void notifyVgr1AndVgr2(Event event, ConveyorBeltMachine conveyorBelt, VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2) {
-        log.info("ConveyorBelt performActionUsage triggered by {}", event.getClass().getSimpleName());
+        // the token left the feed and waits at the swap (MOVE_TO_SENSOR done)
+        log.info("ConveyorBelt notifies FeedFree to VGR1 and SwapBusy to VGR2 (triggered by {})",
+                event.getClass().getSimpleName());
+        vacuumGripper1.publish(new FeedFreeEventMessage());
+        vacuumGripper2.publish(new SwapBusyEventMessage());
     }
 }

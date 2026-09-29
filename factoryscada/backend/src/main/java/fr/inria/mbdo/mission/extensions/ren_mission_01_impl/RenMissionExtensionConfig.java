@@ -11,6 +11,8 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vac
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission.VacuumGripper2NominalMission;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission.VacuumGripper2NominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominal;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal.ZoneMissionMPSNominal;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal.ZoneMissionMPSNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.*;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions.*;
@@ -26,6 +28,7 @@ import io.github.mbdo.factoryscada.domains.multiprocessingstation.MultiProcessin
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import io.github.mbdo.factoryscada.service.MachineNameMappingService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Configuration
 public class RenMissionExtensionConfig implements MissionExtensionConfig {
 
@@ -45,6 +49,7 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
     private final VacuumGripper1NominalMissionActions vgr1Actions;
     private final VacuumGripper2NominalMissionActions vgr2Actions;
     private final ZoneMissionCBNominalActions zoneCBActions;
+    private final ZoneMissionMPSNominalActions zoneMPSActions;
 
     private List<AbstractMissionStrategy> machineMissions;
     private List<FactoryMissionExtension> factoryMissions;
@@ -61,6 +66,7 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
         this.vgr1Actions = new VacuumGripper1NominalMissionActionsImpl();
         this.vgr2Actions = new VacuumGripper2NominalMissionActionsImpl();
         this.zoneCBActions = new ZoneMissionCBNominalActionsImpl();
+        this.zoneMPSActions = new ZoneMissionMPSNominalActions() { };
 
         this.machineAdapters = Map.of();
         this.machineMissions = List.of();
@@ -100,7 +106,8 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
             new MultiProcessingStationNominalMission(mps, zoneMPS, mpsActions),
             new VacuumGripper1NominalMission(vgr1, sl, zoneCB, vgr1Actions),
             new VacuumGripper2NominalMission(vgr2, zoneCB, zoneMPS, vgr2Actions),
-            new ZoneMissionCBNominal(zoneCBActions));
+            new ZoneMissionCBNominal(zoneCB, zoneCBActions),
+            new ZoneMissionMPSNominal(zoneMPS, zoneMPSActions));
     }
 
     private List<FactoryMissionExtension> buildFactoryMissions() {
@@ -112,10 +119,14 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
 
     @Override
     public void bindMachines(Map<String, AbstractMachine> machines) {
-        machineAdapters.forEach((id, adapter) -> {
-            AbstractMachine machine = machines.get(id);
+        // adapters are keyed by logical name, machines by physical name: translate before lookup
+        for (String machineLogicalName : missionMachinesLogicalNames()) {
+            AbstractMachineAdapter adapter = machineAdapters.get(machineLogicalName);
+            String machineId = machineNameMapping.getMachineForLogicalName(machineLogicalName);
+            AbstractMachine machine = machines.get(machineId);
             if (machine == null || adapter == null) {
-                return;
+                log.warn("Adapter {} not bound to a real machine ({} not found)", machineLogicalName, machineId);
+                continue;
             }
             switch (adapter) {
                 case ConveyorBeltAdapterImpl cb when machine instanceof ConveyorBeltMachine cbm -> {
@@ -138,7 +149,7 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
                 default -> {
                 }
             }
-        });
+        }
     }
 
     @Override
