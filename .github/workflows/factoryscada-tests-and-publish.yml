@@ -1,0 +1,139 @@
+name: Factory SCADA tests and publish
+
+on:
+  push:
+    paths:
+      - ".github/workflows/factoryscada-tests-and-publish.yml"
+      - "factoryscada/backend/**"
+      - "factoryscada/frontend/**"
+
+  pull_request:
+    paths:
+      - ".github/workflows/factoryscada-tests-and-publish.yml"
+      - "factoryscada/backend/**"
+      - "factoryscada/frontend/**"
+
+concurrency:
+  group: factoryscada-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  packages: write
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+jobs:
+  backend-build:
+    name: Factory SCADA backend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: factoryscada/backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+          cache-dependency-path: |
+            factoryscada/backend/*.gradle*
+            factoryscada/backend/gradle.properties
+            factoryscada/backend/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Build and test
+        run: ./gradlew build
+
+      - name: Publish test results
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: Factory SCADA backend tests
+          path: factoryscada/backend/build/test-results/**/TEST-*.xml
+          reporter: java-junit
+          list-suites: all
+          list-tests: failed
+
+      - name: Upload backend JAR
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: factoryscada-backend
+          path: factoryscada/backend/build/libs/*.jar
+
+  backend-publish:
+    name: Publish Maven package
+    needs: backend-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    defaults:
+      run:
+        working-directory: factoryscada/backend
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: true
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Publish package
+        run: ./gradlew publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Keep only latest snapshot
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'io.github.mbdo.factoryscada'
+          package-type: 'maven'
+          min-versions-to-keep: 1
+          delete-only-pre-release-versions: 'true'
+          
+  frontend-build:
+    name: Factory SCADA frontend
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: factoryscada/frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload frontend build
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: factoryscada-frontend
+          path: factoryscada/frontend/dist/
+          if-no-files-found: ignore
