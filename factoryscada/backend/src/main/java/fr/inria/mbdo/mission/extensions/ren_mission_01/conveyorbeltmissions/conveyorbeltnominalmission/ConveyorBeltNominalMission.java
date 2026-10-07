@@ -63,8 +63,8 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
     movingToSensor.addTransition(new RuntimeTransition(CBCommandSuccessEventMessage.class, event -> true, event -> this.actions.notifyVgr1AndVgr2(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
-    conveyorBelt.subscribe(AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent.class, this::onEvent);
-    conveyorBelt.subscribe(CBCommandSuccessEventMessage.class, this::onEvent);
+    conveyorBelt.subscribe(AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent.class, event -> onEvent(conveyorBelt, event));
+    conveyorBelt.subscribe(CBCommandSuccessEventMessage.class, event -> onEvent(conveyorBelt, event));
   }
 
   @Override

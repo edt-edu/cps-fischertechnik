@@ -55,14 +55,14 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, idleFree));
-    idleFree.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> this.zone.publish(new AcquireResponseEventMessage()), idleBusy));
-    idleBusy.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> { }, idleFree));
-    idleBusy.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> { }, idleBusyRequested));
-    idleBusyRequested.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> this.zone.publish(new AcquireResponseEventMessage()), idleBusy));
+    idleFree.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> this.zone.publish(new AcquireResponseEventMessage()), idleBusy, this.zone));
+    idleBusy.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> { }, idleFree, this.zone));
+    idleBusy.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> { }, idleBusyRequested, this.zone));
+    idleBusyRequested.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> this.zone.publish(new AcquireResponseEventMessage()), idleBusy, this.zone));
 
     // Subscribe each mission machine to trigger event types used by this mission.
-    zone.subscribe(AcquireRequestEventMessage.class, this::onEvent);
-    zone.subscribe(ReleaseRequestEventMessage.class, this::onEvent);
+    zone.subscribe(AcquireRequestEventMessage.class, event -> onEvent(zone, event));
+    zone.subscribe(ReleaseRequestEventMessage.class, event -> onEvent(zone, event));
   }
 
   @Override

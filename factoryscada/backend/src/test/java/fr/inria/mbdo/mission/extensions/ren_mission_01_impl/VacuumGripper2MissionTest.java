@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * VGR2 picks the token at the CB swap once the conveyor belt reports it, but only when it holds the CB zone,
- * then brings it to the MPS input under the MPS zone.
+ * then brings it to the MPS input under the MPS zone, shared with the MPS.
  */
 class VacuumGripper2MissionTest {
 
@@ -50,14 +50,18 @@ class VacuumGripper2MissionTest {
         @Override public void stop() { commands.add("stop"); }
         @Override public void moveToSafePosition() { commands.add("moveToSafePosition"); }
         @Override public void retractArm() { commands.add("retractArm"); }
+        @Override public void goToNamedPosition(String positionName) { commands.add("goToNamedPosition " + positionName); }
+        @Override public void pickNamed(String positionName) { commands.add("pickNamed " + positionName); }
+        @Override public void placeNamed(String positionName) { commands.add("placeNamed " + positionName); }
 
         String lastCommand() {
             return commands.get(commands.size() - 1);
         }
     }
 
-    private static final String PICK_CB_SWAP = "pick " + new Position3D(1050, 1810, 1155);
-    private static final String PLACE_MPS_INPUT = "place " + new Position3D(1000, 1890, 2050);
+    // named positions of VGR2 on the PLC
+    private static final String PICK_CB_SWAP = "pickNamed ALT_CB";
+    private static final String PLACE_MPS_INPUT = "placeNamed MPS_INPUT";
 
     private RecordingVacuumGripper vgr2;
     private ZoneAdapterImpl zoneCB;
@@ -108,19 +112,82 @@ class VacuumGripper2MissionTest {
         assertEquals(PICK_CB_SWAP, vgr2.lastCommand(), "the CB zone was free");
 
         vgr2.commandSucceeds(); // picked
-        assertEquals("moveToSafePosition", vgr2.lastCommand());
-        vgr2.commandSucceeds(); // in standby: release the CB zone, acquire the MPS zone
+        assertEquals("retractArm", vgr2.lastCommand(), "the arm leaves the belt first");
+        assertEquals("IdleBusy", zoneCBMission.getActiveStateName(), "the CB zone is kept while the arm is over the belt");
 
+        vgr2.commandSucceeds(); // arm retracted: release the CB zone, then go to the safe position
         assertEquals("IdleFree", zoneCBMission.getActiveStateName());
+        assertEquals("moveToSafePosition", vgr2.lastCommand());
+
+        vgr2.commandSucceeds(); // in standby: request the MPS zone
+        assertEquals("IdleBusy", zoneMPSMission.getActiveStateName(), "the MPS zone is now held by VGR2");
         assertEquals(PLACE_MPS_INPUT, vgr2.lastCommand());
-        assertEquals("IdleBusy", zoneMPSMission.getActiveStateName());
 
         vgr2.commandSucceeds(); // placed
-        vgr2.commandSucceeds(); // in standby: release the MPS zone
-        assertEquals("IdleFree", zoneMPSMission.getActiveStateName());
-        assertEquals("GotoStandbyCMD", vgr2Mission.getActiveStateName());
+        assertEquals("retractArm", vgr2.lastCommand(), "the arm leaves the MPS first");
+        assertEquals("IdleBusy", zoneMPSMission.getActiveStateName());
 
-        vgr2.commandSucceeds();
+        vgr2.commandSucceeds(); // arm retracted: release the MPS zone, then go to the safe position
+        assertEquals("IdleFree", zoneMPSMission.getActiveStateName());
+        assertEquals("moveToSafePosition", vgr2.lastCommand());
+
+        vgr2.commandSucceeds(); // in standby
         assertEquals("Idle", vgr2Mission.getActiveStateName(), "ready for the next token");
+        assertEquals("IdleFree", zoneCBMission.getActiveStateName());
+    }
+
+    @Test
+    void vgr2WaitsForTheMpsToReleaseTheMpsZoneBeforePlacing() {
+        zoneMPS.publish(new AcquireRequestEventMessage()); // the MPS holds its zone (processing)
+        vgr2.publish(new SwapBusyEventMessage());
+        vgr2.commandSucceeds(); // picked
+        vgr2.commandSucceeds(); // arm retracted: release the CB zone, go to the safe position
+        vgr2.commandSucceeds(); // in standby: request the MPS zone
+
+        assertEquals("WaitForMPSZoneAcquisition", vgr2Mission.getActiveStateName());
+        assertEquals("IdleBusyRequested", zoneMPSMission.getActiveStateName());
+        assertEquals("moveToSafePosition", vgr2.lastCommand(), "no place while the MPS holds its zone");
+
+        zoneMPS.publish(new ReleaseRequestEventMessage()); // the MPS is done
+
+        assertEquals(PLACE_MPS_INPUT, vgr2.lastCommand());
+        assertEquals("IdleBusy", zoneMPSMission.getActiveStateName(), "the zone is now held by VGR2");
+    }
+
+    // Both zones publish the same AcquireResponseEventMessage, and VGR2 listens to both: a grant must only be taken
+    // from the zone VGR2 is waiting for ("accept ... via zoneMPS" / "via zoneCB").
+
+    @Test
+    void aCbZoneGrantToVgr1IsNotTakenAsTheMpsZoneGrant() {
+        zoneMPS.publish(new AcquireRequestEventMessage()); // the MPS holds its zone (processing)
+        vgr2.publish(new SwapBusyEventMessage());          // VGR2 takes the CB zone and picks
+        zoneCB.publish(new AcquireRequestEventMessage());  // VGR1 waits for the CB zone
+        vgr2.commandSucceeds(); // picked
+        vgr2.commandSucceeds(); // arm retracted: release the CB zone (granted to VGR1), go to the safe position
+        vgr2.commandSucceeds(); // in standby: request the MPS zone
+
+        assertEquals("IdleBusy", zoneCBMission.getActiveStateName(), "the CB zone is now held by VGR1");
+        assertEquals("WaitForMPSZoneAcquisition", vgr2Mission.getActiveStateName());
+        assertEquals("moveToSafePosition", vgr2.lastCommand(), "no place while the MPS holds its zone");
+
+        zoneMPS.publish(new ReleaseRequestEventMessage()); // the MPS is done
+
+        assertEquals(PLACE_MPS_INPUT, vgr2.lastCommand());
+    }
+
+    @Test
+    void anMpsZoneGrantToTheMpsIsNotTakenAsTheCbZoneGrant() {
+        zoneCB.publish(new AcquireRequestEventMessage()); // VGR1 holds the CB zone (placing on the feed)
+        vgr2.publish(new SwapBusyEventMessage());         // VGR2 waits for the CB zone
+
+        zoneMPS.publish(new AcquireRequestEventMessage()); // the MPS takes its zone, granted at once
+
+        assertEquals("IdleBusy", zoneMPSMission.getActiveStateName(), "the MPS zone is held by the MPS");
+        assertEquals("WaitForCBZoneAcquisition", vgr2Mission.getActiveStateName());
+        assertEquals("moveToSafePosition", vgr2.lastCommand(), "no pick while VGR1 is over the belt");
+
+        zoneCB.publish(new ReleaseRequestEventMessage()); // VGR1 back in standby
+
+        assertEquals(PICK_CB_SWAP, vgr2.lastCommand());
     }
 }

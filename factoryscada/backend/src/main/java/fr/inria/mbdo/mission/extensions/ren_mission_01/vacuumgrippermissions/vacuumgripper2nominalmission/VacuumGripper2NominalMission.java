@@ -32,26 +32,34 @@ public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
       + "    rankdir=LR;\n"
       + "    node [shape=point, label=\"\"]; __init__;\n"
       + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
-      + "    \"SetupIdle\";\n"
-      + "    \"GotoStandbyCMD\";\n"
+      + "    \"SetupCMD\";\n"
+      + "    \"StandbyCMD\";\n"
       + "    \"Idle\";\n"
       + "    \"WaitForCBZoneAcquisition\";\n"
       + "    \"PickCBswapCMD\";\n"
-      + "    \"ReleaseCBZone\";\n"
+      + "    \"RetractFromCBCMD\";\n"
+      + "    \"CBZoneReleased\";\n"
+      + "    \"StandbyBeforeMPSCMD\";\n"
       + "    \"WaitForMPSZoneAcquisition\";\n"
       + "    \"PlaceMPSinCMD\";\n"
-      + "    \"ReleaseMPSZone\";\n"
+      + "    \"RetractFromMPSCMD\";\n"
+      + "    \"MPSZoneReleased\";\n"
+      + "    \"ReturnToStandbyCMD\";\n"
       + "\n"
-      + "    __init__ -> \"SetupIdle\" [label=\"ε / vacuumGripper.setup()\"];\n"
-      + "    \"SetupIdle\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
-      + "    \"GotoStandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage\"];\n"
+      + "    __init__ -> \"SetupCMD\" [label=\"ε / vacuumGripper.setup()\"];\n"
+      + "    \"SetupCMD\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
+      + "    \"StandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
       + "    \"Idle\" -> \"WaitForCBZoneAcquisition\" [label=\"SwapBusyEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
       + "    \"WaitForCBZoneAcquisition\" -> \"PickCBswapCMD\" [label=\"AcquireResponseEventMessage / pickCBswap\"];\n"
-      + "    \"PickCBswapCMD\" -> \"ReleaseCBZone\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
-      + "    \"ReleaseCBZone\" -> \"WaitForMPSZoneAcquisition\" [label=\"VGRCommandSuccessEventMessage / releaseCBZoneAndAcquireMPSZone\"];\n"
+      + "    \"PickCBswapCMD\" -> \"RetractFromCBCMD\" [label=\"VGRCommandSuccessEventMessage / vacuumGripper.retractArm()\"];\n"
+      + "    \"RetractFromCBCMD\" -> \"CBZoneReleased\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
+      + "    \"CBZoneReleased\" -> \"StandbyBeforeMPSCMD\" [label=\"ε / gotoStandby\"];\n"
+      + "    \"StandbyBeforeMPSCMD\" -> \"WaitForMPSZoneAcquisition\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneMPS\"];\n"
       + "    \"WaitForMPSZoneAcquisition\" -> \"PlaceMPSinCMD\" [label=\"AcquireResponseEventMessage / placeMPSin\"];\n"
-      + "    \"PlaceMPSinCMD\" -> \"ReleaseMPSZone\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
-      + "    \"ReleaseMPSZone\" -> \"GotoStandbyCMD\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneMPS\"];\n"
+      + "    \"PlaceMPSinCMD\" -> \"RetractFromMPSCMD\" [label=\"VGRCommandSuccessEventMessage / vacuumGripper.retractArm()\"];\n"
+      + "    \"RetractFromMPSCMD\" -> \"MPSZoneReleased\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneMPS\"];\n"
+      + "    \"MPSZoneReleased\" -> \"ReturnToStandbyCMD\" [label=\"ε / gotoStandby\"];\n"
+      + "    \"ReturnToStandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage\"];\n"
       + "}";
 
   private final VacuumGripper2NominalMissionActions actions;
@@ -70,33 +78,41 @@ public class VacuumGripper2NominalMission extends AbstractMissionStrategy {
     this.actions = actions;
 
     // States are built from the collected transitions.
-    RuntimeState setupIdle = new RuntimeState("SetupIdle");
-    RuntimeState gotoStandbyCMD = new RuntimeState("GotoStandbyCMD");
+    RuntimeState setupCMD = new RuntimeState("SetupCMD");
+    RuntimeState standbyCMD = new RuntimeState("StandbyCMD");
     RuntimeState idle = new RuntimeState("Idle");
     RuntimeState waitForCBZoneAcquisition = new RuntimeState("WaitForCBZoneAcquisition");
     RuntimeState pickCBswapCMD = new RuntimeState("PickCBswapCMD");
-    RuntimeState releaseCBZone = new RuntimeState("ReleaseCBZone");
+    RuntimeState retractFromCBCMD = new RuntimeState("RetractFromCBCMD");
+    RuntimeState cBZoneReleased = new RuntimeState("CBZoneReleased");
+    RuntimeState standbyBeforeMPSCMD = new RuntimeState("StandbyBeforeMPSCMD");
     RuntimeState waitForMPSZoneAcquisition = new RuntimeState("WaitForMPSZoneAcquisition");
     RuntimeState placeMPSinCMD = new RuntimeState("PlaceMPSinCMD");
-    RuntimeState releaseMPSZone = new RuntimeState("ReleaseMPSZone");
+    RuntimeState retractFromMPSCMD = new RuntimeState("RetractFromMPSCMD");
+    RuntimeState mPSZoneReleased = new RuntimeState("MPSZoneReleased");
+    RuntimeState returnToStandbyCMD = new RuntimeState("ReturnToStandbyCMD");
 
     // Transitions connect triggers, runtime actions, and next-state targets.
-    this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupIdle));
-    setupIdle.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), gotoStandbyCMD));
-    gotoStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, idle));
-    idle.addTransition(new RuntimeTransition(SwapBusyEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), waitForCBZoneAcquisition));
-    waitForCBZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.pickCBswap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), pickCBswapCMD));
-    pickCBswapCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseCBZone));
-    releaseCBZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.releaseCBZoneAndAcquireMPSZone(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), waitForMPSZoneAcquisition));
-    waitForMPSZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), placeMPSinCMD));
-    placeMPSinCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), releaseMPSZone));
-    releaseMPSZone.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneMPS.publish(new ReleaseRequestEventMessage()), gotoStandbyCMD));
+    this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupCMD));
+    setupCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), standbyCMD, this.vacuumGripper));
+    standbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), idle, this.vacuumGripper));
+    idle.addTransition(new RuntimeTransition(SwapBusyEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), waitForCBZoneAcquisition, this.vacuumGripper));
+    waitForCBZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.pickCBswap(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), pickCBswapCMD, this.zoneCB));
+    pickCBswapCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.vacuumGripper.retractArm(), retractFromCBCMD, this.vacuumGripper));
+    retractFromCBCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), cBZoneReleased, this.vacuumGripper));
+    cBZoneReleased.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), standbyBeforeMPSCMD));
+    standbyBeforeMPSCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneMPS.publish(new AcquireRequestEventMessage()), waitForMPSZoneAcquisition, this.vacuumGripper));
+    waitForMPSZoneAcquisition.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeMPSin(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), placeMPSinCMD, this.zoneMPS));
+    placeMPSinCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.vacuumGripper.retractArm(), retractFromMPSCMD, this.vacuumGripper));
+    retractFromMPSCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneMPS.publish(new ReleaseRequestEventMessage()), mPSZoneReleased, this.vacuumGripper));
+    mPSZoneReleased.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.zoneCB, this.zoneMPS), returnToStandbyCMD));
+    returnToStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, idle, this.vacuumGripper));
 
     // Subscribe each mission machine to trigger event types used by this mission.
-    vacuumGripper.subscribe(VGRCommandSuccessEventMessage.class, this::onEvent);
-    vacuumGripper.subscribe(SwapBusyEventMessage.class, this::onEvent);
-    zoneCB.subscribe(AcquireResponseEventMessage.class, this::onEvent);
-    zoneMPS.subscribe(AcquireResponseEventMessage.class, this::onEvent);
+    vacuumGripper.subscribe(VGRCommandSuccessEventMessage.class, event -> onEvent(vacuumGripper, event));
+    vacuumGripper.subscribe(SwapBusyEventMessage.class, event -> onEvent(vacuumGripper, event));
+    zoneCB.subscribe(AcquireResponseEventMessage.class, event -> onEvent(zoneCB, event));
+    zoneMPS.subscribe(AcquireResponseEventMessage.class, event -> onEvent(zoneMPS, event));
   }
 
   @Override

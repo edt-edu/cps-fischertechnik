@@ -15,6 +15,9 @@ package MultiProcessingStationMissions {
             : MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine;
         in zoneMPS : ZonesSystem::Zone;
 
+        // Oven and saw times and output of the process: see the mission actions implementation.
+        action processPayload : Process;
+
         action broadcastCompletion {
             doc
             /* This action is responsible for broadcasting the completion of the processing task to any interested parties. It can be used to trigger subsequent actions in other machines or to update the system state. */
@@ -33,10 +36,10 @@ package MultiProcessingStationMissions {
                 multiProcessingStation.sensor_MPS_in == true and
                 multiProcessingStation.sensor_MPS_out == false
             do send new AcquireRequestEventMessage(sender=multiProcessingStation) to zoneMPS
-            then ZoneAcquired;
+            then WaitForZone;
 
-        state ZoneAcquired;
-        accept AcquireResponseEventMessage do multiProcessingStation.process then ProcessCMD;
+        state WaitForZone;
+        accept AcquireResponseEventMessage do processPayload then ProcessCMD;
 
         state ProcessCMD;
         accept MPSCommandSuccessEventMessage do action broadcastCompletion then Idle;

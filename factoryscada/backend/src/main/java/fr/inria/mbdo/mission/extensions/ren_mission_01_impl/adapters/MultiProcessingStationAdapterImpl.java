@@ -2,6 +2,7 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.AbstractMultiProcessingStationMachineAdapter;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MPSOutput;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.MPSCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
@@ -58,9 +59,11 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
                     }
                 }
                 case "input" -> {
+                    // Light barriers are active-low (false while a token breaks the beam): sensor_MPS_in / _out are
+                    // true when a token is at the MPS input (the oven feeder, where VGR2 places it) / output.
                     switch (inputName) {
-                        case "multiProcessingSensTurntablePosVacuum" -> setSensor_MPS_in(value.asBoolean());
-                        case "multiProcessingSensEndConveyor" -> setSensor_MPS_out(value.asBoolean());
+                        case "multiProcessingSensOven" -> setSensor_MPS_in(!value.asBoolean());
+                        case "multiProcessingSensEndConveyor" -> setSensor_MPS_out(!value.asBoolean());
                         default -> log.debug("Ignoring input {}/{}", id, inputName);
                     }
                 }
@@ -100,11 +103,11 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     }
 
     @Override
-    public void process() {
-        log.info("[{}] process()", id);
-        commandSent("process()");
+    public void process(int ovenTime, int sawTime, MPSOutput output) {
+        log.info("[{}] process({}, {}, {})", id, ovenTime, sawTime, output);
+        commandSent(String.format("process(ovenTime=%d, sawTime=%d, output=%s)", ovenTime, sawTime, output));
         isExecuting = true;
-        realMachine.process();
+        realMachine.process(ovenTime, sawTime, io.github.mbdo.factoryscada.core.enums.MPSOutput.valueOf(output.name()));
     }
 
     @Override

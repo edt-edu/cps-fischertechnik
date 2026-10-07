@@ -8,6 +8,7 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuu
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
 import io.github.mbdo.factoryscada.core.enums.PositionMeaning;
+import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.core.passable.PositionParameterThreeD;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import lombok.Getter;
@@ -93,6 +94,31 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
 
         isExecuting = true;
         realMachine.goToPosition(positionThreeD);
+    }
+
+    /** The named positions are resolved by the PLC (VacuumGripperParameters.named_positions of the machine). */
+    @Override
+    public void goToNamedPosition(String positionName) {
+        log.info("[{}] goToNamedPosition({})", id, positionName);
+        commandSent(String.format("goToNamedPosition(%s)", positionName));
+        isExecuting = true;
+        realMachine.goToPosition(new NamedPosition(positionName));
+    }
+
+    @Override
+    public void pickNamed(String positionName) {
+        log.info("[{}] pickNamed({})", id, positionName);
+        commandSent(String.format("pickNamed(%s)", positionName));
+        isExecuting = true;
+        realMachine.pick(new NamedPosition(positionName));
+    }
+
+    @Override
+    public void placeNamed(String positionName) {
+        log.info("[{}] placeNamed({})", id, positionName);
+        commandSent(String.format("placeNamed(%s)", positionName));
+        isExecuting = true;
+        realMachine.place(new NamedPosition(positionName));
     }
 
     @Override

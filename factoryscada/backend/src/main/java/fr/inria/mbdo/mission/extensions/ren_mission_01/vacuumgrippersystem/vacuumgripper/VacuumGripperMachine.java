@@ -4,6 +4,7 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuu
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.Position3D;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippercommands.VacuumGripperCommandKind;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
+import java.lang.String;
 
 /**
  * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine
@@ -68,6 +69,21 @@ public interface VacuumGripperMachine extends MachineAdapter {
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::place
    */
   void place(Position3D targetPosition);
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::goToNamedPosition
+   */
+  void goToNamedPosition(String positionName);
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::pickNamed
+   */
+  void pickNamed(String positionName);
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::placeNamed
+   */
+  void placeNamed(String positionName);
 
   /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::setup

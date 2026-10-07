@@ -68,10 +68,10 @@ public class SortingLineNominalMission extends AbstractMissionStrategy {
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new RedTokenAvailableEventMessage()), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
-    sortingLine.subscribe(AcceptWhenSortingLineSensorSLinEqualsfalseEvent.class, this::onEvent);
-    sortingLine.subscribe(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, this::onEvent);
-    sortingLine.subscribe(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, this::onEvent);
-    sortingLine.subscribe(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, this::onEvent);
+    sortingLine.subscribe(AcceptWhenSortingLineSensorSLinEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
+    sortingLine.subscribe(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
+    sortingLine.subscribe(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
+    sortingLine.subscribe(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
   }
 
   @Override

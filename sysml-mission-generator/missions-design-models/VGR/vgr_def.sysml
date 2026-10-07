@@ -50,6 +50,24 @@ package VacuumGripperSystem {
             /* Moves to the drop-off area, releases the payload, and retreats. */
         }
 
+        // Named positions are defined on the PLC (VacuumGripperParameters.named_positions), where they are calibrated
+        // for each setup: the missions only refer to them by name (e.g. "SL_OUTPUT_BLUE", "CB", "MPS_INPUT").
+        action def GoToNamedPosition {
+            in positionName : String;
+        }
+
+        action def PickNamed {
+            in positionName : String;
+            doc
+            /* Picks the payload at a named position of the PLC. */
+        }
+
+        action def PlaceNamed {
+            in positionName : String;
+            doc
+            /* Places the payload at a named position of the PLC. */
+        }
+
         action def Setup {}
 
         action def Grip {
@@ -91,6 +109,15 @@ package VacuumGripperSystem {
             }
             perform action place : Place {
                 in targetPosition : Position3D;
+            }
+            perform action goToNamedPosition : GoToNamedPosition {
+                in positionName : String;
+            }
+            perform action pickNamed : PickNamed {
+                in positionName : String;
+            }
+            perform action placeNamed : PlaceNamed {
+                in positionName : String;
             }
             perform action setup : Setup;
             perform action statusRequest : StatusRequest;

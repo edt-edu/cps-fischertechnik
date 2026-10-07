@@ -57,9 +57,17 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
 
     @Override
     public void onEvent(Event event) {
+        onEvent(null, event);
+    }
+
+    /**
+     * Handles an event published by {@code source}: a transition triggered "via" a machine only fires on the events
+     * that machine publishes.
+     */
+    public void onEvent(MachineAdapter source, Event event) {
         logger.info("{} received event {}", getName(), event.getClass().getSimpleName());
         log("event: " + event.getClass().getSimpleName());
-        executing(() -> runtime.dispatch(event));
+        executing(() -> runtime.dispatch(event, source));
     }
 
     private void executing(Runnable execution) {

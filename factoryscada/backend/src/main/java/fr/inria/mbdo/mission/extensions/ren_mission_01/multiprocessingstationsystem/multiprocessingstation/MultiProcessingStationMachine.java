@@ -1,5 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation;
 
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MPSOutput;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 
@@ -37,7 +38,7 @@ public interface MultiProcessingStationMachine extends MachineAdapter {
   /**
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::process
    */
-  void process();
+  void process(int ovenTime, int sawTime, MPSOutput output);
 
   /**
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::moveToSafePosition

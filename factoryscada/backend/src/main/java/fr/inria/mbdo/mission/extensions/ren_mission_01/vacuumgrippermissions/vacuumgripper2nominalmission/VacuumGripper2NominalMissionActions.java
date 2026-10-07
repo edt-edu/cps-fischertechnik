@@ -20,12 +20,6 @@ public interface VacuumGripper2NominalMissionActions {
   void pickCBswap(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
 
   /**
-   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::releaseCBZoneAndAcquireMPSZone
-   */
-  void releaseCBZoneAndAcquireMPSZone(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB,
-      Zone zoneMPS);
-
-  /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::gotoStandby
    */
   void gotoStandby(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);

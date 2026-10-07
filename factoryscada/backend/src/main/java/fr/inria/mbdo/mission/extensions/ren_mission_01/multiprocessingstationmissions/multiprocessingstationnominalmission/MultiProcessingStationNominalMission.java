@@ -32,12 +32,12 @@ public class MultiProcessingStationNominalMission extends AbstractMissionStrateg
       + "    node [shape=point, label=\"\"]; __init__;\n"
       + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
       + "    \"Idle\";\n"
-      + "    \"ZoneAcquired\";\n"
+      + "    \"WaitForZone\";\n"
       + "    \"ProcessCMD\";\n"
       + "\n"
       + "    __init__ -> \"Idle\" [label=\"ε / multiProcessingStation.setup()\"];\n"
-      + "    \"Idle\" -> \"ZoneAcquired\" [label=\"when(multiProcessingStation.sensor_MPS_in == true and multiProcessingStation.sensor_MPS_out == false) / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneMPS\"];\n"
-      + "    \"ZoneAcquired\" -> \"ProcessCMD\" [label=\"AcquireResponseEventMessage / multiProcessingStation.process()\"];\n"
+      + "    \"Idle\" -> \"WaitForZone\" [label=\"when(multiProcessingStation.sensor_MPS_in == true and multiProcessingStation.sensor_MPS_out == false) / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneMPS\"];\n"
+      + "    \"WaitForZone\" -> \"ProcessCMD\" [label=\"AcquireResponseEventMessage / processPayload\"];\n"
       + "    \"ProcessCMD\" -> \"Idle\" [label=\"MPSCommandSuccessEventMessage / broadcastCompletion\"];\n"
       + "}";
 
@@ -55,19 +55,19 @@ public class MultiProcessingStationNominalMission extends AbstractMissionStrateg
 
     // States are built from the collected transitions.
     RuntimeState idle = new RuntimeState("Idle");
-    RuntimeState zoneAcquired = new RuntimeState("ZoneAcquired");
+    RuntimeState waitForZone = new RuntimeState("WaitForZone");
     RuntimeState processCMD = new RuntimeState("ProcessCMD");
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.multiProcessingStation.setup(), idle));
-    idle.addTransition(new RuntimeTransition(AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent.class, event -> true, event -> this.zoneMPS.publish(new AcquireRequestEventMessage()), zoneAcquired));
-    zoneAcquired.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.multiProcessingStation.process(), processCMD));
+    idle.addTransition(new RuntimeTransition(AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent.class, event -> true, event -> this.zoneMPS.publish(new AcquireRequestEventMessage()), waitForZone));
+    waitForZone.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.processPayload(event, this.multiProcessingStation, this.zoneMPS), processCMD));
     processCMD.addTransition(new RuntimeTransition(MPSCommandSuccessEventMessage.class, event -> true, event -> this.actions.broadcastCompletion(event, this.multiProcessingStation, this.zoneMPS), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
-    multiProcessingStation.subscribe(AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent.class, this::onEvent);
-    multiProcessingStation.subscribe(MPSCommandSuccessEventMessage.class, this::onEvent);
-    zoneMPS.subscribe(AcquireResponseEventMessage.class, this::onEvent);
+    multiProcessingStation.subscribe(AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent.class, event -> onEvent(multiProcessingStation, event));
+    multiProcessingStation.subscribe(MPSCommandSuccessEventMessage.class, event -> onEvent(multiProcessingStation, event));
+    zoneMPS.subscribe(AcquireResponseEventMessage.class, event -> onEvent(zoneMPS, event));
   }
 
   @Override
