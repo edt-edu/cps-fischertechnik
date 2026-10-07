@@ -5816,6 +5816,42 @@ NOTE: This endpoint does not send a response back via a topic.
 == Outgoing Topics
 
 
+=== Outgoing Topic: `/topic/controller-feedbacks`
+_Broadcasts raw feedback from the controller_
+
+Payload: `String`
+{
+  "type" : "string"
+}
+
+=== Outgoing Topic: `/topic/frontend-logs`
+_All logs that should appear in the frontend_
+
+Payload: `String`
+{
+  "type" : "string"
+}
+
+=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
+_Broadcasts PLC connection status updates_
+
+Payload: `PlcConnectionStatusDto`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
+}
+
 === Outgoing Topic: `/topic/{machineName}/command-status`
 _Broadcasts Command status updates_
 
@@ -5890,42 +5926,6 @@ Payload: `CommandStatusDTO`
       "type" : "string"
     }
   }
-}
-
-=== Outgoing Topic: `/topic/frontend-logs`
-_All logs that should appear in the frontend_
-
-Payload: `String`
-{
-  "type" : "string"
-}
-
-=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
-_Broadcasts PLC connection status updates_
-
-Payload: `PlcConnectionStatusDto`
-{
-  "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
-  "properties" : {
-    "controllerName" : {
-      "type" : "string"
-    },
-    "commandPortConnected" : {
-      "type" : "boolean"
-    },
-    "notificationPortConnected" : {
-      "type" : "boolean"
-    }
-  }
-}
-
-=== Outgoing Topic: `/topic/controller-feedbacks`
-_Broadcasts raw feedback from the controller_
-
-Payload: `String`
-{
-  "type" : "string"
 }
 [[outgoing_topic-machinename-command-status]]
 === Outgoing Topic: `/topic/{machineName}/command-status`
