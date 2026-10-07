@@ -22,7 +22,7 @@ import java.util.Optional;
 public final class RuntimeInstance {
     private RuntimeDefinition def;
     private RuntimeState active;
-    private final Deque<Event> pendingEvents = new ArrayDeque<>();
+    private final Deque<PendingEvent> pendingEvents = new ArrayDeque<>();
     private boolean processing;
     private static final Logger logger = LoggerFactory.getLogger(RuntimeInstance.class);
 
@@ -48,12 +48,24 @@ public final class RuntimeInstance {
         processPendingEvents();
     }
 
-    public synchronized void dispatch(Event event) {
+    /** An event and the machine that published it (null if unknown). */
+    private record PendingEvent(Event event, Object source) {
+    }
+
+    public void dispatch(Event event) {
+        dispatch(event, null);
+    }
+
+    /**
+     * Dispatches an event published by {@code source}: a transition with a source only fires on the events of that
+     * source.
+     */
+    public synchronized void dispatch(Event event, Object source) {
         if (active == null) {
             logger.warn("Dispatch called before start(); dropping event {}", event.getClass().getSimpleName());
             return;
         }
-        pendingEvents.add(event);
+        pendingEvents.add(new PendingEvent(event, source));
         if (processing) {
             logger.info("Queued event {} until the transition in progress from state {} completes",
                     event.getClass().getSimpleName(), active.getName());
@@ -65,18 +77,18 @@ public final class RuntimeInstance {
     private void processPendingEvents() {
         processing = true;
         try {
-            Event next;
+            PendingEvent next;
             while ((next = pendingEvents.poll()) != null) {
-                processEvent(next);
+                processEvent(next.event(), next.source());
             }
         } finally {
             processing = false;
         }
     }
 
-    private void processEvent(Event event) {
+    private void processEvent(Event event, Object source) {
         logger.info("Dispatching event {} in state {}", event.getClass().getSimpleName(), active.getName());
-        Optional<RuntimeTransition> t = def.findTransition(active, event);
+        Optional<RuntimeTransition> t = def.findTransition(active, event, source);
         if (t.isPresent()) {
             RuntimeTransition tr = t.get();
             try {

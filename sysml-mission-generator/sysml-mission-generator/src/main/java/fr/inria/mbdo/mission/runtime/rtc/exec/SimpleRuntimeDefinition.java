@@ -20,9 +20,10 @@ public final class SimpleRuntimeDefinition implements RuntimeDefinition {
     }
 
     @Override
-    public Optional<RuntimeTransition> findTransition(RuntimeState from, Event event) {
+    public Optional<RuntimeTransition> findTransition(RuntimeState from, Event event, Object source) {
         return from.getTransitions().stream()
                 .filter(t -> t.triggerType().isInstance(event) && t.guard().test(event))
+                .filter(t -> t.source() == null || t.source() == source)
                 .findFirst();
     }
 
