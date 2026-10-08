@@ -504,6 +504,13 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vertical_axis_monitor.monitor.clear()
         self.__rotational_axis_monitor.monitor.clear()
 
+    @override
+    def on_command_started(self) -> None:
+        # Each command is judged on its own movements: without this, the deviations recorded at the end of the
+        # previous command (e.g. crawling at approach speed) still count, and its last measurement, taken while the
+        # axis was moving, makes the first measurement of the new command look like a stalled axis.
+        self.__clear_axis_monitor_buffers()
+
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
     @override

@@ -100,6 +100,19 @@ class VacuumGripperControllerTestCase(unittest.TestCase):
 
 
 
+    def test_aNewCommandResetsTheAxisMonitorsOfItsMachine(self):
+        machine = self.controller.vacuumGripperMachine
+        started = []
+        machine.on_command_started = lambda: started.append(True)
+
+        message = MachineCommand("COMMAND", "VACUUM", 78, "GO_TO_POSITION", [Position("START", 100, 200, 400)])
+        self.controller.inputBuffer.put(JSONOutput("VacuumGripper01", 1677144787.891000000, message))
+        time.sleep(0.1)
+        self.controller.processJson(self.controller.inputBuffer)
+
+        self.assertIsNotNone(self.controller.currentlyExecuting.get(machine))
+        self.assertEqual([True], started)
+
     def test_tryMockRead(self):
         logging.debug(f'{inspect.stack()[0][3]} start')
         # self.assertEquals(self.controller.vacuumGripperMachine.vacuumSensVerticalEndUp, 0)
