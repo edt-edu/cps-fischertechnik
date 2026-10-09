@@ -41,6 +41,9 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
       + "    \"PickColorCMD\";\n"
       + "    \"IdlePicked\";\n"
       + "    \"PlaceConveyorBeltFeed\";\n"
+      + "    \"RetractFromCBCMD\";\n"
+      + "    \"CBZoneReleased\";\n"
+      + "    \"ReturnToStandbyCMD\";\n"
       + "\n"
       + "    __init__ -> \"SetupCMD\" [label=\"ε / vacuumGripper.setup()\"];\n"
       + "    \"SetupCMD\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
@@ -50,7 +53,10 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
       + "    \"Idle\" -> \"PickColorCMD\" [label=\"RedTokenAvailableEventMessage / pickRed\"];\n"
       + "    \"PickColorCMD\" -> \"IdlePicked\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
       + "    \"IdlePicked\" -> \"PlaceConveyorBeltFeed\" [label=\"AcquireResponseEventMessage / placeConveyoBeltFeed\"];\n"
-      + "    \"PlaceConveyorBeltFeed\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
+      + "    \"PlaceConveyorBeltFeed\" -> \"RetractFromCBCMD\" [label=\"VGRCommandSuccessEventMessage / vacuumGripper.retractArm()\"];\n"
+      + "    \"RetractFromCBCMD\" -> \"CBZoneReleased\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
+      + "    \"CBZoneReleased\" -> \"ReturnToStandbyCMD\" [label=\"ε / gotoStandby\"];\n"
+      + "    \"ReturnToStandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage\"];\n"
       + "}";
 
   private final VacuumGripper1NominalMissionActions actions;
@@ -75,24 +81,30 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
     RuntimeState pickColorCMD = new RuntimeState("PickColorCMD");
     RuntimeState idlePicked = new RuntimeState("IdlePicked");
     RuntimeState placeConveyorBeltFeed = new RuntimeState("PlaceConveyorBeltFeed");
+    RuntimeState retractFromCBCMD = new RuntimeState("RetractFromCBCMD");
+    RuntimeState cBZoneReleased = new RuntimeState("CBZoneReleased");
+    RuntimeState returnToStandbyCMD = new RuntimeState("ReturnToStandbyCMD");
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupCMD));
-    setupCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyCMD));
-    standbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), idle));
+    setupCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyCMD, this.vacuumGripper));
+    standbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), idle, this.vacuumGripper));
     idle.addTransition(new RuntimeTransition(BlueTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickBlue(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
     idle.addTransition(new RuntimeTransition(WhiteTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickWhite(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
     idle.addTransition(new RuntimeTransition(RedTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickRed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
-    pickColorCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), idlePicked));
-    idlePicked.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeConveyoBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltFeed));
-    placeConveyorBeltFeed.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyCMD));
+    pickColorCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), idlePicked, this.vacuumGripper));
+    idlePicked.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeConveyoBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltFeed, this.zoneCB));
+    placeConveyorBeltFeed.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.vacuumGripper.retractArm(), retractFromCBCMD, this.vacuumGripper));
+    retractFromCBCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), cBZoneReleased, this.vacuumGripper));
+    cBZoneReleased.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), returnToStandbyCMD));
+    returnToStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, idle, this.vacuumGripper));
 
     // Subscribe each mission machine to trigger event types used by this mission.
-    vacuumGripper.subscribe(VGRCommandSuccessEventMessage.class, this::onEvent);
-    sortingLine.subscribe(BlueTokenAvailableEventMessage.class, this::onEvent);
-    sortingLine.subscribe(WhiteTokenAvailableEventMessage.class, this::onEvent);
-    sortingLine.subscribe(RedTokenAvailableEventMessage.class, this::onEvent);
-    zoneCB.subscribe(AcquireResponseEventMessage.class, this::onEvent);
+    vacuumGripper.subscribe(VGRCommandSuccessEventMessage.class, event -> onEvent(vacuumGripper, event));
+    sortingLine.subscribe(BlueTokenAvailableEventMessage.class, event -> onEvent(sortingLine, event));
+    sortingLine.subscribe(WhiteTokenAvailableEventMessage.class, event -> onEvent(sortingLine, event));
+    sortingLine.subscribe(RedTokenAvailableEventMessage.class, event -> onEvent(sortingLine, event));
+    zoneCB.subscribe(AcquireResponseEventMessage.class, event -> onEvent(zoneCB, event));
   }
 
   @Override

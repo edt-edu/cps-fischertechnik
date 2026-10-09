@@ -24,13 +24,24 @@ package MultiProcessingStationSystem {
             SAW_CUT;
         }
 
+        enum def MPSOutput {
+            OVEN;
+            CONVEYOR;
+        }
+
         action def Setup {}
 
         action def Stop {}
 
         action def Process1 {}
 
-        action def Process {}
+        action def Process {
+            in ovenTime : Integer;
+            in sawTime : Integer;
+            in output : MPSOutput;
+            doc
+            /* Heats the payload ovenTime seconds, saws it sawTime seconds, then delivers it at the output. */
+        }
 
         action def MoveToSafePosition {}
 
@@ -72,7 +83,11 @@ package MultiProcessingStationSystem {
             perform action setup : Setup;
             perform action stop : Stop;
             perform action process1 : Process1;
-            perform action process : Process;
+            perform action process : Process {
+                in ovenTime : Integer;
+                in sawTime : Integer;
+                in output : MPSOutput;
+            }
             perform action moveToSafePosition : MoveToSafePosition;
             perform action ovenLoad : OvenLoad;
             perform action ovenUnload : OvenUnload;

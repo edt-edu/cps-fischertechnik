@@ -62,6 +62,8 @@ configuration:
       machines:
         - type: "vacuumGripper"
           name: "VacuumGripper01"
+        - type: "vacuumGripper"
+          name: "VacuumGripper02"
         - type: "conveyorBelt"
           name: "ConveyorBelt01"
         - type: "sortingLine"

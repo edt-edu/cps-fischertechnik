@@ -160,6 +160,24 @@ public abstract class AbstractVacuumGripperMachineAdapter extends AbstractMachin
   public abstract void place(Position3D targetPosition);
 
   /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::goToNamedPosition
+   */
+  @Override
+  public abstract void goToNamedPosition(String positionName);
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::pickNamed
+   */
+  @Override
+  public abstract void pickNamed(String positionName);
+
+  /**
+   * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::placeNamed
+   */
+  @Override
+  public abstract void placeNamed(String positionName);
+
+  /**
    * From VacuumGripperSystem::VacuumGripper::VacuumGripperMachine::setup
    */
   @Override

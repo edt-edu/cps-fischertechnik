@@ -15,30 +15,29 @@ package MultiProcessingStationMissions {
             : MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine;
         in zoneMPS : ZonesSystem::Zone;
 
-        action broadcastCompletion {
-            doc
-            /* This action is responsible for broadcasting the completion of the processing task to any interested parties. It can be used to trigger subsequent actions in other machines or to update the system state. */
-            // In a real implementation, this might involve sending specific messages or updating shared state to indicate that the processing is complete.
-
-            send new ReleaseRequestEventMessage() to zoneMPS;
-            send new InputFreeEventMessage() to multiProcessingStation;
-            send new OutputBusyEventMessage() to multiProcessingStation;
-        }
+        // Oven and saw times and output of the process: see the mission actions implementation.
+        action processPayload : Process;
 
         entry multiProcessingStation.setup;
         then Idle;
 
+        // A payload at the input is only processed when the output is free: the MPS takes its zone (shared with VGR2,
+        // which places the payloads at the input) and keeps it until the payload is delivered at the output, so that no
+        // new payload can be placed meanwhile. The next one then waits at the input until the output is cleared.
         state Idle;
         accept when
                 multiProcessingStation.sensor_MPS_in == true and
                 multiProcessingStation.sensor_MPS_out == false
             do send new AcquireRequestEventMessage(sender=multiProcessingStation) to zoneMPS
-            then ZoneAcquired;
+            then WaitForZone;
 
-        state ZoneAcquired;
-        accept AcquireResponseEventMessage do multiProcessingStation.process then ProcessCMD;
+        state WaitForZone;
+        accept AcquireResponseEventMessage via zoneMPS do processPayload then ProcessCMD;
 
+        // Payload delivered at the output: release the zone.
         state ProcessCMD;
-        accept MPSCommandSuccessEventMessage do action broadcastCompletion then Idle;
+        accept MPSCommandSuccessEventMessage via multiProcessingStation
+            do send new ReleaseRequestEventMessage() to zoneMPS
+            then Idle;
     }
 } // package MultiProcessingStationMissions

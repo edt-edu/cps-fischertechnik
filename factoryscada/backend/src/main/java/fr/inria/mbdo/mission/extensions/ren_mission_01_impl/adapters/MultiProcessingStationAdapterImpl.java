@@ -2,6 +2,7 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.AbstractMultiProcessingStationMachineAdapter;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MPSOutput;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.MPSCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
@@ -58,9 +59,11 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
                     }
                 }
                 case "input" -> {
+                    // Light barriers are active-low (false while a token breaks the beam): sensor_MPS_in / _out are
+                    // true when a token is at the MPS input (the oven feeder, where VGR2 places it) / output.
                     switch (inputName) {
-                        case "multiProcessingSensTurntablePosVacuum" -> setSensor_MPS_in(value.asBoolean());
-                        case "multiProcessingSensEndConveyor" -> setSensor_MPS_out(value.asBoolean());
+                        case "multiProcessingSensOven" -> setSensor_MPS_in(!value.asBoolean());
+                        case "multiProcessingSensEndConveyor" -> setSensor_MPS_out(!value.asBoolean());
                         default -> log.debug("Ignoring input {}/{}", id, inputName);
                     }
                 }
@@ -78,6 +81,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
+        commandSent("stop()");
         isExecuting = true;
         realMachine.stop();
     }
@@ -85,6 +89,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void setup() {
         log.info("[{}] setup()", id);
+        commandSent("setup()");
         isExecuting = true;
         realMachine.setup();
     }
@@ -92,20 +97,23 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void process1() {
         log.info("[{}] process1()", id);
+        commandSent("process1()");
         isExecuting = true;
         realMachine.process1();
     }
 
     @Override
-    public void process() {
-        log.info("[{}] process()", id);
+    public void process(int ovenTime, int sawTime, MPSOutput output) {
+        log.info("[{}] process({}, {}, {})", id, ovenTime, sawTime, output);
+        commandSent(String.format("process(ovenTime=%d, sawTime=%d, output=%s)", ovenTime, sawTime, output));
         isExecuting = true;
-        realMachine.process();
+        realMachine.process(ovenTime, sawTime, io.github.mbdo.factoryscada.core.enums.MPSOutput.valueOf(output.name()));
     }
 
     @Override
     public void moveToSafePosition() {
         log.info("[{}] moveToSafePosition()", id);
+        commandSent("moveToSafePosition()");
         isExecuting = true;
         realMachine.moveToSafePosition();
     }
@@ -113,6 +121,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenLoad() {
         log.info("[{}] ovenLoad()", id);
+        commandSent("ovenLoad()");
         isExecuting = true;
         realMachine.ovenLoad();
     }
@@ -120,6 +129,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenUnload() {
         log.info("[{}] ovenUnload()", id);
+        commandSent("ovenUnload()");
         isExecuting = true;
         realMachine.ovenUnload();
     }
@@ -127,6 +137,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenHeat() {
         log.info("[{}] ovenHeat()", id);
+        commandSent("ovenHeat()");
         isExecuting = true;
         realMachine.ovenHeat();
     }
@@ -134,6 +145,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void ovenProcess() {
         log.info("[{}] ovenProcess()", id);
+        commandSent("ovenProcess()");
         isExecuting = true;
         realMachine.ovenProcess();
     }
@@ -141,6 +153,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void armMove() {
         log.info("[{}] armMove()", id);
+        commandSent("armMove()");
         isExecuting = true;
         realMachine.armMove();
     }
@@ -148,6 +161,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void armPick() {
         log.info("[{}] armPick()", id);
+        commandSent("armPick()");
         isExecuting = true;
         realMachine.armPick();
     }
@@ -155,6 +169,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void armPlace() {
         log.info("[{}] armPlace()", id);
+        commandSent("armPlace()");
         isExecuting = true;
         realMachine.armPlace();
     }
@@ -162,6 +177,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void turntableRotate() {
         log.info("[{}] turntableRotate()", id);
+        commandSent("turntableRotate()");
         isExecuting = true;
         realMachine.turntableRotate();
     }
@@ -169,6 +185,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void turntableEject() {
         log.info("[{}] turntableEject()", id);
+        commandSent("turntableEject()");
         isExecuting = true;
         realMachine.turntableEject();
     }
@@ -176,6 +193,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void conveyorMoveToSensor() {
         log.info("[{}] conveyorMoveToSensor()", id);
+        commandSent("conveyorMoveToSensor()");
         isExecuting = true;
         realMachine.conveyorMoveToSensor();
     }
@@ -183,6 +201,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void conveyorMoveOut() {
         log.info("[{}] conveyorMoveOut()", id);
+        commandSent("conveyorMoveOut()");
         isExecuting = true;
         realMachine.conveyorMoveOut();
     }
@@ -190,6 +209,7 @@ public class MultiProcessingStationAdapterImpl extends AbstractMultiProcessingSt
     @Override
     public void sawCut() {
         log.info("[{}] sawCut()", id);
+        commandSent("sawCut()");
         isExecuting = true;
         realMachine.sawCut();
     }

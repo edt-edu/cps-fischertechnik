@@ -8,6 +8,7 @@ package VacuumGripperMissions {
     private import ZonesSystem::Zone;
     private import ZonesSystem::ZonesMessages::*;
     private import MultiProcessingStationSystem::MultiProcessingStationMessages::*;
+    private import ConveyorBeltSystem::ConveyorBeltMessages::*;
     private import ScalarValues::*;
 
     state def VacuumGripper1NominalMission {
@@ -51,8 +52,20 @@ package VacuumGripperMissions {
             do placeConveyoBeltFeed
             then PlaceConveyorBeltFeed;
 
+        // After the place: retract the arm (out of the belt), release the CB zone, then go to the safe position.
         state PlaceConveyorBeltFeed;
-        accept VGRCommandSuccessEventMessage via vacuumGripper do gotoStandby then StandbyCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do vacuumGripper.retractArm then RetractFromCBCMD;
+
+        state RetractFromCBCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper
+            do send new ReleaseRequestEventMessage() to zoneCB
+            then CBZoneReleased;
+
+        state CBZoneReleased;
+        transition first CBZoneReleased do gotoStandby then ReturnToStandbyCMD;
+
+        state ReturnToStandbyCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper then Idle;
     }
 
     state def VacuumGripper1SecondaryMission {
@@ -98,9 +111,9 @@ package VacuumGripperMissions {
         state IdlePicked;
         accept AcquireResponseEventMessage via zoneCB
             do placeConveyoBeltFeed
-            then PlaceConveyorBeltFeed;
+            then PlaceConveyorBeltFeedCMD;
 
-        state PlaceConveyorBeltFeed;
+        state PlaceConveyorBeltFeedCMD;
         accept VGRCommandSuccessEventMessage via vacuumGripper do gotoStandby then StandbyCMD;
     }
 
@@ -114,56 +127,65 @@ package VacuumGripperMissions {
         in zoneMPS : ZonesSystem::Zone;
 
         action gotoStandby : GoToPosition;
-        action gotoCBSwap : GoToPosition;
         action pickCBswap : Pick;
-        action gotoMPSin : GoToPosition;
         action placeMPSin : Place;
 
-        action releaseCBZoneAndAcquireMPSZone {
-            send new ReleaseRequestEventMessage() to zoneCB;
-            send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneMPS;
-        }
-
         entry vacuumGripper.setup;
-        then SetupIdle;
+        then SetupCMD;
 
-        state SetupIdle;
-        accept VGRCommandSuccessEventMessage do gotoStandby then GotoStandbyCMD;
+        state SetupCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do gotoStandby then StandbyCMD;
 
-        state GotoStandbyCMD;
-        accept VGRCommandSuccessEventMessage then Idle;
+        state StandbyCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper
+            do send new ReleaseRequestEventMessage() to zoneCB
+            then Idle;
 
+        // The conveyor belt tells VGR2 that a token arrived at the swap (ConveyorBeltNominalMission).
+        // VGR2 then waits for the CB zone, so that it never works over the belt at the same time as VGR1.
         state Idle;
-        accept InputFreeEventMessage
-            do send new AcquireRequestEventMessage(sender=vacuumGripper) to zoneCB
+        accept SwapBusyEventMessage via vacuumGripper
+            do send new AcquireRequestEventMessage() to zoneCB
             then WaitForCBZoneAcquisition;
 
         state WaitForCBZoneAcquisition;
-        accept AcquireResponseEventMessage do gotoCBSwap then GotoCBswapCMD;
+        accept AcquireResponseEventMessage via zoneCB do pickCBswap then PickCBswapCMD;
 
-        state GotoCBswapCMD;
-        accept AcquireResponseEventMessage do pickCBswap then PickCBswapCMD;
-
+        // After the pick: retract the arm (out of the belt), release the CB zone, then go to the safe position.
         state PickCBswapCMD;
-        accept VGRCommandSuccessEventMessage do gotoStandby then ReleaseCBZone;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do vacuumGripper.retractArm then RetractFromCBCMD;
 
-        state ReleaseCBZone;
-        accept VGRCommandSuccessEventMessage
-            do releaseCBZoneAndAcquireMPSZone
+        state RetractFromCBCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper
+            do send new ReleaseRequestEventMessage() to zoneCB
+            then CBZoneReleased;
+
+        state CBZoneReleased;
+        transition first CBZoneReleased do gotoStandby then StandbyBeforeMPSCMD;
+
+        // In standby: request the MPS zone, shared with the MPS (MultiProcessingStationNominalMission).
+        state StandbyBeforeMPSCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper
+            do send new AcquireRequestEventMessage() to zoneMPS
             then WaitForMPSZoneAcquisition;
 
         state WaitForMPSZoneAcquisition;
-        accept AcquireResponseEventMessage do gotoMPSin then GotoMPSinCMD;
+        accept AcquireResponseEventMessage via zoneMPS do placeMPSin then PlaceMPSinCMD;
 
-        state GotoMPSinCMD;
-        accept VGRCommandSuccessEventMessage do placeMPSin then PlaceMPSinCMD;
-
+        // After the place: retract the arm (out of the MPS), release the MPS zone, then go to the safe position.
         state PlaceMPSinCMD;
-        accept VGRCommandSuccessEventMessage do gotoStandby then ReleaseMPSZone;
+        accept VGRCommandSuccessEventMessage via vacuumGripper do vacuumGripper.retractArm then RetractFromMPSCMD;
 
-        state ReleaseMPSZone;
-        accept VGRCommandSuccessEventMessage
+        state RetractFromMPSCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper
             do send new ReleaseRequestEventMessage() to zoneMPS
-            then GotoStandbyCMD;
+            then MPSZoneReleased;
+
+        state MPSZoneReleased;
+        transition first MPSZoneReleased do gotoStandby then ReturnToStandbyCMD;
+
+        // Back in standby: VGR2 holds no zone any more and waits for the next token.
+        state ReturnToStandbyCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper then Idle;
     }
 } // package VacuumGripperMissions

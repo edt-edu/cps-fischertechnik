@@ -10,8 +10,8 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
  */
 public interface MultiProcessingStationNominalMissionActions {
   /**
-   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:null::broadcastCompletion
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:MultiProcessingStationMissions::MultiProcessingStationNominalMission::processPayload
    */
-  void broadcastCompletion(Event event, MultiProcessingStationMachine multiProcessingStation,
+  void processPayload(Event event, MultiProcessingStationMachine multiProcessingStation,
       Zone zoneMPS);
 }

@@ -1,6 +1,7 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.customevents.AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MPSOutput;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
 import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import java.lang.Override;
@@ -74,7 +75,7 @@ public abstract class AbstractMultiProcessingStationMachineAdapter extends Abstr
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::process
    */
   @Override
-  public abstract void process();
+  public abstract void process(int ovenTime, int sawTime, MPSOutput output);
 
   /**
    * From MultiProcessingStationSystem::MultiProcessingStation::MultiProcessingStationMachine::moveToSafePosition

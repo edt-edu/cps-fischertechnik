@@ -1,6 +1,8 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal;
 
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.ReleaseRequestEventMessage;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
@@ -29,27 +31,38 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
       + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
       + "    \"IdleFree\";\n"
       + "    \"IdleBusy\";\n"
+      + "    \"IdleBusyRequested\";\n"
       + "\n"
       + "    __init__ -> \"IdleFree\" [label=\"ε\"];\n"
-      + "    \"IdleFree\" -> \"IdleBusy\" [label=\"AcquireRequestEventMessage / sendAcquireResponseEventMessage\"];\n"
+      + "    \"IdleFree\" -> \"IdleBusy\" [label=\"AcquireRequestEventMessage / send ZonesSystem::ZonesMessages::AcquireResponseEventMessage -> zone\"];\n"
       + "    \"IdleBusy\" -> \"IdleFree\" [label=\"ReleaseRequestEventMessage\"];\n"
+      + "    \"IdleBusy\" -> \"IdleBusyRequested\" [label=\"AcquireRequestEventMessage\"];\n"
+      + "    \"IdleBusyRequested\" -> \"IdleBusy\" [label=\"ReleaseRequestEventMessage / send ZonesSystem::ZonesMessages::AcquireResponseEventMessage -> zone\"];\n"
       + "}";
 
   private final ZoneMissionCBNominalActions actions;
 
-  public ZoneMissionCBNominal(ZoneMissionCBNominalActions actions) {
+  private final Zone zone;
+
+  public ZoneMissionCBNominal(Zone zone, ZoneMissionCBNominalActions actions) {
+    this.zone = zone;
     this.actions = actions;
 
     // States are built from the collected transitions.
     RuntimeState idleFree = new RuntimeState("IdleFree");
     RuntimeState idleBusy = new RuntimeState("IdleBusy");
+    RuntimeState idleBusyRequested = new RuntimeState("IdleBusyRequested");
 
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, idleFree));
-    idleFree.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> this.actions.sendAcquireResponseEventMessage(event), idleBusy));
-    idleBusy.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> { }, idleFree));
+    idleFree.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> this.zone.publish(new AcquireResponseEventMessage()), idleBusy, this.zone));
+    idleBusy.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> { }, idleFree, this.zone));
+    idleBusy.addTransition(new RuntimeTransition(AcquireRequestEventMessage.class, event -> true, event -> { }, idleBusyRequested, this.zone));
+    idleBusyRequested.addTransition(new RuntimeTransition(ReleaseRequestEventMessage.class, event -> true, event -> this.zone.publish(new AcquireResponseEventMessage()), idleBusy, this.zone));
 
     // Subscribe each mission machine to trigger event types used by this mission.
+    zone.subscribe(AcquireRequestEventMessage.class, event -> onEvent(zone, event));
+    zone.subscribe(ReleaseRequestEventMessage.class, event -> onEvent(zone, event));
   }
 
   @Override
@@ -59,7 +72,7 @@ public class ZoneMissionCBNominal extends AbstractMissionStrategy {
 
   @Override
   public List<MachineAdapter> getMachines() {
-    return List.of();
+    return List.<MachineAdapter>of(this.zone);
   }
 
   @Override

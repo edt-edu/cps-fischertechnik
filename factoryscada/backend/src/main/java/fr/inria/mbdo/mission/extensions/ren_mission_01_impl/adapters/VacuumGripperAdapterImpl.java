@@ -8,6 +8,7 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuu
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.MqttPayloadHelper;
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
 import io.github.mbdo.factoryscada.core.enums.PositionMeaning;
+import io.github.mbdo.factoryscada.core.passable.NamedPosition;
 import io.github.mbdo.factoryscada.core.passable.PositionParameterThreeD;
 import io.github.mbdo.factoryscada.domains.vacuumgripper.VacuumGripperMachine;
 import lombok.Getter;
@@ -83,6 +84,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void goToPosition(Position3D targetPosition) {
         log.info("[{}] goToPosition({})", id, targetPosition);
+        commandSent(String.format("goToPosition(%s)", targetPosition));
 
         PositionParameterThreeD positionThreeD = new PositionParameterThreeD(
                 PositionMeaning.OTHER,
@@ -94,9 +96,35 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
         realMachine.goToPosition(positionThreeD);
     }
 
+    /** The named positions are resolved by the PLC (VacuumGripperParameters.named_positions of the machine). */
+    @Override
+    public void goToNamedPosition(String positionName) {
+        log.info("[{}] goToNamedPosition({})", id, positionName);
+        commandSent(String.format("goToNamedPosition(%s)", positionName));
+        isExecuting = true;
+        realMachine.goToPosition(new NamedPosition(positionName));
+    }
+
+    @Override
+    public void pickNamed(String positionName) {
+        log.info("[{}] pickNamed({})", id, positionName);
+        commandSent(String.format("pickNamed(%s)", positionName));
+        isExecuting = true;
+        realMachine.pick(new NamedPosition(positionName));
+    }
+
+    @Override
+    public void placeNamed(String positionName) {
+        log.info("[{}] placeNamed({})", id, positionName);
+        commandSent(String.format("placeNamed(%s)", positionName));
+        isExecuting = true;
+        realMachine.place(new NamedPosition(positionName));
+    }
+
     @Override
     public void move(Position3D startPosition, Position3D endPosition) {
         log.info("[{}] move({}, {})", id, startPosition, endPosition);
+        commandSent(String.format("move(%s, %s)", startPosition, endPosition));
 
         PositionParameterThreeD startPositionThreeD = new PositionParameterThreeD(
                 PositionMeaning.START,
@@ -116,6 +144,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void pick(Position3D targetPosition) {
         log.info("[{}] pick({})", id, targetPosition);
+        commandSent(String.format("pick(%s)", targetPosition));
 
         PositionParameterThreeD positionThreeD = new PositionParameterThreeD(
                 PositionMeaning.OTHER,
@@ -130,6 +159,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void place(Position3D targetPosition) {
         log.info("[{}] place({})", id, targetPosition);
+        commandSent(String.format("place(%s)", targetPosition));
 
         PositionParameterThreeD positionThreeD = new PositionParameterThreeD(
                 PositionMeaning.OTHER,
@@ -144,6 +174,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void release() {
         log.info("[{}] release()", id);
+        commandSent("release()");
         isExecuting = true;
         realMachine.release();
     }
@@ -151,6 +182,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void statusRequest() {
         log.info("[{}] statusRequest()", id);
+        commandSent("statusRequest()");
         isExecuting = true;
         realMachine.statusRequest();
     }
@@ -158,6 +190,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void grip() {
         log.info("[{}] grip()", id);
+        commandSent("grip()");
         isExecuting = true;
         realMachine.grip();
     }
@@ -165,6 +198,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void moveToSafePosition() {
         log.info("[{}] moveToSafePosition()", id);
+        commandSent("moveToSafePosition()");
         isExecuting = true;
         realMachine.go_to_safe_position();
     }
@@ -172,6 +206,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void stop() {
         log.info("[{}] stop()", id);
+        commandSent("stop()");
         isExecuting = true;
         realMachine.stop();
     }
@@ -179,6 +214,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void setup() {
         log.info("[{}] setup()", id);
+        commandSent("setup()");
         isExecuting = true;
         realMachine.setup();
     }
@@ -186,6 +222,7 @@ public class VacuumGripperAdapterImpl extends AbstractVacuumGripperMachineAdapte
     @Override
     public void retractArm() {
         log.info("[{}] retractArm()", id);
+        commandSent("retractArm()");
         isExecuting = true;
         realMachine.retract_arm();
     }

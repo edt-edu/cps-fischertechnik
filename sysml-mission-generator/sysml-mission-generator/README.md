@@ -300,6 +300,7 @@ VGR/vgr_def.sysml +  VGR/vgr_missions_def.sysml
 | `item def :> EventMessage` | Message class implementing `Event` |
 | `enum def` | Java enum |
 | `accept <MessageType>` | `RuntimeTransition` triggered by that message class |
+| `accept <MessageType> via <machine>` | Subscription on that machine only, and a `RuntimeTransition` with that machine as `source`: it only fires on the messages that machine publishes, even if another mission machine publishes the same type |
 | `accept when <expr>` | Typed event class + condition check in abstract adapter that publishes the event when true |
 | inline `action { … }` on transition | Method in the mission's Actions interface (Javadoc shows the SysML body) |
 | `send new M() to machine` | `publish(new M())` lambda in the mission constructor |
