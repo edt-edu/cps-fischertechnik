@@ -24,6 +24,9 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
             initialHorizontalDistToSensor (int): same for horizontal sensor
             initialRotationDistToSensor (int): same for rotation sensor
             encoderIncrement (int): value that will be added/removed for each cycle loop on active engines (ie. on call to simulatedRead)
+
+        An axis that reverses while moving (it overshot its goal) halves its increment, like a motor settling on a
+        position, so it always ends within the axis tolerance even when encoderIncrement is larger than it.
         """
         self.__controlledVacuumGripper = controlledVacuumGripper
         self.initialVerticalDistToSensor = initialVerticalDistToSensor
@@ -72,6 +75,11 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
         self.__next_rotational_encoder_increment = 0
         """The increment of the rotational encoder counter in the next read"""
 
+        self.__axis_direction = {"vertical": 0, "horizontal": 0, "rotational": 0}
+        """Direction of each axis in the previous cycle: 1, -1, or 0 when stopped"""
+        self.__axis_increment = {axis: encoderIncrement for axis in self.__axis_direction}
+        """Current increment of each axis, halved on each reversal while moving"""
+
         self.previous_simulatedReadLog = None
         self.previous_simulatedWriteLog = None
 
@@ -114,21 +122,23 @@ class VacuumGripperSimpleSimulator(MachineSimpleSimulator):
             logging.debug(simulatedReadLog)
             self.previous_simulatedReadLog = simulatedReadLog
 
+    def __axis_step(self, axis: str, plus: bool, minus: bool) -> int:
+        """Encoder increment of an axis for this cycle, given its plus / minus motor actuators"""
+        direction = int(plus) - int(minus)
+        if direction == 0:
+            # stopped: the next move starts at full speed, whatever its direction
+            self.__axis_increment[axis] = self.encoderIncrement
+        elif direction == -self.__axis_direction[axis]:
+            # reversed without stopping: it overshot its goal, settle with smaller steps
+            self.__axis_increment[axis] = max(1, self.__axis_increment[axis] // 2)
+        self.__axis_direction[axis] = direction
+        return direction * self.__axis_increment[axis]
+
     def simulatedWrite(self) -> None:
-        if self.controlledVacuumGripper.vacuumActArmIn:
-            self.__next_horizontal_encoder_increment -= self.encoderIncrement
-        if self.controlledVacuumGripper.vacuumActArmOut:
-            self.__next_horizontal_encoder_increment += self.encoderIncrement
-
-        if self.controlledVacuumGripper.vacuumActVerticalDown:
-            self.__next_vertical_encoder_increment += self.encoderIncrement
-        if self.controlledVacuumGripper.vacuumActVerticalUp:
-            self.__next_vertical_encoder_increment -= self.encoderIncrement
-
-        if self.controlledVacuumGripper.vacuumActRotLeft:
-            self.__next_rotational_encoder_increment += self.encoderIncrement
-        if self.controlledVacuumGripper.vacuumActRotRight:
-            self.__next_rotational_encoder_increment -= self.encoderIncrement
+        vgr = self.controlledVacuumGripper
+        self.__next_horizontal_encoder_increment += self.__axis_step("horizontal", vgr.vacuumActArmOut, vgr.vacuumActArmIn)
+        self.__next_vertical_encoder_increment += self.__axis_step("vertical", vgr.vacuumActVerticalDown, vgr.vacuumActVerticalUp)
+        self.__next_rotational_encoder_increment += self.__axis_step("rotational", vgr.vacuumActRotLeft, vgr.vacuumActRotRight)
 
         # compressor and valve are not simulated
 
