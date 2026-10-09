@@ -406,6 +406,7 @@ class RevPiPyMachineController(ABC):
             source = f"{cycle_step_function}"
         display_name = f"{message.name} [{source.strip()}]"
 
+        machine.on_command_started()
         self.currentlyExecuting[machine] = CycleStepCommand(
             cycle_step_function,
             display_name,

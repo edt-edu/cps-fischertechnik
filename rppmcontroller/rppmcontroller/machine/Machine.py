@@ -75,6 +75,12 @@ class Machine(ABC):
     def isInitialized(self, value: bool):
         self.__isInitialized = value
 
+    def on_command_started(self) -> None:
+        """Called by the controller when a new command starts executing on this machine, before its first cycle.
+
+        Machines keeping per-command state (e.g. axis-movement monitoring) reset it here.
+        """
+
 
     @property
     def nbMinimumRequiredExecutionCycles(self) -> int:

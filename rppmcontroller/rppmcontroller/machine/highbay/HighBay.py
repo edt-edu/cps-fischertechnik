@@ -578,6 +578,11 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.__horizontal_axis_monitor.monitor.clear()
         self.__vertical_axis_monitor.monitor.clear()
 
+    @override
+    def on_command_started(self) -> None:
+        # Each command is judged on its own movements (see VacuumGripper.on_command_started).
+        self.__clear_axis_monitor_buffers()
+
     def internalStatus(self) -> Dict[str, Any]:
         return {"isExecuting": self.isExecuting}
 
