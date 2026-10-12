@@ -15,7 +15,13 @@ concurrency:
   group: sysmlmissiongenerator-tests-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  checks: write
+  packages: write
+  
 env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   MAVEN_CLI_OPTS: >-
     -s ci_settings.xml
     --batch-mode
@@ -26,14 +32,6 @@ env:
     -DinstallAtEnd=true
     -DdeployAtEnd=true
     -Dcheckstyle.skip
-
-permissions:
-  contents: read
-  checks: write
-  packages: write
-  
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
 jobs:
   build:
