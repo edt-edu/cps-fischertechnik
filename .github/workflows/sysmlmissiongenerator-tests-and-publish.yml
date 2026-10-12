@@ -15,6 +15,18 @@ concurrency:
   group: sysmlmissiongenerator-tests-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  MAVEN_CLI_OPTS: >-
+    -s ci_settings.xml
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true
+    -Dcheckstyle.skip
+
 permissions:
   contents: read
   checks: write
@@ -41,20 +53,9 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - var name: MAVEN_CLI_OPTS
-        value: >-
-          -s ci_settings.xml
-          --batch-mode
-          --errors
-          --fail-at-end
-          --show-version
-          --no-transfer-progress
-          -DinstallAtEnd=true
-          -DdeployAtEnd=true
-          -D"checkstyle.skip"
-          
+
       - name: Build with Maven
-        run: mvn ${{ env.MAVEN_CLI_OPTS }} --update-snapshots verify
+        run: mvn $MAVEN_CLI_OPTS --update-snapshots verify
 
       - name: Publish test results
         if: ${{ !cancelled() }}
