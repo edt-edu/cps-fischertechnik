@@ -66,20 +66,20 @@ jobs:
           list-tests: failed
 
       - name: Generate coverage reports
-            if: always()
-            run: |
-              COVERAGE=$(cat sysml-mission-generator/sysml-mission-generator/target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>//' || true)
-              {
-                echo "## Code coverage"
-                echo
-                echo "**Total coverage: ${COVERAGE}%**"
-                echo 
-                echo "<details>"
-                echo "<summary>Expand for details</summary>"
-                echo  
-                echo
-                echo "</details>"
-              } >> "$GITHUB_STEP_SUMMARY"
+        if: always()
+        run: |
+          COVERAGE=$(cat sysml-mission-generator/sysml-mission-generator/target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>//' || true)
+          {
+            echo "## Code coverage"
+            echo
+            echo "**Total coverage: ${COVERAGE}%**"
+            echo 
+            echo "<details>"
+            echo "<summary>Expand for details</summary>"
+            echo  
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
       # - name: Upload backend JAR
       #   if: ${{ !cancelled() }}
       #   uses: actions/upload-artifact@v7
