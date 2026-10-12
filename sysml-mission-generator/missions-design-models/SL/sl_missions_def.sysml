@@ -12,11 +12,18 @@ package SortingLineMissions {
         in sortingLine : SortingLineSystem::SortingLine::SortingLineMachine;
         in vacuumGripper : VacuumGripperSystem::VacuumGripper::VacuumGripperMachine;
 
+        // publishes on vacuumGripper one *TokenAvailable message per output whose light barrier sees a token, or
+        // NoTokenAvailable
+        action answerTokenRequest;
+
         entry;
         then Idle;
 
+        // Idle, the sorting line answers the gripper asking which colors wait at its outputs (a request received while
+        // it sorts is dropped: the sort ends by announcing the color to the gripper).
         state Idle;
         accept when sortingLine.sensor_SL_in == false do sortingLine.eject then SortCMD;
+        accept TokenRequestEventMessage via sortingLine do answerTokenRequest then Idle;
 
         state SortCMD;
         accept when sortingLine.sensor_SL_blue == false

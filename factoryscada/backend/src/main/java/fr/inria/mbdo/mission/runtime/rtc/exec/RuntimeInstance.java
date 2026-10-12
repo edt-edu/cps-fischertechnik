@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -54,6 +57,66 @@ public final class RuntimeInstance {
         processPendingEvents();
     }
 
+    /**
+     * Starts the state machine directly in {@code stateName}, without running the entry transition's effect: used to
+     * migrate a machine from another mission, once its state has been reconciled with that state. Completion
+     * transitions leaving {@code stateName} are run, as if the state had been entered by a transition.
+     *
+     * @throws IllegalArgumentException if the state machine has no state named {@code stateName}
+     */
+    public synchronized void startAt(String stateName) {
+        if (def == null) {
+            throw new IllegalStateException("Initial state not set");
+        }
+        RuntimeState state = findState(stateName)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateName));
+        pendingEvents.clear();
+        processing = true;
+        try {
+            active = state;
+            logger.info("RuntimeInstance started in state {} (migration)", active.getName());
+            stateChangeListener.accept(active.getName());
+            processCompletions();
+        } finally {
+            processing = false;
+        }
+        processPendingEvents();
+    }
+
+    /**
+     * Stops the state machine: it leaves its active state and drops the events it receives until it is started
+     * again. The commands already sent to the machines are not interrupted.
+     */
+    public synchronized void stop() {
+        pendingEvents.clear();
+        active = null;
+    }
+
+    public synchronized boolean isRunning() {
+        return active != null;
+    }
+
+    /** The states reachable from the entry transition, in discovery order. */
+    public List<RuntimeState> states() {
+        if (def == null) {
+            return List.of();
+        }
+        Map<String, RuntimeState> states = new LinkedHashMap<>();
+        Deque<RuntimeState> toVisit = new ArrayDeque<>();
+        toVisit.add(def.entryTransition().targetState());
+        while (!toVisit.isEmpty()) {
+            RuntimeState state = toVisit.poll();
+            if (states.putIfAbsent(state.getName(), state) == null) {
+                state.getTransitions().forEach(t -> toVisit.add(t.targetState()));
+            }
+        }
+        return List.copyOf(states.values());
+    }
+
+    public Optional<RuntimeState> findState(String stateName) {
+        return states().stream().filter(s -> s.getName().equals(stateName)).findFirst();
+    }
+
     /** An event and the machine that published it (null if unknown). */
     private record PendingEvent(Event event, Object source) {
     }
@@ -68,7 +131,7 @@ public final class RuntimeInstance {
      */
     public synchronized void dispatch(Event event, Object source) {
         if (active == null) {
-            logger.warn("Dispatch called before start(); dropping event {}", event.getClass().getSimpleName());
+            logger.debug("Not started (or stopped); dropping event {}", event.getClass().getSimpleName());
             return;
         }
         pendingEvents.add(new PendingEvent(event, source));
@@ -84,7 +147,7 @@ public final class RuntimeInstance {
         processing = true;
         try {
             PendingEvent next;
-            while ((next = pendingEvents.poll()) != null) {
+            while (active != null && (next = pendingEvents.poll()) != null) {
                 processEvent(next.event(), next.source());
             }
         } finally {

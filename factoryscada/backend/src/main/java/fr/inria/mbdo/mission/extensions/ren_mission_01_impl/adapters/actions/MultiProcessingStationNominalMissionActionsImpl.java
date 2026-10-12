@@ -3,6 +3,8 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.MultiProcessingStationNominalMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation.MultiProcessingStationMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MPSOutput;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.InputFreeEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationmessages.PayloadAtInputEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
@@ -21,5 +23,12 @@ public class MultiProcessingStationNominalMissionActionsImpl implements MultiPro
     @Override
     public void processPayload(Event event, MultiProcessingStationMachine multiProcessingStation, Zone zoneMPS) {
         multiProcessingStation.process(OVEN_TIME_S, SAW_TIME_S, OUTPUT);
+    }
+
+    @Override
+    public void checkPayloadAtInput(Event event, MultiProcessingStationMachine multiProcessingStation, Zone zoneMPS) {
+        multiProcessingStation.publish(multiProcessingStation.getSensor_MPS_in()
+            ? new PayloadAtInputEventMessage()
+            : new InputFreeEventMessage());
     }
 }

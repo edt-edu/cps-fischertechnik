@@ -33,6 +33,10 @@ package SortingLineSystem {
         item def WhiteTokenAvailableEventMessage :> EventMessage;
         item def RedTokenAvailableEventMessage :> EventMessage;
         item def SLCommandSuccessEventMessage :> EventMessage;
+        // A gripper asks the sorting line which colors wait at its outputs: answered (when the sorting line is idle)
+        // by one *TokenAvailable message per color, or by NoTokenAvailable.
+        item def TokenRequestEventMessage :> EventMessage;
+        item def NoTokenAvailableEventMessage :> EventMessage;
     } // package SortingLineMessages
 
     package SortingLine {

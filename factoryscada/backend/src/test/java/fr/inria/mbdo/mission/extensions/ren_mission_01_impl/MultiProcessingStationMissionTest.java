@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * The MPS processes a payload placed at its input (3 s oven, 2 s saw, conveyor output) only when its output is free, and
- * holds the MPS zone, shared with VGR2, from the request until the payload is delivered.
+ * holds the MPS zone, shared with VGR2, from the request until the payload is delivered. Once it gets the zone, it only
+ * processes if the payload is still at the input.
  */
 class MultiProcessingStationMissionTest {
 
@@ -98,6 +99,22 @@ class MultiProcessingStationMissionTest {
         assertEquals("setup", mps.lastCommand(), "no process while VGR2 holds the zone");
 
         zoneMPS.publish(new ReleaseRequestEventMessage()); // VGR2's arm is out
+        assertEquals("process 3 2 CONVEYOR", mps.lastCommand());
+    }
+
+    @Test
+    void withNothingAtTheInputOnceVgr2FreesTheZoneTheMpsReleasesItAndGoesBackToIdle() {
+        zoneMPS.publish(new AcquireRequestEventMessage()); // VGR2 is placing at the input
+        payloadAtTheInput();                               // its arm crosses the input light barrier...
+        mps.setSensor_MPS_in(false);                       // ...but it leaves nothing there
+
+        zoneMPS.publish(new ReleaseRequestEventMessage()); // VGR2's arm is out: the zone goes to the MPS
+
+        assertEquals("setup", mps.lastCommand(), "nothing to process");
+        assertEquals("Idle", mpsMission.getActiveStateName());
+        assertEquals("IdleFree", zoneMPSMission.getActiveStateName(), "the MPS released the zone");
+
+        mps.setSensor_MPS_in(true); // the next payload
         assertEquals("process 3 2 CONVEYOR", mps.lastCommand());
     }
 

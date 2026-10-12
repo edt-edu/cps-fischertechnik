@@ -27,6 +27,12 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
 
     private ConveyorBeltMachine realMachine;
 
+    /** Whether each light barrier was received at least once: before that, its field holds a default value. */
+    @Getter
+    private volatile boolean feedSensorKnown = false;
+    @Getter
+    private volatile boolean swapSensorKnown = false;
+
     public ConveyorBeltAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
         mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
@@ -60,8 +66,14 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
                 }
                 case "input" -> {
                     switch (inputName) {
-                        case "conveyorSensFeed" -> setConveyorSensFeed(value.asBoolean());
-                        case "conveyorSensSwap" -> setConveyorSensSwap(value.asBoolean());
+                        case "conveyorSensFeed" -> {
+                            feedSensorKnown = true;
+                            setConveyorSensFeed(value.asBoolean());
+                        }
+                        case "conveyorSensSwap" -> {
+                            swapSensorKnown = true;
+                            setConveyorSensSwap(value.asBoolean());
+                        }
                         case "conveyorSensImpulse" -> setConveyorSensImpulse(value.asInt());
                         default -> log.debug("Ignoring input {}/{}", id, inputName);
                     }

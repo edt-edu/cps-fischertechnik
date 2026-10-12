@@ -17,6 +17,8 @@ package MultiProcessingStationMissions {
 
         // Oven and saw times and output of the process: see the mission actions implementation.
         action processPayload : Process;
+        // publishes PayloadAtInput or InputFree on multiProcessingStation, from sensor_MPS_in
+        action checkPayloadAtInput;
 
         entry multiProcessingStation.setup;
         then Idle;
@@ -32,7 +34,15 @@ package MultiProcessingStationMissions {
             then WaitForZone;
 
         state WaitForZone;
-        accept AcquireResponseEventMessage via zoneMPS do processPayload then ProcessCMD;
+        accept AcquireResponseEventMessage via zoneMPS do checkPayloadAtInput then CheckInput;
+
+        // Guard once VGR2 frees the zone: the input light barrier may have been crossed by VGR2's arm while it placed,
+        // or VGR2 brought nothing (missed pick). Only a payload at the input is processed, else the zone is released.
+        state CheckInput;
+        accept PayloadAtInputEventMessage via multiProcessingStation do processPayload then ProcessCMD;
+        accept InputFreeEventMessage via multiProcessingStation
+            do send new ReleaseRequestEventMessage() to zoneMPS
+            then Idle;
 
         // Payload delivered at the output: release the zone.
         state ProcessCMD;
