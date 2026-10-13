@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import fr.inria.mbdo.mission.utils.FileUtils;
 import fr.inria.mbdo.mission.utils.ImportUtils;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -22,7 +23,7 @@ class SysmlAbstractSyntaxTreeGeneratorTest {
     private static final Logger logger = LoggerFactory.getLogger(SysmlAbstractSyntaxTreeGeneratorTest.class);
 
     @Test
-    void generateAstDotFile() throws Exception {
+    void generateAstDotFile_for_all_files_from_missionsDesignModels() throws Exception {
         SysmlImporter importer = new SysmlImporter();
         Path persistedOutputRoot = Paths.get(System.getProperty("user.dir"), "target", "generated-ast-dot-tests");
         Files.createDirectories(persistedOutputRoot);
@@ -37,21 +38,22 @@ class SysmlAbstractSyntaxTreeGeneratorTest {
 
         List<String> fileNames = List.of(
                 "common/common_def.sysml",
-                "common/zones_def.sysml",
-                 "CB/cb_def.sysml",
-                 "MPS/mps_def.sysml",
-                 "SL/sl_def.sysml",
-                 "VGR/vgr_def.sysml",
-                 "CB/cb_missions_def.sysml",
-                 "MPS/mps_missions_def.sysml",
-                 "SL/sl_missions_def.sysml",
+                "zones/zones_def.sysml",
+                "CB/cb_def.sysml",
+                "MPS/mps_def.sysml",
+                "SL/sl_def.sysml",
+                "VGR/vgr_def.sysml",
+                "CB/cb_missions_def.sysml",
+                "MPS/mps_missions_def.sysml",
+                "SL/sl_missions_def.sysml",
                 "VGR/vgr_missions_def.sysml",
-                "TEST-MACHINE/test-machine_def.sysml",
-                "TEST-MACHINE/test-machine_missions_def.sysml");
+                "zones/zones_missions_def.sysml");
+        List<Path> sysmlFiles = FileUtils.findFilesByExtension(projectPath, ".sysml");
+        assertTrue(sysmlFiles.size() == fileNames.size(), () -> "Expected " + sysmlFiles.size() + " .sysml files in  fileNames.size() (as much as in " + projectPath.toString() + "), but found " + fileNames.size());
         for (String fileName : fileNames) {
 
             File sysmlFile = projectPath.resolve(fileName).toFile();
-            assertTrue(sysmlFile.exists());
+            assertTrue(sysmlFile.exists(), () -> "Cannot find resource relative to " + fileName + " in " + projectPath.toString());
 
             Resource resource = importer.importSysmlText(ImportUtils.applyFileTransformations(sysmlFile), resourceSet);
 
@@ -60,7 +62,7 @@ class SysmlAbstractSyntaxTreeGeneratorTest {
                     .generateAstDot(resource.getContents().getFirst(), outputFile);
             String dot = Files.readString(generatedFile);
 
-            assertFalse(dot.contains("OwningMembership"));
+            assertFalse(dot.contains("OwningMembership"), () -> "DOT file should not contain OwningMembership: " + generatedFile.toString());
 
             logger.info("Generated DOT for {} at {}:\n\n{}", fileName, outputFile, dot);
         }

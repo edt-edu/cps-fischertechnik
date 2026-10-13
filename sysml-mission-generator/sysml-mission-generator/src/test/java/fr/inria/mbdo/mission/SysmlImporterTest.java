@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.mbdo.mission.importer.SysmlImporter;
+import fr.inria.mbdo.mission.utils.FileUtils;
 import fr.inria.mbdo.mission.utils.ImportUtils;
 
 /**
@@ -204,8 +205,11 @@ public class SysmlImporterTest {
 				"VGR/vgr_missions_def.sysml", 
 				"SL/sl_missions_def.sysml", 
 				"CB/cb_missions_def.sysml", 
-				"MPS/mps_missions_def.sysml");
-		
+				"MPS/mps_missions_def.sysml",
+                "zones/zones_missions_def.sysml");
+		List<Path> sysmlFiles = FileUtils.findFilesByExtension(projectPath, ".sysml");
+        assertTrue(sysmlFiles.size() == fileNames.size(), () -> "Expected " + sysmlFiles.size() + " .sysml files in  fileNames.size() (as much as in " + projectPath.toString() + "), but found " + fileNames.size());
+        
 		List<File> files = new ArrayList<File>();
 		for(String fileName : fileNames) {
 			
@@ -254,9 +258,12 @@ public class SysmlImporterTest {
 				"SL/sl_def.sysml", 
 				"SL/sl_missions_def.sysml", 
 				"CB/cb_missions_def.sysml", 
-				"MPS/mps_missions_def.sysml");
+				"MPS/mps_missions_def.sysml",
+                "zones/zones_missions_def.sysml");
 		
-		List<File> files = new ArrayList<File>();
+		List<Path> sysmlFiles = FileUtils.findFilesByExtension(projectPath, ".sysml");
+        assertTrue(sysmlFiles.size() == fileNames.size(), () -> "Expected " + sysmlFiles.size() + " .sysml files in  fileNames.size() (as much as in " + projectPath.toString() + "), but found " + fileNames.size());
+        List<File> files = new ArrayList<File>();
 		for(String fileName : fileNames) {
 			
 			File sysmlFile = projectPath.resolve(fileName).toFile();
