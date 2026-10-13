@@ -27,6 +27,7 @@
 		<maven.plugin.tools.version>3.11.0</maven.plugin.tools.version>
 		<sirius.web.version>2026.3.0</sirius.web.version>
 		<syson.version>2026.3.0</syson.version>
+		<junit.version>5.11.0</junit.version>
 	</properties>
 	<repositories>
 		<repository>

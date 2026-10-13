@@ -75,7 +75,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-reports
-          path: "$GITHUB_WORKSPACE/sysml-mission-generator/**/target/site/jacoco/**"
+          path: "${{GITHUB_WORKSPACE}}/sysml-mission-generator/**/target/site/jacoco/**"
           if-no-files-found: warn
           retention-days: 14    
       # - name: Upload backend JAR
