@@ -65,10 +65,10 @@ jobs:
           list-suites: all
           list-tests: failed
 
-      # - name: Generate coverage reports
-      #   if: always()
-      #   run: |
-      #     python3 ${{ github.workspace }}/.github/scripts/jacoco-summary.py
+      - name: Generate coverage reports
+        if: always()
+        run: |
+          python3 ${{ github.workspace }}/.github/scripts/jacoco-summary.py
 
       - name: Upload JaCoCo Reports
         if: always()
