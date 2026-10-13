@@ -36,13 +36,8 @@ public class SysmlImporterTest {
     }
 	
 	@Test
-	void import_CB_from_CBVGRMission() throws Exception {
-		importTest("CBVGRMission/CB.sysml");
-	}
-
-	@Test
-	void import_VGR_from_CBVGRMission() throws Exception {
-		importTest("CBVGRMission/VGR.sysml");
+	void import_standalone_example_DoorControllerSystem() throws Exception {
+		importTest("standalone_examples/DoorControllerSystem/door-controller-system.sysml");
 	}
 	
 	void importTest(String sysmlFileName) throws Exception {
@@ -164,6 +159,11 @@ public class SysmlImporterTest {
 		List<Resource> resources = generator.importSysmlTexts(files, resourceSet);
 		assertTrue(resources.size() == fileNames.size());
 		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
+		logger.info("DVK "+generator.errorMessages.toString());
+		if(generator.errorMessages.size() == 1) {
+			assertTrue(generator.errorMessages.get(0).contains("WARNING - Unable to resolve name 'sender' for reference 'memberElement'"), 
+				() -> "this test fails because it doesn't report the 'Unable to resolve name 'sender'' error anymore but another error: "+generator.errorMessages.get(0));
+		}
 		assertTrue(generator.errorMessages.size() == 1,() -> "this test fails because it doesn't report error anymore, this probably means that we can remove the workaround and simplify our models and remove this test 🙂");
 		for(Resource res : resources) {
 			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
@@ -201,6 +201,11 @@ public class SysmlImporterTest {
 		List<Resource> resources = generator.importSysmlTexts(files, resourceSet);
 		assertTrue(resources.size() == fileNames.size());
 		assertTrue(resourceSet.getResources().size() == nbLibResources+fileNames.size());
+
+		if(generator.errorMessages.size() == 1) {
+			assertTrue(generator.errorMessages.get(0).contains("WARNING - Unable to resolve name 'color' for reference 'memberElement'"), 
+				() -> "this test fails because it doesn't report the 'Unable to resolve name 'color'' error anymore but another error: "+generator.errorMessages.get(0));
+		}
 		assertTrue(generator.errorMessages.size() == 1,() -> "this test fails because it doesn't report error anymore, this probably means that we can remove the workaround and simplify our models and remove this test 🙂");
 		for(Resource res : resources) {
 			assertTrue(!res.getContents().isEmpty(), () -> "imported resource is empty");
