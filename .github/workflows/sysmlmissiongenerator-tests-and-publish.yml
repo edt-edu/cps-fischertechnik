@@ -68,14 +68,14 @@ jobs:
       - name: Generate coverage reports
         if: always()
         run: |
-          python3 .github/scripts/jacoco-summary.py
+          python3 ${{GITHUB_WORKSPACE}}/.github/scripts/jacoco-summary.py
 
       - name: Upload JaCoCo Reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: jacoco-reports
-          path: "${{GITHUB_WORKSPACE}}/sysml-mission-generator/**/target/site/jacoco/**"
+          path: "sysml-mission-generator/**/target/site/jacoco/**"
           if-no-files-found: warn
           retention-days: 14    
       # - name: Upload backend JAR
