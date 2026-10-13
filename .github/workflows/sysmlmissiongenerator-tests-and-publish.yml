@@ -68,7 +68,7 @@ jobs:
       - name: Generate coverage reports
         if: always()
         run: |
-          python3 ${{GITHUB_WORKSPACE}}/.github/scripts/jacoco-summary.py
+          python3 ${{ github.workspace }}/.github/scripts/jacoco-summary.py
 
       - name: Upload JaCoCo Reports
         if: always()
