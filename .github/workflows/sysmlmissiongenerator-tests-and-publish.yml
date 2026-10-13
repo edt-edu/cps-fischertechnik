@@ -68,18 +68,16 @@ jobs:
       - name: Generate coverage reports
         if: always()
         run: |
-          COVERAGE=$(cat sysml-mission-generator/sysml-mission-generator/target/site/jacoco/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>//' || true)
-          {
-            echo "## Code coverage"
-            echo
-            echo "**Total coverage: ${COVERAGE}%**"
-            echo 
-            echo "<details>"
-            echo "<summary>Expand for details</summary>"
-            echo  
-            echo
-            echo "</details>"
-          } >> "$GITHUB_STEP_SUMMARY"
+          python3 .github/scripts/jacoco-summary.py
+          
+      - name: Upload JaCoCo Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-reports
+          path: "sysml-mission-generator/**/target/site/jacoco/**"
+          if-no-files-found: warn
+          retention-days: 14    
       # - name: Upload backend JAR
       #   if: ${{ !cancelled() }}
       #   uses: actions/upload-artifact@v7
