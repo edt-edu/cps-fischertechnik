@@ -1,0 +1,86 @@
+name: SysML Mission Generator tests and publish
+
+on:
+  push:
+    paths:
+      - ".github/workflows/sysmlmissiongenerator-tests-and-publish.yml"
+      - "sysml-mission-generator/**"
+
+  pull_request:
+    paths:
+      - ".github/workflows/sysmlmissiongenerator-tests-and-publish.yml"
+      - "sysml-mission-generator/**"
+
+concurrency:
+  group: sysmlmissiongenerator-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  packages: write
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  MAVEN_CLI_OPTS: >-
+    -s ci_settings.xml
+    --batch-mode
+    --errors
+    --fail-at-end
+    --show-version
+    --no-transfer-progress
+    -DinstallAtEnd=true
+    -DdeployAtEnd=true
+    -Dcheckstyle.skip
+  
+jobs:
+  build:
+    name: SysML Mission Generator Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: sysml-mission-generator
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn $MAVEN_CLI_OPTS --update-snapshots verify
+
+      - name: Publish test results
+        if: ${{ !cancelled() }}
+        uses: dorny/test-reporter@v3
+        with:
+          name: SysML Mission Generator tests
+          path: sysml-mission-generator/**/target/**/TEST-*.xml
+          reporter: java-junit
+          list-suites: all
+          list-tests: failed
+
+      - name: Generate coverage reports
+        if: always()
+        run: |
+          python3 ${{ github.workspace }}/.github/scripts/jacoco-summary.py
+
+      - name: Upload JaCoCo Reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: jacoco-reports
+          path: "sysml-mission-generator/**/target/site/jacoco/**"
+          if-no-files-found: warn
+          retention-days: 14    
+      # - name: Upload backend JAR
+      #   if: ${{ !cancelled() }}
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: sysml-mission-generator
+      #     path: sysml-mission-generator/**/target/*.jar
