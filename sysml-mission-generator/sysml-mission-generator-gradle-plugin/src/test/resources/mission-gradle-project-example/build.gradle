@@ -22,6 +22,7 @@ sysmlGenerator {
 }
 
 dependencies {
+    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime:1.0.0-SNAPSHOT'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
