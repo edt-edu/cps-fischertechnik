@@ -47,7 +47,7 @@
                 </executions>
                 <configuration>
                     <inputFiles>
-                        <file>src/main/sysml/ommon/common_def.sysml</file>
+                        <file>src/main/sysml/common/common_def.sysml</file>
                         <file>src/main/sysml/zones/zones_def.sysml</file>
                         <file>src/main/sysml/missions/CB/cb_def.sysml</file>
                         <file>src/main/sysml/missions/VGR/vgr_def.sysml</file>

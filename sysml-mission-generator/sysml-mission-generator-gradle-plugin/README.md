@@ -127,6 +127,8 @@ This will install the plugin in you `.m2` local maven repository.
 However, most changes usually occurs in the `sysml-mission-generator` module, sot the recommanded command is to run `mvn clean install` in the parent folder.
 
 
+> **Tip** The project used as fixture for the integration test can be used directly as an example. it is located in `sysml-mission-generator/sysml-mission-generator-gradle-plugin/src/test/resources/mission-gradle-project-example`
+
 * Check used jar and dependencies: 
 from a sample gradle project that use the generator:
 ```

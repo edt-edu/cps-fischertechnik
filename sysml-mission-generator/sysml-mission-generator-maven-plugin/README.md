@@ -135,6 +135,9 @@ The resulting artifact will be available as `fr.inria.mbdo.mission:sysml-mission
 
 However, most changes usually occurs in the `sysml-mission-generator` module, sot the recommanded command is to run `mvn clean install` in the parent folder.
 
+
+> **Tip** The project used as fixture for the integration test can be used directly as an example. it is located in `sysml-mission-generator/sysml-mission-generator-maven-plugin/src/test/resources/mission-maven-project-example`
+
 ---
 
 ## License
