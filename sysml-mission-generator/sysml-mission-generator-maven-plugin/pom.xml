@@ -113,6 +113,27 @@
 	                </execution>
 	            </executions>
 	        </plugin>
+			<!-- copy reference sysml files from the missions-design-models folder to the fixture project `mission-maven-project-example` in integration tests-->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resource-src</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/src/test/resources/mission-maven-project-example/src/main/sysml</outputDirectory>
+							<resources>
+								<resource>
+									<directory>../missions-design-models</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions> 
+			</plugin>
 		</plugins>
 	</build>
 </project>

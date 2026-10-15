@@ -1,0 +1,6 @@
+# ignore all files in this directory except for the .gitignore file itself and the README.md file
+# The sysml files are supposed to be copied from the missions-design-models folder, 
+# so they should not be versioned in this repository
+*
+!.gitignore
+!README.md
