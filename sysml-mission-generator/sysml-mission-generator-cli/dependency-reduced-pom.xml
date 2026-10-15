@@ -23,7 +23,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>fr.inria.mbdo.mission.SysmlMissionGeneratorCLI</mainClass>
+                  <mainClass>fr.inria.mbdo.mission.cli.SysmlMissionGeneratorCLI</mainClass>
                 </transformer>
                 <transformer />
               </transformers>
@@ -38,7 +38,7 @@
                 </filter>
               </filters>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>cli</shadedClassifierName>
+              <shadedClassifierName>standalone</shadedClassifierName>
             </configuration>
           </execution>
         </executions>
