@@ -63,11 +63,23 @@ package VacuumGripperCBFailureMissions {
         state SelectCBSlot;
         accept PlaceOnFeedEventMessage via zoneCB do placeConveyorBeltFeed then PlaceConveyorBeltCMD;
         accept PlaceOnSwapEventMessage via zoneCB do placeConveyorBeltSwap then PlaceConveyorBeltCMD;
+        accept NoCBSlotFreeEventMessage via zoneCB do gotoStandby then StandbyWithTokenCMD;
+
+        // Both slots are taken, or VGR2 is over the belt: wait in standby, holding the token, until VGR2 is done. A
+        // CBSlotFree received while moving is dropped: once in standby, VGR1 asks again.
+        state StandbyWithTokenCMD;
+        accept VGRCommandSuccessEventMessage via vacuumGripper then AskCBSlotInStandby;
+
+        state AskCBSlotInStandby;
+        transition first AskCBSlotInStandby do askCBSlot then SelectCBSlotInStandby;
+
+        state SelectCBSlotInStandby;
+        accept PlaceOnFeedEventMessage via zoneCB do placeConveyorBeltFeed then PlaceConveyorBeltCMD;
+        accept PlaceOnSwapEventMessage via zoneCB do placeConveyorBeltSwap then PlaceConveyorBeltCMD;
         accept NoCBSlotFreeEventMessage via zoneCB then WaitForFreeCBSlot;
 
-        // Both slots are taken, or VGR2 is over the belt: wait, keeping the token in the gripper, until VGR2 is done.
         state WaitForFreeCBSlot;
-        accept CBSlotFreeEventMessage via zoneCB then AskCBSlot;
+        accept CBSlotFreeEventMessage via zoneCB then AskCBSlotInStandby;
 
         state PlaceConveyorBeltCMD;
         accept VGRCommandSuccessEventMessage via vacuumGripper do vacuumGripper.retractArm then RetractFromCBCMD;

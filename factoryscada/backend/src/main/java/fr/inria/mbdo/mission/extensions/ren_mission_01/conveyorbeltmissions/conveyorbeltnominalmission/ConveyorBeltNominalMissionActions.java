@@ -2,6 +2,7 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.con
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 
 /**
@@ -10,8 +11,14 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
  */
 public interface ConveyorBeltNominalMissionActions {
   /**
-   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:null::notifyVgr1AndVgr2
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:null::notifyTokenAtSwap
    */
-  void notifyVgr1AndVgr2(Event event, ConveyorBeltMachine conveyorBelt,
-      VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2);
+  void notifyTokenAtSwap(Event event, ConveyorBeltMachine conveyorBelt,
+      VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2, Zone zoneCB);
+
+  /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:ConveyorBeltMissions::ConveyorBeltNominalMission::checkBelt
+   */
+  void checkBelt(Event event, ConveyorBeltMachine conveyorBelt, VacuumGripperMachine vacuumGripper1,
+      VacuumGripperMachine vacuumGripper2, Zone zoneCB);
 }

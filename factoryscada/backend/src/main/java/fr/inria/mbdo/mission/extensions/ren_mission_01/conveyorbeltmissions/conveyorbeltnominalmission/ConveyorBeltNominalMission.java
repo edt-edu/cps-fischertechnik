@@ -3,7 +3,9 @@ package fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.con
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltmissions.conveyorbeltnominalmission.customevents.AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.CBCommandSuccessEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbeltmessages.TokenAtFeedEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
@@ -29,12 +31,15 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
       + "    rankdir=LR;\n"
       + "    node [shape=point, label=\"\"]; __init__;\n"
       + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
+      + "    \"CheckBelt\";\n"
       + "    \"Idle\";\n"
       + "    \"MovingToSensor\";\n"
       + "\n"
-      + "    __init__ -> \"Idle\" [label=\"ε\"];\n"
+      + "    __init__ -> \"CheckBelt\" [label=\"ε\"];\n"
+      + "    \"CheckBelt\" -> \"Idle\" [label=\"ε / checkBelt\"];\n"
       + "    \"Idle\" -> \"MovingToSensor\" [label=\"when(conveyorBelt.conveyorSensFeed == false and conveyorBelt.conveyorSensSwap == true) / conveyorBelt.moveToSensor()\"];\n"
-      + "    \"MovingToSensor\" -> \"Idle\" [label=\"CBCommandSuccessEventMessage / notifyVgr1AndVgr2\"];\n"
+      + "    \"Idle\" -> \"MovingToSensor\" [label=\"TokenAtFeedEventMessage / conveyorBelt.moveToSensor()\"];\n"
+      + "    \"MovingToSensor\" -> \"Idle\" [label=\"CBCommandSuccessEventMessage / notifyTokenAtSwap\"];\n"
       + "}";
 
   private final ConveyorBeltNominalMissionActions actions;
@@ -45,25 +50,32 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
 
   private final VacuumGripperMachine vacuumGripper2;
 
+  private final Zone zoneCB;
+
   public ConveyorBeltNominalMission(ConveyorBeltMachine conveyorBelt,
-      VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2,
+      VacuumGripperMachine vacuumGripper1, VacuumGripperMachine vacuumGripper2, Zone zoneCB,
       ConveyorBeltNominalMissionActions actions) {
     this.conveyorBelt = conveyorBelt;
     this.vacuumGripper1 = vacuumGripper1;
     this.vacuumGripper2 = vacuumGripper2;
+    this.zoneCB = zoneCB;
     this.actions = actions;
 
     // States are built from the collected transitions.
+    RuntimeState checkBelt = new RuntimeState("CheckBelt");
     RuntimeState idle = new RuntimeState("Idle");
     RuntimeState movingToSensor = new RuntimeState("MovingToSensor");
 
     // Transitions connect triggers, runtime actions, and next-state targets.
-    this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, idle));
+    this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, checkBelt));
+    checkBelt.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.checkBelt(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2, this.zoneCB), idle));
     idle.addTransition(new RuntimeTransition(AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent.class, event -> true, event -> this.conveyorBelt.moveToSensor(), movingToSensor));
-    movingToSensor.addTransition(new RuntimeTransition(CBCommandSuccessEventMessage.class, event -> true, event -> this.actions.notifyVgr1AndVgr2(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2), idle));
+    idle.addTransition(new RuntimeTransition(TokenAtFeedEventMessage.class, event -> true, event -> this.conveyorBelt.moveToSensor(), movingToSensor, this.conveyorBelt));
+    movingToSensor.addTransition(new RuntimeTransition(CBCommandSuccessEventMessage.class, event -> true, event -> this.actions.notifyTokenAtSwap(event, this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2, this.zoneCB), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
     conveyorBelt.subscribe(AcceptWhenConveyorBeltConveyorSensFeedEqualsfalseAndConveyorBeltConveyorSensSwapEqualstrueEvent.class, event -> onEvent(conveyorBelt, event));
+    conveyorBelt.subscribe(TokenAtFeedEventMessage.class, event -> onEvent(conveyorBelt, event));
     conveyorBelt.subscribe(CBCommandSuccessEventMessage.class, event -> onEvent(conveyorBelt, event));
   }
 
@@ -74,7 +86,7 @@ public class ConveyorBeltNominalMission extends AbstractMissionStrategy {
 
   @Override
   public List<MachineAdapter> getMachines() {
-    return List.<MachineAdapter>of(this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2);
+    return List.<MachineAdapter>of(this.conveyorBelt, this.vacuumGripper1, this.vacuumGripper2, this.zoneCB);
   }
 
   @Override

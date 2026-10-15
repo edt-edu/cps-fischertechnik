@@ -41,6 +41,9 @@ public class SortingLineNominalMission extends AbstractMissionStrategy {
       + "    __init__ -> \"Idle\" [label=\"ε\"];\n"
       + "    \"Idle\" -> \"SortCMD\" [label=\"when(sortingLine.sensor_SL_in == false) / sortingLine.eject()\"];\n"
       + "    \"Idle\" -> \"Idle\" [label=\"TokenRequestEventMessage / answerTokenRequest\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_blue == false) / send SortingLineSystem::SortingLineMessages::BlueTokenAvailableEventMessage -> vacuumGripper\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_white == false) / send SortingLineSystem::SortingLineMessages::WhiteTokenAvailableEventMessage -> vacuumGripper\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_red == false) / send SortingLineSystem::SortingLineMessages::RedTokenAvailableEventMessage -> vacuumGripper\"];\n"
       + "    \"SortCMD\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_blue == false) / send SortingLineSystem::SortingLineMessages::BlueTokenAvailableEventMessage -> vacuumGripper\"];\n"
       + "    \"SortCMD\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_white == false) / send SortingLineSystem::SortingLineMessages::WhiteTokenAvailableEventMessage -> vacuumGripper\"];\n"
       + "    \"SortCMD\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_red == false) / send SortingLineSystem::SortingLineMessages::RedTokenAvailableEventMessage -> vacuumGripper\"];\n"
@@ -66,6 +69,9 @@ public class SortingLineNominalMission extends AbstractMissionStrategy {
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, idle));
     idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLinEqualsfalseEvent.class, event -> true, event -> this.sortingLine.eject(), sortCMD));
     idle.addTransition(new RuntimeTransition(TokenRequestEventMessage.class, event -> true, event -> this.actions.answerTokenRequest(event, this.sortingLine, this.vacuumGripper), idle, this.sortingLine));
+    idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new BlueTokenAvailableEventMessage()), idle));
+    idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new WhiteTokenAvailableEventMessage()), idle));
+    idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new RedTokenAvailableEventMessage()), idle));
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new BlueTokenAvailableEventMessage()), idle));
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new WhiteTokenAvailableEventMessage()), idle));
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new RedTokenAvailableEventMessage()), idle));

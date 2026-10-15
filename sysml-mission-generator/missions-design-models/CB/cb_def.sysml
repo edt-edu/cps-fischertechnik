@@ -38,6 +38,8 @@ package ConveyorBeltSystem {
     package ConveyorBeltMessages {
         item def FeedFreeEventMessage :> EventMessage;
         item def SwapBusyEventMessage :> EventMessage;
+        // a token at the feed with the swap free, found when the mission starts (ConveyorBeltNominalMission)
+        item def TokenAtFeedEventMessage :> EventMessage;
         item def CBCommandSuccessEventMessage :> EventMessage;
     } // package ConveyorBeltMessages
 

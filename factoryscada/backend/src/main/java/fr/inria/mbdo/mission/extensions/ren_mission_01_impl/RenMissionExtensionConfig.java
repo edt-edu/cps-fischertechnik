@@ -114,12 +114,12 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
         ZoneAdapterImpl zoneMPS = adapter("ZoneMPS");
 
         return List.of(
-            new ConveyorBeltNominalMission(cb, vgr1, vgr2, cbActions),
+            new ConveyorBeltNominalMission(cb, vgr1, vgr2, zoneCB, cbActions),
             new SortingLineNominalMission(sl, vgr1, slActions),
             new MultiProcessingStationNominalMission(mps, zoneMPS, mpsActions),
             new VacuumGripper1NominalMission(vgr1, sl, zoneCB, vgr1Actions),
-            new VacuumGripper2NominalMission(vgr2, zoneCB, zoneMPS, vgr2Actions),
-            new ZoneMissionCBNominal(zoneCB, zoneCBActions),
+            new VacuumGripper2NominalMission(vgr2, cb, zoneCB, zoneMPS, vgr2Actions),
+            new ZoneMissionCBNominal(zoneCB, cb, zoneCBActions),
             new ZoneMissionMPSNominal(zoneMPS, zoneMPSActions),
             // the conveyor belt fails: the CB zone becomes the dead CB zone, which knows the tokens on its two slots
             new ZoneMissionDeadCB(zoneCB, zoneDeadCBActions),

@@ -477,15 +477,15 @@
 
 == Incoming Topics
 
-[[incoming_conveyorbelt-machinename-command-move-to-sensor]]
-===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
+[[incoming_conveyorbelt-machinename-command-move-nb-steps]]
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveToSensorCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveNbStepsCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `moveToLightBarrierDTO` (GenericMachineCommandDTO)
+- `moveStepsDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -543,15 +543,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_conveyorbelt-machinename-command-move-nb-steps]]
-===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
+[[incoming_conveyorbelt-machinename-command-stop]]
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveNbStepsCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveStopCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `moveStepsDTO` (GenericMachineCommandDTO)
+- `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -675,15 +675,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 NOTE: This endpoint does not send a response back via a topic.
 
-[[incoming_conveyorbelt-machinename-command-stop]]
-===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
+[[incoming_conveyorbelt-machinename-command-move-to-sensor]]
+===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveToSensorCommand()`
 
 ==== Parameters
 
 - `machineName` (String)
-- `stopDTO` (GenericMachineCommandDTO)
+- `moveToLightBarrierDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
 
@@ -853,6 +853,16 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_dynamic-mission-command-stop]]
+===  Incoming Topic: `/dynamic-mission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.stopMission()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
 [[incoming_dynamic-mission-missions]]
 ===  Incoming Topic: `/dynamic-mission/missions`
 
@@ -880,16 +890,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrche
 ==== Parameters
 
 - `missionName` (String)
-
-NOTE: This endpoint does not send a response back via a topic.
-
-[[incoming_dynamic-mission-command-stop]]
-===  Incoming Topic: `/dynamic-mission/command/stop`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.stopMission()`
-
-==== Parameters
-
 
 NOTE: This endpoint does not send a response back via a topic.
 
@@ -2938,6 +2938,16 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionCon
 
 NOTE: This endpoint does not send a response back via a topic.
 
+[[incoming_factorymission-command-stop]]
+===  Incoming Topic: `/factoryMission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.stopMission()`
+
+==== Parameters
+
+
+NOTE: This endpoint does not send a response back via a topic.
+
 [[incoming_factorymission-command-start-missionname]]
 ===  Incoming Topic: `/factoryMission/command/start/{missionName}`
 
@@ -2946,16 +2956,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ==== Parameters
 
 - `missionName` (String)
-
-NOTE: This endpoint does not send a response back via a topic.
-
-[[incoming_factorymission-command-stop]]
-===  Incoming Topic: `/factoryMission/command/stop`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.stopMission()`
-
-==== Parameters
-
 
 NOTE: This endpoint does not send a response back via a topic.
 
@@ -2990,10 +2990,24 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 }
 ----
 
-[[incoming_factorymission-mission-configuration]]
-===  Incoming Topic: `/factoryMission/mission-configuration`
+[[incoming_factorymission-status]]
+===  Incoming Topic: `/factoryMission/status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+class java.lang.String
+
+[[incoming_factorymission-list]]
+===  Incoming Topic: `/factoryMission/list`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -3061,24 +3075,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 }
 ----
 
-[[incoming_factorymission-status]]
-===  Incoming Topic: `/factoryMission/status`
+[[incoming_factorymission-mission-configuration]]
+===  Incoming Topic: `/factoryMission/mission-configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
-
-*Send To:* `/topic/mission-status`
-
-==== Parameters
-
-
-==== Response Payload
-
-class java.lang.String
-
-[[incoming_factorymission-list]]
-===  Incoming Topic: `/factoryMission/list`
-
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -5816,42 +5816,6 @@ NOTE: This endpoint does not send a response back via a topic.
 == Outgoing Topics
 
 
-=== Outgoing Topic: `/topic/controller-feedbacks`
-_Broadcasts raw feedback from the controller_
-
-Payload: `String`
-{
-  "type" : "string"
-}
-
-=== Outgoing Topic: `/topic/frontend-logs`
-_All logs that should appear in the frontend_
-
-Payload: `String`
-{
-  "type" : "string"
-}
-
-=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
-_Broadcasts PLC connection status updates_
-
-Payload: `PlcConnectionStatusDto`
-{
-  "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
-  "properties" : {
-    "controllerName" : {
-      "type" : "string"
-    },
-    "commandPortConnected" : {
-      "type" : "boolean"
-    },
-    "notificationPortConnected" : {
-      "type" : "boolean"
-    }
-  }
-}
-
 === Outgoing Topic: `/topic/{machineName}/command-status`
 _Broadcasts Command status updates_
 
@@ -5926,6 +5890,42 @@ Payload: `CommandStatusDTO`
       "type" : "string"
     }
   }
+}
+
+=== Outgoing Topic: `/topic/frontend-logs`
+_All logs that should appear in the frontend_
+
+Payload: `String`
+{
+  "type" : "string"
+}
+
+=== Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
+_Broadcasts PLC connection status updates_
+
+Payload: `PlcConnectionStatusDto`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:PlcConnectionStatusDto",
+  "properties" : {
+    "controllerName" : {
+      "type" : "string"
+    },
+    "commandPortConnected" : {
+      "type" : "boolean"
+    },
+    "notificationPortConnected" : {
+      "type" : "boolean"
+    }
+  }
+}
+
+=== Outgoing Topic: `/topic/controller-feedbacks`
+_Broadcasts raw feedback from the controller_
+
+Payload: `String`
+{
+  "type" : "string"
 }
 [[outgoing_topic-machinename-command-status]]
 === Outgoing Topic: `/topic/{machineName}/command-status`
@@ -6433,12 +6433,33 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 }
 ----
 
+[[outgoing_topic-mission-status]]
+=== Outgoing Topic: `/topic/mission-status`
+
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
+
+*Request Mapping:* `@MessageMapping("/factoryMission/status")`
+
+*Send To:* `/topic/mission-status`
+
+==== Parameters
+
+
+==== Response Payload
+
+[source,json]
+----
+{
+  "type" : "string"
+}
+----
+
 [[outgoing_topic-mission-configuration]]
 === Outgoing Topic: `/topic/mission-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
 
-*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
+*Request Mapping:* `@MessageMapping("/factoryMission/list")`
 
 *Send To:* `/topic/mission-configuration`
 
@@ -6506,33 +6527,12 @@ declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 }
 ----
 
-[[outgoing_topic-mission-status]]
-=== Outgoing Topic: `/topic/mission-status`
-
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
-
-*Request Mapping:* `@MessageMapping("/factoryMission/status")`
-
-*Send To:* `/topic/mission-status`
-
-==== Parameters
-
-
-==== Response Payload
-
-[source,json]
-----
-{
-  "type" : "string"
-}
-----
-
 [[outgoing_topic-mission-configuration]]
 === Outgoing Topic: `/topic/mission-configuration`
 
-declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
+declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
 
-*Request Mapping:* `@MessageMapping("/factoryMission/list")`
+*Request Mapping:* `@MessageMapping("/factoryMission/mission-configuration")`
 
 *Send To:* `/topic/mission-configuration`
 

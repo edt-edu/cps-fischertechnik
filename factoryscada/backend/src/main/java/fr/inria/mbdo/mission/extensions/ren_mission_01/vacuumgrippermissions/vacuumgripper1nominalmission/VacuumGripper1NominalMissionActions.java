@@ -11,6 +11,12 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
  */
 public interface VacuumGripper1NominalMissionActions {
   /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::askCBSlot
+   */
+  void askCBSlot(Event event, VacuumGripperMachine vacuumGripper, SortingLineMachine sortingLine,
+      Zone zoneCB);
+
+  /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::pickWhite
    */
   void pickWhite(Event event, VacuumGripperMachine vacuumGripper, SortingLineMachine sortingLine,
@@ -33,6 +39,12 @@ public interface VacuumGripper1NominalMissionActions {
    */
   void pickBlue(Event event, VacuumGripperMachine vacuumGripper, SortingLineMachine sortingLine,
       Zone zoneCB);
+
+  /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::askSortingLine
+   */
+  void askSortingLine(Event event, VacuumGripperMachine vacuumGripper,
+      SortingLineMachine sortingLine, Zone zoneCB);
 
   /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper1NominalMission::gotoStandby

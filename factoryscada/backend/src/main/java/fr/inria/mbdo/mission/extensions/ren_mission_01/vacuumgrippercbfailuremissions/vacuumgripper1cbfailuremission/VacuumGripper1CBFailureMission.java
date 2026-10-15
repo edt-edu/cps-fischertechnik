@@ -44,6 +44,9 @@ public class VacuumGripper1CBFailureMission extends AbstractMissionStrategy {
       + "    \"PickColorCMD\";\n"
       + "    \"AskCBSlot\";\n"
       + "    \"SelectCBSlot\";\n"
+      + "    \"StandbyWithTokenCMD\";\n"
+      + "    \"AskCBSlotInStandby\";\n"
+      + "    \"SelectCBSlotInStandby\";\n"
       + "    \"WaitForFreeCBSlot\";\n"
       + "    \"PlaceConveyorBeltCMD\";\n"
       + "    \"RetractFromCBCMD\";\n"
@@ -61,8 +64,13 @@ public class VacuumGripper1CBFailureMission extends AbstractMissionStrategy {
       + "    \"AskCBSlot\" -> \"SelectCBSlot\" [label=\"ε / askCBSlot\"];\n"
       + "    \"SelectCBSlot\" -> \"PlaceConveyorBeltCMD\" [label=\"PlaceOnFeedEventMessage / placeConveyorBeltFeed\"];\n"
       + "    \"SelectCBSlot\" -> \"PlaceConveyorBeltCMD\" [label=\"PlaceOnSwapEventMessage / placeConveyorBeltSwap\"];\n"
-      + "    \"SelectCBSlot\" -> \"WaitForFreeCBSlot\" [label=\"NoCBSlotFreeEventMessage\"];\n"
-      + "    \"WaitForFreeCBSlot\" -> \"AskCBSlot\" [label=\"CBSlotFreeEventMessage\"];\n"
+      + "    \"SelectCBSlot\" -> \"StandbyWithTokenCMD\" [label=\"NoCBSlotFreeEventMessage / gotoStandby\"];\n"
+      + "    \"StandbyWithTokenCMD\" -> \"AskCBSlotInStandby\" [label=\"VGRCommandSuccessEventMessage\"];\n"
+      + "    \"AskCBSlotInStandby\" -> \"SelectCBSlotInStandby\" [label=\"ε / askCBSlot\"];\n"
+      + "    \"SelectCBSlotInStandby\" -> \"PlaceConveyorBeltCMD\" [label=\"PlaceOnFeedEventMessage / placeConveyorBeltFeed\"];\n"
+      + "    \"SelectCBSlotInStandby\" -> \"PlaceConveyorBeltCMD\" [label=\"PlaceOnSwapEventMessage / placeConveyorBeltSwap\"];\n"
+      + "    \"SelectCBSlotInStandby\" -> \"WaitForFreeCBSlot\" [label=\"NoCBSlotFreeEventMessage\"];\n"
+      + "    \"WaitForFreeCBSlot\" -> \"AskCBSlotInStandby\" [label=\"CBSlotFreeEventMessage\"];\n"
       + "    \"PlaceConveyorBeltCMD\" -> \"RetractFromCBCMD\" [label=\"VGRCommandSuccessEventMessage / vacuumGripper.retractArm()\"];\n"
       + "    \"RetractFromCBCMD\" -> \"CBZoneReleased\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::TokenPlacedOnCBEventMessage -> zoneCB\"];\n"
       + "    \"CBZoneReleased\" -> \"ReturnToStandbyCMD\" [label=\"ε / gotoStandby\"];\n"
@@ -92,6 +100,9 @@ public class VacuumGripper1CBFailureMission extends AbstractMissionStrategy {
     RuntimeState pickColorCMD = new RuntimeState("PickColorCMD");
     RuntimeState askCBSlot = new RuntimeState("AskCBSlot");
     RuntimeState selectCBSlot = new RuntimeState("SelectCBSlot");
+    RuntimeState standbyWithTokenCMD = new RuntimeState("StandbyWithTokenCMD");
+    RuntimeState askCBSlotInStandby = new RuntimeState("AskCBSlotInStandby");
+    RuntimeState selectCBSlotInStandby = new RuntimeState("SelectCBSlotInStandby");
     RuntimeState waitForFreeCBSlot = new RuntimeState("WaitForFreeCBSlot");
     RuntimeState placeConveyorBeltCMD = new RuntimeState("PlaceConveyorBeltCMD");
     RuntimeState retractFromCBCMD = new RuntimeState("RetractFromCBCMD");
@@ -110,8 +121,13 @@ public class VacuumGripper1CBFailureMission extends AbstractMissionStrategy {
     askCBSlot.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.askCBSlot(event, this.vacuumGripper, this.sortingLine, this.zoneCB), selectCBSlot));
     selectCBSlot.addTransition(new RuntimeTransition(PlaceOnFeedEventMessage.class, event -> true, event -> this.actions.placeConveyorBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltCMD, this.zoneCB));
     selectCBSlot.addTransition(new RuntimeTransition(PlaceOnSwapEventMessage.class, event -> true, event -> this.actions.placeConveyorBeltSwap(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltCMD, this.zoneCB));
-    selectCBSlot.addTransition(new RuntimeTransition(NoCBSlotFreeEventMessage.class, event -> true, event -> { }, waitForFreeCBSlot, this.zoneCB));
-    waitForFreeCBSlot.addTransition(new RuntimeTransition(CBSlotFreeEventMessage.class, event -> true, event -> { }, askCBSlot, this.zoneCB));
+    selectCBSlot.addTransition(new RuntimeTransition(NoCBSlotFreeEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyWithTokenCMD, this.zoneCB));
+    standbyWithTokenCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, askCBSlotInStandby, this.vacuumGripper));
+    askCBSlotInStandby.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.askCBSlot(event, this.vacuumGripper, this.sortingLine, this.zoneCB), selectCBSlotInStandby));
+    selectCBSlotInStandby.addTransition(new RuntimeTransition(PlaceOnFeedEventMessage.class, event -> true, event -> this.actions.placeConveyorBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltCMD, this.zoneCB));
+    selectCBSlotInStandby.addTransition(new RuntimeTransition(PlaceOnSwapEventMessage.class, event -> true, event -> this.actions.placeConveyorBeltSwap(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltCMD, this.zoneCB));
+    selectCBSlotInStandby.addTransition(new RuntimeTransition(NoCBSlotFreeEventMessage.class, event -> true, event -> { }, waitForFreeCBSlot, this.zoneCB));
+    waitForFreeCBSlot.addTransition(new RuntimeTransition(CBSlotFreeEventMessage.class, event -> true, event -> { }, askCBSlotInStandby, this.zoneCB));
     placeConveyorBeltCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.vacuumGripper.retractArm(), retractFromCBCMD, this.vacuumGripper));
     retractFromCBCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new TokenPlacedOnCBEventMessage()), cBZoneReleased, this.vacuumGripper));
     cBZoneReleased.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), returnToStandbyCMD));

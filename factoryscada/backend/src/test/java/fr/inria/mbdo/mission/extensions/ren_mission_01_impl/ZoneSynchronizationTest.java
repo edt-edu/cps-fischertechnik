@@ -1,9 +1,9 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01_impl;
 
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominal;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.ReleaseRequestEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.CBSlotRequestEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.PlaceOnFeedEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.TokenPlacedOnCBEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.ZoneAdapterImpl;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions.ZoneMissionCBNominalActionsImpl;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * The CB zone mission answers the grippers through the ZoneCB adapter, like VacuumGripper1NominalMission:
- * PickColorCMD --VGRCommandSuccess / send AcquireRequest to zoneCB--> IdlePicked --AcquireResponse via zoneCB--> ...
+ * PickColorCMD --VGRCommandSuccess / send CBSlotRequest to zoneCB--> IdlePicked --PlaceOnFeed via zoneCB--> ...
  */
 class ZoneSynchronizationTest {
 
@@ -33,7 +33,8 @@ class ZoneSynchronizationTest {
     @BeforeEach
     void setUp() {
         zoneCB = new ZoneAdapterImpl("ZoneCB");
-        zoneMission = new ZoneMissionCBNominal(zoneCB, new ZoneMissionCBNominalActionsImpl());
+        zoneMission = new ZoneMissionCBNominal(zoneCB, new ConveyorBeltMissionTest.RecordingConveyorBelt(),
+                new ZoneMissionCBNominalActionsImpl());
         zoneMission.start();
 
         // the requesting side of VacuumGripper1NominalMission
@@ -43,34 +44,34 @@ class ZoneSynchronizationTest {
         gripper = new RuntimeInstance();
         gripper.setEntryTransition(new RuntimeTransition(CompletionEvent.class, e -> true, e -> { }, pickColorCMD));
         pickColorCMD.addTransition(new RuntimeTransition(PickDone.class, e -> true,
-                e -> zoneCB.publish(new AcquireRequestEventMessage()), idlePicked));
-        idlePicked.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, e -> true, e -> { },
+                e -> zoneCB.publish(new CBSlotRequestEventMessage()), idlePicked));
+        idlePicked.addTransition(new RuntimeTransition(PlaceOnFeedEventMessage.class, e -> true, e -> { },
                 placeConveyorBeltFeed));
-        zoneCB.subscribe(AcquireResponseEventMessage.class, gripper::dispatch);
+        zoneCB.subscribe(PlaceOnFeedEventMessage.class, gripper::dispatch);
         gripper.start();
     }
 
     @Test
-    void theZoneAnswersAnAcquireRequestSentFromInsideTheRequestersTransition() {
+    void theZoneAnswersARequestSentFromInsideTheRequestersTransition() {
         gripper.dispatch(new PickDone());
 
         assertEquals("PlaceConveyorBeltFeed", gripper.activeState().getName(),
                 "the synchronous answer is processed once the gripper is in IdlePicked");
-        assertEquals("IdleBusy", zoneMission.getActiveStateName());
+        assertEquals("VGR1PlacingOnFeed", zoneMission.getActiveStateName());
     }
 
     @Test
-    void releaseFreesTheZoneAgain() {
+    void theTokenPlacedOccupiesTheFeed() {
         gripper.dispatch(new PickDone());
-        zoneCB.publish(new ReleaseRequestEventMessage());
+        zoneCB.publish(new TokenPlacedOnCBEventMessage());
 
-        assertEquals("IdleFree", zoneMission.getActiveStateName());
+        assertEquals("TokenOnFeed", zoneMission.getActiveStateName());
     }
 
     @Test
-    void aReleaseWhileFreeIsIgnored() {
-        zoneCB.publish(new ReleaseRequestEventMessage()); // VGR1 releases the zone after its setup
+    void anUnexpectedTokenPlacedOnAnEmptyBeltIsIgnored() {
+        zoneCB.publish(new TokenPlacedOnCBEventMessage());
 
-        assertEquals("IdleFree", zoneMission.getActiveStateName());
+        assertEquals("Empty", zoneMission.getActiveStateName());
     }
 }

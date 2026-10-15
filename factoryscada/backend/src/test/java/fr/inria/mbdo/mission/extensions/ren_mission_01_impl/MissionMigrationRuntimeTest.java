@@ -32,9 +32,10 @@ class MissionMigrationRuntimeTest {
         vgr2 = new RecordingVacuumGripper();
         ZoneAdapterImpl zoneCB = new ZoneAdapterImpl("ZoneCB");
         ZoneAdapterImpl zoneMPS = new ZoneAdapterImpl("ZoneMPS");
-        zoneCBMission = new ZoneMissionCBNominal(zoneCB, new ZoneMissionCBNominalActionsImpl());
+        ConveyorBeltMissionTest.RecordingConveyorBelt cb = new ConveyorBeltMissionTest.RecordingConveyorBelt();
+        zoneCBMission = new ZoneMissionCBNominal(zoneCB, cb, new ZoneMissionCBNominalActionsImpl());
         ZoneMissionMPSNominal zoneMPSMission = new ZoneMissionMPSNominal(zoneMPS, new ZoneMissionMPSNominalActions() { });
-        vgr2Mission = new VacuumGripper2NominalMission(vgr2, zoneCB, zoneMPS, new VacuumGripper2NominalMissionActionsImpl());
+        vgr2Mission = new VacuumGripper2NominalMission(vgr2, cb, zoneCB, zoneMPS, new VacuumGripper2NominalMissionActionsImpl());
         zoneCBMission.start();
         zoneMPSMission.start();
     }
@@ -73,7 +74,7 @@ class MissionMigrationRuntimeTest {
 
     @Test
     void startAtRunsTheCompletionTransitionsOfTheState() {
-        zoneCBMission.startAt("IdleBusy"); // VGR2 held the CB zone
+        zoneCBMission.startAt("VGR2PickingLastToken"); // VGR2 was over the belt
         vgr2Mission.startAt("CBZoneReleased");
 
         assertEquals("StandbyBeforeMPSCMD", vgr2Mission.getActiveStateName());

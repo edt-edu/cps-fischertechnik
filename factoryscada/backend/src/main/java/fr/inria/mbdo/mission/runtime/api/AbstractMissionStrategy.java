@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
+import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeTransition;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
 import fr.inria.mbdo.mission.runtime.rtc.exec.RuntimeInstance;
 
@@ -143,5 +144,17 @@ public abstract class AbstractMissionStrategy implements MachineMissionStrategy 
     public String getActiveStateName() {
         RuntimeState active = runtime.activeState();
         return active != null ? active.getName() : null;
+    }
+
+    /**
+     * Whether the active state waits for the result of a command sent to a machine: one of its transitions is
+     * triggered by a command success message (VGRCommandSuccessEventMessage, CBCommandSuccessEventMessage, ...). The
+     * states of a zone, or waiting for another machine's message, never are.
+     */
+    public boolean isAwaitingCommandResult() {
+        RuntimeState active = runtime.activeState();
+        return active != null && active.getTransitions().stream()
+            .map(RuntimeTransition::triggerType)
+            .anyMatch(trigger -> trigger != null && trigger.getSimpleName().endsWith("CommandSuccessEventMessage"));
     }
 }

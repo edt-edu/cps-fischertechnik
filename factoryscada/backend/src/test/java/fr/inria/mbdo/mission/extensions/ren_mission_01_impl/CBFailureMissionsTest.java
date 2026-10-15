@@ -138,7 +138,10 @@ class CBFailureMissionsTest {
         assertEquals("SwapThenFeed", zoneMission.getActiveStateName());
 
         vgr1PicksABlueToken();
-        assertEquals("WaitForFreeCBSlot", vgr1Mission.getActiveStateName(), "both slots are taken");
+        assertEquals("StandbyWithTokenCMD", vgr1Mission.getActiveStateName(), "both slots are taken");
+        assertEquals("moveToSafePosition", vgr1.lastCommand(), "VGR1 waits in standby, holding its token");
+        vgr1.commandSucceeds(); // in standby: asks again
+        assertEquals("WaitForFreeCBSlot", vgr1Mission.getActiveStateName());
 
         vgr2Mission.startAt("CheckCB");
         assertEquals(PICK_SWAP, vgr2.lastCommand(), "the oldest token");
@@ -172,11 +175,32 @@ class CBFailureMissionsTest {
         assertEquals(PICK_SWAP, vgr2.lastCommand());
 
         vgr1PicksABlueToken(); // VGR2 is over the belt
-        assertEquals("WaitForFreeCBSlot", vgr1Mission.getActiveStateName());
-        assertEquals(PICK_BLUE, vgr1.lastCommand(), "VGR1 waits with its token");
+        assertEquals("StandbyWithTokenCMD", vgr1Mission.getActiveStateName());
+        assertEquals("moveToSafePosition", vgr1.lastCommand(), "VGR1 waits in standby with its token");
 
-        vgr2PicksAndRetracts();
+        vgr2PicksAndRetracts(); // the zone tells VGR1, still moving to standby: dropped
+        assertEquals("StandbyWithTokenCMD", vgr1Mission.getActiveStateName());
+
+        vgr1.commandSucceeds(); // in standby: asks again
         assertEquals(PLACE_SWAP, vgr1.lastCommand());
+    }
+
+    @Test
+    void refusedVgr1GoesToStandbyAndPlacesOnceToldASlotIsFree() {
+        zoneMission.stop();
+        zoneMission.startAt("SwapThenFeed"); // both slots hold a token
+        vgr2Mission.startAt("CheckCB");      // VGR2 goes over the belt for the swap one
+        assertEquals(PICK_SWAP, vgr2.lastCommand());
+
+        vgr1PicksABlueToken();
+        assertEquals(List.of(PICK_BLUE, "moveToSafePosition"), vgr1.commands, "no place, standby holding the token");
+        vgr1.commandSucceeds(); // in standby: VGR2 still over the belt
+        assertEquals("WaitForFreeCBSlot", vgr1Mission.getActiveStateName());
+
+        vgr2PicksAndRetracts(); // out of the belt: the zone tells VGR1
+
+        assertEquals(List.of(PICK_BLUE, "moveToSafePosition", PLACE_SWAP), vgr1.commands);
+        assertEquals("VGR1PlacingOnSwapAfterFeed", zoneMission.getActiveStateName());
     }
 
     @Test
