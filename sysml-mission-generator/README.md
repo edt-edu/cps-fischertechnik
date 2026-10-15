@@ -46,7 +46,7 @@ All modules are compiled, tested, and installed into your local Maven repository
 The generated JARs can be found in the `target/` directory of each module.
 
 
-> **Tip:** optionnaly add `-DskipTests` to avoid running the tests
+> **Tip:** optionnaly add `-DskipTests -Dinvoker.skip=true` to avoid running all the tests and integration tests
 
 ## Using the generator
 

@@ -59,11 +59,12 @@
 			<version>3.3.0</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>sysml-mission-runtime</artifactId>
+            <version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency> -->
 	</dependencies>
 
 	<build>
@@ -112,10 +113,10 @@
 				        <goal>compile</goal>
 				    </goals>
 	            </configuration>
-	          <executions>
+	          	<executions>
 	                <execution>
 						<id>integration-test</id>
-						<phase>verify</phase>
+						<phase>integration-test</phase>
 	                    <goals>
 	                        <goal>install</goal>
 	                        <goal>run</goal>
