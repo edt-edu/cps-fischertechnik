@@ -49,9 +49,9 @@
                     <inputFiles>
                         <file>src/main/sysml/common/common_def.sysml</file>
                         <file>src/main/sysml/zones/zones_def.sysml</file>
-                        <file>src/main/sysml/missions/CB/cb_def.sysml</file>
-                        <file>src/main/sysml/missions/VGR/vgr_def.sysml</file>
-                        <file>src/main/sysml/missions/CB/cb_missions_def.sysml</file>
+                        <file>src/main/sysml/CB/cb_def.sysml</file>
+                        <file>src/main/sysml/VGR/vgr_def.sysml</file>
+                        <file>src/main/sysml/CB/cb_missions_def.sysml</file>
                     </inputFiles>
                     <basePackageName>fr.inria.mbdo.factory.generated</basePackageName>
                 </configuration>
