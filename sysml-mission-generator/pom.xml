@@ -15,6 +15,7 @@
 		<module>sysml-mission-runtime</module>
 		<module>sysml-mission-generator</module>
 		<module>sysml-mission-generator-maven-plugin</module>
+		<module>sysml-mission-generator-gradle-plugin</module>
 	</modules>
 
 	<properties>
