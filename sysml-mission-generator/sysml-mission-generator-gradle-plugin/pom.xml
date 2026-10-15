@@ -38,6 +38,13 @@
             <version>8.11.1</version>
             <scope>provided</scope>
         </dependency>
+        <!-- test dependencies-->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>sysml-mission-runtime</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Gradle TestKit (test) -->
         <dependency>
             <groupId>dev.gradleplugins</groupId>
