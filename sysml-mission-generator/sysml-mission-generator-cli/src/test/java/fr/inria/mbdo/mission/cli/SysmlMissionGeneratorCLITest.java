@@ -1,4 +1,4 @@
-package fr.inria.mbdo.mission;
+package fr.inria.mbdo.mission.cli;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 
 import org.junit.jupiter.api.Test;
 
+import fr.inria.mbdo.mission.cli.SysmlMissionGeneratorCLI;
 import picocli.CommandLine;
 
 /**

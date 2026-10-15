@@ -1,10 +1,11 @@
-package fr.inria.mbdo.mission;
+package fr.inria.mbdo.mission.cli;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import fr.inria.mbdo.mission.SysmlMissionGenerator;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -20,7 +21,7 @@ public class SysmlMissionGeneratorCLI implements Callable<Integer> {
 
 	@Option(names = { "-p", "--package" }, 
 			required = true, 
-			description = "base âckage name")
+			description = "base package name")
 	private String basePackageName;
 	
 	@Option(names = { "-o", "--output" }, 
