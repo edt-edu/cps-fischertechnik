@@ -70,7 +70,7 @@ public class SysmlMissionGeneratorGradlePlugin implements Plugin<Project> {
             this.inputFiles = project.getObjects().listProperty(File.class);
             this.basePackageName = project.getObjects().property(String.class).convention("fr.inria.generated");
             this.outputDirectory = project.getObjects().directoryProperty()
-                    .convention(project.getLayout().getBuildDirectory().dir("generated-sources/sysml"));
+                    .convention(project.getLayout().getBuildDirectory().dir("generated/sources/sysml/main/java"));
         }
 
         public ListProperty<File> getInputFiles() { return inputFiles; }
