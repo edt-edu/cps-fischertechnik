@@ -97,7 +97,7 @@
 		            <streamLogs>true</streamLogs>
                     <streamLogsOnFailures>true</streamLogsOnFailures>
 	                <showErrors>true</showErrors>
-	                <debug>true</debug>
+	                <debug>false</debug>
 					<projectsDirectory>${project.basedir}/src/test/resources</projectsDirectory>
 					<pomIncludes>
 						<pomInclude>mission-maven-project-example/pom.xml</pomInclude>
