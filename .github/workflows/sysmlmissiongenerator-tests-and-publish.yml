@@ -65,7 +65,8 @@ jobs:
           path: sysml-mission-generator/**/target/**/TEST-*.xml
           reporter: java-junit
           list-suites: all
-          list-tests: failed
+          list-tests: all
+          collapsed: always
 
       - name: Generate coverage reports
         if: always()
