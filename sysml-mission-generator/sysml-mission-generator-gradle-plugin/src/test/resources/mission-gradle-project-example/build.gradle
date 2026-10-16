@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.0.0-SNAPSHOT'
+}
+
+group = 'org.gemoc.mbdo'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+sysmlGenerator {
+    inputFiles = files(	'src/main/sysml/common/common_def.sysml',
+            'src/main/sysml/CB/cb_def.sysml',
+            'src/main/sysml/VGR/vgr_def.sysml',
+            'src/main/sysml/CB/cb_missions_def.sysml')
+    basePackageName = 'com.example.generated'
+    //outputDirectory = file('generated-src/sysml')
+
+}
+
+dependencies {
+    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime:1.0.0-SNAPSHOT'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}

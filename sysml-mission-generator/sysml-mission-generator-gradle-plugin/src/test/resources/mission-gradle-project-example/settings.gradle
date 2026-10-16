@@ -1,0 +1,33 @@
+
+pluginManagement {
+    repositories {
+        mavenLocal()
+        maven {
+            url = uri(
+                    'https://maven.pkg.github.com/edt-edu/cps-fischertechnik'
+            )
+            credentials {
+                username = providers.gradleProperty('gpr.user')
+                        .orElse(providers.environmentVariable('GITHUB_ACTOR'))
+                        .orNull
+                password = providers.gradleProperty('gpr.key')
+                        .orElse(providers.environmentVariable('GITHUB_TOKEN'))
+                        .orNull
+            }
+        }
+        gradlePluginPortal()
+    }
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id ==
+                    'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin') {
+                useModule(
+                        "fr.inria.mbdo.mission:sysml-mission-generator-gradle-plugin:${requested.version}"
+                )
+            }
+        }
+    }
+}
+
+rootProject.name = 'test_sysml_generator_gradle'
