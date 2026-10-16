@@ -142,7 +142,7 @@ jobs:
       - name: Cleanup sysml-mission-generator runtime
         uses: ./.github/actions/cleanup-maven-snapshots
         with:
-          package-name: fr.inria.mbdo.mission.sysml-mission-generator-runtime
+          package-name: fr.inria.mbdo.mission.sysml-mission-runtime
 
       - name: Cleanup sysml-mission-generator core
         uses: ./.github/actions/cleanup-maven-snapshots
