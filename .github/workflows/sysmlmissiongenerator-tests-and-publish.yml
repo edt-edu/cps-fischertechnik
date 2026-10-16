@@ -34,8 +34,8 @@ env:
     -Dcheckstyle.skip
   
 jobs:
-  build:
-    name: SysML Mission Generator Build
+  test:
+    name: Test SysML Mission Generator
     runs-on: ubuntu-latest
 
     defaults:
@@ -87,3 +87,77 @@ jobs:
       #   with:
       #     name: sysml-mission-generator
       #     path: sysml-mission-generator/**/target/*.jar
+
+  publish:
+    name: Publish SysML Mission Generator
+    needs: test
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    defaults:
+      run:
+        working-directory: sysml-mission-generator
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: |
+            sysml-mission-generator/**/pom.xml
+          server-id: github
+
+      - name: Publish Maven modules
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn \
+            -s ci_settings.xml \
+            --batch-mode \
+            --errors \
+            --no-transfer-progress \
+            -DskipTests \
+            -Dinvoker.skip=true \
+            deploy
+
+      # remove old snapshots from GitHub Packages
+      - name: Cleanup sysml-mission-generator root
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-root
+
+      - name: Cleanup sysml-mission-generator runtime
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-runtime
+
+      - name: Cleanup sysml-mission-generator core
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator
+
+      - name: Cleanup sysml-mission-generator cli
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-cli
+
+      - name: Cleanup sysml-mission-generator maven-plugin
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-maven-plugin
+
+      - name: Cleanup sysml-mission-generator gradle-plugin
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin                    

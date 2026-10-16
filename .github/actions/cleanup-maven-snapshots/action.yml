@@ -1,0 +1,23 @@
+
+name: Cleanup Maven snapshots
+description: Keep the latest snapshot and preserve all releases
+
+inputs:
+  package-name:
+    description: Full Maven package name (groupId.artifactId)
+    required: true
+  keep:
+    description: Number of recent versions to keep
+    required: false
+    default: '1'
+
+runs:
+  using: composite
+  steps:
+    - name: Cleanup ${{ inputs.package-name }}
+      uses: actions/delete-package-versions@v5
+      with:
+        package-name: ${{ inputs.package-name }}
+        package-type: maven
+        min-versions-to-keep: ${{ inputs.keep }}
+        ignore-versions: '^(?!.*-SNAPSHOT$).*$'
