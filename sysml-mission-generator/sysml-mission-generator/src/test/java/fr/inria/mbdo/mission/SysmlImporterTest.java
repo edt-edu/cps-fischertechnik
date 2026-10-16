@@ -202,7 +202,8 @@ public class SysmlImporterTest {
 				"CB/cb_def.sysml",
 				"MPS/mps_def.sysml", 
 				"SL/sl_def.sysml",
-				"VGR/vgr_missions_def.sysml", 
+				"VGR/vgr_missions_def.sysml",
+				"VGR/vgr_cb_failure_missions_def.sysml", 
 				"SL/sl_missions_def.sysml", 
 				"CB/cb_missions_def.sysml", 
 				"MPS/mps_missions_def.sysml",
@@ -257,6 +258,7 @@ public class SysmlImporterTest {
 				"MPS/mps_def.sysml", 
 				"SL/sl_def.sysml", 
 				"SL/sl_missions_def.sysml", 
+				"VGR/vgr_cb_failure_missions_def.sysml",
 				"CB/cb_missions_def.sysml", 
 				"MPS/mps_missions_def.sysml",
                 "zones/zones_missions_def.sysml");

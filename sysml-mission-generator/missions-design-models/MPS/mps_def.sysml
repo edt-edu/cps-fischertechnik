@@ -72,6 +72,7 @@ package MultiProcessingStationSystem {
 
     package MultiProcessingStationMessages {
         item def InputFreeEventMessage :> EventMessage;
+        item def PayloadAtInputEventMessage :> EventMessage;
         item def OutputBusyEventMessage :> EventMessage;
         item def MPSCommandSuccessEventMessage :> EventMessage;
     } // package MultiProcessingStationMessages

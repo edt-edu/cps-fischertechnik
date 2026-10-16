@@ -216,6 +216,10 @@ public abstract class AbstractMachine {
         commandFeedbackListeners.add(listener);
     }
 
+    public void removeCommandFeedbackListener(BiConsumer<Boolean, String> listener) {
+        commandFeedbackListeners.remove(listener);
+    }
+
     public void notifyCommandFeedback(boolean done, String status) {
         for (BiConsumer<Boolean, String> listener : commandFeedbackListeners) {
             listener.accept(done, status);

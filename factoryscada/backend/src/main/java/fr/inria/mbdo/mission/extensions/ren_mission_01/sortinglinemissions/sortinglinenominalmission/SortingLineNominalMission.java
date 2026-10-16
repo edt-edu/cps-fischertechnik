@@ -7,6 +7,7 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinemissions.sorti
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortingline.SortingLineMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.BlueTokenAvailableEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.RedTokenAvailableEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.TokenRequestEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sortinglinemessages.WhiteTokenAvailableEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
@@ -39,6 +40,10 @@ public class SortingLineNominalMission extends AbstractMissionStrategy {
       + "\n"
       + "    __init__ -> \"Idle\" [label=\"ε\"];\n"
       + "    \"Idle\" -> \"SortCMD\" [label=\"when(sortingLine.sensor_SL_in == false) / sortingLine.eject()\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"TokenRequestEventMessage / answerTokenRequest\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_blue == false) / send SortingLineSystem::SortingLineMessages::BlueTokenAvailableEventMessage -> vacuumGripper\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_white == false) / send SortingLineSystem::SortingLineMessages::WhiteTokenAvailableEventMessage -> vacuumGripper\"];\n"
+      + "    \"Idle\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_red == false) / send SortingLineSystem::SortingLineMessages::RedTokenAvailableEventMessage -> vacuumGripper\"];\n"
       + "    \"SortCMD\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_blue == false) / send SortingLineSystem::SortingLineMessages::BlueTokenAvailableEventMessage -> vacuumGripper\"];\n"
       + "    \"SortCMD\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_white == false) / send SortingLineSystem::SortingLineMessages::WhiteTokenAvailableEventMessage -> vacuumGripper\"];\n"
       + "    \"SortCMD\" -> \"Idle\" [label=\"when(sortingLine.sensor_SL_red == false) / send SortingLineSystem::SortingLineMessages::RedTokenAvailableEventMessage -> vacuumGripper\"];\n"
@@ -63,12 +68,17 @@ public class SortingLineNominalMission extends AbstractMissionStrategy {
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> { }, idle));
     idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLinEqualsfalseEvent.class, event -> true, event -> this.sortingLine.eject(), sortCMD));
+    idle.addTransition(new RuntimeTransition(TokenRequestEventMessage.class, event -> true, event -> this.actions.answerTokenRequest(event, this.sortingLine, this.vacuumGripper), idle, this.sortingLine));
+    idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new BlueTokenAvailableEventMessage()), idle));
+    idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new WhiteTokenAvailableEventMessage()), idle));
+    idle.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new RedTokenAvailableEventMessage()), idle));
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new BlueTokenAvailableEventMessage()), idle));
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new WhiteTokenAvailableEventMessage()), idle));
     sortCMD.addTransition(new RuntimeTransition(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> true, event -> this.sortingLine.publish(new RedTokenAvailableEventMessage()), idle));
 
     // Subscribe each mission machine to trigger event types used by this mission.
     sortingLine.subscribe(AcceptWhenSortingLineSensorSLinEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
+    sortingLine.subscribe(TokenRequestEventMessage.class, event -> onEvent(sortingLine, event));
     sortingLine.subscribe(AcceptWhenSortingLineSensorSLblueEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
     sortingLine.subscribe(AcceptWhenSortingLineSensorSLwhiteEqualsfalseEvent.class, event -> onEvent(sortingLine, event));
     sortingLine.subscribe(AcceptWhenSortingLineSensorSLredEqualsfalseEvent.class, event -> onEvent(sortingLine, event));

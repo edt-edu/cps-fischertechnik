@@ -159,6 +159,7 @@ class SysmlMissionGeneratorTest {
                 "VGR/vgr_def.sysml",
                 "zones/zones_missions_def.sysml",
                 "CB/cb_missions_def.sysml",
+		"VGR/vgr_cb_failure_missions_def.sysml",
                 "MPS/mps_missions_def.sysml",
                 "SL/sl_missions_def.sysml",
                 "VGR/vgr_missions_def.sysml")) {
@@ -185,8 +186,8 @@ class SysmlMissionGeneratorTest {
         assertTrue(Files.exists(actionsInterface), "Generated ConveyorBelt actions interface should exist");
 
         String actionsSource = Files.readString(actionsInterface);
-        assertTrue(actionsSource.contains("notifyVgr1AndVgr2"),
-                "Actions interface should contain the custom action method 'notifyVgr1AndVgr2'");
+        assertTrue(actionsSource.contains("notifyTokenAtSwap"),
+                "Actions interface should contain the custom action method 'notifyTokenAtSwap'");
 
         Path machineInterface = outputDir.toPath()
                 .resolve("com/example/generated/common/Machine.java");

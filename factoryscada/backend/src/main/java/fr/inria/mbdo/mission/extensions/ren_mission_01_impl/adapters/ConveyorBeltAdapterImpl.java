@@ -27,9 +27,45 @@ public class ConveyorBeltAdapterImpl extends AbstractConveyorBeltMachineAdapter 
 
     private ConveyorBeltMachine realMachine;
 
+    /** Whether each light barrier was received at least once: before that, its field holds a default value. */
+    @Getter
+    private volatile boolean feedSensorKnown = false;
+    @Getter
+    private volatile boolean swapSensorKnown = false;
+
     public ConveyorBeltAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
         mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
+    }
+
+    // A value set through the setters (by MQTT or by a test) is known.
+    @Override
+    public void setConveyorSensFeed(boolean conveyorSensFeed) {
+        feedSensorKnown = true;
+        super.setConveyorSensFeed(conveyorSensFeed);
+    }
+
+    @Override
+    public void setConveyorSensSwap(boolean conveyorSensSwap) {
+        swapSensorKnown = true;
+        super.setConveyorSensSwap(conveyorSensSwap);
+    }
+
+    /**
+     * Whether a token is at the feed light barrier (active-low: false = token present). A light barrier never received
+     * yet reads as free: its field holds a default value, which would read as a token.
+     */
+    public static boolean tokenAtFeed(
+            fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine belt) {
+        boolean known = !(belt instanceof ConveyorBeltAdapterImpl impl) || impl.isFeedSensorKnown();
+        return known && !belt.getConveyorSensFeed();
+    }
+
+    /** Whether a token is at the swap light barrier (active-low: false = token present); unknown reads as free. */
+    public static boolean tokenAtSwap(
+            fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine belt) {
+        boolean known = !(belt instanceof ConveyorBeltAdapterImpl impl) || impl.isSwapSensorKnown();
+        return known && !belt.getConveyorSensSwap();
     }
 
     public void bindRealMachine(ConveyorBeltMachine machine) {

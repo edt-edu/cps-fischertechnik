@@ -1,6 +1,7 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstation;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.customevents.AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.customevents.AcceptWhenMultiProcessingStationSensorMPSinEqualstrueEvent;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationmissions.multiprocessingstationnominalmission.customevents.AcceptWhenMultiProcessingStationSensorMPSoutEqualsfalseEvent;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MPSOutput;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.multiprocessingstationsystem.multiprocessingstationcommands.MultiProcessingStationCommandKind;
 import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
@@ -156,8 +157,11 @@ public abstract class AbstractMultiProcessingStationMachineAdapter extends Abstr
   public abstract void sawCut();
 
   private void checkAndFireAcceptWhenEvents() {
-    if (((this.sensor_MPS_in == true) && (this.sensor_MPS_out == false))) {
-      publish(new AcceptWhenMultiProcessingStationSensorMPSinEqualstrueAndMultiProcessingStationSensorMPSoutEqualsfalseEvent());
+    if ((this.sensor_MPS_out == false)) {
+      publish(new AcceptWhenMultiProcessingStationSensorMPSoutEqualsfalseEvent());
+    }
+    if ((this.sensor_MPS_in == true)) {
+      publish(new AcceptWhenMultiProcessingStationSensorMPSinEqualstrueEvent());
     }
   }
 }

@@ -14,4 +14,10 @@ public interface MultiProcessingStationNominalMissionActions {
    */
   void processPayload(Event event, MultiProcessingStationMachine multiProcessingStation,
       Zone zoneMPS);
+
+  /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:MultiProcessingStationMissions::MultiProcessingStationNominalMission::checkPayloadAtInput
+   */
+  void checkPayloadAtInput(Event event, MultiProcessingStationMachine multiProcessingStation,
+      Zone zoneMPS);
 }

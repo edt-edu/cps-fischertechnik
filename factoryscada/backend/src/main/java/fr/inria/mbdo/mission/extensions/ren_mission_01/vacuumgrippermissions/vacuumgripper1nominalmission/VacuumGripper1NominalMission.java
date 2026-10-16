@@ -7,9 +7,11 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.sortinglinesystem.sorting
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgrippermessages.VGRCommandSuccessEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.ReleaseRequestEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.CBSlotFreeEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.CBSlotRequestEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.NoCBSlotFreeEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.PlaceOnFeedEventMessage;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.TokenPlacedOnCBEventMessage;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.api.MachineAdapter;
 import fr.inria.mbdo.mission.runtime.rtc.def.RuntimeState;
@@ -37,9 +39,14 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
       + "    node [shape=circle, style=\"\", fillcolor=\"\"];\n"
       + "    \"SetupCMD\";\n"
       + "    \"StandbyCMD\";\n"
+      + "    \"AskSortingLine\";\n"
       + "    \"Idle\";\n"
       + "    \"PickColorCMD\";\n"
       + "    \"IdlePicked\";\n"
+      + "    \"StandbyWithTokenCMD\";\n"
+      + "    \"AskCBSlotInStandby\";\n"
+      + "    \"SelectCBSlotInStandby\";\n"
+      + "    \"WaitForFreeCBSlot\";\n"
       + "    \"PlaceConveyorBeltFeed\";\n"
       + "    \"RetractFromCBCMD\";\n"
       + "    \"CBZoneReleased\";\n"
@@ -47,16 +54,25 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
       + "\n"
       + "    __init__ -> \"SetupCMD\" [label=\"ε / vacuumGripper.setup()\"];\n"
       + "    \"SetupCMD\" -> \"StandbyCMD\" [label=\"VGRCommandSuccessEventMessage / gotoStandby\"];\n"
-      + "    \"StandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
+      + "    \"StandbyCMD\" -> \"AskSortingLine\" [label=\"VGRCommandSuccessEventMessage\"];\n"
+      + "    \"AskSortingLine\" -> \"Idle\" [label=\"ε / askSortingLine\"];\n"
       + "    \"Idle\" -> \"PickColorCMD\" [label=\"BlueTokenAvailableEventMessage / pickBlue\"];\n"
       + "    \"Idle\" -> \"PickColorCMD\" [label=\"WhiteTokenAvailableEventMessage / pickWhite\"];\n"
       + "    \"Idle\" -> \"PickColorCMD\" [label=\"RedTokenAvailableEventMessage / pickRed\"];\n"
-      + "    \"PickColorCMD\" -> \"IdlePicked\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::AcquireRequestEventMessage -> zoneCB\"];\n"
-      + "    \"IdlePicked\" -> \"PlaceConveyorBeltFeed\" [label=\"AcquireResponseEventMessage / placeConveyoBeltFeed\"];\n"
+      + "    \"PickColorCMD\" -> \"IdlePicked\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::CBSlotRequestEventMessage -> zoneCB\"];\n"
+      + "    \"IdlePicked\" -> \"PlaceConveyorBeltFeed\" [label=\"PlaceOnFeedEventMessage / placeConveyoBeltFeed\"];\n"
+      + "    \"IdlePicked\" -> \"StandbyWithTokenCMD\" [label=\"NoCBSlotFreeEventMessage / gotoStandby\"];\n"
+      + "    \"IdlePicked\" -> \"IdlePicked\" [label=\"CBSlotFreeEventMessage / send ZonesSystem::ZonesMessages::CBSlotRequestEventMessage -> zoneCB\"];\n"
+      + "    \"StandbyWithTokenCMD\" -> \"AskCBSlotInStandby\" [label=\"VGRCommandSuccessEventMessage\"];\n"
+      + "    \"AskCBSlotInStandby\" -> \"SelectCBSlotInStandby\" [label=\"ε / askCBSlot\"];\n"
+      + "    \"SelectCBSlotInStandby\" -> \"PlaceConveyorBeltFeed\" [label=\"PlaceOnFeedEventMessage / placeConveyoBeltFeed\"];\n"
+      + "    \"SelectCBSlotInStandby\" -> \"WaitForFreeCBSlot\" [label=\"NoCBSlotFreeEventMessage\"];\n"
+      + "    \"SelectCBSlotInStandby\" -> \"AskCBSlotInStandby\" [label=\"CBSlotFreeEventMessage\"];\n"
+      + "    \"WaitForFreeCBSlot\" -> \"AskCBSlotInStandby\" [label=\"CBSlotFreeEventMessage\"];\n"
       + "    \"PlaceConveyorBeltFeed\" -> \"RetractFromCBCMD\" [label=\"VGRCommandSuccessEventMessage / vacuumGripper.retractArm()\"];\n"
-      + "    \"RetractFromCBCMD\" -> \"CBZoneReleased\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::ReleaseRequestEventMessage -> zoneCB\"];\n"
+      + "    \"RetractFromCBCMD\" -> \"CBZoneReleased\" [label=\"VGRCommandSuccessEventMessage / send ZonesSystem::ZonesMessages::TokenPlacedOnCBEventMessage -> zoneCB\"];\n"
       + "    \"CBZoneReleased\" -> \"ReturnToStandbyCMD\" [label=\"ε / gotoStandby\"];\n"
-      + "    \"ReturnToStandbyCMD\" -> \"Idle\" [label=\"VGRCommandSuccessEventMessage\"];\n"
+      + "    \"ReturnToStandbyCMD\" -> \"AskSortingLine\" [label=\"VGRCommandSuccessEventMessage\"];\n"
       + "}";
 
   private final VacuumGripper1NominalMissionActions actions;
@@ -77,9 +93,14 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
     // States are built from the collected transitions.
     RuntimeState setupCMD = new RuntimeState("SetupCMD");
     RuntimeState standbyCMD = new RuntimeState("StandbyCMD");
+    RuntimeState askSortingLine = new RuntimeState("AskSortingLine");
     RuntimeState idle = new RuntimeState("Idle");
     RuntimeState pickColorCMD = new RuntimeState("PickColorCMD");
     RuntimeState idlePicked = new RuntimeState("IdlePicked");
+    RuntimeState standbyWithTokenCMD = new RuntimeState("StandbyWithTokenCMD");
+    RuntimeState askCBSlotInStandby = new RuntimeState("AskCBSlotInStandby");
+    RuntimeState selectCBSlotInStandby = new RuntimeState("SelectCBSlotInStandby");
+    RuntimeState waitForFreeCBSlot = new RuntimeState("WaitForFreeCBSlot");
     RuntimeState placeConveyorBeltFeed = new RuntimeState("PlaceConveyorBeltFeed");
     RuntimeState retractFromCBCMD = new RuntimeState("RetractFromCBCMD");
     RuntimeState cBZoneReleased = new RuntimeState("CBZoneReleased");
@@ -88,23 +109,34 @@ public class VacuumGripper1NominalMission extends AbstractMissionStrategy {
     // Transitions connect triggers, runtime actions, and next-state targets.
     this.runtime.setEntryTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.vacuumGripper.setup(), setupCMD));
     setupCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyCMD, this.vacuumGripper));
-    standbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), idle, this.vacuumGripper));
+    standbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, askSortingLine, this.vacuumGripper));
+    askSortingLine.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.askSortingLine(event, this.vacuumGripper, this.sortingLine, this.zoneCB), idle));
     idle.addTransition(new RuntimeTransition(BlueTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickBlue(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
     idle.addTransition(new RuntimeTransition(WhiteTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickWhite(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
     idle.addTransition(new RuntimeTransition(RedTokenAvailableEventMessage.class, event -> true, event -> this.actions.pickRed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), pickColorCMD));
-    pickColorCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new AcquireRequestEventMessage()), idlePicked, this.vacuumGripper));
-    idlePicked.addTransition(new RuntimeTransition(AcquireResponseEventMessage.class, event -> true, event -> this.actions.placeConveyoBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltFeed, this.zoneCB));
+    pickColorCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new CBSlotRequestEventMessage()), idlePicked, this.vacuumGripper));
+    idlePicked.addTransition(new RuntimeTransition(PlaceOnFeedEventMessage.class, event -> true, event -> this.actions.placeConveyoBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltFeed, this.zoneCB));
+    idlePicked.addTransition(new RuntimeTransition(NoCBSlotFreeEventMessage.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), standbyWithTokenCMD, this.zoneCB));
+    idlePicked.addTransition(new RuntimeTransition(CBSlotFreeEventMessage.class, event -> true, event -> this.zoneCB.publish(new CBSlotRequestEventMessage()), idlePicked, this.zoneCB));
+    standbyWithTokenCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, askCBSlotInStandby, this.vacuumGripper));
+    askCBSlotInStandby.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.askCBSlot(event, this.vacuumGripper, this.sortingLine, this.zoneCB), selectCBSlotInStandby));
+    selectCBSlotInStandby.addTransition(new RuntimeTransition(PlaceOnFeedEventMessage.class, event -> true, event -> this.actions.placeConveyoBeltFeed(event, this.vacuumGripper, this.sortingLine, this.zoneCB), placeConveyorBeltFeed, this.zoneCB));
+    selectCBSlotInStandby.addTransition(new RuntimeTransition(NoCBSlotFreeEventMessage.class, event -> true, event -> { }, waitForFreeCBSlot, this.zoneCB));
+    selectCBSlotInStandby.addTransition(new RuntimeTransition(CBSlotFreeEventMessage.class, event -> true, event -> { }, askCBSlotInStandby, this.zoneCB));
+    waitForFreeCBSlot.addTransition(new RuntimeTransition(CBSlotFreeEventMessage.class, event -> true, event -> { }, askCBSlotInStandby, this.zoneCB));
     placeConveyorBeltFeed.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.vacuumGripper.retractArm(), retractFromCBCMD, this.vacuumGripper));
-    retractFromCBCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new ReleaseRequestEventMessage()), cBZoneReleased, this.vacuumGripper));
+    retractFromCBCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> this.zoneCB.publish(new TokenPlacedOnCBEventMessage()), cBZoneReleased, this.vacuumGripper));
     cBZoneReleased.addTransition(new RuntimeTransition(CompletionEvent.class, event -> true, event -> this.actions.gotoStandby(event, this.vacuumGripper, this.sortingLine, this.zoneCB), returnToStandbyCMD));
-    returnToStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, idle, this.vacuumGripper));
+    returnToStandbyCMD.addTransition(new RuntimeTransition(VGRCommandSuccessEventMessage.class, event -> true, event -> { }, askSortingLine, this.vacuumGripper));
 
     // Subscribe each mission machine to trigger event types used by this mission.
     vacuumGripper.subscribe(VGRCommandSuccessEventMessage.class, event -> onEvent(vacuumGripper, event));
     sortingLine.subscribe(BlueTokenAvailableEventMessage.class, event -> onEvent(sortingLine, event));
     sortingLine.subscribe(WhiteTokenAvailableEventMessage.class, event -> onEvent(sortingLine, event));
     sortingLine.subscribe(RedTokenAvailableEventMessage.class, event -> onEvent(sortingLine, event));
-    zoneCB.subscribe(AcquireResponseEventMessage.class, event -> onEvent(zoneCB, event));
+    zoneCB.subscribe(PlaceOnFeedEventMessage.class, event -> onEvent(zoneCB, event));
+    zoneCB.subscribe(NoCBSlotFreeEventMessage.class, event -> onEvent(zoneCB, event));
+    zoneCB.subscribe(CBSlotFreeEventMessage.class, event -> onEvent(zoneCB, event));
   }
 
   @Override

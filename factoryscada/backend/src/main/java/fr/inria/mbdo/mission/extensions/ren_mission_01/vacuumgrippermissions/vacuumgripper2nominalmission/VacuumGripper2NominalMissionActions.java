@@ -1,5 +1,6 @@
 package fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippermissions.vacuumgripper2nominalmission;
 
+import fr.inria.mbdo.mission.extensions.ren_mission_01.conveyorbeltsystem.conveyorbelt.ConveyorBeltMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippersystem.vacuumgripper.VacuumGripperMachine;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.Zone;
 import fr.inria.mbdo.mission.runtime.rtc.event.Event;
@@ -10,17 +11,26 @@ import fr.inria.mbdo.mission.runtime.rtc.event.Event;
  */
 public interface VacuumGripper2NominalMissionActions {
   /**
+   * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::checkSwap
+   */
+  void checkSwap(Event event, VacuumGripperMachine vacuumGripper, ConveyorBeltMachine conveyorBelt,
+      Zone zoneCB, Zone zoneMPS);
+
+  /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::placeMPSin
    */
-  void placeMPSin(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
+  void placeMPSin(Event event, VacuumGripperMachine vacuumGripper, ConveyorBeltMachine conveyorBelt,
+      Zone zoneCB, Zone zoneMPS);
 
   /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::pickCBswap
    */
-  void pickCBswap(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
+  void pickCBswap(Event event, VacuumGripperMachine vacuumGripper, ConveyorBeltMachine conveyorBelt,
+      Zone zoneCB, Zone zoneMPS);
 
   /**
    * TODO: implement transition action for fr.inria.mbdo.mission.ir.TransitionActionCustomIR:VacuumGripperMissions::VacuumGripper2NominalMission::gotoStandby
    */
-  void gotoStandby(Event event, VacuumGripperMachine vacuumGripper, Zone zoneCB, Zone zoneMPS);
+  void gotoStandby(Event event, VacuumGripperMachine vacuumGripper,
+      ConveyorBeltMachine conveyorBelt, Zone zoneCB, Zone zoneMPS);
 }

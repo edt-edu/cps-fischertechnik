@@ -28,6 +28,11 @@ public class SortingLineAdapterImpl extends AbstractSortingLineMachineAdapter {
 
     public SortingLineAdapterImpl(String id, MqttMessageRouter mqttRouter, String mqttTopicFilter) {
         super(id);
+        // light barriers are active-low: until a value is received, see no token (not one at each output)
+        sensor_SL_in = true;
+        sensor_SL_white = true;
+        sensor_SL_blue = true;
+        sensor_SL_red = true;
         mqttRouter.subscribe(mqttTopicFilter, this::onMqttMessage);
     }
 

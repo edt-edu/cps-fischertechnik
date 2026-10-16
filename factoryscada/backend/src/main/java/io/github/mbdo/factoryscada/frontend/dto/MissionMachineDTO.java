@@ -6,5 +6,8 @@ public record MissionMachineDTO(
     String name,
     String type,
     List<MissionExtensionMachineOptionDTO> missions,
-    String activeMissionName) {
+    String activeMissionName,
+    String activeState,
+    String nominalMissionName,
+    String lastChangeTime) {
 }

@@ -7,7 +7,10 @@ import { DividerModule } from 'primeng/divider';
 import { DropdownModule } from 'primeng/dropdown';
 import { PanelModule } from 'primeng/panel';
 import { TabViewModule } from 'primeng/tabview';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import {
+  IMissionChangeEvent,
   IMissionExtensionMachine,
   IMissionExtensionConfiguration,
   IGlobalMission,
@@ -19,6 +22,12 @@ import { MyRxStompService } from '../../services/my-rx-stomp.service';
 import { MissionExtensionHttpService } from '../../services/mission-extension-http.service';
 import { LogTableWidgetComponent } from '../../widgets/log-table-widget/log-table-widget.component';
 import { MissionStateGraphWidgetComponent } from '../../widgets/mission-state-graph-widget/mission-state-graph-widget.component';
+
+/** A mission of the current state, and the machine it is bound to (none if no listed machine runs it). */
+interface MissionEntry {
+  mission: string;
+  machine?: IMissionExtensionMachine;
+}
 
 @Component({
   selector: 'app-mission-extension',
@@ -33,7 +42,9 @@ import { MissionStateGraphWidgetComponent } from '../../widgets/mission-state-gr
     MissionStateGraphWidgetComponent,
     PanelModule,
     TabViewModule,
+    ToastModule,
   ],
+  providers: [MessageService],
   templateUrl: './mission-extension.component.html',
   styleUrl: './mission-extension.component.scss',
 })
@@ -59,6 +70,10 @@ export class MissionExtensionComponent implements OnInit {
   private readonly rxStompService = inject(MyRxStompService);
   private readonly httpService = inject(MissionExtensionHttpService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly messageService = inject(MessageService);
+  private static readonly REPLANNING_GROUP_GAP_MS = 120_000;
+  private dismissedReplanningTime: string | null = null;
+  private lastNotifiedChangeTime: number | null = null;
 
   ngOnInit(): void {
     // STOMP subscriptions first so they are ready before any push arrives
@@ -112,11 +127,6 @@ export class MissionExtensionComponent implements OnInit {
       .filter(opt => !seen.has(opt.name) && seen.add(opt.name));
   }
 
-  get globalMissionEntries(): { mission: string }[] {
-    if (!this.selectedGlobalMission?.missionNames) return [];
-    return this.selectedGlobalMission.missionNames.map(mission => ({ mission }));
-  }
-
   get isGlobalMissionActive(): boolean {
     return !!this.selectedGlobalMissionName &&
       this.selectedGlobalMissionName === this.missionConfiguration?.activeGlobalMissionName;
@@ -124,12 +134,33 @@ export class MissionExtensionComponent implements OnInit {
 
   get shouldShowMissionsDetail(): boolean {
     return this.isGlobalMissionActive ||
+      (this.missionConfiguration?.activeMissionNames?.length ?? 0) > 0 ||
       Object.values(this.backendLogs).some(logs => logs.length > 0);
   }
 
-  get missionDisplayEntries(): { mission: string }[] {
-    const fromGlobal = this.globalMissionEntries;
-    if (fromGlobal.length > 0) return fromGlobal;
+  /**
+   * The current state, one entry per machine: the mission it runs, else the mission a change stopped (else its
+   * mission in the selected global mission, not started). Then the running missions bound to no listed machine.
+   */
+  get missionDisplayEntries(): MissionEntry[] {
+    const entries: MissionEntry[] = [];
+    const shown = new Set<string>();
+    const globalMissionNames = this.selectedGlobalMission?.missionNames ?? [];
+    for (const machine of this.machines) {
+      const stopped = this.latestChange(machine.name);
+      const mission = machine.activeMissionName
+        ?? (stopped && !stopped.mission ? stopped.previousMission : null)
+        ?? machine.missions.map(option => option.name).find(name => globalMissionNames.includes(name));
+      if (mission && !shown.has(mission)) {
+        entries.push({ mission, machine });
+        shown.add(mission);
+      }
+    }
+    (this.missionConfiguration?.activeMissionNames ?? [])
+      .filter(name => !shown.has(name))
+      .sort()
+      .forEach(mission => entries.push({ mission }));
+    if (entries.length > 0) return entries;
     return Object.keys(this.backendLogs)
       .filter(name => this.backendLogs[name].length > 0)
       .map(name => ({ mission: name }));
@@ -163,6 +194,89 @@ export class MissionExtensionComponent implements OnInit {
     return this.machines.some(m => !!m.activeMissionName);
   }
 
+  // --- Running configuration ---
+
+  get missionChanges(): IMissionChangeEvent[] {
+    return this.missionConfiguration?.missionChanges ?? [];
+  }
+
+  get lastChangeWasReplanning(): boolean {
+    return this.missionChanges[0]?.origin === 'REPLANNING';
+  }
+
+  /**
+   * The mission changes of the latest replanning, oldest first: the most recent changes, as long as they come from the
+   * replanning (an operator change after it ends it).
+   */
+  get lastReplanning(): IMissionChangeEvent[] {
+    const changes = this.missionChanges;
+    if (changes[0]?.origin !== 'REPLANNING') return [];
+    const group = [changes[0]];
+    for (const change of changes.slice(1)) {
+      const gap = Date.parse(group[group.length - 1].time) - Date.parse(change.time);
+      if (change.origin !== 'REPLANNING' || gap > MissionExtensionComponent.REPLANNING_GROUP_GAP_MS) break;
+      group.push(change);
+    }
+    return group.reverse();
+  }
+
+  get showReplanningBanner(): boolean {
+    const replanning = this.lastReplanning;
+    return replanning.length > 0 && replanning[replanning.length - 1].time !== this.dismissedReplanningTime;
+  }
+
+  dismissReplanningBanner(): void {
+    const replanning = this.lastReplanning;
+    this.dismissedReplanningTime = replanning[replanning.length - 1]?.time ?? null;
+  }
+
+  /** The latest mission change of the machine, if any. */
+  latestChange(machine: string): IMissionChangeEvent | undefined {
+    return this.missionChanges.find(change => change.machine === machine);
+  }
+
+  /** What the entry's machine runs: its nominal mission, an alternative, or nothing (stopped, not started). */
+  entryStatus(entry: MissionEntry): 'nominal' | 'alternative' | 'stopped' | 'not-running' {
+    const machine = entry.machine;
+    if (!machine || machine.activeMissionName !== entry.mission) {
+      if (!machine && this.missionConfiguration?.activeMissionNames?.includes(entry.mission)) return 'nominal';
+      return machine && this.latestChange(machine.name)?.previousMission === entry.mission ? 'stopped' : 'not-running';
+    }
+    return this.isAlternativeMission(machine) ? 'alternative' : 'nominal';
+  }
+
+  /** The latest change of the entry's machine, if it concerns the entry's mission (started or stopped it). */
+  entryChange(entry: MissionEntry): IMissionChangeEvent | undefined {
+    if (!entry.machine) return undefined;
+    const change = this.latestChange(entry.machine.name);
+    return change && (change.mission === entry.mission || change.previousMission === entry.mission) ? change : undefined;
+  }
+
+  /** The mission an alternative replaced on its machine (its last change, else the nominal mission). */
+  replacedMission(entry: MissionEntry): string | null {
+    if (this.entryStatus(entry) !== 'alternative') return null;
+    const change = this.entryChange(entry);
+    return (change?.mission === entry.mission ? change.previousMission : null) ?? entry.machine?.nominalMissionName ?? null;
+  }
+
+  /** The other machines of the mission than the one running it. */
+  otherMachines(entry: MissionEntry): string[] {
+    return this.getMissionMachines(entry.mission).filter(name => name !== entry.machine?.name);
+  }
+
+  missionPanelClass(entry: MissionEntry): string {
+    return `mission-panel mission-panel-${this.entryStatus(entry)}`;
+  }
+
+  isAlternativeMission(machine: IMissionExtensionMachine): boolean {
+    return !!machine.activeMissionName && machine.activeMissionName !== machine.nominalMissionName;
+  }
+
+  describeMission(mission?: string | null, state?: string | null): string {
+    if (!mission) return 'no mission';
+    return state ? `${mission} :: ${state}` : mission;
+  }
+
   // --- Mission detail helpers ---
 
   getMissionActiveState(missionName: string): string | null {
@@ -188,9 +302,10 @@ export class MissionExtensionComponent implements OnInit {
     return mission?.involvedMachines ?? [];
   }
 
+  /** Whether the mission waits for the result of a command it sent (from its model, not its state's name). */
   isMissionCommandRunning(missionName: string): boolean {
-    const state = this.getMissionActiveState(missionName);
-    return !!state && !state.toLowerCase().includes('idle');
+    const mission = this.missionConfiguration?.missions.find(m => m.name === missionName);
+    return !!mission?.awaitingCommandResult;
   }
 
   getMissionLogs(missionName: string): string[] {
@@ -270,9 +385,30 @@ export class MissionExtensionComponent implements OnInit {
   }
 
   private applyConfiguration(config: IMissionExtensionConfiguration): void {
+    this.notifyReplanningChanges(config.missionChanges ?? []);
     this.missionConfiguration = config;
     this.selectedGlobalMissionName = config.activeGlobalMissionName || this.selectedGlobalMissionName;
     this.onGlobalMissionSelected();
+  }
+
+  /** Shows a toast for each mission change made by the replanning since the last configuration. */
+  private notifyReplanningChanges(changes: IMissionChangeEvent[]): void {
+    const lastNotified = this.lastNotifiedChangeTime;
+    this.lastNotifiedChangeTime = changes.length > 0 ? Date.parse(changes[0].time) : (lastNotified ?? 0);
+    if (lastNotified === null) {
+      // first configuration (page load): the past changes are listed, not notified
+      return;
+    }
+    changes
+      .filter(change => Date.parse(change.time) > lastNotified && change.origin === 'REPLANNING')
+      .reverse()
+      .forEach(change => this.messageService.add({
+        severity: 'warn',
+        summary: `Replanning: ${change.machine}`,
+        detail: `${this.describeMission(change.previousMission, change.previousState)} → `
+          + this.describeMission(change.mission, change.state),
+        life: 8000,
+      }));
   }
 
   private applyLogs(logs: IMissionLogs): void {

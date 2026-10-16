@@ -14,11 +14,18 @@ import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionc
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal.ZoneMissionMPSNominal;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal.ZoneMissionMPSNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominalActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissiondeadcb.ZoneMissionDeadCB;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissiondeadcb.ZoneMissionDeadCBActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippercbfailuremissions.vacuumgripper1cbfailuremission.VacuumGripper1CBFailureMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippercbfailuremissions.vacuumgripper1cbfailuremission.VacuumGripper1CBFailureMissionActions;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippercbfailuremissions.vacuumgripper2cbfailuremission.VacuumGripper2CBFailureMission;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.vacuumgrippercbfailuremissions.vacuumgripper2cbfailuremission.VacuumGripper2CBFailureMissionActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.*;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions.*;
 import fr.inria.mbdo.mission.runtime.api.AbstractMachineAdapter;
 import fr.inria.mbdo.mission.runtime.api.AbstractMissionStrategy;
 import fr.inria.mbdo.mission.runtime.config.FactoryMissionExtension;
+import fr.inria.mbdo.mission.runtime.config.MachineMissionBinding;
 import fr.inria.mbdo.mission.runtime.config.MissionExtensionConfig;
 import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
@@ -50,6 +57,9 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
     private final VacuumGripper2NominalMissionActions vgr2Actions;
     private final ZoneMissionCBNominalActions zoneCBActions;
     private final ZoneMissionMPSNominalActions zoneMPSActions;
+    private final ZoneMissionDeadCBActions zoneDeadCBActions;
+    private final VacuumGripper1CBFailureMissionActions vgr1CBFailureActions;
+    private final VacuumGripper2CBFailureMissionActions vgr2CBFailureActions;
 
     private List<AbstractMissionStrategy> machineMissions;
     private List<FactoryMissionExtension> factoryMissions;
@@ -67,6 +77,9 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
         this.vgr2Actions = new VacuumGripper2NominalMissionActionsImpl();
         this.zoneCBActions = new ZoneMissionCBNominalActionsImpl();
         this.zoneMPSActions = new ZoneMissionMPSNominalActions() { };
+        this.zoneDeadCBActions = new ZoneMissionDeadCBActions() { };
+        this.vgr1CBFailureActions = new VacuumGripper1CBFailureMissionActionsImpl();
+        this.vgr2CBFailureActions = new VacuumGripper2CBFailureMissionActionsImpl();
 
         this.machineAdapters = Map.of();
         this.machineMissions = List.of();
@@ -101,20 +114,55 @@ public class RenMissionExtensionConfig implements MissionExtensionConfig {
         ZoneAdapterImpl zoneMPS = adapter("ZoneMPS");
 
         return List.of(
-            new ConveyorBeltNominalMission(cb, vgr1, vgr2, cbActions),
+            new ConveyorBeltNominalMission(cb, vgr1, vgr2, zoneCB, cbActions),
             new SortingLineNominalMission(sl, vgr1, slActions),
             new MultiProcessingStationNominalMission(mps, zoneMPS, mpsActions),
             new VacuumGripper1NominalMission(vgr1, sl, zoneCB, vgr1Actions),
-            new VacuumGripper2NominalMission(vgr2, zoneCB, zoneMPS, vgr2Actions),
-            new ZoneMissionCBNominal(zoneCB, zoneCBActions),
-            new ZoneMissionMPSNominal(zoneMPS, zoneMPSActions));
+            new VacuumGripper2NominalMission(vgr2, cb, zoneCB, zoneMPS, vgr2Actions),
+            new ZoneMissionCBNominal(zoneCB, cb, zoneCBActions),
+            new ZoneMissionMPSNominal(zoneMPS, zoneMPSActions),
+            // the conveyor belt fails: the CB zone becomes the dead CB zone, which knows the tokens on its two slots
+            new ZoneMissionDeadCB(zoneCB, zoneDeadCBActions),
+            new VacuumGripper1CBFailureMission(vgr1, sl, zoneCB, vgr1CBFailureActions),
+            new VacuumGripper2CBFailureMission(vgr2, zoneCB, zoneMPS, vgr2CBFailureActions));
+    }
+
+    @Override
+    public List<MachineMissionBinding> getMachineMissionBindings() {
+        return List.of(
+            new MachineMissionBinding("REN_MISSION_01/CB01", "ConveyorBeltMachine",
+                List.of("ConveyorBeltNominalMission")),
+            new MachineMissionBinding("REN_MISSION_01/SL01", "SortingLineMachine",
+                List.of("SortingLineNominalMission")),
+            new MachineMissionBinding("REN_MISSION_01/MPS01", "MultiProcessingStationMachine",
+                List.of("MultiProcessingStationNominalMission")),
+            new MachineMissionBinding("REN_MISSION_01/VGR01", "VacuumGripperMachine",
+                List.of("VacuumGripper1NominalMission", "VacuumGripper1CBFailureMission")),
+            new MachineMissionBinding("REN_MISSION_01/VGR02", "VacuumGripperMachine",
+                List.of("VacuumGripper2NominalMission", "VacuumGripper2CBFailureMission")),
+            new MachineMissionBinding("ZoneCB", "Zone", List.of("ZoneMissionCBNominal", "ZoneMissionDeadCB")),
+            new MachineMissionBinding("ZoneMPS", "Zone", List.of("ZoneMissionMPSNominal")));
     }
 
     private List<FactoryMissionExtension> buildFactoryMissions() {
-        return List.of(new FactoryMissionExtension(
-            "NominalProduction",
-            "Full nominal production: all machines run their nominal missions in coordination.",
-            machineMissions));
+        return List.of(
+            new FactoryMissionExtension(
+                "NominalProduction",
+                "Full nominal production: all machines run their nominal missions in coordination.",
+                missionsNamed("ConveyorBeltNominalMission", "SortingLineNominalMission",
+                    "MultiProcessingStationNominalMission", "VacuumGripper1NominalMission",
+                    "VacuumGripper2NominalMission", "ZoneMissionCBNominal", "ZoneMissionMPSNominal")),
+            new FactoryMissionExtension(
+                "CBFailureProduction",
+                "Production with a failed conveyor belt: the grippers exchange the tokens on its feed and swap.",
+                missionsNamed("SortingLineNominalMission", "MultiProcessingStationNominalMission",
+                    "VacuumGripper1CBFailureMission", "VacuumGripper2CBFailureMission",
+                    "ZoneMissionDeadCB", "ZoneMissionMPSNominal")));
+    }
+
+    private List<AbstractMissionStrategy> missionsNamed(String... names) {
+        List<String> wanted = List.of(names);
+        return machineMissions.stream().filter(m -> wanted.contains(m.getName())).toList();
     }
 
     @Override

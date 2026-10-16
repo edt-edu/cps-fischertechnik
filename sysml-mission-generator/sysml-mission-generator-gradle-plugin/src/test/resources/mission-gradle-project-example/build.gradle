@@ -13,6 +13,7 @@ repositories {
 
 sysmlGenerator {
     inputFiles = files(	'src/main/sysml/common/common_def.sysml',
+            'src/main/sysml/zones/zones_def.sysml',
             'src/main/sysml/CB/cb_def.sysml',
             'src/main/sysml/VGR/vgr_def.sysml',
             'src/main/sysml/CB/cb_missions_def.sysml')
