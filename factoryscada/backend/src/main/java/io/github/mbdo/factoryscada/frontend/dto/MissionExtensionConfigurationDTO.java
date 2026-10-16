@@ -7,5 +7,7 @@ public record MissionExtensionConfigurationDTO(
     List<MissionMachineDTO> machines,
     List<GlobalMissionDTO> globalMissions,
     String activeGlobalMissionName,
-    List<String> activeMissionNames) {
+    List<String> activeMissionNames,
+    boolean configurationModified,
+    List<MissionChangeEventDTO> missionChanges) {
 }

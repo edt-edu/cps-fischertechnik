@@ -1,3 +1,5 @@
+<p-toast position="top-right" />
+
 <p-tabView>
   <!-- Tab 1: Global Mission -->
   <p-tabPanel header="Mission">
@@ -16,21 +18,72 @@
         @if (isGlobalMissionActive) {
         <span class="status-badge active">Running</span>
         }
+        @if (isGlobalMissionActive && missionConfiguration?.configurationModified) {
+        <span class="status-badge modified">{{ lastChangeWasReplanning ? 'Modified by replanning' : 'Modified' }}</span>
+        }
 
         @if (selectedGlobalMission) {
         <span class="description-inline">{{ selectedGlobalMission.description }}</span>
         }
       </div>
 
-      <!-- Mission details when running or when logs exist from a previous run -->
+      <!-- The latest replanning: which machines it moved to which mission -->
+      @if (showReplanningBanner) {
+      <div class="replanning-banner" role="status">
+        <i class="pi pi-sync banner-icon"></i>
+        <div class="banner-body">
+          <div class="banner-title">
+            Missions changed by the replanning
+            <span class="banner-time">{{ lastReplanning[0].time | date: 'HH:mm:ss' }}</span>
+          </div>
+          <ul class="banner-changes">
+            @for (change of lastReplanning; track change.time + change.machine) {
+            <li>
+              <span class="change-machine">{{ change.machine }}</span>
+              <span class="mission-from">{{ describeMission(change.previousMission, change.previousState) }}</span>
+              <i class="pi pi-arrow-right"></i>
+              @if (change.mission) {
+              <span class="mission-to">{{ describeMission(change.mission, change.state) }}</span>
+              } @else {
+              <span class="mission-stopped">stopped</span>
+              }
+            </li>
+            }
+          </ul>
+        </div>
+        <p-button icon="pi pi-times" [text]="true" [rounded]="true" size="small" severity="secondary"
+          ariaLabel="Dismiss" (click)="dismissReplanningBanner()" />
+      </div>
+      }
+
+      <!-- The current state: one panel per machine, with the mission it runs (or the one stopped), and how it got there -->
       @if (shouldShowMissionsDetail) {
       <div class="missions-detail">
+        <h4 class="section-title">Current state</h4>
         @for (entry of missionDisplayEntries; track entry.mission) {
-        <p-panel [toggleable]="true" [collapsed]="!expandedMissions.has(entry.mission)" styleClass="mission-panel"
-          (collapsedChange)="onMissionPanelToggle(entry.mission, $event)">
+        <p-panel [toggleable]="true" [collapsed]="!expandedMissions.has(entry.mission)"
+          [styleClass]="missionPanelClass(entry)" (collapsedChange)="onMissionPanelToggle(entry.mission, $event)">
           <ng-template pTemplate="header">
             <div class="panel-header-content">
-              <span class="panel-mission-name">{{ entry.mission }}</span>
+              @if (entry.machine) {
+              <span class="panel-machine" title="{{ entry.machine.type }}">{{ entry.machine.name }}</span>
+              }
+              @switch (entryStatus(entry)) {
+              @case ('nominal') { <span class="status-pill nominal">Nominal</span> }
+              @case ('alternative') { <span class="status-pill alternative">Alternative</span> }
+              @case ('stopped') { <span class="status-pill stopped">Stopped</span> }
+              @default { <span class="status-pill none">Not running</span> }
+              }
+              <span class="panel-mission">
+                @if (replacedMission(entry); as replaced) {
+                <span class="mission-from" title="Replaced mission">{{ replaced }}</span>
+                <i class="pi pi-arrow-right"></i>
+                }
+                <span class="panel-mission-name" [class.mission-to]="entryStatus(entry) === 'alternative'">
+                  {{ entry.mission }}
+                </span>
+              </span>
+              @if (entryStatus(entry) === 'nominal' || entryStatus(entry) === 'alternative') {
               <span class="panel-state" [class.idle]="!isMissionCommandRunning(entry.mission)">
                 {{ getMissionActiveState(entry.mission) || '—' }}
               </span>
@@ -41,11 +94,22 @@
                 Idle
                 }
               </span>
+              }
               <span class="panel-separator"></span>
-              <span class="panel-machines">
-                @for (m of getMissionMachines(entry.mission); track m) {
+              @if (otherMachines(entry).length > 0) {
+              <span class="panel-machines" title="Other machines of the mission">
+                @for (m of otherMachines(entry); track m) {
                 <span class="machine-id">{{ m }}</span>
                 }
+              </span>
+              }
+              <span class="panel-change">
+                @if (entryChange(entry); as change) {
+                <span class="mission-tag" [class.replanning]="change.origin === 'REPLANNING'">
+                  {{ change.origin === 'REPLANNING' ? 'Replanning' : 'Operator' }}
+                </span>
+                }
+                {{ entry.machine?.lastChangeTime ? (entry.machine?.lastChangeTime | date: 'HH:mm:ss') : '' }}
               </span>
             </div>
           </ng-template>
@@ -67,6 +131,32 @@
         </p-panel>
         }
       </div>
+      }
+
+      @if (missionChanges.length > 0) {
+      <p-panel header="Mission changes ({{ missionChanges.length }})" [toggleable]="true" [collapsed]="true"
+        styleClass="changes-panel">
+        <ul class="changes-list">
+          @for (change of missionChanges; track change.time + change.machine) {
+          <li class="change" [class.replanning]="change.origin === 'REPLANNING'">
+            <span class="change-time">{{ change.time | date: 'HH:mm:ss' }}</span>
+            <span class="mission-tag" [class.replanning]="change.origin === 'REPLANNING'">
+              {{ change.origin === 'REPLANNING' ? 'Replanning' : 'Operator' }}
+            </span>
+            <span class="change-machine">{{ change.machine }}</span>
+            <span class="change-detail">
+              <span class="mission-from">{{ describeMission(change.previousMission, change.previousState) }}</span>
+              <i class="pi pi-arrow-right"></i>
+              @if (change.mission) {
+              <span>{{ describeMission(change.mission, change.state) }}</span>
+              } @else {
+              <span class="mission-stopped">stopped</span>
+              }
+            </span>
+          </li>
+          }
+        </ul>
+      </p-panel>
       }
     </div>
   </p-tabPanel>

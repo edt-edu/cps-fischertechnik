@@ -2,6 +2,7 @@ package io.github.mbdo.factoryscada.frontend.controller;
 
 import io.github.mbdo.factoryscada.frontend.dto.*;
 import io.github.mbdo.factoryscada.service.MissionExtensionService;
+import io.github.mbdo.factoryscada.service.ReplanningService;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -10,16 +11,22 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @Controller
 @RestController
 @RequestMapping("/api/mission-extension")
 public class MissionExtensionController {
 
     private final MissionExtensionService missionExtensionService;
+    private final ReplanningService replanningService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public MissionExtensionController(MissionExtensionService missionExtensionService, SimpMessagingTemplate messagingTemplate) {
+    public MissionExtensionController(MissionExtensionService missionExtensionService,
+                                      ReplanningService replanningService,
+                                      SimpMessagingTemplate messagingTemplate) {
         this.missionExtensionService = missionExtensionService;
+        this.replanningService = replanningService;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -126,9 +133,17 @@ public class MissionExtensionController {
         }
     }
 
+    /**
+     * Force stop: every mission stops at once, in its current state, then every machine is sent a stop, which
+     * interrupts the command it executes.
+     */
     @MessageMapping("/mission-extension/global/stop")
     public void stopGlobalMissionStomp() {
-        MissionCommandResponseDTO response = missionExtensionService.stopGlobalMission();
+        MissionCommandResponseDTO stopped = missionExtensionService.stopGlobalMission();
+        List<String> machines = replanningService.stopAllMachines();
+        MissionCommandResponseDTO response = new MissionCommandResponseDTO(
+            stopped.message() + " Stop sent to: " + (machines.isEmpty() ? "no machine" : String.join(", ", machines)),
+            null, null, null);
         messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
             missionExtensionService.getConfiguration());
         messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);

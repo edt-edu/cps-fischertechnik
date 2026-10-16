@@ -6,6 +6,7 @@ public record MachineMissionExtensionDTO(
     String name,
     String description,
     String activeState,
+    boolean awaitingCommandResult,
     List<String> involvedMachines,
     String dotGraph) {
 }

@@ -1,10 +1,10 @@
 package fr.inria.mbdo.mission.runtime.api;
 
-import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissioncbnominal.ZoneMissionCBNominal;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal.ZoneMissionMPSNominal;
+import fr.inria.mbdo.mission.extensions.ren_mission_01.zonemissions.zonemissionmpsnominal.ZoneMissionMPSNominalActions;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireRequestEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01.zonessystem.zonesmessages.AcquireResponseEventMessage;
 import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.ZoneAdapterImpl;
-import fr.inria.mbdo.mission.extensions.ren_mission_01_impl.adapters.actions.ZoneMissionCBNominalActionsImpl;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -28,25 +28,25 @@ class MissionCommandLogTest {
 
     @Test
     void aCommandSentFromATransitionIsLoggedInItsMission() {
-        ZoneAdapterImpl zoneCB = new ZoneAdapterImpl("ZoneCB");
-        ZoneMissionCBNominal zoneMission = new ZoneMissionCBNominal(zoneCB, new ZoneMissionCBNominalActionsImpl());
+        ZoneAdapterImpl zoneMPS = new ZoneAdapterImpl("ZoneMPS");
+        ZoneMissionMPSNominal zoneMission = new ZoneMissionMPSNominal(zoneMPS, new ZoneMissionMPSNominalActions() { });
         List<String> logs = new ArrayList<>();
         zoneMission.setLogListener(logs::add);
         zoneMission.start();
 
         // sent while the zone mission executes its IdleFree -> IdleBusy transition
         CommandingAdapter vgr1 = new CommandingAdapter();
-        zoneCB.subscribe(AcquireResponseEventMessage.class, response -> vgr1.pick());
-        zoneCB.publish(new AcquireRequestEventMessage());
+        zoneMPS.subscribe(AcquireResponseEventMessage.class, response -> vgr1.pick());
+        zoneMPS.publish(new AcquireRequestEventMessage());
 
-        assertTrue(logs.stream().anyMatch(entry -> entry.endsWith("[ZoneMissionCBNominal] command: VacuumGripper01 pick(SL_OUTPUT_BLUE)")),
+        assertTrue(logs.stream().anyMatch(entry -> entry.endsWith("[ZoneMissionMPSNominal] command: VacuumGripper01 pick(SL_OUTPUT_BLUE)")),
                 () -> "logs: " + logs);
     }
 
     @Test
     void aCommandSentOutsideAnyMissionIsNotLogged() {
-        ZoneAdapterImpl zoneCB = new ZoneAdapterImpl("ZoneCB");
-        ZoneMissionCBNominal zoneMission = new ZoneMissionCBNominal(zoneCB, new ZoneMissionCBNominalActionsImpl());
+        ZoneAdapterImpl zoneMPS = new ZoneAdapterImpl("ZoneMPS");
+        ZoneMissionMPSNominal zoneMission = new ZoneMissionMPSNominal(zoneMPS, new ZoneMissionMPSNominalActions() { });
         List<String> logs = new ArrayList<>();
         zoneMission.setLogListener(logs::add);
         zoneMission.start();

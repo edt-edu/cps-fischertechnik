@@ -4,12 +4,25 @@ export interface IMissionExtensionConfiguration {
     globalMissions: IGlobalMission[];
     activeGlobalMissionName?: string | null;
     activeMissionNames: string[];
+    configurationModified?: boolean;
+    missionChanges?: IMissionChangeEvent[];
+}
+
+export interface IMissionChangeEvent {
+    time: string;
+    machine: string;
+    previousMission?: string | null;
+    previousState?: string | null;
+    mission?: string | null;
+    state?: string | null;
+    origin: 'OPERATOR' | 'REPLANNING';
 }
 
 export interface IMissionExtension {
     name: string;
     description: string;
     activeState?: string | null;
+    awaitingCommandResult?: boolean;
     involvedMachines: string[];
     dotGraph?: string | null;
 }
@@ -19,6 +32,9 @@ export interface IMissionExtensionMachine {
     type: string;
     missions: IMissionExtensionOption[];
     activeMissionName?: string | null;
+    activeState?: string | null;
+    nominalMissionName?: string | null;
+    lastChangeTime?: string | null;
 }
 
 export interface IMissionExtensionOption {
