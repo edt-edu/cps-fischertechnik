@@ -47,6 +47,7 @@ class SysmlAbstractSyntaxTreeGeneratorTest {
                 "MPS/mps_missions_def.sysml",
                 "SL/sl_missions_def.sysml",
                 "VGR/vgr_missions_def.sysml",
+				"VGR/vgr_cb_failure_missions_def.sysml",
                 "zones/zones_missions_def.sysml");
         List<Path> sysmlFiles = FileUtils.findFilesByExtension(projectPath, ".sysml");
         assertTrue(sysmlFiles.size() == fileNames.size(), () -> "Expected " + sysmlFiles.size() + " .sysml files in  fileNames.size() (as much as in " + projectPath.toString() + "), but found " + fileNames.size());
