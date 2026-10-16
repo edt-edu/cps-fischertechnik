@@ -125,7 +125,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mvn \
-            -s ci_settings.xml
+            -s ci_settings.xml \
             --batch-mode \
             --errors \
             --no-transfer-progress \
@@ -134,9 +134,32 @@ jobs:
             deploy
 
       # remove old snapshots from GitHub Packages
-      - name: Cleanup sysml-mission-generator POM
+      - name: Cleanup sysml-mission-generator root
         uses: ./.github/actions/cleanup-maven-snapshots
         with:
           package-name: fr.inria.mbdo.mission.sysml-mission-generator-root
 
+      - name: Cleanup sysml-mission-generator runtime
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-runtime
 
+      - name: Cleanup sysml-mission-generator core
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator
+
+      - name: Cleanup sysml-mission-generator cli
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-cli
+
+      - name: Cleanup sysml-mission-generator maven-plugin
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-maven-plugin
+
+      - name: Cleanup sysml-mission-generator gradle-plugin
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin                    
