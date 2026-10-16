@@ -34,7 +34,7 @@ env:
     -Dcheckstyle.skip
   
 jobs:
-  build:
+  test:
     name: SysML Mission Generator Build
     runs-on: ubuntu-latest
 
@@ -87,3 +87,54 @@ jobs:
       #   with:
       #     name: sysml-mission-generator
       #     path: sysml-mission-generator/**/target/*.jar
+
+  publish:
+    name: Publish SysML Mission Generator
+    needs: test
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    defaults:
+      run:
+        working-directory: sysml-mission-generator
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: |
+            sysml-mission-generator/**/pom.xml
+          server-id: github
+
+      - name: Publish Maven modules
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn \
+            -s ci_settings.xml
+            --batch-mode \
+            --errors \
+            --no-transfer-progress \
+            -DskipTests \
+            -Dinvoker.skip=true \
+            deploy
+            
+      # remove old snapshots from GitHub Packages
+      - name: Cleanup sysml-mission-generator POM
+        uses: ./.github/actions/cleanup-maven-snapshots
+        with:
+          package-name: fr.inria.mbdo.mission.sysml-mission-generator-root
+
+
