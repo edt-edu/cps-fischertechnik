@@ -20,7 +20,7 @@ class Axis:
 
     def __init__(self, axis_type: AxisType,
                  tolerance: int,
-                 max_counter_value: Optional[int] = None):
+                 max_counter_value: int | None = None):
         """
         constructor creates ImpulseCounter object if necessary
         :param axis_type: What kind of axis this is
