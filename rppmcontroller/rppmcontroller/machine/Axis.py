@@ -29,10 +29,7 @@ class Axis:
         will not move to higher counter-values
         """
         self.__type = axis_type
-        if axis_type == AxisType.Counter:
-            self.__counter = ImpulseCounter()
-        else:
-            self.__counter = Counter()
+        self.__counter = ImpulseCounter() if axis_type == AxisType.Counter else Counter()
         self.__tolerance = tolerance
         self.__first = True
         #variables need to be manually updated/written

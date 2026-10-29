@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, override
 
 
+# TODO find a way to model ports
 class SignalProcessingBlock(ABC):
     """
     A block in a control loop that processes a signal
@@ -25,6 +26,14 @@ class SignalProcessingBlock(ABC):
         :return: The processed value. The output type may vary for each block.
         """
         pass
+
+    def __or__(self, other) -> SignalProcessingBlock:
+        """
+        Pipes this block's output into another block
+        :param other: The block that processes the outputs of this block
+        :return: A block that connects this and the other block with a pipe
+        """
+        return SimplePipe(self, other)
 
 
 class Decimator(SignalProcessingBlock):
@@ -246,6 +255,30 @@ class PIDController(SignalProcessingBlock):
             self.__integral_term = new_integral_term
 
         return output
+
+
+class SimplePipe(SignalProcessingBlock):
+    """
+    A simple pipe that connects two signal processing blocks
+    """
+
+    def __init__(self,
+                 blockInput: SignalProcessingBlock,
+                 blockOutput: SignalProcessingBlock):
+        """
+        Creates a new pipe
+        :param blockInput: The block that processes inputs
+        :param blockOutput: The block that processes the outputs of the first block
+        """
+        self.__input = blockInput
+        self.__output = blockOutput
+
+    def reset(self) -> None:
+        self.__input.reset()
+        self.__output.reset()
+
+    def process(self, value):
+        return self.__output.process(self.__input.process(value))
 
 
 def clamp(value: float, bound: float) -> float:
