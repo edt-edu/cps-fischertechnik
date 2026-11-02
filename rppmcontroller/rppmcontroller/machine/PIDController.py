@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Callable, override
+from dataclasses import dataclass
+from typing import Callable, override, TypeVar, Generic
+
+T = TypeVar('T')
+I = TypeVar('I')
+O = TypeVar('O')
+R = TypeVar('R')
+M = TypeVar('M')
 
 
-# TODO find a way to model ports
-class SignalProcessingBlock(ABC):
+class SignalProcessingBlock(ABC, Generic[I, O]):
     """
     A block in a control loop that processes a signal
     """
@@ -19,15 +25,16 @@ class SignalProcessingBlock(ABC):
         pass
 
     @abstractmethod
-    def process(self, value):
+    def process(self, value: I) -> O:
         """
         Processes a value
-        :param value: The value to process. The input type may vary for each block.
-        :return: The processed value. The output type may vary for each block.
+        :param value: The value to process.
+        :return: The processed value.
         """
         pass
 
-    def __or__(self, other) -> SignalProcessingBlock:
+    def __or__(self, other: SignalProcessingBlock[O, R]) -> \
+        SignalProcessingBlock[I, R]:
         """
         Pipes this block's output into another block
         :param other: The block that processes the outputs of this block
@@ -36,25 +43,120 @@ class SignalProcessingBlock(ABC):
         return SimplePipe(self, other)
 
 
-class Decimator(SignalProcessingBlock):
+class InPort(Generic[T]):
+    """
+    An abstraction of a port that receives input from the outside world.
+    """
+
+    def __init__(self, on_set: Callable[[T], None]):
+        """
+        Create a new In-Port
+        :param on_set: A callback to be executed when the value of the port changes
+        """
+        self.__set: Callable[[T], None] = on_set
+
+    def set(self, value: T) -> None:
+        """
+        Apply a new value to this port
+        :param value: The value to apply
+        :return: None
+        """
+        self.__set(value)
+
+
+@dataclass(frozen=True)
+class DiscretePIDController(SignalProcessingBlock[int, int]):
+    """
+    A wrapper around a discrete control-loop block that implements
+    a PID control and a `target` port to steer the controller.
+    """
+    block: SignalProcessingBlock[int, int]
+    """A discrete control-loop block that implements a PID control"""
+    target: InPort[int]
+    """A port exposing the target value to steer the controller"""
+
+    @staticmethod
+    def for_pwm_control(rppm_controller_delay: float,
+                        *,
+                        decimation_factor: int = 10,
+                        smoothing_delay_seconds: float = 0.08,
+                        error_deadband: float = 3.0,
+                        kp: float = 1,
+                        ki: float = 0,
+                        kd: float = 0) -> DiscretePIDController:
+        """
+        Creates a new DiscretePIDController suitable for PWM control.
+
+        The controller will return output values in the range of [-100, 100],
+        with negative output values implying a movement towards the ref-switch.
+
+        **How to calibrate a PID controller**:
+
+        1. With ki, kd, and error_deadband set to 0, raise kd until the arm to
+           control barely oscillates, then half that value.
+        2. Raise ki slowly until the steady state error is gone.
+        3. Add kd at around half the value of kp and raise slowly until noise
+           is eliminated.
+        4. Set the error_deadband back to the smallest value that prevents
+           inaccuracies from the encoder counter.
+
+        :param rppm_controller_delay: The delay between two consecutive calls
+            to the controller.
+        :param decimation_factor: The factor by how much the pid controller is
+            slowed down compared to the rppm controller.
+            A PID control on 1kHz is probably not helpful.
+        :param smoothing_delay_seconds: How many seconds delay will be added
+            through buffering to smooth the input signal.
+        :param error_deadband: How large the absolute deviation between the
+            target position and the current position may be, before a control
+            action is triggered.
+        :param kp: The proportional gain.
+        :param ki: The integral gain.
+        :param kd: The derivative gain.
+        :return: The discrete PID controller.
+        """
+        control_period_seconds = rppm_controller_delay * decimation_factor
+        lowpass_sample_weight = control_period_seconds / (
+            smoothing_delay_seconds + control_period_seconds)
+        output_limit = 100
+
+        lowpass = LowPassFilter(lowpass_sample_weight)
+        pid = PIDController(kp, ki, kd, control_period_seconds, error_deadband,
+                            output_limit)
+        target_value_port = InPort[int](lambda value: pid.set_target(value))
+        dual_band_clamp = DualBandClamp(out_min=15, out_max=output_limit)
+        rounder = RoundToInt()
+
+        pipeline = lowpass | pid | dual_band_clamp | rounder
+        decimator = Decimator(pipeline, decimation_factor)
+        return DiscretePIDController(decimator, target_value_port)
+
+    def reset(self) -> None:
+        self.block.reset()
+
+    def process(self, value: I) -> O:
+        return self.block.process(value)
+
+
+class Decimator(SignalProcessingBlock[I, O]):
     """
     Decimates the number of times a signal is processed by a given factor,
     returning a cached value every other time.
     """
 
     def __init__(self,
-                 signal_processor: Callable[[int], int],
+                 signal_processor: SignalProcessingBlock[I, O],
                  N: int = 10):
         """
         Create a new int-signal decimator
         :param signal_processor: The function that does the actual signal processing
         :param N: The factor by which the processing of the signal is skipped with the last computed value
         """
-        self.__signal_processor: Callable[[int], int] = signal_processor
+        self.__signal_processor: SignalProcessingBlock[I, O] = signal_processor
         self.__N: int = N
-        # 0 as default value is fine, since a correct value will always be
+        # None as default value is fine, since a correct value will always be
         # computed on the first call of the process method
-        self.__cached_value: int = 0
+        self.__cached_value: O = None
         """The most recent computed value"""
         self.__count: int = 0
         """How many times the process method has been called since the last computation"""
@@ -63,23 +165,24 @@ class Decimator(SignalProcessingBlock):
     def reset(self) -> None:
         self.__cached_value = 0
         self.__count = 0
+        self.__signal_processor.reset()
 
     @override
-    def process(self, value: int) -> int:
+    def process(self, value: I) -> O:
         """
         Process the given value, but only every N-th time
         :param value: The value to process
         :return: The processed value, or the previously computed value if processing was skipped
         """
         if self.__count >= self.__N:
-            self.__cached_value = self.__signal_processor(value)
+            self.__cached_value = self.__signal_processor.process(value)
             self.__count = 0
 
         self.__count += 1
         return self.__cached_value
 
 
-class LowPassFilter(SignalProcessingBlock):
+class LowPassFilter(SignalProcessingBlock[int, float]):
     """
     A simple first-order low-pass filter
     """
@@ -117,7 +220,7 @@ class LowPassFilter(SignalProcessingBlock):
         return new_filtered_value
 
 
-class DualBandClamp(SignalProcessingBlock):
+class DualBandClamp(SignalProcessingBlock[float, float]):
     """
     Clamps and lifts a signal onto a symmetric dual-band. Zero will always
     be lifted onto the positive band.
@@ -154,7 +257,7 @@ class DualBandClamp(SignalProcessingBlock):
         return lift(clamped, self.__out_min)
 
 
-class RoundToInt(SignalProcessingBlock):
+class RoundToInt(SignalProcessingBlock[float, int]):
     """
     Discretizes a signal by rounding it to the nearest integer
     """
@@ -171,7 +274,7 @@ class RoundToInt(SignalProcessingBlock):
         return int(round(value))
 
 
-class PIDController(SignalProcessingBlock):
+class PIDController(SignalProcessingBlock[float, float]):
     """
     A simple PID controller with anti-windup protection
     """
@@ -208,6 +311,9 @@ class PIDController(SignalProcessingBlock):
         """The previous processed input value"""
         self.target_value: float = 0
         """The desired value to reach"""
+
+    def set_target(self, value: float) -> None:
+        self.target_value = value
 
     def reset(self) -> None:
         self.__integral_term = 0
@@ -257,14 +363,14 @@ class PIDController(SignalProcessingBlock):
         return output
 
 
-class SimplePipe(SignalProcessingBlock):
+class SimplePipe(SignalProcessingBlock[I, O]):
     """
     A simple pipe that connects two signal processing blocks
     """
 
     def __init__(self,
-                 blockInput: SignalProcessingBlock,
-                 blockOutput: SignalProcessingBlock):
+                 blockInput: SignalProcessingBlock[I, M],
+                 blockOutput: SignalProcessingBlock[M, O]):
         """
         Creates a new pipe
         :param blockInput: The block that processes inputs
@@ -277,7 +383,7 @@ class SimplePipe(SignalProcessingBlock):
         self.__input.reset()
         self.__output.reset()
 
-    def process(self, value):
+    def process(self, value: I) -> O:
         return self.__output.process(self.__input.process(value))
 
 

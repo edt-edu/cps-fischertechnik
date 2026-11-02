@@ -6,9 +6,12 @@ from typing import Tuple, Optional
 
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.MaxValueExceededError import MaxValueExceededError
+from rppmcontroller.machine.PIDController import DiscretePIDController
 from rppmcontroller.utils.Counter import Counter
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
 from rppmcontroller.utils.PlusMinusStop import PlusMinusStop
+
+_DEFAULT_PWM_VALUE = 100
 
 
 class AxisType(Enum):
@@ -16,32 +19,47 @@ class AxisType(Enum):
     Counter = 1
     Encoder = 2
 
+
 class Axis:
 
     def __init__(self, axis_type: AxisType,
                  tolerance: int,
-                 max_counter_value: int | None = None):
+                 max_counter_value: int | None = None,
+                 pid_controller: DiscretePIDController | None = None):
         """
         constructor creates ImpulseCounter object if necessary
         :param axis_type: What kind of axis this is
         :param tolerance: How much tolerance the axis may have
         :param max_counter_value: If the counter exceeds this value, the axis
+        :param pid_controller: A PID controller to use for this axis
         will not move to higher counter-values
         """
         self.__type = axis_type
         self.__counter = ImpulseCounter() if axis_type == AxisType.Counter else Counter()
         self.__tolerance = tolerance
         self.__first = True
-        #variables need to be manually updated/written
-        self.__end_pos: bool = False
+
+        # current input state
+        self.__at_ref_switch: bool = False
+        """Whether the axis has reached and pressed the ref-switch"""
         self.__counter_input: int = 0
+        """The current value of the counter"""
+
+        # outputs
         self.__output_plus = False
+        """Whether the axis should move to larger values, away from the ref-switch"""
         self.__output_minus = False
+        """Whether the axis should move to smaller values, towards the ref-switch"""
+        self.__pwm_value: int = _DEFAULT_PWM_VALUE
+        """How quickly the axis should move"""
+
+        # play values. I would prefer to not have those at all
         if axis_type == AxisType.Encoder:
             self.play = 8
         else:
             self.play = 2
         self.__max_counter_value = max_counter_value
+        self.__pid_controller = pid_controller
 
     @property
     def counterValueCurrent(self):
@@ -53,7 +71,7 @@ class Axis:
 
     @property
     def endpos(self):
-        return self.__end_pos
+        return self.__at_ref_switch
 
     @property
     def counterinput(self):
@@ -68,6 +86,10 @@ class Axis:
         return self.__output_minus
 
     @property
+    def pwm(self) -> int:
+        return self.__pwm_value
+
+    @property
     def tolerance(self) -> int:
         return self.__tolerance + self.play
 
@@ -79,26 +101,36 @@ class Axis:
         :param counter_input: The current counter value
         :return: None
         """
-        self.__end_pos = end_pos
+        self.__at_ref_switch = end_pos
         self.__counter_input = counter_input
 
     # we might want to make this method non-static in the future
     # noinspection PyMethodMayBeStatic
-    def howtoCounterPos(self, counterGoal, counterCurrent, tolerance):
+    def howtoCounterPos(self,
+                        counterGoal: int,
+                        counterCurrent: int,
+                        tolerance: int) -> PlusMinusStop:
         """method to determine which way the axis needs to rotate"""
-        #"handle" overflow
-        #assume overflow if counter greater than 4 million
+
+        # TODO this method would behave differently with a PID controller
+
+        # sanitize counterGoal input
         if counterGoal < 0:
             counterGoal = 0
+
         if counterGoal > counterCurrent + tolerance:
             return PlusMinusStop.PLUS
-        elif counterGoal < counterCurrent - tolerance and counterCurrent > 4E6:
+
+        # "handle" overflow
+        # assume overflow if counter greater than 4 million
+        if counterGoal < counterCurrent - tolerance and counterCurrent > 4E6:
             logging.debug('handled overflow')
             return PlusMinusStop.PLUS
-        elif counterGoal < counterCurrent - tolerance:
+
+        if counterGoal < counterCurrent - tolerance:
             return PlusMinusStop.MINUS
-        else:
-            return PlusMinusStop.STOP
+
+        return PlusMinusStop.STOP
 
     def config_would_exceed_max_counter_value(self, axis_config: AxisConfig) \
         -> Optional[MaxValueExceededError]:
@@ -150,14 +182,16 @@ class Axis:
         """
         return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
 
-    def gotoConfig(self, end_pos: bool, counter_goal: int) -> bool | Tuple[bool, PlusMinusStop | None]:
+    def gotoConfig(self, go_to_ref_switch: bool, counter_goal: int) -> bool | \
+                                                                       Tuple[
+                                                                           bool, PlusMinusStop | None]:
         """
         Set outputs to reach the wanted counter-goal for that axis.
 
         Note: If you set `counter_goal` to `0,` this method will behave exactly
         as when `end_pos` is `True`.
 
-        :param end_pos: Whether to move to the end-position of the axis
+        :param go_to_ref_switch: Whether to move to the end-position of the axis
         :param counter_goal: The counter-position to move to. Will be ignored
         if end_pos is `True`
         :return: `True` if the target has been reached. If the internal counter
@@ -169,12 +203,15 @@ class Axis:
         # -> there are checks in place that prevent moving beyond a
         #   ref-switch
         if counter_goal <= 0:
-            end_pos = True
+            go_to_ref_switch = True
+            # this value should not be used when the above value is True, but
+            # let's set it to 0 anyway, just to be sure
+            counter_goal = 0
 
         target_reached = False
         direction = None
-        if end_pos:
-            if not self.__end_pos:
+        if go_to_ref_switch:
+            if not self.__at_ref_switch:
                 self.__counter.counter = self.__counter_input
                 self.__output_minus = True
                 self.__output_plus = False
@@ -183,8 +220,7 @@ class Axis:
                     logging.debug(self.__counter.counter)
                 direction = PlusMinusStop.MINUS
             else:
-                self.__output_minus = False
-                self.__output_plus = False
+                self.resetDirection()
                 target_reached = True
         else:
             #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
@@ -226,7 +262,7 @@ class Axis:
 
             # extra check to make sure we are not telling the hardware to
             # move beyond a ref-switch
-            ref_switch_reached = self.__end_pos
+            ref_switch_reached = self.__at_ref_switch
             mov_to_ref_switch = self.outputminus
             if ref_switch_reached and mov_to_ref_switch:
                 self.__output_minus = False
@@ -262,3 +298,4 @@ class Axis:
     def resetDirection(self) -> None:
         self.__output_minus = False
         self.__output_plus = False
+        self.__pwm_value = _DEFAULT_PWM_VALUE
