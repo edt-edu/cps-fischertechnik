@@ -28,7 +28,8 @@ class SimulatedVacuumGripperController(VacuumGripperController):
         self.machines = []
         #dict, which keys are the machines, than there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
-        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01", self,
+        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01",
+                                                  self.mainLoopDelay,
                                                   vgr_parameters)
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {

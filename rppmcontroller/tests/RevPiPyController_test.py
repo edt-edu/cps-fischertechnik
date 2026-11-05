@@ -42,7 +42,8 @@ class RevPiPyControllerTestCase(unittest.TestCase):
 
         self.controller = InstantiableController()
 
-        self.gripperMachine = VacuumGripper("VacuumGripper01", self)
+        self.gripperMachine = VacuumGripper("VacuumGripper01",
+                                            self.mainLoopDelay)
         self.controller.machines = [self.gripperMachine]
         self.controller.currentlyExecuting = {
                 self.gripperMachine: None

@@ -20,9 +20,9 @@ class VacuumGripperAxisMonitorResetTestCase(unittest.TestCase):
 
     def setUp(self):
         monitor_parameters = AxisMonitorParameters(measurement_interval=0)
-        self.vgr = VacuumGripper("VacuumGripper01", self,
+        self.vgr = VacuumGripper("VacuumGripper01", self.mainLoopDelay,
                                  VacuumGripperParameters(
-            vertical_axis_monitor_parameters=monitor_parameters))
+                                     vertical_axis_monitor_parameters=monitor_parameters))
         self.vgr.isInitialized = True
         self.vertical = self.vgr._VacuumGripper__vertical_axis_monitor
 

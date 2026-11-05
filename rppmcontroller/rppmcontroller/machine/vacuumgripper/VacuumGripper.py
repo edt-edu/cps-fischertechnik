@@ -4,7 +4,6 @@ import logging
 from typing import Any, Callable, Dict, List
 from typing_extensions import override, deprecated
 
-from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
@@ -33,7 +32,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     def __init__(self,
                  id1: str,
-                 controller: RevPiPyMachineController,
+                 main_loop_delay: float,
                  parameters: VacuumGripperParameters | None = None):
         if parameters is None:
             parameters = VacuumGripperParameters()
@@ -66,7 +65,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__axisArm = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
         self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
         rot_pid_controller = DiscretePIDController.for_pwm_control(
-            controller.mainLoopDelay)
+            main_loop_delay)
         self.__axisRot = Axis(AxisType.Encoder, 5,
                               parameters.max_rotational_counter_value,
                               rot_pid_controller)
