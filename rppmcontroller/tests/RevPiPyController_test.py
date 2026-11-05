@@ -1,9 +1,8 @@
 
-import time
-
 import inspect
 import logging
 import os
+import time
 import unittest
 
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
@@ -43,7 +42,7 @@ class RevPiPyControllerTestCase(unittest.TestCase):
         self.controller = InstantiableController()
 
         self.gripperMachine = VacuumGripper("VacuumGripper01",
-                                            self.mainLoopDelay)
+                                            self.controller.mainLoopDelay)
         self.controller.machines = [self.gripperMachine]
         self.controller.currentlyExecuting = {
                 self.gripperMachine: None
