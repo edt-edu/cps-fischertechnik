@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable, override, TypeVar, Generic
+from typing import Callable, TypeVar, Generic
+from typing_extensions import override
 
 T = TypeVar('T')
 I = TypeVar('I')
@@ -43,16 +44,29 @@ class SignalProcessingBlock(ABC, Generic[I, O]):
         return SimplePipe(self, other)
 
 
-class InPort(Generic[T]):
+class OutPort(Generic[T]):
+    """
+    An abstraction of a port that outputs a value to the outside world.
+    """
+
+    def __init__(self, read: Callable[[], T]):
+        self.__get: Callable[[], T] = read
+
+    def get(self) -> T:
+        return self.__get()
+
+
+class InPort(OutPort[T]):
     """
     An abstraction of a port that receives input from the outside world.
     """
 
-    def __init__(self, on_set: Callable[[T], None]):
+    def __init__(self, read: Callable[[], T], on_set: Callable[[T], None]):
         """
         Create a new In-Port
         :param on_set: A callback to be executed when the value of the port changes
         """
+        super().__init__(read)
         self.__set: Callable[[T], None] = on_set
 
     def set(self, value: T) -> None:
@@ -123,7 +137,8 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
         lowpass = LowPassFilter(lowpass_sample_weight)
         pid = PIDController(kp, ki, kd, control_period_seconds, error_deadband,
                             output_limit)
-        target_value_port = InPort[int](lambda value: pid.set_target(value))
+        target_value_port = InPort[int](lambda: int(pid.target_value),
+                                        lambda value: pid.set_target(value))
         dual_band_clamp = DualBandClamp(out_min=15, out_max=output_limit)
         rounder = RoundToInt()
 

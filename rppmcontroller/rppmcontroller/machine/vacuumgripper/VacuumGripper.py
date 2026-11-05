@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, Optional, List
-
+from typing import Any, Callable, Dict, List
 from typing_extensions import override, deprecated
 
+from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
@@ -13,6 +13,7 @@ from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor)
 from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.PIDController import DiscretePIDController
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ResetHelper import ResetHelper
@@ -30,7 +31,10 @@ from rppmcontroller.utils.pretty_print import shortBoolStr
 
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
-    def __init__(self, id1, parameters: Optional[VacuumGripperParameters] = None):
+    def __init__(self,
+                 id1: str,
+                 controller: RevPiPyMachineController,
+                 parameters: VacuumGripperParameters | None = None):
         if parameters is None:
             parameters = VacuumGripperParameters()
 
@@ -61,7 +65,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumSensArmEncoderCounter = 0
         self.__axisArm = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
         self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
-        self.__axisRot = Axis(AxisType.Encoder, 5, parameters.max_rotational_counter_value)
+        rot_pid_controller = DiscretePIDController.for_pwm_control(
+            controller.mainLoopDelay)
+        self.__axisRot = Axis(AxisType.Encoder, 5,
+                              parameters.max_rotational_counter_value,
+                              rot_pid_controller)
         self.__rot_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
         self.__arm_reset_helper = ResetHelper()

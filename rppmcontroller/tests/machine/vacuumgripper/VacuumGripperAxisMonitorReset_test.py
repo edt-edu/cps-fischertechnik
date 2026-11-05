@@ -2,7 +2,8 @@ import unittest
 
 from rppmcontroller.machine.MachineParameters import AxisMonitorParameters
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import VacuumGripperParameters
+from rppmcontroller.machine.vacuumgripper.VacuumGripperParameters import \
+    VacuumGripperParameters
 
 APPROACH_PWM = 30
 STANDARD_PWM = 100
@@ -19,7 +20,8 @@ class VacuumGripperAxisMonitorResetTestCase(unittest.TestCase):
 
     def setUp(self):
         monitor_parameters = AxisMonitorParameters(measurement_interval=0)
-        self.vgr = VacuumGripper("VacuumGripper01", VacuumGripperParameters(
+        self.vgr = VacuumGripper("VacuumGripper01", self,
+                                 VacuumGripperParameters(
             vertical_axis_monitor_parameters=monitor_parameters))
         self.vgr.isInitialized = True
         self.vertical = self.vgr._VacuumGripper__vertical_axis_monitor

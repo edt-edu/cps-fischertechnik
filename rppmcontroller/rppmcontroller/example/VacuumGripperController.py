@@ -1,6 +1,5 @@
 import ctypes
 import logging
-
 import revpimodio2
 
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
@@ -28,7 +27,7 @@ class VacuumGripperController(RevPiPyMachineController):
         self.machines = []
         #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
-        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
+        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01", self)
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {
             self.vacuumGripperMachine: None

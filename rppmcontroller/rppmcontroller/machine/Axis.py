@@ -35,7 +35,7 @@ class Axis:
         will not move to higher counter-values
         """
         self.__type = axis_type
-        self.__counter = ImpulseCounter() if axis_type == AxisType.Counter else Counter()
+        self._counter = ImpulseCounter() if axis_type == AxisType.Counter else Counter()
         self.__tolerance = tolerance
         self.__first = True
 
@@ -50,10 +50,10 @@ class Axis:
         """Whether the axis should move to larger values, away from the ref-switch"""
         self.__output_minus = False
         """Whether the axis should move to smaller values, towards the ref-switch"""
-        self.__pwm_value: int = _DEFAULT_PWM_VALUE
-        """How quickly the axis should move"""
+        self.__pwm_output: int = _DEFAULT_PWM_VALUE
+        """How quickly the axis should move, 100 means 100%. Most motors need at least 15 or similar to move at all."""
 
-        # play values. I would prefer to not have those at all
+        # play values; those and the tolerances are fully ignored, when a pid controller is used.
         if axis_type == AxisType.Encoder:
             self.play = 8
         else:
@@ -63,11 +63,11 @@ class Axis:
 
     @property
     def counterValueCurrent(self):
-        return self.__counter.counter
+        return self._counter.counter
 
     @counterValueCurrent.setter
     def counterValueCurrent(self, value):
-        self.__counter.counter = value
+        self._counter.counter = value
 
     @property
     def endpos(self):
@@ -87,22 +87,22 @@ class Axis:
 
     @property
     def pwm(self) -> int:
-        return self.__pwm_value
+        return self.__pwm_output
 
     @property
     def tolerance(self) -> int:
         return self.__tolerance + self.play
 
-    def update(self, end_pos: bool, counter_input: int) -> None:
+    def update(self, at_end_pos: bool, current_counter_input: int) -> None:
         """
         Informs this Axis about the current values
 
-        :param end_pos: Whether the Axis has reached its end-switch
-        :param counter_input: The current counter value
+        :param at_end_pos: Whether the Axis has reached its end-switch
+        :param current_counter_input: The current counter value
         :return: None
         """
-        self.__at_ref_switch = end_pos
-        self.__counter_input = counter_input
+        self.__at_ref_switch = at_end_pos
+        self.__counter_input = current_counter_input
 
     # we might want to make this method non-static in the future
     # noinspection PyMethodMayBeStatic
@@ -111,8 +111,6 @@ class Axis:
                         counterCurrent: int,
                         tolerance: int) -> PlusMinusStop:
         """method to determine which way the axis needs to rotate"""
-
-        # TODO this method would behave differently with a PID controller
 
         # sanitize counterGoal input
         if counterGoal < 0:
@@ -208,85 +206,152 @@ class Axis:
             # let's set it to 0 anyway, just to be sure
             counter_goal = 0
 
-        target_reached = False
-        direction = None
         if go_to_ref_switch:
-            if not self.__at_ref_switch:
-                self.__counter.counter = self.__counter_input
-                self.__output_minus = True
-                self.__output_plus = False
-                if isinstance(self.__counter, ImpulseCounter):
-                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.MINUS)
-                    logging.debug(self.__counter.counter)
-                direction = PlusMinusStop.MINUS
-            else:
-                self.resetDirection()
-                target_reached = True
+            target_reached = self.go_to_ref_switch()
         else:
-            #calls compute methods for axis with impulse counters based on (previous) motor direction, not necessary for encoder
-            if isinstance(self.__counter, ImpulseCounter):
-                if self.outputplus:
-                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.PLUS)
-                    logging.debug(self.__counter.counter)
-                    #print("compute counter")
-                    if self.__first or self.endpos:
-                        self.__first = False
-                        logging.debug("Reset arm counter here here here here here here")
-                        self.__counter.counter = 0
-                elif self.outputminus:
-                    self.__counter.counter = self.__counter.compute(self.__counter_input, PlusMinusStop.MINUS)
-                    print(self.__counter.counter)
-                    if self.__first or self.endpos:
-                        self.__first = False
-                        logging.debug("Reset arm counter here here here here here here")
-                        self.__counter.counter = 0
+            target_reached = self._go_to_positive_counter_value(counter_goal)
 
-            else:
-                self.__counter.counter = self.__counter_input
-
-            counterPos = self.howtoCounterPos(counter_goal, self.__counter.counter, self.tolerance)
-            # logging.debug(f'howtoCounterPos({counterGoal}, {self.__counter.counter}, {self.tolerance})={counterPos}')
-            if counterPos is PlusMinusStop.PLUS:
-                self.__output_minus = False
-                self.__output_plus = True
-                direction = PlusMinusStop.PLUS
-            elif counterPos is PlusMinusStop.MINUS:
-                self.__output_minus = True
-                self.__output_plus = False
-                direction = PlusMinusStop.MINUS
-            elif counterPos is PlusMinusStop.STOP:
-                self.__output_minus = False
-                self.__output_plus = False
-                target_reached = True
-                direction = PlusMinusStop.STOP
-
-            # extra check to make sure we are not telling the hardware to
-            # move beyond a ref-switch
-            ref_switch_reached = self.__at_ref_switch
-            mov_to_ref_switch = self.outputminus
-            if ref_switch_reached and mov_to_ref_switch:
-                self.__output_minus = False
-                self.__output_plus = False
-                direction = PlusMinusStop.STOP
-                target_reached = True
-
-            # extra check to make sure we are not moving further beyond the
-            # max counter-value
-            max_counter_value_exceeded = self.__max_counter_value is not None and self.__counter.counter > self.__max_counter_value
-            mov_to_greater_counter_values = self.outputplus
-            if max_counter_value_exceeded and mov_to_greater_counter_values:
-                self.__output_minus = False
-                self.__output_plus = False
-                direction = PlusMinusStop.STOP
-                target_reached = True
-
-        if isinstance(self.__counter, ImpulseCounter):
-            return target_reached, direction
+        if isinstance(self._counter, ImpulseCounter):
+            return target_reached, self.calculateDirection()
         return target_reached
 
-    def isCloseFromEnd(self, axis_config: AxisConfig, approachTol: int) -> bool:
+    def _go_to_positive_counter_value(self, counter_goal: int) -> bool:
+        """
+        Moves this axis to a given positive counter value.
+
+        It is the callers responsibility to ensure that the counter goal is
+        positive.
+        :param counter_goal: A positive counter value to reach
+        :return: Whether that counter value is reached
+        """
+        assert counter_goal > 0
+
+        self._update_current_counter_value()
+
+        target_reached = self.__set_output_values_for_target(counter_goal)
+        if target_reached:
+            # no further break checks needed
+            return True
+
+        # extra check to make sure we are not telling the hardware to
+        # move beyond a ref-switch
+        at_ref_switch = self.__at_ref_switch
+        moving_towards_ref_switch = self.outputminus
+        if at_ref_switch and moving_towards_ref_switch:
+            self.resetDirection()
+            logging.warning("Prevented moving beyond ref-switch")
+            return True
+
+        # extra check to make sure we are not moving further beyond the
+        # max counter-value
+        max_counter_value_exceeded = self.__max_counter_value is not None and self._counter.counter > self.__max_counter_value
+        moving_towards_greater_counter_values = self.outputplus
+        if max_counter_value_exceeded and moving_towards_greater_counter_values:
+            self.resetDirection()
+            logging.warning("Prevented moving beyond max counter value")
+            return True
+
+        return False
+
+    def __set_output_values_for_target(self, counter_goal: int) -> bool:
+        pid_controller = self.__pid_controller
+        if pid_controller is not None:
+            if counter_goal != pid_controller.target.get():
+                pid_controller.reset()
+                pid_controller.target.set(counter_goal)
+
+            pwm = pid_controller.process(self.counterValueCurrent)
+            self.__pwm_output = abs(pwm)
+            self.__output_plus = pwm > 0
+            self.__output_minus = pwm < 0
+            # don't reset pid here since pid state might be useful for future iterations
+            return pwm != 0
+
+        counterPos = self.howtoCounterPos(counter_goal,
+                                          self.counterValueCurrent,
+                                          self.tolerance)
+        self.__output_plus = counterPos is PlusMinusStop.PLUS
+        self.__output_minus = counterPos is PlusMinusStop.MINUS
+        self.__pwm_output = _DEFAULT_PWM_VALUE
+        return counterPos is PlusMinusStop.STOP
+
+    def go_to_ref_switch(self) -> bool:
+        """
+        Sets the output of this axis to move towards the reference switch
+        :return: Whether the reference switch is reached
+        """
+        if self.__at_ref_switch:
+            self.resetDirection()
+            return True
+
+        # update outputs
+        # the ref-switch resets the counter value -> always move at full
+        # speed so we actually hit it in the same spot for better accuracy
+        self.__output_minus = True
+        self.__output_plus = False
+        self.__pwm_output = _DEFAULT_PWM_VALUE
+
+        # update internal values
+        self._update_current_counter_value()
+
+        return False
+
+    def _update_current_counter_value(self) -> None:
+        """
+        Overrides the counter value of the _counter based on the current
+        __counter_input.
+
+        For encoder axes, this will be a 1:1 mapping. For impulse counter axes,
+        a direction based computation will be performed.
+        The direction used in that case will be determined by the current outputs.
+        :return: None
+        """
+        if not isinstance(self._counter, ImpulseCounter):
+            self.counterValueCurrent = self.__counter_input
+            return
+
+        # special handling for counter type axis TODO this case could be solved via inheritance
+        direction = self.calculateDirection()
+        if direction == PlusMinusStop.STOP:
+            return
+
+        self.counterValueCurrent = self._counter.compute(self.__counter_input,
+                                                         direction)
+        logging.debug(self.counterValueCurrent)
+
+        # impulse counters usually rely on the previous direction, which
+        # might be nonsense in some edge cases
+        self.__reset_counter_if_needed()
+
+    def __reset_counter_if_needed(self) -> None:
+        """
+        Resets the current counter value to zero on the first call of this
+        method or when the ref-switch is reached.
+        :return: None
+        """
+        if not self.__first and not self.endpos:
+            return
+
+        self.__first = False
+        logging.debug("Reset counter here here here here here here")
+        self.counterValueCurrent = 0
+
+    def calculateDirection(self) -> PlusMinusStop:
+        """
+        Calculates the direction the axis is currently moving in based on
+        the current outputs
+        :return: The direction the axis is currently moving in
+        """
+        if self.outputplus == self.outputminus:
+            return PlusMinusStop.STOP
+
+        return PlusMinusStop.PLUS if self.outputplus else PlusMinusStop.MINUS
+
+    def isCloseFromEnd(self,
+                       axis_config: AxisConfig,
+                       approachTol: int) -> bool:
         targetPos = axis_config.counter_goal
-        counterCurrent = self.__counter.counter
+        counterCurrent = self._counter.counter
 
         if targetPos - approachTol > counterCurrent:
             return False
@@ -298,4 +363,7 @@ class Axis:
     def resetDirection(self) -> None:
         self.__output_minus = False
         self.__output_plus = False
-        self.__pwm_value = _DEFAULT_PWM_VALUE
+        self.__pwm_output = _DEFAULT_PWM_VALUE
+
+        if self.__pid_controller is not None:
+            self.__pid_controller.reset()
