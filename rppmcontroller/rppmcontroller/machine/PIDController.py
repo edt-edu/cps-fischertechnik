@@ -205,7 +205,7 @@ class Decimator(SignalProcessingBlock[I, O]):
         :param value: The value to process
         :return: The processed value, or the previously computed value if processing was skipped
         """
-        if self.__count >= self.__N:
+        if self.__count % self.__N == 0:
             self.__cached_value = self.__signal_processor.process(value)
             self.__count = 0
 

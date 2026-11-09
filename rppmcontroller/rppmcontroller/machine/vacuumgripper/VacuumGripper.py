@@ -441,6 +441,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         # rotation
         self.vacuumActRotRight = False
         self.vacuumActRotLeft = False
+        logging.debug(f"Setting axis input to {self.vacuumSensRotEncoderCounter}")
         self.__axisRot.update(self.vacuumSensRotEnd, self.vacuumSensRotEncoderCounter)
         error = self.__axisRot.config_would_exceed_max_counter_value(config.rotation_axis_config)
         if error:

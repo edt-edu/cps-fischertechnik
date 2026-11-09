@@ -291,7 +291,9 @@ class Axis:
                 pid_controller.reset()
                 pid_controller.target.set(counter_goal)
 
+            logging.debug(f"PID processing: {self.counterValueCurrent} -> {counter_goal}")
             pwm = pid_controller.process(self.counterValueCurrent)
+            logging.debug(f"PID output: {pwm}")
             self.__pwm_output = abs(pwm)
             self.__output_plus = pwm > 0
             self.__output_minus = pwm < 0
