@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC
 from dataclasses import dataclass, field
 from typing import Any, Dict
@@ -55,3 +57,39 @@ class AxisMonitorParameters:
     measurement_interval: float = 0.1
     """Delay in seconds before another measurement is taken.
     Increase this value if you get too many false-positive high deviations."""
+
+
+@dataclass
+class AxisParameters:
+    """Parameters for a generic axis"""
+    control_parameters: ControlParameters = field(default_factory=lambda: PWMParameters(
+        approach_speed=30,
+        approach_tolerance=100))
+    """Parameters that determine how the axis will be controlled"""
+    tolerance: int | None = None
+    """Tolerance of whether the axis target has been reached. When set in combination with pid_parameters then this value will be used as error_deadband"""
+    max_counter_value: int | None = None
+    """The maximum encoder counter value for this axis.
+    This limit is induced by the physical setup."""
+    pwm_standard_speed: int = 100
+    """How fast the axis should move normally"""
+
+
+class ControlParameters(ABC):
+    """Parameters that determine how the machine should be controlled"""
+
+
+@dataclass
+class PIDParameters(ControlParameters):
+    """Parameters for a PID controller of an axis"""
+    main_loop_delay: float
+    """The delay of the main control loop in seconds"""
+
+
+@dataclass
+class PWMParameters(ControlParameters):
+    """Parameters for an approached based PWM control"""
+    approach_speed: int
+    """How fast the axis should approach the target value"""
+    approach_tolerance: int
+    """How close the axis must be to the target value before switching to approach mode"""

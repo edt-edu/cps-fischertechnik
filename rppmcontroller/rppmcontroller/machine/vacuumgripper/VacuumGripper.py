@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+from typing_extensions import override, deprecated
+
 import logging
 from typing import Any, Callable, Dict, List
-from typing_extensions import override, deprecated
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
-from rppmcontroller.machine.Axis import AxisType, Axis
+from rppmcontroller.machine.Axis import Axis
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor)
 from rppmcontroller.machine.Machine import Machine
-from rppmcontroller.machine.PIDController import DiscretePIDController
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ResetHelper import ResetHelper
@@ -32,10 +32,18 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     def __init__(self,
                  id1: str,
-                 main_loop_delay: float,
                  parameters: VacuumGripperParameters | None = None):
         if parameters is None:
             parameters = VacuumGripperParameters()
+
+        # support for legacy configuration
+        # TODO support other options
+        if parameters.max_horizontal_counter_value is not None:
+            parameters.horizontal_axis_parameters.max_counter_value = parameters.max_horizontal_counter_value
+        if parameters.max_vertical_counter_value is not None:
+            parameters.vertical_axis_parameters.max_counter_value = parameters.max_vertical_counter_value
+        if parameters.max_rotational_counter_value is not None:
+            parameters.rotational_axis_parameters.max_counter_value = parameters.max_rotational_counter_value
 
         self.__parameters = parameters
 
@@ -62,13 +70,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumSensRotEncoderCounter = 0
         self.__vacuumSensVerticalEncoderCounter = 0
         self.__vacuumSensArmEncoderCounter = 0
-        self.__axisArm = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
-        self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
-        rot_pid_controller = DiscretePIDController.for_pwm_control(
-            main_loop_delay)
-        self.__axisRot = Axis(AxisType.Encoder, 5,
-                              parameters.max_rotational_counter_value,
-                              rot_pid_controller)
+        self.__axisArm = Axis.encoder(parameters.horizontal_axis_parameters)
+        self.__axisVertical = Axis.encoder(parameters.vertical_axis_parameters)
+        self.__axisRot = Axis.encoder(parameters.rotational_axis_parameters)
         self.__rot_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
         self.__arm_reset_helper = ResetHelper()
@@ -401,6 +405,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.stop_CycleStep()
             return error.as_abort()
         if not self.__axisArm.gotoAxisConfig(config.horizontal_axis_config):
+            # TODO let axis calculate pwm output
             self.vacuumActArmIn = self.__axisArm.outputminus
             self.vacuumActArmOut = self.__axisArm.outputplus
             if self.__axisArm.isCloseFromEnd(config.horizontal_axis_config, self.parameters.pwm_approach_tolerance):
@@ -421,6 +426,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.stop_CycleStep()
             return error.as_abort()
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+            # TODO let axis calculate pwm output
             self.vacuumActVerticalUp = self.__axisVertical.outputminus
             self.vacuumActVerticalDown = self.__axisVertical.outputplus
             if self.__axisVertical.isCloseFromEnd(config.vertical_axis_config, self.parameters.pwm_approach_tolerance):
@@ -443,14 +449,10 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisRot.gotoAxisConfig(config.rotation_axis_config):
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
-            if self.__axisRot.isCloseFromEnd(config.rotation_axis_config, self.parameters.pwm_approach_tolerance):
-                self.pwmRotational = self.parameters.pwm_rotational_approach_speed
-            else :
-                self.pwmRotational = self.parameters.pwm_standard_speed
+            # set pwm to whatever the axis deems best
+            self.pwmHorizontal = self.__axisRot.pwm_output
+            logging.debug("rotating arm with pwm {}", self.pwmHorizontal)
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "rotating arm")
-        if self.vacuumActRotRight and self.vacuumSensRotEnd:
-            self.stop_CycleStep()
-            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
 
         # ensure movement is not blocked
         error = self.__monitor_axis_values()

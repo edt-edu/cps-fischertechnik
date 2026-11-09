@@ -5,6 +5,8 @@ from enum import Enum
 from typing import Tuple, Optional
 
 from rppmcontroller.machine.AxisConfig import AxisConfig
+from rppmcontroller.machine.MachineParameters import AxisParameters, \
+    PIDParameters, PWMParameters
 from rppmcontroller.machine.MaxValueExceededError import MaxValueExceededError
 from rppmcontroller.machine.PIDController import DiscretePIDController
 from rppmcontroller.utils.Counter import Counter
@@ -22,22 +24,47 @@ class AxisType(Enum):
 
 class Axis:
 
+    @staticmethod
+    def encoder(parameters: AxisParameters) -> Axis:
+        """
+        Create a new Encoder type axis based on the given parameters
+        :param parameters: The parameters to configure the axis
+        :return: The created axis
+        """
+        tolerance = parameters.tolerance if parameters.tolerance is not None else 0
+        pid_controller = DiscretePIDController.from_opt_pid_parameters(
+            parameters.control_parameters) if isinstance(parameters.control_parameters,
+                                                         PIDParameters) else None
+        return Axis(axis_type=AxisType.Encoder,
+                    tolerance=tolerance,
+                    max_counter_value=parameters.max_counter_value,
+                    pid_controller=pid_controller)
+
     def __init__(self, axis_type: AxisType,
                  tolerance: int,
                  max_counter_value: int | None = None,
-                 pid_controller: DiscretePIDController | None = None):
+                 *,
+                 pwm_standard_speed: int = 100,
+                 pid_controller: DiscretePIDController | None = None,
+                 pwm_control: PWMParameters | None = None):
         """
         constructor creates ImpulseCounter object if necessary
         :param axis_type: What kind of axis this is
         :param tolerance: How much tolerance the axis may have
         :param max_counter_value: If the counter exceeds this value, the axis
+        :param pwm_standard_speed: How fast the axis should move normally
         :param pid_controller: A PID controller to use for this axis
+        :param pwm_control: How the pid output should behave - will be ignored when a pid controller is used
         will not move to higher counter-values
         """
         self.__type = axis_type
         self._counter = ImpulseCounter() if axis_type == AxisType.Counter else Counter()
         self.__tolerance = tolerance
         self.__first = True
+        self.__standard_speed = pwm_standard_speed
+        self.__pwm_control = pwm_control
+        self.__max_counter_value = max_counter_value
+        self.__pid_controller = pid_controller
 
         # current input state
         self.__at_ref_switch: bool = False
@@ -50,7 +77,7 @@ class Axis:
         """Whether the axis should move to larger values, away from the ref-switch"""
         self.__output_minus = False
         """Whether the axis should move to smaller values, towards the ref-switch"""
-        self.__pwm_output: int = _DEFAULT_PWM_VALUE
+        self.__pwm_output: int = pwm_standard_speed
         """How quickly the axis should move, 100 means 100%. Most motors need at least 15 or similar to move at all."""
 
         # play values; those and the tolerances are fully ignored, when a pid controller is used.
@@ -58,8 +85,6 @@ class Axis:
             self.play = 8
         else:
             self.play = 2
-        self.__max_counter_value = max_counter_value
-        self.__pid_controller = pid_controller
 
     @property
     def counterValueCurrent(self):
@@ -86,7 +111,7 @@ class Axis:
         return self.__output_minus
 
     @property
-    def pwm(self) -> int:
+    def pwm_output(self) -> int:
         return self.__pwm_output
 
     @property
@@ -147,7 +172,8 @@ class Axis:
         :return: A `MaxValueExceededError` if the goal exceeds the maximum
             counter-value, otherwise `None`
         """
-        return self.goal_would_exceed_max_counter_value(axis_config.counter_goal)
+        return self.goal_would_exceed_max_counter_value(
+            axis_config.counter_goal)
 
     def goal_would_exceed_max_counter_value(self, counter_goal: int) \
         -> Optional[MaxValueExceededError]:
@@ -170,15 +196,16 @@ class Axis:
             if self.__max_counter_value is not None and counter_goal > self.__max_counter_value \
             else None
 
-
-    def gotoAxisConfig(self, axis_config: AxisConfig) -> bool | Tuple[bool, PlusMinusStop | None]:
+    def gotoAxisConfig(self, axis_config: AxisConfig) -> bool | Tuple[
+        bool, PlusMinusStop | None]:
         """
         Set the outputs to move towards the specified axis_config
 
         :param axis_config: An AxisConfig specifying where to move to
         :return: True if the goal specified by the config has been reached. If the internal counter is a pulse counter, then the direction of that is also returned.
         """
-        return self.gotoConfig(axis_config.end_position, axis_config.counter_goal)
+        return self.gotoConfig(axis_config.end_position,
+                               axis_config.counter_goal)
 
     def gotoConfig(self, go_to_ref_switch: bool, counter_goal: int) -> bool | \
                                                                        Tuple[
@@ -272,7 +299,8 @@ class Axis:
                                           self.tolerance)
         self.__output_plus = counterPos is PlusMinusStop.PLUS
         self.__output_minus = counterPos is PlusMinusStop.MINUS
-        self.__pwm_output = _DEFAULT_PWM_VALUE
+        self.__pwm_output = self.get_pwm_speed_to_approach(AxisConfig.to_counter_goal(
+            counter_goal))
         return counterPos is PlusMinusStop.STOP
 
     def go_to_ref_switch(self) -> bool:
@@ -289,7 +317,7 @@ class Axis:
         # speed so we actually hit it in the same spot for better accuracy
         self.__output_minus = True
         self.__output_plus = False
-        self.__pwm_output = _DEFAULT_PWM_VALUE
+        self.__pwm_output = self.__standard_speed
 
         # update internal values
         self._update_current_counter_value()
@@ -360,10 +388,24 @@ class Axis:
         else:
             return True
 
+    def get_pwm_speed_to_approach(self, target_position: AxisConfig) -> int:
+        """
+        Calculates the PWM speed to approach a given target position from the
+        current position of the axis
+        :param target_position: A position or configuration to approach
+        :return: The pwm speed to use in the approach
+        """
+        if self.__pwm_control is not None and not target_position.to_end_position() and self.isCloseFromEnd(
+            target_position,
+            self.__pwm_control.approach_tolerance):
+            return self.__pwm_control.approach_speed
+
+        return self.__standard_speed
+
     def resetDirection(self) -> None:
         self.__output_minus = False
         self.__output_plus = False
-        self.__pwm_output = _DEFAULT_PWM_VALUE
+        self.__pwm_output = self.__standard_speed
 
         if self.__pid_controller is not None:
             self.__pid_controller.reset()

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from typing_extensions import override
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, TypeVar, Generic
-from typing_extensions import override
+
+from rppmcontroller.machine.MachineParameters import PIDParameters
 
 T = TypeVar('T')
 I = TypeVar('I')
@@ -88,6 +91,19 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
     """A discrete control-loop block that implements a PID control"""
     target: InPort[int]
     """A port exposing the target value to steer the controller"""
+
+    @staticmethod
+    def from_opt_pid_parameters(parameters: PIDParameters | None) -> DiscretePIDController | None:
+        """
+        Creates a DiscretePIDController from the given PIDParameters or returns None if the passed parameters are None.
+        :param parameters: PIDParameters to create a DiscretePIDController from.
+        :return: The created DiscretePIDController, if any
+        """
+        if parameters is None:
+            return None
+
+        return DiscretePIDController.for_pwm_control(
+            parameters.main_loop_delay)
 
     @staticmethod
     def for_pwm_control(rppm_controller_delay: float,

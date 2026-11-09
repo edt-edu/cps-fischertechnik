@@ -1,11 +1,14 @@
+from __future__ import annotations
+
+from typing_extensions import Self
+
 import logging
 from dataclasses import dataclass, field
 from typing import Optional, Dict
 
-from typing_extensions import Self
-
 from rppmcontroller.machine.MachineParameters import (MachineParameters,
-                                                      AxisMonitorParameters)
+                                                      AxisMonitorParameters,
+                                                      AxisParameters)
 from rppmcontroller.machine.Position import Position
 
 
@@ -58,17 +61,20 @@ class VacuumGripperParameters(MachineParameters):
     """
     Tolerance for when an axis is considered to be close to its target position
     """
-    max_vertical_counter_value: int = 1750
+    # TODO mark for deprecation
+    max_vertical_counter_value: int | None = None
     """
     The maximum encoder counter value for the vertical axis.
     This value is limited by the physical setup.
     """
-    max_horizontal_counter_value: int = 1970
+    # TODO mark for deprecation
+    max_horizontal_counter_value: int | None = None
     """
     The maximum encoder counter value for the horizontal axis.
     This value is limited by the physical setup.
     """
-    max_rotational_counter_value: int = 3040
+    # TODO mark for deprecation
+    max_rotational_counter_value: int | None = None
     """
     The maximum encoder counter value for the rotational axis.
     This value is limited by the physical setup.
@@ -96,6 +102,18 @@ class VacuumGripperParameters(MachineParameters):
     rotational_axis_monitor_parameters: AxisMonitorParameters = field(
         default_factory=lambda: AxisMonitorParameters())
     """Configuration for the rotational axis monitor"""
+    horizontal_axis_parameters: AxisParameters = field(
+        default_factory=lambda: AxisParameters(max_counter_value=1970,
+                                               tolerance=5))
+    """Configuration of the horizontal axis"""
+    vertical_axis_parameters: AxisParameters = field(
+        default_factory=lambda: AxisParameters(max_counter_value=1750,
+                                               tolerance=7))
+    """Configuration of the vertical axis"""
+    rotational_axis_parameters: AxisParameters = field(
+        default_factory=lambda: AxisParameters(max_counter_value=3040,
+                                               tolerance=5))
+    """Configuration of the rotational axis"""
 
     def derive_over_positions(self) -> Self:
         """

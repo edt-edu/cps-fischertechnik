@@ -18,7 +18,8 @@ class AxisConfig:
         :param counter_goal: The position to move the component to
         :return: The created config
         """
-        return AxisConfig(False, counter_goal)
+        move_to_end = counter_goal <= 0
+        return AxisConfig(move_to_end, counter_goal)
 
     def __init__(self, end_position: bool, counter_goal: int):
         """
