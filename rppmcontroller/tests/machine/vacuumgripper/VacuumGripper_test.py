@@ -12,7 +12,7 @@ from rppmcontroller.machine.vacuumgripper.VacuumGripperConfig import \
 class VacuumGripperTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.robot1 = VacuumGripper("1", 1)
+        self.robot1 = VacuumGripper("1")
 
     def test_GoToConfigGripUnGrip(self):
         """Tests that the grip ungrip acts on the correct actuators """

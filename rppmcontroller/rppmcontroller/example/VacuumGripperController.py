@@ -27,8 +27,7 @@ class VacuumGripperController(RevPiPyMachineController):
         self.machines = []
         #dict, which keys are the machines, then there is a tuple holding the function currently executed ([0]) and the id it was sent with ([1])
         self.currentlyExecuting = {}
-        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01",
-                                                  self.mainLoopDelay)
+        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.machines = [self.vacuumGripperMachine]
         self.currentlyExecuting = {
             self.vacuumGripperMachine: None

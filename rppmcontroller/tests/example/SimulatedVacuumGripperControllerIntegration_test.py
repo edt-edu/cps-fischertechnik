@@ -9,6 +9,7 @@ import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
     SimulatedVacuumGripperController
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
+from rppmcontroller.machine.MachineParameters import PIDParameters
 from rppmcontroller.machine.NamedPosition import NamedPosition
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
@@ -28,13 +29,16 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         logging.debug("setup called")
+        main_loop_delay = 0.05
         vgr_parameters = VacuumGripperParameters(named_positions={
             "TEST": Position(rot=400, vertical=300, horizontal=200, meaning="any")
         })
         vgr_parameters.derive_over_positions()
+        vgr_parameters.rotational_axis_parameters.control_parameters = PIDParameters(
+            main_loop_delay)
         self.vgr_parameters = vgr_parameters
         self.controller = SimulatedVacuumGripperController(config_path, vgr_parameters)
-        self.controller.mainLoopDelay = 0.05
+        self.controller.mainLoopDelay = main_loop_delay
 
 
     def test_setupCommand(self):

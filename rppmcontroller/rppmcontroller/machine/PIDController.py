@@ -251,6 +251,7 @@ class LowPassFilter(SignalProcessingBlock[int, float]):
         return new_filtered_value
 
 
+# TODO add policy what can happen with 0 -> positive lift, negative lift, passthrough
 class DualBandClamp(SignalProcessingBlock[float, float]):
     """
     Clamps and lifts a signal onto a symmetric dual-band. Zero will always

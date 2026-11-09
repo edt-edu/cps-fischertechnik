@@ -28,6 +28,23 @@ from rppmcontroller.utils.csv import CSVWriter
 from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
+def _apply_legacy_support(parameters: VacuumGripperParameters):
+    if parameters.max_horizontal_counter_value is not None:
+        parameters.horizontal_axis_parameters.max_counter_value = parameters.max_horizontal_counter_value
+    else:
+        parameters.max_horizontal_counter_value = parameters.horizontal_axis_parameters.max_counter_value
+
+    if parameters.max_vertical_counter_value is not None:
+        parameters.vertical_axis_parameters.max_counter_value = parameters.max_vertical_counter_value
+    else:
+        parameters.max_vertical_counter_value = parameters.vertical_axis_parameters.max_counter_value
+
+    if parameters.max_rotational_counter_value is not None:
+        parameters.rotational_axis_parameters.max_counter_value = parameters.max_rotational_counter_value
+    else:
+        parameters.max_rotational_counter_value = parameters.rotational_axis_parameters.max_counter_value
+
+
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     def __init__(self,
@@ -38,12 +55,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
         # support for legacy configuration
         # TODO support other options
-        if parameters.max_horizontal_counter_value is not None:
-            parameters.horizontal_axis_parameters.max_counter_value = parameters.max_horizontal_counter_value
-        if parameters.max_vertical_counter_value is not None:
-            parameters.vertical_axis_parameters.max_counter_value = parameters.max_vertical_counter_value
-        if parameters.max_rotational_counter_value is not None:
-            parameters.rotational_axis_parameters.max_counter_value = parameters.max_rotational_counter_value
+        _apply_legacy_support(parameters)
 
         self.__parameters = parameters
 

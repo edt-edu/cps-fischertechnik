@@ -33,8 +33,7 @@ class SimulatedMiniFactoryController(RevPiPyMachineController):
 
 
         self.conveyorBeltMachine = ConveyorBelt("ConveyorBelt01")
-        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01",
-                                                  self.mainLoopDelay)
+        self.vacuumGripperMachine = VacuumGripper("VacuumGripper01")
         self.multiProcessingMachine = MultiProcessing("MultiProcessing01")
         self.sortingLineMachine = SortingLine("SortingLine01")
         self.highBayMachine = HighBay("HighBay01")

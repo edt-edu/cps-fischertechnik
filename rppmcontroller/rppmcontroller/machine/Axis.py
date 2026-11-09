@@ -298,7 +298,7 @@ class Axis:
             self.__output_plus = pwm > 0
             self.__output_minus = pwm < 0
             # don't reset pid here since pid state might be useful for future iterations
-            return pwm != 0
+            return pwm == 0
         logging.debug("Using counter pos logic")
 
         counterPos = self.howtoCounterPos(counter_goal,
