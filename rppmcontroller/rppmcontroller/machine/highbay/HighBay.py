@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from typing_extensions import override
+
 import logging
 from enum import Enum
 from typing import Dict, Any, Union, Callable, Optional, List
-
-from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -616,8 +616,8 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         self.highbayActCantileverForward = False
         self.highbayActCantileverBackward = False
 
-        self.__axisVertical.resetDirection()
-        self.__axisHorizontal.resetDirection()
+        self.__axisVertical.reset_direction()
+        self.__axisHorizontal.reset_direction()
 
         self.stop_runners()
 

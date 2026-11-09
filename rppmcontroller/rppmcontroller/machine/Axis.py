@@ -35,10 +35,13 @@ class Axis:
         pid_controller = DiscretePIDController.from_opt_pid_parameters(
             parameters.control_parameters) if isinstance(parameters.control_parameters,
                                                          PIDParameters) else None
+        pwm_control = parameters.control_parameters if isinstance(parameters.control_parameters,
+                                                                  PWMParameters) else None
         return Axis(axis_type=AxisType.Encoder,
                     tolerance=tolerance,
                     max_counter_value=parameters.max_counter_value,
-                    pid_controller=pid_controller)
+                    pid_controller=pid_controller,
+                    pwm_control=pwm_control)
 
     def __init__(self, axis_type: AxisType,
                  tolerance: int,
@@ -239,7 +242,7 @@ class Axis:
             target_reached = self._go_to_positive_counter_value(counter_goal)
 
         if isinstance(self._counter, ImpulseCounter):
-            return target_reached, self.calculateDirection()
+            return target_reached, self.calculate_direction()
         return target_reached
 
     def _go_to_positive_counter_value(self, counter_goal: int) -> bool:
@@ -265,7 +268,7 @@ class Axis:
         is_at_ref_switch = self.__at_ref_switch
         moving_towards_ref_switch = self.outputminus
         if is_at_ref_switch and moving_towards_ref_switch:
-            self.resetDirection()
+            self.reset_direction()
             logging.warning("Prevented moving beyond ref-switch")
             return True
 
@@ -274,7 +277,7 @@ class Axis:
         max_counter_value_exceeded = self.__max_counter_value is not None and self._counter.counter > self.__max_counter_value
         moving_towards_greater_counter_values = self.outputplus
         if max_counter_value_exceeded and moving_towards_greater_counter_values:
-            self.resetDirection()
+            self.reset_direction()
             logging.warning("Prevented moving beyond max counter value")
             return True
 
@@ -311,7 +314,7 @@ class Axis:
         :return: Whether the reference switch is reached
         """
         if self.__at_ref_switch:
-            self.resetDirection()
+            self.reset_direction()
             return True
 
         # update outputs
@@ -341,7 +344,7 @@ class Axis:
             return
 
         # special handling for counter type axis TODO this case could be solved via inheritance
-        direction = self.calculateDirection()
+        direction = self.calculate_direction()
         if direction == PlusMinusStop.STOP:
             return
 
@@ -366,7 +369,7 @@ class Axis:
         logging.debug("Reset counter here here here here here here")
         self.counterValueCurrent = 0
 
-    def calculateDirection(self) -> PlusMinusStop:
+    def calculate_direction(self) -> PlusMinusStop:
         """
         Calculates the direction the axis is currently moving in based on
         the current outputs
@@ -404,7 +407,7 @@ class Axis:
 
         return self.__standard_speed
 
-    def resetDirection(self) -> None:
+    def reset_direction(self) -> None:
         self.__output_minus = False
         self.__output_plus = False
         self.__pwm_output = self.__standard_speed
