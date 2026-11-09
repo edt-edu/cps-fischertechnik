@@ -262,9 +262,9 @@ class Axis:
 
         # extra check to make sure we are not telling the hardware to
         # move beyond a ref-switch
-        at_ref_switch = self.__at_ref_switch
+        is_at_ref_switch = self.__at_ref_switch
         moving_towards_ref_switch = self.outputminus
-        if at_ref_switch and moving_towards_ref_switch:
+        if is_at_ref_switch and moving_towards_ref_switch:
             self.resetDirection()
             logging.warning("Prevented moving beyond ref-switch")
             return True
@@ -283,6 +283,7 @@ class Axis:
     def __set_output_values_for_target(self, counter_goal: int) -> bool:
         pid_controller = self.__pid_controller
         if pid_controller is not None:
+            logging.debug("Using PID controller")
             if counter_goal != pid_controller.target.get():
                 pid_controller.reset()
                 pid_controller.target.set(counter_goal)
@@ -293,6 +294,7 @@ class Axis:
             self.__output_minus = pwm < 0
             # don't reset pid here since pid state might be useful for future iterations
             return pwm != 0
+        logging.debug("Using counter pos logic")
 
         counterPos = self.howtoCounterPos(counter_goal,
                                           self.counterValueCurrent,

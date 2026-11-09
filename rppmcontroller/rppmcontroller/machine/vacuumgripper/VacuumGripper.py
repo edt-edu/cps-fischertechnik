@@ -451,7 +451,6 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
             self.vacuumActRotLeft = self.__axisRot.outputplus
             # set pwm to whatever the axis deems best
             self.pwmHorizontal = self.__axisRot.pwm_output
-            logging.debug(f"rotating arm with pwm {self.pwmHorizontal}")
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "rotating arm")
 
         # ensure movement is not blocked
