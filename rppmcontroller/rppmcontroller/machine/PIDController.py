@@ -117,7 +117,8 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
             error_deadband=parameters.error_deadband,
             kp=parameters.kp,
             ki=parameters.ki,
-            kd=parameters.kd
+            kd=parameters.kd,
+            integral_limit=parameters.integral_limit,
         )
 
     @staticmethod
@@ -128,7 +129,8 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
                         error_deadband: float = 3.0,
                         kp: float = 1,
                         ki: float = 0,
-                        kd: float = 0) -> DiscretePIDController:
+                        kd: float = 0,
+                        integral_limit: float | None = 25) -> DiscretePIDController:
         """
         Creates a new DiscretePIDController suitable for PWM control.
 
@@ -158,6 +160,8 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
         :param kp: The proportional gain.
         :param ki: The integral gain.
         :param kd: The derivative gain.
+        :param integral_limit: Cap for the pid integral. Should be around
+            25% max output.
         :return: The discrete PID controller.
         """
         control_period_seconds = rppm_controller_delay * decimation_factor
@@ -166,8 +170,13 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
         output_limit = 100
 
         lowpass = LowPassFilter(lowpass_sample_weight)
-        pid = PIDController(kp, ki, kd, control_period_seconds, error_deadband,
-                            output_limit)
+        pid = PIDController(kp,
+                            ki,
+                            kd,
+                            control_period_seconds,
+                            error_deadband,
+                            output_limit=output_limit,
+                            integral_limit=integral_limit)
         target_value_port = InPort[int](lambda: int(pid.target_value),
                                         lambda value: pid.set_target(value))
         dual_band_clamp = DualBandClamp(out_min=15, out_max=output_limit)
@@ -357,6 +366,7 @@ class PIDController(SignalProcessingBlock[float, float]):
                  kd: float,
                  control_period_seconds: float,
                  error_deadband: float,
+                 *,
                  output_limit: float | None = None,
                  integral_limit: float | None = None):
         """

@@ -98,6 +98,8 @@ class PIDParameters(ControlParameters):
     """Integral gain"""
     kd: float = 0
     """Differential gain"""
+    integral_limit: float | None = 25
+    """Cap for the pid-internal integral"""
 
 
 @dataclass
