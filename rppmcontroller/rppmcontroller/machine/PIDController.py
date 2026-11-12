@@ -407,7 +407,7 @@ class PIDController(SignalProcessingBlock[float, float]):
         logging.debug(f"error({error}) = target({self.target_value}) - value({value})")
 
         # error deadband
-        if abs(error) < self.__error_deadband:
+        if abs(error) <= self.__error_deadband:
             self.__integral_term *= 0.5  # bleed integral for better input-spike-resistance
             self.__previous_input = value
             return 0
