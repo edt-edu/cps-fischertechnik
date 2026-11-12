@@ -90,6 +90,8 @@ class PIDParameters(ControlParameters):
     smoothing_delay_seconds: float = 0.05
     """How many seconds reaction delay will be introduced by smoothing out the
     position signal"""
+    error_deadband: int = 3
+    """encoder precision/tolerance"""
 
 
 @dataclass

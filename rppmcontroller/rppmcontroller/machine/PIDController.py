@@ -105,7 +105,8 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
         return DiscretePIDController.for_pwm_control(
             rppm_controller_delay=parameters.main_loop_delay,
             decimation_factor=parameters.decimation_factor,
-            smoothing_delay_seconds=parameters.smoothing_delay_seconds)
+            smoothing_delay_seconds=parameters.smoothing_delay_seconds,
+            error_deadband=parameters.error_deadband)
 
     @staticmethod
     def for_pwm_control(rppm_controller_delay: float,

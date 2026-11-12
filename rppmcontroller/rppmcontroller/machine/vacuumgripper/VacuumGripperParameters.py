@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing_extensions import Self
-
 import logging
 from dataclasses import dataclass, field
 from typing import Optional, Dict
+from typing_extensions import Self
 
 from rppmcontroller.machine.MachineParameters import (MachineParameters,
                                                       AxisMonitorParameters,
@@ -66,18 +65,24 @@ class VacuumGripperParameters(MachineParameters):
     """
     The maximum encoder counter value for the vertical axis.
     This value is limited by the physical setup.
+
+    This option is deprecated in favor of vertical_axis_parmeters.max_counter_value
     """
     # TODO mark for deprecation
     max_horizontal_counter_value: int | None = None
     """
     The maximum encoder counter value for the horizontal axis.
     This value is limited by the physical setup.
+
+    This option is deprecated in favor of horizonal_axis_parmeters.max_counter_value
     """
     # TODO mark for deprecation
     max_rotational_counter_value: int | None = None
     """
     The maximum encoder counter value for the rotational axis.
     This value is limited by the physical setup.
+
+    This option is deprecated in favor of rotational_axis_parmeters.max_counter_value
     """
     named_positions: Dict[str, Position] = field(default_factory=dict)
     """

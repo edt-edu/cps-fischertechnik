@@ -37,7 +37,9 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         vgr_parameters.rotational_axis_parameters.control_parameters = PIDParameters(
             main_loop_delay=main_loop_delay,
             decimation_factor=1,
-            smoothing_delay_seconds=0.01 * main_loop_delay)
+            smoothing_delay_seconds=0.01 * main_loop_delay,
+            error_deadband=10,
+        )
         self.vgr_parameters = vgr_parameters
         self.controller = SimulatedVacuumGripperController(config_path, vgr_parameters)
         self.controller.mainLoopDelay = main_loop_delay
@@ -1312,7 +1314,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
             Position("END",
                      0,
-                     vgr.parameters.max_rotational_counter_value + 100,
+                     (
+                             vgr.parameters.rotational_axis_parameters.max_counter_value or 0) + 100,
                      0),
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
@@ -1326,7 +1329,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                          r"ABORTED_ERROR")
 
         # now go to valid position
-        target_rotation = vgr.parameters.max_rotational_counter_value - 100
+        target_rotation = (
+                                  vgr.parameters.rotational_axis_parameters.max_counter_value or 0) - 100
         message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
             Position("END",
                      0,
