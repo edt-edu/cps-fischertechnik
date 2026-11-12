@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing_extensions import override
-
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 from typing import Callable, TypeVar, Generic
+from typing_extensions import override
 
 from rppmcontroller.machine.MachineParameters import PIDParameters
 
@@ -103,7 +103,9 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
             return None
 
         return DiscretePIDController.for_pwm_control(
-            parameters.main_loop_delay)
+            rppm_controller_delay=parameters.main_loop_delay,
+            decimation_factor=parameters.decimation_factor,
+            smoothing_delay_seconds=parameters.smoothing_delay_seconds)
 
     @staticmethod
     def for_pwm_control(rppm_controller_delay: float,
@@ -251,21 +253,38 @@ class LowPassFilter(SignalProcessingBlock[int, float]):
         return new_filtered_value
 
 
-# TODO add policy what can happen with 0 -> positive lift, negative lift, passthrough
+class DualBandClampZeroPolicy(Enum):
+    """
+    Decides how a DualBandClamp will handle a zero
+    """
+    LIFT = 0,
+    """Lift the zero to the positive band"""
+    LOWER = 1,
+    """Lower the zero to the negative band"""
+    PASSTHROUGH = 2,
+    """Pass the zero to the output"""
+
+
 class DualBandClamp(SignalProcessingBlock[float, float]):
     """
     Clamps and lifts a signal onto a symmetric dual-band. Zero will always
     be lifted onto the positive band.
     """
 
-    def __init__(self, out_min: float = 15, out_max: float = 100):
+    def __init__(self,
+                 *,
+                 out_min: float = 15,
+                 out_max: float = 100,
+                 zero_policy: DualBandClampZeroPolicy = DualBandClampZeroPolicy.PASSTHROUGH):
         """
         Create a new dual-band clamp
         :param out_min: The absolute minimum that a value will be lifted to
         :param out_max: The absolute maximum that a value will be clamped to
+        :param zero_policy: The zero policy to use
         """
         self.__out_min: float = out_min
         self.__out_max: float = out_max
+        self.__zero_policy: DualBandClampZeroPolicy = zero_policy
 
     @property
     def out_min(self) -> float:
@@ -285,6 +304,14 @@ class DualBandClamp(SignalProcessingBlock[float, float]):
         :param value: A value to clamp or lift
         :return: The value clamped and lifted to the dual-band
         """
+        if value == 0:
+            if self.__zero_policy == DualBandClampZeroPolicy.PASSTHROUGH:
+                return 0
+            if self.__zero_policy == DualBandClampZeroPolicy.LIFT:
+                return self.out_min
+            if self.__zero_policy == DualBandClampZeroPolicy.LOWER:
+                return -self.out_min
+
         clamped = clamp(value, self.__out_max)
         return lift(clamped, self.__out_min)
 

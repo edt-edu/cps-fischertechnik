@@ -84,6 +84,12 @@ class PIDParameters(ControlParameters):
     """Parameters for a PID controller of an axis"""
     main_loop_delay: float
     """The delay of the main control loop in seconds"""
+    decimation_factor: int = 10
+    """The factor by how much the pid controller is slowed down compared to the
+    MachineController"""
+    smoothing_delay_seconds: float = 0.05
+    """How many seconds reaction delay will be introduced by smoothing out the
+    position signal"""
 
 
 @dataclass
