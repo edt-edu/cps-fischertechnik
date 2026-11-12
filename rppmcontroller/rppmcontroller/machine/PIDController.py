@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
@@ -403,6 +404,7 @@ class PIDController(SignalProcessingBlock[float, float]):
 
         # error
         error = self.target_value - value
+        logging.debug(f"error({error}) = target({self.target_value}) - value({value})")
 
         # error deadband
         if abs(error) < self.__error_deadband:
@@ -425,7 +427,9 @@ class PIDController(SignalProcessingBlock[float, float]):
                                   self.__integral_limit) if self.__integral_limit is not None else unclamped_integral_term
 
         # anti-windup; freeze the integral if pushing over limit
-        output = proportional_term + self.__integral_term + derivative_term
+        output = proportional_term + new_integral_term + derivative_term
+        logging.debug(f"o({output}) = p({proportional_term}) + i({new_integral_term}) + d({derivative_term})")
+
         pushing_high = self.__output_limit is not None and output > self.__output_limit and error > 0
         pushing_low = self.__output_limit is not None and output < -self.__output_limit and error < 0
         if not pushing_high and not pushing_low:
