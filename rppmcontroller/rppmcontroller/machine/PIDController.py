@@ -93,20 +93,31 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
     """A port exposing the target value to steer the controller"""
 
     @staticmethod
-    def from_opt_pid_parameters(parameters: PIDParameters | None) -> DiscretePIDController | None:
+    def from_opt_parameters(parameters: PIDParameters | None) -> DiscretePIDController | None:
         """
         Creates a DiscretePIDController from the given PIDParameters or returns None if the passed parameters are None.
         :param parameters: PIDParameters to create a DiscretePIDController from.
         :return: The created DiscretePIDController, if any
         """
-        if parameters is None:
-            return None
+        return DiscretePIDController.from_parameters(parameters) if parameters is not None else None
 
+    @staticmethod
+    def from_parameters(parameters: PIDParameters) -> DiscretePIDController:
+        """
+        Creates a new DiscretePIDController for pwm control from the given
+        parameters.
+        :param parameters: A PIDParameters instance
+        :return: The created pid controller
+        """
         return DiscretePIDController.for_pwm_control(
             rppm_controller_delay=parameters.main_loop_delay,
             decimation_factor=parameters.decimation_factor,
             smoothing_delay_seconds=parameters.smoothing_delay_seconds,
-            error_deadband=parameters.error_deadband)
+            error_deadband=parameters.error_deadband,
+            kp=parameters.kp,
+            ki=parameters.ki,
+            kd=parameters.kd
+        )
 
     @staticmethod
     def for_pwm_control(rppm_controller_delay: float,

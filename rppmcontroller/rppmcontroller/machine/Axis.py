@@ -32,7 +32,7 @@ class Axis:
         :return: The created axis
         """
         tolerance = parameters.tolerance if parameters.tolerance is not None else 0
-        pid_controller = DiscretePIDController.from_opt_pid_parameters(
+        pid_controller = DiscretePIDController.from_opt_parameters(
             parameters.control_parameters) if isinstance(parameters.control_parameters,
                                                          PIDParameters) else None
         pwm_control = parameters.control_parameters if isinstance(parameters.control_parameters,

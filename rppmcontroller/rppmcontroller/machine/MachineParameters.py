@@ -92,6 +92,12 @@ class PIDParameters(ControlParameters):
     position signal"""
     error_deadband: int = 3
     """encoder precision/tolerance"""
+    kp: float = 1
+    """Proportional gain"""
+    ki: float = 0
+    """Integral gain"""
+    kd: float = 0
+    """Differential gain"""
 
 
 @dataclass
