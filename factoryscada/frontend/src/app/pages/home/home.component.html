@@ -1,5 +1,29 @@
 
-<p-panel header="Configuration Status" >
+<p-panel header="FischerTechnik Factory SCADA - Configuration Status view" >
+  <ng-template pTemplate="icons">
+    <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
+    <p-overlayPanel #helpOP>
+      <p-accordion [activeIndex]="0">
+        <p-accordionTab header="Panel Description">
+          <p>This pages shows the configuration status of the factory. </p>
+          <p>This includes: </p>
+          <ul class="ui list">
+            <li>the status of the SCADA system</li>
+            <li>the status of the connected PLCs</li>
+            <li>the status of the machines (only those currently visible via their PLC). 
+              Each machine displays 2 informations buttons: its current status and the current command being executed.</li>
+          </ul>
+        </p-accordionTab>
+        <p-accordionTab header="How to use the Configuration Status View?">
+          <ul class="ui list">
+            <li>Click on any button to obtain a textual description of each information displayed on the corresponding button.</li>
+          </ul>
+          <p>Note: a machine may be active (ie. not idle) even if it is not currently executing a command 
+            as it might be still activating some engine (ex. a compressor)</p>
+        </p-accordionTab>
+      </p-accordion>
+    </p-overlayPanel>
+  </ng-template>
   <app-configuration-status-view></app-configuration-status-view>
 </p-panel>
 
