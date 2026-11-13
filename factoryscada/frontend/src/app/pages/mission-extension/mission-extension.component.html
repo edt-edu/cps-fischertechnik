@@ -1,198 +1,235 @@
 <p-toast position="top-right" />
 
-<p-tabView>
-  <!-- Tab 1: Global Mission -->
-  <p-tabPanel header="Mission">
-    <div class="tab-content">
-      <!-- Selector + buttons in one row -->
-      <div class="global-controls">
-        <p-dropdown [options]="globalMissions" [(ngModel)]="selectedGlobalMissionName" optionLabel="name"
-          optionValue="name" (onChange)="onGlobalMissionSelected()" [showClear]="true"
-          placeholder="Select a global mission" [style]="{ width: '18rem' }" />
 
-        <p-button label="Start" icon="pi pi-play" (click)="onStartGlobalMission()"
-          [disabled]="!selectedGlobalMission || isGlobalMissionActive" severity="success" size="small" />
-        <p-button label="Stop" icon="pi pi-stop" (click)="onStopGlobalMission()" [disabled]="!isGlobalMissionActive"
-          severity="danger" size="small" />
+<p-panel header="FischerTechnik Factory SCADA - Mission Extension">
+  <!-- Instructions Section -->
+  <ng-template pTemplate="icons">
+      <p-button class="right-0" (onClick)="helpOP.toggle($event)" icon="pi pi-question-circle" label="" />
+        <p-overlayPanel #helpOP>
+          <p-accordion [activeIndex]="0">
+            <p-accordionTab header="Panel Description">
+              <p>This view allows you to manage and monitor missions for the Fischertechnik Factory SCADA system. </p>
+              <p>The missions targeted by this view are those provided via the mission extension API. </p>
+              <p> A factroy mission is composed of a set of Machine Individual missions. Those individual "machines" includes virtual areas used as locks.
+              </p>
+              <p>The ➕ button allows to show the current state of each individual machine.</p>
+              <p></p>
+              <p>Note: only one mission can be active at a time. </p>
+              <p>Note: only missions with all valid machines can be started.</p>
+            </p-accordionTab>
+            <p-accordionTab header="How to use the Mission Extension View?">
+              Mission Tab
+              <ol class="ui list">
+                <li>Select a mission and click on start or stop </li>
+                <li>Each machine individual mission is a state machine.
+                   The global mission is a collection of machine individual missions that can be started and stopped together using the Mission tab. 
+              . </li>
+                <li>The individual missions indicates if they are part of a nominal scenario of part of an alternative scenario.</li>
+                <li>On the Mission tab you can view the list of the machines involved in the mission and who and when the mission was started.</li>
+                <li>The "<i>Mission changes</i>" line can be unfolded to display the history of each Machine Individual Mission.</li>
+              </ol>
+              Machine Individual Mission Tab
+              <ol class="ui list">
+                <li>Machine individual missions can be started and stopped independently using the Machine Individual Mission tab (WIP).</li>
 
-        @if (isGlobalMissionActive) {
-        <span class="status-badge active">Running</span>
-        }
-        @if (isGlobalMissionActive && missionConfiguration?.configurationModified) {
-        <span class="status-badge modified">{{ lastChangeWasReplanning ? 'Modified by replanning' : 'Modified' }}</span>
-        }
+              </ol>
+            </p-accordionTab>
+          </p-accordion>
+        </p-overlayPanel>
+  </ng-template>
+  <p-tabView>
+    <!-- Tab 1: Global Mission -->
+    <p-tabPanel header="Mission">
+      <div class="tab-content">
+        <!-- Selector + buttons in one row -->
+        <div class="global-controls">
+          <p-dropdown [options]="globalMissions" [(ngModel)]="selectedGlobalMissionName" optionLabel="name"
+            optionValue="name" (onChange)="onGlobalMissionSelected()" [showClear]="true"
+            placeholder="Select a global mission" [style]="{ width: '18rem' }" />
 
-        @if (selectedGlobalMission) {
-        <span class="description-inline">{{ selectedGlobalMission.description }}</span>
-        }
-      </div>
+          <p-button label="Start" icon="pi pi-play" (click)="onStartGlobalMission()"
+            [disabled]="!selectedGlobalMission || isGlobalMissionActive" severity="success" size="small" />
+          <p-button label="Stop" icon="pi pi-stop" (click)="onStopGlobalMission()" [disabled]="!isGlobalMissionActive"
+            severity="danger" size="small" />
 
-      <!-- The latest replanning: which machines it moved to which mission -->
-      @if (showReplanningBanner) {
-      <div class="replanning-banner" role="status">
-        <i class="pi pi-sync banner-icon"></i>
-        <div class="banner-body">
-          <div class="banner-title">
-            Missions changed by the replanning
-            <span class="banner-time">{{ lastReplanning[0].time | date: 'HH:mm:ss' }}</span>
-          </div>
-          <ul class="banner-changes">
-            @for (change of lastReplanning; track change.time + change.machine) {
-            <li>
-              <span class="change-machine">{{ change.machine }}</span>
-              <span class="mission-from">{{ describeMission(change.previousMission, change.previousState) }}</span>
-              <i class="pi pi-arrow-right"></i>
-              @if (change.mission) {
-              <span class="mission-to">{{ describeMission(change.mission, change.state) }}</span>
-              } @else {
-              <span class="mission-stopped">stopped</span>
+          @if (isGlobalMissionActive) {
+          <span class="status-badge active">Running</span>
+          }
+          @if (isGlobalMissionActive && missionConfiguration?.configurationModified) {
+          <span class="status-badge modified">{{ lastChangeWasReplanning ? 'Modified by replanning' : 'Modified' }}</span>
+          }
+
+          @if (selectedGlobalMission) {
+          <span class="description-inline">{{ selectedGlobalMission.description }}</span>
+          }
+        </div>
+
+        <!-- The latest replanning: which machines it moved to which mission -->
+        @if (showReplanningBanner) {
+        <div class="replanning-banner" role="status">
+          <i class="pi pi-sync banner-icon"></i>
+          <div class="banner-body">
+            <div class="banner-title">
+              Missions changed by the replanning
+              <span class="banner-time">{{ lastReplanning[0].time | date: 'HH:mm:ss' }}</span>
+            </div>
+            <ul class="banner-changes">
+              @for (change of lastReplanning; track change.time + change.machine) {
+              <li>
+                <span class="change-machine">{{ change.machine }}</span>
+                <span class="mission-from">{{ describeMission(change.previousMission, change.previousState) }}</span>
+                <i class="pi pi-arrow-right"></i>
+                @if (change.mission) {
+                <span class="mission-to">{{ describeMission(change.mission, change.state) }}</span>
+                } @else {
+                <span class="mission-stopped">stopped</span>
+                }
+              </li>
               }
+            </ul>
+          </div>
+          <p-button icon="pi pi-times" [text]="true" [rounded]="true" size="small" severity="secondary"
+            ariaLabel="Dismiss" (click)="dismissReplanningBanner()" />
+        </div>
+        }
+
+        <!-- The current state: one panel per machine, with the mission it runs (or the one stopped), and how it got there -->
+        @if (shouldShowMissionsDetail) {
+        <div class="missions-detail">
+          <h4 class="section-title">Current state</h4>
+          @for (entry of missionDisplayEntries; track entry.mission) {
+          <p-panel [toggleable]="true" [collapsed]="!expandedMissions.has(entry.mission)"
+            [styleClass]="missionPanelClass(entry)" (collapsedChange)="onMissionPanelToggle(entry.mission, $event)">
+            <ng-template pTemplate="header">
+              <div class="panel-header-content">
+                @if (entry.machine) {
+                <span class="panel-machine" title="{{ entry.machine.type }}">{{ entry.machine.name }}</span>
+                }
+                @switch (entryStatus(entry)) {
+                @case ('nominal') { <span class="status-pill nominal">Nominal</span> }
+                @case ('alternative') { <span class="status-pill alternative">Alternative</span> }
+                @case ('stopped') { <span class="status-pill stopped">Stopped</span> }
+                @default { <span class="status-pill none">Not running</span> }
+                }
+                <span class="panel-mission">
+                  @if (replacedMission(entry); as replaced) {
+                  <span class="mission-from" title="Replaced mission">{{ replaced }}</span>
+                  <i class="pi pi-arrow-right"></i>
+                  }
+                  <span class="panel-mission-name" [class.mission-to]="entryStatus(entry) === 'alternative'">
+                    {{ entry.mission }}
+                  </span>
+                </span>
+                @if (entryStatus(entry) === 'nominal' || entryStatus(entry) === 'alternative') {
+                <span class="panel-state" [class.idle]="!isMissionCommandRunning(entry.mission)">
+                  {{ getMissionActiveState(entry.mission) || '—' }}
+                </span>
+                <span class="panel-command" [class.executing]="isMissionCommandRunning(entry.mission)">
+                  @if (isMissionCommandRunning(entry.mission)) {
+                  <i class="pi pi-spin pi-spinner"></i>
+                  } @else {
+                  Idle
+                  }
+                </span>
+                }
+                <span class="panel-separator"></span>
+                @if (otherMachines(entry).length > 0) {
+                <span class="panel-machines" title="Other machines of the mission">
+                  @for (m of otherMachines(entry); track m) {
+                  <span class="machine-id">{{ m }}</span>
+                  }
+                </span>
+                }
+                <span class="panel-change">
+                  @if (entryChange(entry); as change) {
+                  <span class="mission-tag" [class.replanning]="change.origin === 'REPLANNING'">
+                    {{ change.origin === 'REPLANNING' ? 'Replanning' : 'Operator' }}
+                  </span>
+                  }
+                  {{ entry.machine?.lastChangeTime ? (entry.machine?.lastChangeTime | date: 'HH:mm:ss') : '' }}
+                </span>
+              </div>
+            </ng-template>
+            <!-- Expanded content: state machine (active state highlighted), then logs -->
+            @if (expandedMissions.has(entry.mission)) {
+            <app-mission-state-graph-widget [dotGraph]="getMissionDotGraph(entry.mission)"
+              [activeState]="getMissionActiveState(entry.mission)" />
+            }
+            <div class="log-list" #logList>
+              @for (log of getMissionLogs(entry.mission); track $index) {
+              <div class="log-entry">
+                <span class="log-msg">{{ log }}</span>
+              </div>
+              }
+              @if (getMissionLogs(entry.mission).length === 0) {
+              <div class="log-entry empty">No activity yet</div>
+              }
+            </div>
+          </p-panel>
+          }
+        </div>
+        }
+
+        @if (missionChanges.length > 0) {
+        <p-panel header="Mission changes ({{ missionChanges.length }})" [toggleable]="true" [collapsed]="true"
+          styleClass="changes-panel">
+          <ul class="changes-list">
+            @for (change of missionChanges; track change.time + change.machine) {
+            <li class="change" [class.replanning]="change.origin === 'REPLANNING'">
+              <span class="change-time">{{ change.time | date: 'HH:mm:ss' }}</span>
+              <span class="mission-tag" [class.replanning]="change.origin === 'REPLANNING'">
+                {{ change.origin === 'REPLANNING' ? 'Replanning' : 'Operator' }}
+              </span>
+              <span class="change-machine">{{ change.machine }}</span>
+              <span class="change-detail">
+                <span class="mission-from">{{ describeMission(change.previousMission, change.previousState) }}</span>
+                <i class="pi pi-arrow-right"></i>
+                @if (change.mission) {
+                <span>{{ describeMission(change.mission, change.state) }}</span>
+                } @else {
+                <span class="mission-stopped">stopped</span>
+                }
+              </span>
             </li>
             }
           </ul>
-        </div>
-        <p-button icon="pi pi-times" [text]="true" [rounded]="true" size="small" severity="secondary"
-          ariaLabel="Dismiss" (click)="dismissReplanningBanner()" />
-      </div>
-      }
-
-      <!-- The current state: one panel per machine, with the mission it runs (or the one stopped), and how it got there -->
-      @if (shouldShowMissionsDetail) {
-      <div class="missions-detail">
-        <h4 class="section-title">Current state</h4>
-        @for (entry of missionDisplayEntries; track entry.mission) {
-        <p-panel [toggleable]="true" [collapsed]="!expandedMissions.has(entry.mission)"
-          [styleClass]="missionPanelClass(entry)" (collapsedChange)="onMissionPanelToggle(entry.mission, $event)">
-          <ng-template pTemplate="header">
-            <div class="panel-header-content">
-              @if (entry.machine) {
-              <span class="panel-machine" title="{{ entry.machine.type }}">{{ entry.machine.name }}</span>
-              }
-              @switch (entryStatus(entry)) {
-              @case ('nominal') { <span class="status-pill nominal">Nominal</span> }
-              @case ('alternative') { <span class="status-pill alternative">Alternative</span> }
-              @case ('stopped') { <span class="status-pill stopped">Stopped</span> }
-              @default { <span class="status-pill none">Not running</span> }
-              }
-              <span class="panel-mission">
-                @if (replacedMission(entry); as replaced) {
-                <span class="mission-from" title="Replaced mission">{{ replaced }}</span>
-                <i class="pi pi-arrow-right"></i>
-                }
-                <span class="panel-mission-name" [class.mission-to]="entryStatus(entry) === 'alternative'">
-                  {{ entry.mission }}
-                </span>
-              </span>
-              @if (entryStatus(entry) === 'nominal' || entryStatus(entry) === 'alternative') {
-              <span class="panel-state" [class.idle]="!isMissionCommandRunning(entry.mission)">
-                {{ getMissionActiveState(entry.mission) || '—' }}
-              </span>
-              <span class="panel-command" [class.executing]="isMissionCommandRunning(entry.mission)">
-                @if (isMissionCommandRunning(entry.mission)) {
-                <i class="pi pi-spin pi-spinner"></i>
-                } @else {
-                Idle
-                }
-              </span>
-              }
-              <span class="panel-separator"></span>
-              @if (otherMachines(entry).length > 0) {
-              <span class="panel-machines" title="Other machines of the mission">
-                @for (m of otherMachines(entry); track m) {
-                <span class="machine-id">{{ m }}</span>
-                }
-              </span>
-              }
-              <span class="panel-change">
-                @if (entryChange(entry); as change) {
-                <span class="mission-tag" [class.replanning]="change.origin === 'REPLANNING'">
-                  {{ change.origin === 'REPLANNING' ? 'Replanning' : 'Operator' }}
-                </span>
-                }
-                {{ entry.machine?.lastChangeTime ? (entry.machine?.lastChangeTime | date: 'HH:mm:ss') : '' }}
-              </span>
-            </div>
-          </ng-template>
-          <!-- Expanded content: state machine (active state highlighted), then logs -->
-          @if (expandedMissions.has(entry.mission)) {
-          <app-mission-state-graph-widget [dotGraph]="getMissionDotGraph(entry.mission)"
-            [activeState]="getMissionActiveState(entry.mission)" />
-          }
-          <div class="log-list" #logList>
-            @for (log of getMissionLogs(entry.mission); track $index) {
-            <div class="log-entry">
-              <span class="log-msg">{{ log }}</span>
-            </div>
-            }
-            @if (getMissionLogs(entry.mission).length === 0) {
-            <div class="log-entry empty">No activity yet</div>
-            }
-          </div>
         </p-panel>
         }
       </div>
-      }
+    </p-tabPanel>
 
-      @if (missionChanges.length > 0) {
-      <p-panel header="Mission changes ({{ missionChanges.length }})" [toggleable]="true" [collapsed]="true"
-        styleClass="changes-panel">
-        <ul class="changes-list">
-          @for (change of missionChanges; track change.time + change.machine) {
-          <li class="change" [class.replanning]="change.origin === 'REPLANNING'">
-            <span class="change-time">{{ change.time | date: 'HH:mm:ss' }}</span>
-            <span class="mission-tag" [class.replanning]="change.origin === 'REPLANNING'">
-              {{ change.origin === 'REPLANNING' ? 'Replanning' : 'Operator' }}
-            </span>
-            <span class="change-machine">{{ change.machine }}</span>
-            <span class="change-detail">
-              <span class="mission-from">{{ describeMission(change.previousMission, change.previousState) }}</span>
-              <i class="pi pi-arrow-right"></i>
-              @if (change.mission) {
-              <span>{{ describeMission(change.mission, change.state) }}</span>
-              } @else {
-              <span class="mission-stopped">stopped</span>
-              }
-            </span>
-          </li>
+    <!-- Tab 2: Machine Individual Mission -->
+    <p-tabPanel header="Machine Individual Mission">
+      <div class="tab-content">
+        <div class="individual-controls">
+          <p-dropdown [options]="allMissionOptions" [(ngModel)]="selectedIndividualMissionName" optionLabel="name"
+            optionValue="name" (onChange)="onIndividualMissionSelected()" [showClear]="true"
+            placeholder="Select a mission" [style]="{ width: '16rem' }" />
+          <p-dropdown [options]="compatibleMachines" [(ngModel)]="selectedIndividualMachineName" optionLabel="name"
+            optionValue="name" [disabled]="!selectedIndividualMissionName" placeholder="Select a machine"
+            [style]="{ width: '14rem' }" />
+          <p-button label="Start" icon="pi pi-play" (click)="onStartIndividualMission()" [disabled]="!canStartIndividual"
+            severity="success" size="small" />
+          <p-button label="Stop" icon="pi pi-stop" (click)="onStopIndividualMission()" [disabled]="!canStopIndividual"
+            severity="danger" size="small" />
+        </div>
+
+        @if (selectedIndividualMissionName) {
+        <p class="description-inline">{{ selectedIndividualMissionDescription }}</p>
+        }
+
+        @if (hasAnyRunningMission) {
+        <div class="running-missions">
+          <span class="label">Running:</span>
+          @for (machine of machines; track machine.name) {
+          @if (machine.activeMissionName) {
+          <span class="running-chip">{{ machine.name }}: {{ machine.activeMissionName }}</span>
           }
-        </ul>
-      </p-panel>
-      }
-    </div>
-  </p-tabPanel>
-
-  <!-- Tab 2: Machine Individual Mission -->
-  <p-tabPanel header="Machine Individual Mission">
-    <div class="tab-content">
-      <div class="individual-controls">
-        <p-dropdown [options]="allMissionOptions" [(ngModel)]="selectedIndividualMissionName" optionLabel="name"
-          optionValue="name" (onChange)="onIndividualMissionSelected()" [showClear]="true"
-          placeholder="Select a mission" [style]="{ width: '16rem' }" />
-        <p-dropdown [options]="compatibleMachines" [(ngModel)]="selectedIndividualMachineName" optionLabel="name"
-          optionValue="name" [disabled]="!selectedIndividualMissionName" placeholder="Select a machine"
-          [style]="{ width: '14rem' }" />
-        <p-button label="Start" icon="pi pi-play" (click)="onStartIndividualMission()" [disabled]="!canStartIndividual"
-          severity="success" size="small" />
-        <p-button label="Stop" icon="pi pi-stop" (click)="onStopIndividualMission()" [disabled]="!canStopIndividual"
-          severity="danger" size="small" />
-      </div>
-
-      @if (selectedIndividualMissionName) {
-      <p class="description-inline">{{ selectedIndividualMissionDescription }}</p>
-      }
-
-      @if (hasAnyRunningMission) {
-      <div class="running-missions">
-        <span class="label">Running:</span>
-        @for (machine of machines; track machine.name) {
-        @if (machine.activeMissionName) {
-        <span class="running-chip">{{ machine.name }}: {{ machine.activeMissionName }}</span>
-        }
+          }
+        </div>
         }
       </div>
-      }
-    </div>
-  </p-tabPanel>
-</p-tabView>
-
+    </p-tabPanel>
+  </p-tabView>
+</p-panel>
 <app-log-table-widget />

@@ -22,6 +22,8 @@ import { MyRxStompService } from '../../services/my-rx-stomp.service';
 import { MissionExtensionHttpService } from '../../services/mission-extension-http.service';
 import { LogTableWidgetComponent } from '../../widgets/log-table-widget/log-table-widget.component';
 import { MissionStateGraphWidgetComponent } from '../../widgets/mission-state-graph-widget/mission-state-graph-widget.component';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { AccordionModule } from 'primeng/accordion';
 
 /** A mission of the current state, and the machine it is bound to (none if no listed machine runs it). */
 interface MissionEntry {
@@ -43,7 +45,9 @@ interface MissionEntry {
     PanelModule,
     TabViewModule,
     ToastModule,
-  ],
+    OverlayPanelModule,
+    AccordionModule
+],
   providers: [MessageService],
   templateUrl: './mission-extension.component.html',
   styleUrl: './mission-extension.component.scss',
