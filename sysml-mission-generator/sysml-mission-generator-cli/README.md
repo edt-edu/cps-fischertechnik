@@ -13,7 +13,7 @@ The command
 cd sysml-mission-generator-cli
 mvn clean package   
 ```
-produces `target/sysml-mission-generator-cli-1.0.0-SNAPSHOT-standalone.jar` (recommanded version as it includes all its dependencies and is able to run standalone) and `target/sysml-mission-generator-cli-1.0.0-SNAPSHOT.jar` (wihtout dependencies that may me embedded in other frontend build).
+produces `target/sysml-mission-generator-cli-1.1.0-SNAPSHOT-standalone.jar` (recommanded version as it includes all its dependencies and is able to run standalone) and `target/sysml-mission-generator-cli-1.1.0-SNAPSHOT.jar` (wihtout dependencies that may me embedded in other frontend build).
 
 
 However, most changes usually occurs in the `sysml-mission-generator` module, sot the recommanded command is to run `mvn clean package` in the parent folder.
@@ -21,7 +21,7 @@ However, most changes usually occurs in the `sysml-mission-generator` module, so
 ## Running the tool
 
 ```bash
-java -jar target/sysml-mission-generator-cli-1.0.0-SNAPSHOT-standalone.jar -h
+java -jar target/sysml-mission-generator-cli-1.1.0-SNAPSHOT-standalone.jar -h
 ```
 
 Displays the help message:
@@ -42,7 +42,7 @@ Generates missions java code from one or more SysML files.
 ### Example invocation
 
 ```bash
-java -jar target/sysml-mission-generator-cli-1.0.0-SNAPSHOT-standalone.jar \
+java -jar target/sysml-mission-generator-cli-1.1.0-SNAPSHOT-standalone.jar \
      -i ../missions-design-models/common/common_def.sysml \
      -i ../missions-design-models/CB/cb_def.sysml \
      -i ../missions-design-models/VGR/vgr_def.sysml \

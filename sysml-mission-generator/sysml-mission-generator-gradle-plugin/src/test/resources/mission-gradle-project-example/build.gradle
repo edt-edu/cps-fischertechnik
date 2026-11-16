@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.0.0-SNAPSHOT'
+    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.1.0-SNAPSHOT'
 }
 
 group = 'org.gemoc.mbdo'
@@ -23,7 +23,7 @@ sysmlGenerator {
 }
 
 dependencies {
-    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime:1.0.0-SNAPSHOT'
+    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime:1.1.0-SNAPSHOT'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
