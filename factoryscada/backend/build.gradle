@@ -47,6 +47,26 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+sysmlGenerator {
+    inputFiles = files(	'../../sysml-mission-generator/missions-design-models/common/common_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/zones/zones_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/CB/cb_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/VGR/vgr_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/MPS/mps_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/SL/sl_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/CB/cb_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/VGR/vgr_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/VGR/vgr_cb_failure_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/SL/sl_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/MPS/mps_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/zones/zones_missions_def.sysml'
+    )
+    basePackageName = 'fr.inria.mbdo.mission.extensions.ren_mission_01'
+    //outputDirectory = file('generated-src/sysml')
+
+}
+
 /*bootJar {
     enabled = false
 }
