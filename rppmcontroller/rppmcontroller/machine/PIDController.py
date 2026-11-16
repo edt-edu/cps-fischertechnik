@@ -430,8 +430,9 @@ class PIDController(SignalProcessingBlock[float, float]):
         proportional_term = self.__kp * error
 
         # differential
-        velocity = (
-                       value - self.__previous_input) / self.__control_period_seconds if self.__previous_input is not None else 0
+        input_difference = value - self.__previous_input if self.__previous_input is not None else 0
+        velocity = input_difference / self.__control_period_seconds
+        logging.debug(f"velocity: {velocity} steps/sec (derived from input difference of {input_difference})")
         self.__previous_input = value
         derivative_term = -self.__kd * velocity  # negative since we want to dampen -> add a velocity in the opposed direction
 
