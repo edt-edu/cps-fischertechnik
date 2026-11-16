@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ##################################
 # Stage 1: Build the application
 ##################################
@@ -12,7 +13,12 @@ COPY build.gradle settings.gradle ./
 COPY src ./src
 
 # Build the application (no test)
-RUN gradle assemble --no-daemon
+# GitHub Packages credentials are needed to resolve the sysml-mission-generator plugin.
+# They are passed as BuildKit secrets so they never end up in an image layer:
+#   docker build --secret id=gpr_user,env=GITHUB_ACTOR --secret id=gpr_token,env=GITHUB_TOKEN .
+RUN --mount=type=secret,id=gpr_user,env=GITHUB_ACTOR \
+    --mount=type=secret,id=gpr_token,env=GITHUB_TOKEN \
+    gradle assemble --no-daemon
 
 ##################################
 # Stage 2: Package the application
