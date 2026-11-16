@@ -7,7 +7,7 @@ plugins {
     id 'com.diffplug.eclipse.apt' version '3.37.2'
     // generation of the SysML mission code from the SysML models (must be moved later to a separate module)
 
-    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.0.0-SNAPSHOT'
+    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.1.0-SNAPSHOT'
 }
 
 group = 'io.github.mbdo'
@@ -25,6 +25,25 @@ configurations {
 
 repositories {
     mavenCentral()
+    // sysml-mission-runtime (required by the code produced by the sysml-mission-generator).
+    // GitHub Packages requires authentication, even for public packages.
+    // Local dev: gpr.user / gpr.key in ~/.gradle/gradle.properties
+    // GitHub Actions / Docker: GITHUB_ACTOR / GITHUB_TOKEN environment variables
+    maven {
+        name = 'GitHubPackages'
+        url = uri('https://maven.pkg.github.com/edt-edu/cps-fischertechnik')
+        credentials {
+            username = providers.gradleProperty('gpr.user')
+                    .orElse(providers.environmentVariable('GITHUB_ACTOR'))
+                    .orNull
+            password = providers.gradleProperty('gpr.key')
+                    .orElse(providers.environmentVariable('GITHUB_TOKEN'))
+                    .orNull
+        }
+        content {
+            includeGroupByRegex 'fr\\.inria\\.mbdo\\.mission.*'
+        }
+    }
 }
 
 dependencies {
@@ -38,7 +57,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-integration'
     implementation 'org.springframework.integration:spring-integration-mqtt'
-    // implementation 'fr.inria.mbdo.mission:sysml-mission-runtime'
+    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime:1.1.0-SNAPSHOT'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
