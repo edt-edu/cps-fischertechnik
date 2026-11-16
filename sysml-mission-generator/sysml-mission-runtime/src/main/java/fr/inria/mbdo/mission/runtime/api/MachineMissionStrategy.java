@@ -26,6 +26,25 @@ public interface MachineMissionStrategy {
     void start();
 
     /**
+     * start the mission directly in the given state, without running its entry action: used to migrate a machine
+     * from another mission once its state was reconciled with that state.
+     *
+     * @param stateName name of the state to start in
+     * @throws IllegalArgumentException if the mission has no such state
+     */
+    void startAt(String stateName);
+
+    /**
+     * @return true between {@link #start()} (or {@link #startAt(String)}) and {@link #stop()}
+     */
+    boolean isRunning();
+
+    /**
+     * @return the names of the states of the mission, in discovery order from the initial state
+     */
+    List<String> getStateNames();
+
+    /**
      * gracefully stop all the ongoing commands and stop the mission control
      */
     void stop();
