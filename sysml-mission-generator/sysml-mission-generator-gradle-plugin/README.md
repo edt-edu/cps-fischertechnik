@@ -18,7 +18,7 @@ as part of your gradle build pipeline.
 ```kotlin
 plugins {
     // Apply the plugin from Maven Central
-    id("edu.edt.sysml.generator") version "1.0.0-SNAPSHOT"
+    id("edu.edt.sysml.generator") version "1.1.0-SNAPSHOT"
 }
 ```
 
