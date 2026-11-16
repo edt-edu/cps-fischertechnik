@@ -92,6 +92,8 @@ class PIDParameters(ControlParameters):
     position signal"""
     error_deadband: int = 3
     """encoder precision/tolerance"""
+    minimum_output: int = 15
+    """The minimum required pid value for the axis to move"""
     kp: float = 1
     """Proportional gain"""
     ki: float = 0

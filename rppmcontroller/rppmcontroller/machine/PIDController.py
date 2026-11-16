@@ -115,6 +115,7 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
             decimation_factor=parameters.decimation_factor,
             smoothing_delay_seconds=parameters.smoothing_delay_seconds,
             error_deadband=parameters.error_deadband,
+            minimum_output=parameters.minimum_output,
             kp=parameters.kp,
             ki=parameters.ki,
             kd=parameters.kd,
@@ -127,6 +128,7 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
                         decimation_factor: int = 10,
                         smoothing_delay_seconds: float = 0.08,
                         error_deadband: float = 3.0,
+                        minimum_output: float = 15,
                         kp: float = 1,
                         ki: float = 0,
                         kd: float = 0,
@@ -157,6 +159,7 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
         :param error_deadband: How large the absolute deviation between the
             target position and the current position may be, before a control
             action is triggered.
+        :param minimum_output: The minimum output of the PID controller.
         :param kp: The proportional gain.
         :param ki: The integral gain.
         :param kd: The derivative gain.
@@ -179,7 +182,8 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
                             integral_limit=integral_limit)
         target_value_port = InPort[int](lambda: int(pid.target_value),
                                         lambda value: pid.set_target(value))
-        dual_band_clamp = DualBandClamp(out_min=15, out_max=output_limit)
+        dual_band_clamp = DualBandClamp(out_min=minimum_output,
+                                        out_max=output_limit)
         rounder = RoundToInt()
 
         pipeline = lowpass | pid | dual_band_clamp | rounder
