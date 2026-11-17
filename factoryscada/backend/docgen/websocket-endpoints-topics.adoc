@@ -190,9 +190,9 @@
 |<<incoming_indexedline-machinename-command-stop,/&#8203;indexedline/&#8203;{machinename}/&#8203;command/&#8203;stop>>
 |  
 
-|LogsWebSocketController.&#8203;requestFrontendLogs()
+|LogsController.&#8203;requestFrontendLogs()
 |<<incoming_logs-request,/&#8203;logs/&#8203;request>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
 
 |MissionExtensionController.&#8203;getConfigurationStomp()
 |<<incoming_mission-extension-configuration,/&#8203;mission-extension/&#8203;configuration>>
@@ -476,16 +476,6 @@
 |===
 
 == Incoming Topics
-
-[[incoming_logs-request]]
-===  Incoming Topic: `/logs/request`
-
-Declared in `io.github.mbdo.factoryscada.frontend.WebSocketPublisher$LogsWebSocketController.requestFrontendLogs()`
-
-==== Parameters
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_conveyorbelt-machinename-command-status]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command-status`
@@ -2784,6 +2774,15 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 
 NOTE: This endpoint does not send a response back via a topic.
+
+[[incoming_logs-request]]
+===  Incoming Topic: `/logs/request`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.LogsController.requestFrontendLogs()`
+
+*Publishes to:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
+
+==== Parameters
 
 [[incoming_mission-extension-configuration]]
 ===  Incoming Topic: `/mission-extension/configuration`
@@ -5816,6 +5815,7 @@ NOTE: This endpoint does not send a response back via a topic.
 == Outgoing Topics
 
 
+[[outgoing_topic-machinename-command-status]]
 === Outgoing Topic: `/topic/{machineName}/command-status`
 _Broadcasts Command status updates_
 
@@ -5854,6 +5854,7 @@ Payload: `CommandStatusDTO`
   }
 }
 
+[[outgoing_topic-controller-feedbacks]]
 === Outgoing Topic: `/topic/controller-feedbacks`
 _Broadcasts raw feedback from the controller_
 
@@ -5862,6 +5863,7 @@ Payload: `String`
   "type" : "string"
 }
 
+[[outgoing_topic-frontend-logs]]
 === Outgoing Topic: `/topic/frontend-logs`
 _All logs that should appear in the frontend_
 
@@ -5870,6 +5872,7 @@ Payload: `String`
   "type" : "string"
 }
 
+[[outgoing_topic-machinename-machine-status]]
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 _Broadcasts Machine status updates_
 
@@ -5908,6 +5911,7 @@ Payload: `CommandStatusDTO`
   }
 }
 
+[[outgoing_topic-controllername-plc-connection-status]]
 === Outgoing Topic: `/topic/{controllerName}/plc-connection-status`
 _Broadcasts PLC connection status updates_
 

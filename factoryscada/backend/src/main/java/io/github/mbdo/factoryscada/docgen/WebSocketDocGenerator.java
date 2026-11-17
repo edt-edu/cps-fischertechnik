@@ -1,5 +1,7 @@
 package io.github.mbdo.factoryscada.docgen;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -9,15 +11,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.aop.support.AopUtils;
+import org.springframework.asm.ClassReader;
+import org.springframework.asm.ClassVisitor;
+import org.springframework.asm.Handle;
+import org.springframework.asm.MethodVisitor;
+import org.springframework.asm.Opcodes;
+import org.springframework.asm.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -61,6 +73,11 @@ import lombok.extern.slf4j.Slf4j;
  * The output is deterministic for a given application: beans, methods, overview entries and JSON schema
  * properties are all sorted, so that regenerating the file only produces git differences when the
  * protocol actually changes (reflection and bean scanning order are otherwise not stable across builds).
+ * <p>
+ * The bytecode of each {@code @MessageMapping} method is scanned (with Spring's bundled ASM) to detect direct
+ * calls to {@link WebSocketPublish} methods, including calls made inside lambdas or method references
+ * declared in the handler. The corresponding topics are reported as "Publishes to" of the incoming topic.
+ * Calls made indirectly (e.g. through a service) are not followed.
  * <p>
  * Note: messages sent directly with {@code SimpMessagingTemplate.convertAndSend} are not detected;
  * wrap such calls in a method annotated with {@link WebSocketPublish} so they get documented.
@@ -187,6 +204,17 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     if(method.isAnnotationPresent(SendTo.class)) {
                         doc.append("*Send To:* `").append(sendToPath).append("`\n\n");
                     }
+                    Set<String> publishedTopics = findPublishedTopics(method);
+                    if (!publishedTopics.isEmpty()) {
+                        for (String publishedTopic : publishedTopics) {
+                            this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), publishedTopic);
+                        }
+                        doc.append("*Publishes to:* ")
+                           .append(publishedTopics.stream()
+                                .map(t -> "<<outgoing_" + toAsciiDocAnchor(t) + "," + toSplittaString(t) + ">>")
+                                .collect(Collectors.joining(", ")))
+                           .append("\n\n");
+                    }
                     doc.append("==== Parameters\n\n");
                     for (Parameter param : method.getParameters()) {
                         String type = param.getType().getSimpleName();
@@ -213,7 +241,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                             doc.append(buildJsonSchema(method.getReturnType()));
                             doc.append("----\n\n");
                         }
-                    } else {
+                    } else if (publishedTopics.isEmpty()) {
                         doc.append("\nNOTE: This endpoint does not send a response back via a topic.\n\n");
                     }
                 }
@@ -239,6 +267,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     String desc = wsPub.description();
                     Class<?> payloadClass = wsPub.payload();
                     
+                    doc.append("\n[[outgoing_" + toAsciiDocAnchor(topic) + "]]");
                     doc.append("\n=== Outgoing Topic: `").append(topic).append("`\n");
                     this.addTopicInMap(this.methodToOutgoingTopicMap,clazz.getSimpleName(), method.getName(), topic);
                     if (!desc.isEmpty()) {
@@ -360,6 +389,93 @@ public class WebSocketDocGenerator implements ApplicationRunner {
            clazz == Boolean.class ||
            clazz == Character.class ||
            clazz.isEnum();
+    }
+
+    /**
+     * Return the topics of the {@link WebSocketPublish} methods directly called by the given handler method,
+     * including calls made in the lambdas declared in this handler and method references to publish methods.
+     * Detection is done by scanning the bytecode of the handler's declaring class.
+     */
+    private Set<String> findPublishedTopics(Method handler) {
+        Set<String> topics = new TreeSet<>();
+        Class<?> owner = handler.getDeclaringClass();
+        scanMethodForPublishedTopics(owner, handler.getName(), Type.getMethodDescriptor(handler), new HashSet<>(), topics);
+        return topics;
+    }
+
+    /**
+     * Scan the bytecode of the method {@code methodName}/{@code methodDesc} of {@code owner}, adding to {@code topics}
+     * the topics of the called {@link WebSocketPublish} methods. Synthetic lambda bodies of the same class are scanned recursively.
+     */
+    private void scanMethodForPublishedTopics(Class<?> owner, String methodName, String methodDesc,
+            Set<String> visitedMethods, Set<String> topics) {
+        if (!visitedMethods.add(methodName + methodDesc)) {
+            return; // already scanned
+        }
+        String ownerInternalName = Type.getInternalName(owner);
+        Set<String[]> lambdaBodies = new LinkedHashSet<>(); // {name, desc} of the lambdas declared in this method
+        String resource = ownerInternalName + ".class";
+        ClassLoader classLoader = owner.getClassLoader() != null ? owner.getClassLoader() : ClassLoader.getSystemClassLoader();
+        try (InputStream in = classLoader.getResourceAsStream(resource)) {
+            if (in == null) {
+                log.warn("Cannot read bytecode of " + owner.getName() + ", published topics of its handlers are not detected");
+                return;
+            }
+            new ClassReader(in).accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override
+                public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                    if (!name.equals(methodName) || !desc.equals(methodDesc)) {
+                        return null;
+                    }
+                    return new MethodVisitor(Opcodes.ASM9) {
+                        @Override
+                        public void visitMethodInsn(int opcode, String calleeOwner, String calleeName, String calleeDesc, boolean isInterface) {
+                            findWebSocketPublish(classLoader, calleeOwner, calleeName, calleeDesc)
+                                .ifPresent(wsPub -> topics.add(wsPub.value()));
+                        }
+
+                        @Override
+                        public void visitInvokeDynamicInsn(String name, String desc, Handle bootstrapMethod, Object... bootstrapArgs) {
+                            // lambdas and method references: the implementation method is given as a Handle argument
+                            for (Object arg : bootstrapArgs) {
+                                if (arg instanceof Handle implementation) {
+                                    Optional<WebSocketPublish> wsPub = findWebSocketPublish(classLoader,
+                                            implementation.getOwner(), implementation.getName(), implementation.getDesc());
+                                    if (wsPub.isPresent()) {
+                                        topics.add(wsPub.get().value()); // method reference such as publisher::sendFrontendLogs
+                                    } else if (implementation.getOwner().equals(ownerInternalName)) {
+                                        lambdaBodies.add(new String[] { implementation.getName(), implementation.getDesc() });
+                                    }
+                                }
+                            }
+                        }
+                    };
+                }
+            }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        } catch (IOException e) {
+            log.warn("Error reading bytecode of " + owner.getName(), e);
+            return;
+        }
+        for (String[] lambdaBody : lambdaBodies) {
+            scanMethodForPublishedTopics(owner, lambdaBody[0], lambdaBody[1], visitedMethods, topics);
+        }
+    }
+
+    /** Return the {@link WebSocketPublish} annotation of the given method (bytecode coordinates), if any. */
+    private Optional<WebSocketPublish> findWebSocketPublish(ClassLoader classLoader, String internalOwner, String name, String desc) {
+        if (internalOwner.startsWith("java/") || internalOwner.startsWith("[")) {
+            return Optional.empty(); // JDK classes and arrays never declare @WebSocketPublish
+        }
+        try {
+            Class<?> calleeClass = Class.forName(Type.getObjectType(internalOwner).getClassName(), false, classLoader);
+            return Arrays.stream(calleeClass.getMethods())
+                    .filter(m -> m.getName().equals(name) && Type.getMethodDescriptor(m).equals(desc))
+                    .map(m -> m.getAnnotation(WebSocketPublish.class))
+                    .filter(Objects::nonNull)
+                    .findFirst();
+        } catch (ClassNotFoundException | LinkageError e) {
+            return Optional.empty();
+        }
     }
 
     private void addTopicInMap(Map<String, Map<String, Set<String>>> map, String className, String methodName, String topic) {
