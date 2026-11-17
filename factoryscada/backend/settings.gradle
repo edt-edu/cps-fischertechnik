@@ -1,1 +1,67 @@
+pluginManagement {
+    // GitHub Packages requires authentication, even for public packages.
+    // Local dev: gpr.user / gpr.key in ~/.gradle/gradle.properties
+    // GitHub Actions / Docker: GITHUB_ACTOR / GITHUB_TOKEN environment variables
+    def gprUser = providers.gradleProperty('gpr.user')
+            .orElse(providers.environmentVariable('GITHUB_ACTOR'))
+            .orNull
+    def gprKey = providers.gradleProperty('gpr.key')
+            .orElse(providers.environmentVariable('GITHUB_TOKEN'))
+            .orNull
+
+    // GitHub Packages registries, each restricted to the groups it hosts
+    // so that other artifacts are not looked up there.
+    def githubRegistries = [
+            // sysml-mission-generator-gradle-plugin and its fr.inria.mbdo.mission dependencies
+            'GitHubPackages'   : [url: 'https://maven.pkg.github.com/edt-edu/cps-fischertechnik',
+                                  groupRegex: 'fr\\.inria\\.mbdo\\.mission.*'],
+            // transitive dependencies of the generator (SysON metamodel and Sirius Web / EMF JSON libraries)
+            'SysON'            : [url: 'https://maven.pkg.github.com/eclipse-syson/syson',
+                                  groupRegex: 'org\\.eclipse\\.(syson|sirius)(\\..*)?'],
+            'SiriusWeb'        : [url: 'https://maven.pkg.github.com/eclipse-sirius/sirius-web',
+                                  groupRegex: 'org\\.eclipse\\.(syson|sirius)(\\..*)?'],
+            'SiriusEmfJson'    : [url: 'https://maven.pkg.github.com/eclipse-sirius/sirius-emf-json',
+                                  groupRegex: 'org\\.eclipse\\.(syson|sirius)(\\..*)?'],
+    ]
+
+    repositories {
+        // Picks up a plugin you built yourself with publishToMavenLocal
+        mavenLocal()
+        githubRegistries.each { repoName, repo ->
+            maven {
+                name = repoName
+                url = uri(repo.url)
+                credentials {
+                    username = gprUser
+                    password = gprKey
+                }
+                content {
+                    includeGroupByRegex repo.groupRegex
+                }
+            }
+        }
+        // Acceleo AQL (required by Sirius Web). Maven finds it through the <repositories> of the
+        // sirius-components-interpreter pom, but Gradle ignores repositories declared in poms.
+        // Public, no authentication needed. Keep the URL in sync when upgrading SysON / Sirius Web.
+        maven {
+            name = 'EclipseAcceleo'
+            url = uri('https://download.eclipse.org/acceleo/updates/releases/4.2/R202510230846/')
+            content {
+                includeGroup 'org.eclipse.acceleo'
+            }
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+
+    resolutionStrategy {
+        eachPlugin {
+            // Map the plugin id to its Maven coordinates, in case no plugin marker artifact is published
+            if (requested.id.id == 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin') {
+                useModule("fr.inria.mbdo.mission:sysml-mission-generator-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+
 rootProject.name = 'factoryscada'

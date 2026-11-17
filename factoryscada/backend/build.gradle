@@ -5,6 +5,9 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.5'
     // Allow configuration calls for setting up the eclipse annotation processing configuration.
     id 'com.diffplug.eclipse.apt' version '3.37.2'
+    // generation of the SysML mission code from the SysML models (must be moved later to a separate module)
+
+    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.1.0-SNAPSHOT'
 }
 
 group = 'io.github.mbdo'
@@ -22,6 +25,25 @@ configurations {
 
 repositories {
     mavenCentral()
+    // sysml-mission-runtime (required by the code produced by the sysml-mission-generator).
+    // GitHub Packages requires authentication, even for public packages.
+    // Local dev: gpr.user / gpr.key in ~/.gradle/gradle.properties
+    // GitHub Actions / Docker: GITHUB_ACTOR / GITHUB_TOKEN environment variables
+    maven {
+        name = 'GitHubPackages'
+        url = uri('https://maven.pkg.github.com/edt-edu/cps-fischertechnik')
+        credentials {
+            username = providers.gradleProperty('gpr.user')
+                    .orElse(providers.environmentVariable('GITHUB_ACTOR'))
+                    .orNull
+            password = providers.gradleProperty('gpr.key')
+                    .orElse(providers.environmentVariable('GITHUB_TOKEN'))
+                    .orNull
+        }
+        content {
+            includeGroupByRegex 'fr\\.inria\\.mbdo\\.mission.*'
+        }
+    }
 }
 
 dependencies {
@@ -35,7 +57,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-integration'
     implementation 'org.springframework.integration:spring-integration-mqtt'
-    // implementation 'fr.inria.mbdo.mission:sysml-mission-runtime'
+    implementation 'fr.inria.mbdo.mission:sysml-mission-runtime:1.1.0-SNAPSHOT'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
@@ -44,6 +66,26 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+sysmlGenerator {
+    inputFiles = files(	'../../sysml-mission-generator/missions-design-models/common/common_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/zones/zones_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/CB/cb_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/VGR/vgr_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/MPS/mps_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/SL/sl_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/CB/cb_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/VGR/vgr_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/VGR/vgr_cb_failure_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/SL/sl_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/MPS/mps_missions_def.sysml',
+            '../../sysml-mission-generator/missions-design-models/zones/zones_missions_def.sysml'
+    )
+    basePackageName = 'fr.inria.mbdo.mission.extensions.ren_mission_01'
+    //outputDirectory = file('generated-src/sysml')
+
+}
+
 /*bootJar {
     enabled = false
 }
