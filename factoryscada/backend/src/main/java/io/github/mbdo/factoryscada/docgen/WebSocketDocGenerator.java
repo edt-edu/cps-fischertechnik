@@ -1,18 +1,21 @@
 package io.github.mbdo.factoryscada.docgen;
 
-import java.lang.reflect.Field;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +31,40 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
 import io.github.mbdo.factoryscada.frontend.WebSocketPublish;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Generates an AsciiDoc documentation of the WebSocket (STOMP) protocol exposed by this backend.
+ * <p>
+ * Runs once at application startup (as an {@link ApplicationRunner}) and introspects the Spring
+ * application context to collect:
+ * <ul>
+ *   <li><b>Incoming topics</b>: methods of {@link Controller} beans annotated with {@link MessageMapping}
+ *       (the class-level {@code @MessageMapping} prefix is prepended), with their parameters,
+ *       request payload and optional {@link SendTo} response;</li>
+ *   <li><b>Outgoing topics</b>: methods of {@link Component} beans annotated with {@link WebSocketPublish},
+ *       and {@code @MessageMapping} methods that also declare a {@link SendTo} destination.</li>
+ * </ul>
+ * Payload types are documented as JSON schemas. The document starts with an overview table
+ * linking each implementing method to its incoming and outgoing topics.
+ * <p>
+ * The result is written to {@code docgen/websocket-endpoints-topics.adoc} (relative to the working directory).
+ * <p>
+ * The output is deterministic for a given application: beans, methods, overview entries and JSON schema
+ * properties are all sorted, so that regenerating the file only produces git differences when the
+ * protocol actually changes (reflection and bean scanning order are otherwise not stable across builds).
+ * <p>
+ * Note: messages sent directly with {@code SimpMessagingTemplate.convertAndSend} are not detected;
+ * wrap such calls in a method annotated with {@link WebSocketPublish} so they get documented.
+ */
 @Slf4j
 @Component
 public class WebSocketDocGenerator implements ApplicationRunner {
@@ -47,10 +76,17 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     private String applicationName;
 
 
-    /** List of incoming topics for a given class and method */
-    protected HashMap<String, HashMap<String,Set<String>>> methodToIncomingTopicMap = new HashMap<String, HashMap<String,Set<String>>>();
-    /** List of outgoing topics for a given class and method */
-    protected HashMap<String, HashMap<String,Set<String>>> methodToOutgoingTopicMap = new HashMap<String, HashMap<String,Set<String>>>();
+    /**
+     * Deterministic method order: getMethods()/getDeclaredMethods() return methods in no particular order
+     * (it may change between compilations), so sort by name then by parameter types (for overloads).
+     */
+    private static final Comparator<Method> METHOD_ORDER = Comparator.comparing(Method::getName)
+            .thenComparing(m -> Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")));
+
+    /** List of incoming topics for a given class and method (sorted maps/sets for a stable output) */
+    protected Map<String, Map<String, Set<String>>> methodToIncomingTopicMap = new TreeMap<>();
+    /** List of outgoing topics for a given class and method (sorted maps/sets for a stable output) */
+    protected Map<String, Map<String, Set<String>>> methodToOutgoingTopicMap = new TreeMap<>();
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -124,18 +160,16 @@ public class WebSocketDocGenerator implements ApplicationRunner {
      * @return String
      */
     private String generateIncomingTopicsAsciidoc() {
-        Map<String, Object> beans = context.getBeansWithAnnotation(Controller.class);
-        log.info("Found controller beans: " + beans.keySet());
+        List<Class<?>> controllerClasses = sortedBeanClasses(Controller.class);
+        log.info("Found controller classes: " + controllerClasses);
         StringBuilder doc = new StringBuilder("== Incoming Topics\n\n");
 
-        for (Object bean : beans.values()) {
-            Class<?> clazz = AopUtils.getTargetClass(bean);
-
+        for (Class<?> clazz : controllerClasses) {
             MessageMapping classMapping =clazz.getAnnotation(MessageMapping.class);
 
             String classMappingPath = classMapping != null ? String.join(", ", classMapping.value()) : "";
 
-            for (Method method : clazz.getMethods()) {
+            for (Method method : sortedMethods(clazz.getMethods())) {
                 if (method.isAnnotationPresent(MessageMapping.class) ) {
                     MessageMapping mapping = method.getAnnotation(MessageMapping.class);
                     String mappingPath = classMappingPath + String.join(", ", mapping.value());
@@ -197,12 +231,8 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         StringBuilder doc = new StringBuilder("== Outgoing Topics\n\n");
 
         // report methods with @WebSocketPublish
-        Map<String, Object> beans = context.getBeansWithAnnotation(Component.class);
-
-        for (Object bean : beans.values()) {
-            Class<?> clazz = AopUtils.getTargetClass(bean);
-
-            for (Method method : clazz.getDeclaredMethods()) {
+        for (Class<?> clazz : sortedBeanClasses(Component.class)) {
+            for (Method method : sortedMethods(clazz.getDeclaredMethods())) {
                 WebSocketPublish wsPub = method.getAnnotation(WebSocketPublish.class);
                 if (wsPub != null) {
                     String topic = wsPub.value();
@@ -226,15 +256,12 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         }
 
         // report @SendTo in 
-        beans = context.getBeansWithAnnotation(Controller.class);
-        for (Object bean : beans.values()) {
-            Class<?> clazz = AopUtils.getTargetClass(bean);
-
+        for (Class<?> clazz : sortedBeanClasses(Controller.class)) {
             MessageMapping classMapping =clazz.getAnnotation(MessageMapping.class);
 
             String classMappingPath = classMapping != null ? String.join(", ", classMapping.value()) : "";
 
-            for (Method method : clazz.getMethods()) {
+            for (Method method : sortedMethods(clazz.getMethods())) {
                 if (method.isAnnotationPresent(MessageMapping.class) && method.isAnnotationPresent(SendTo.class)) {
                     MessageMapping mapping = method.getAnnotation(MessageMapping.class);
                     String mappingPath = classMappingPath + String.join(", ", mapping.value());
@@ -282,8 +309,11 @@ public class WebSocketDocGenerator implements ApplicationRunner {
 
 
     private String buildJsonSchema(Class<?> clazz) {
-        ObjectMapper mapper = new ObjectMapper();
-        // configure mapper, if necessary, then create schema generator
+        // Sort properties alphabetically: otherwise their order depends on reflection order, which is not stable
+        ObjectMapper mapper = JsonMapper.builder()
+                .enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .build();
         JsonSchemaGenerator schemaGen = new JsonSchemaGenerator(mapper);
         try {
             JsonSchema schema = schemaGen.generateSchema(clazz);
@@ -320,15 +350,25 @@ public class WebSocketDocGenerator implements ApplicationRunner {
            clazz.isEnum();
     }
 
-    private void addTopicInMap(HashMap<String, HashMap<String,Set<String>>> map, String className, String methodName, String topic) {
-        if(!map.containsKey(className)) {
-            map.put(className, new HashMap<String,Set<String>>());
-        }
-        HashMap<String, Set<String>> methodMap =  map.get(className);
-        if(!methodMap.containsKey(methodName)) {
-            methodMap.put(methodName, new HashSet<>());
-        }
-        methodMap.get(methodName).add(topic);
+    private void addTopicInMap(Map<String, Map<String, Set<String>>> map, String className, String methodName, String topic) {
+        map.computeIfAbsent(className, k -> new TreeMap<>())
+           .computeIfAbsent(methodName, k -> new TreeSet<>())
+           .add(topic);
+    }
+
+    /**
+     * Return the target classes of the beans annotated with the given annotation, sorted by class name.
+     * (getBeansWithAnnotation follows bean registration order, which depends on classpath scanning order)
+     */
+    private List<Class<?>> sortedBeanClasses(Class<? extends Annotation> annotation) {
+        return context.getBeansWithAnnotation(annotation).values().stream()
+                .<Class<?>>map(AopUtils::getTargetClass)
+                .sorted(Comparator.comparing(Class::getName))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Method> sortedMethods(Method[] methods) {
+        return Arrays.stream(methods).sorted(METHOD_ORDER).collect(Collectors.toList());
     }
 
 }
