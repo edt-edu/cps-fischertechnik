@@ -122,13 +122,13 @@ public class WebSocketDocGenerator implements ApplicationRunner {
             for( Entry<String, Set<String>> methodMap : methodToIncomingTopicMap.get(className).entrySet()) {
                 String methodName = methodMap.getKey();
                 for (String topic : methodMap.getValue()) {
-                    doc.append("|"+className+"."+methodName+"()\n");
-                    doc.append("|<<incoming_"+toAsciiDocAnchor(topic)+","+topic+">>\n");
+                    doc.append("|"+className+".&#8203;"+methodName+"()\n");
+                    doc.append("|<<incoming_"+toAsciiDocAnchor(topic)+","+toSplittaString(topic)+">>\n");
                     if(methodToOutgoingTopicMap.containsKey(className) ){
                         Set<String> topics = methodToOutgoingTopicMap.get(className).get(methodName);
                         if(topics !=null) {
                             doc.append("|"+topics.stream()
-                                .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+stopic+">>")
+                                .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+toSplittaString(stopic)+">>")
                                 .collect(Collectors.joining(", "))+"\n");
                         } else {
                             doc.append("|  \n");
@@ -327,19 +327,31 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     }
 
     public String toAsciiDocAnchor(String input) {
-    if (input == null) return "";
+        if (input == null) return "";
 
-    // Convert to lowercase
-    String anchor = input.toLowerCase();
+        // Convert to lowercase
+        String anchor = input.toLowerCase();
 
-    // Replace all sequences of non-alphanumeric characters with a dash
-    anchor = anchor.replaceAll("[^a-z0-9]+", "-");
+        // Replace all sequences of non-alphanumeric characters with a dash
+        anchor = anchor.replaceAll("[^a-z0-9]+", "-");
 
-    // Remove leading/trailing dashes
-    anchor = anchor.replaceAll("(^-+)|(-+$)", "");
+        // Remove leading/trailing dashes
+        anchor = anchor.replaceAll("(^-+)|(-+$)", "");
 
-    return anchor;
-}
+        return anchor;
+    }
+
+    public String toSplittaString(String input) {
+        if (input == null) return "";
+
+        // Convert to lowercase
+        String anchor = input.toLowerCase();
+
+        // append an invisible space after all "/"
+        anchor = anchor.replaceAll("/", "/&#8203;");
+
+        return anchor;
+    }   
 
     private boolean isSimpleType(Class<?> clazz) {
     return clazz.isPrimitive() ||
