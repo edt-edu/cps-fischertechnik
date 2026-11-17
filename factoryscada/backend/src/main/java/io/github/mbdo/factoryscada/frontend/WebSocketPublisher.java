@@ -1,10 +1,8 @@
 package io.github.mbdo.factoryscada.frontend;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 
 import io.github.mbdo.factoryscada.domain.CommandStatus;
 import io.github.mbdo.factoryscada.domain.MachineStatus;
@@ -56,23 +54,6 @@ public class WebSocketPublisher {
         template.convertAndSend("/topic/" + machineName + "/machine-status",
                 MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(machineStatus));
 
-    }
-
-    // This is used for the loading of logs on scada pages
-    @Controller
-    public class LogsWebSocketController {
-
-        @Autowired
-        private SimpMessagingTemplate template;
-
-        @Autowired
-        private FactoryScada factoryscada;
-
-        @MessageMapping("/logs/request")
-        public void requestFrontendLogs() {
-            String logs = String.join("\n", factoryscada.getFrontendLogsList().snapshot());
-            template.convertAndSend("/topic/frontend-logs", logs);
-        }
     }
 
 }
