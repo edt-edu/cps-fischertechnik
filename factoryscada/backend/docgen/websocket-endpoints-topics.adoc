@@ -20,23 +20,23 @@
 
 |ConveyorBeltController.&#8203;receiveDebugCommand()
 |<<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |ConveyorBeltController.&#8203;receiveMoveCommand()
 |<<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
-|  
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |ConveyorBeltController.&#8203;receiveMoveNbStepsCommand()
 |<<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>
-|  
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |ConveyorBeltController.&#8203;receiveMoveToSensorCommand()
 |<<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>
-|  
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |ConveyorBeltController.&#8203;receiveStopCommand()
 |<<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |DynamicMissionOrchestratorController.&#8203;getMissions()
 |<<incoming_dynamic-mission-missions,/&#8203;dynamic-mission/&#8203;missions>>
@@ -140,7 +140,7 @@
 
 |HighBayWarehouseController.&#8203;receiveDebugCommand()
 |<<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |IndexedLineController.&#8203;getCommandStatus()
 |<<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
@@ -156,7 +156,7 @@
 
 |IndexedLineController.&#8203;receiveDebugCommand()
 |<<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |IndexedLineController.&#8203;receiveDrillCommand()
 |<<incoming_indexedline-machinename-command-drill,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;drill>>
@@ -332,7 +332,7 @@
 
 |MultiProcessingStationController.&#8203;receiveDebugCommand()
 |<<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |MultiProcessingStationController.&#8203;receiveStopCommand()
 |<<incoming_multiprocessingstation-machinename-command-stop,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;stop>>
@@ -360,7 +360,7 @@
 
 |PunchingMachineController.&#8203;receiveDebugCommand()
 |<<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |PunchingMachineController.&#8203;receivePunchCommand()
 |<<incoming_punchingmachine-machinename-command-punch,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;punch>>
@@ -388,7 +388,7 @@
 
 |SortingLineController.&#8203;receiveDebugCommand()
 |<<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |SortingLineController.&#8203;receiveStopCommand()
 |<<incoming_sortingline-machinename-command-stop,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;stop>>
@@ -456,7 +456,7 @@
 
 |VacuumGripperController.&#8203;receiveDebugCommand()
 |<<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |WebSocketPublisher.&#8203;sendActualCommandExecuting()
 | 
@@ -626,7 +626,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -638,6 +638,10 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_out`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveCommand()`
+
+_Sends a command to the machine controller to move the conveyor belt in a given direction so its payload is ejected from the conveyor belt_
+
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -698,13 +702,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_conveyorbelt-machinename-command-move-nb-steps]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveNbStepsCommand()`
+
+_Sends a command to the machine controller to move the conveyor belt a specified number of steps_
+
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -765,13 +770,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_conveyorbelt-machinename-command-move-to-sensor]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveToSensorCommand()`
+
+_Sends a command to the machine controller to move the conveyor belt in a given direction so its payload reaches the next sensor_
+
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -832,13 +838,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_conveyorbelt-machinename-command-stop]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveStopCommand()`
+
+_Sends a command to the machine controller to stop the conveyor belt_
+
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -898,9 +905,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
   }
 }
 ----
-
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
 [[incoming_dynamic-mission-missions]]
 ===  Incoming Topic: `/dynamic-mission/missions`
@@ -2227,7 +2231,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2363,7 +2367,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -4488,7 +4492,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -4740,7 +4744,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -5077,7 +5081,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -6071,7 +6075,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -6360,7 +6364,7 @@ _All logs that should appear in the frontend_
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendFrontendLogs()`: `@WebSocketPublish` method
 
-*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_logs-request,/&#8203;logs/&#8203;request>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+*Triggered by incoming topics:* <<incoming_logs-request,/&#8203;logs/&#8203;request>>
 
 ==== Payload
 
@@ -6727,7 +6731,7 @@ _Broadcasts Command status updates_
 - `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
 - `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
 
-*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>, <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>, <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>, <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 
 ==== Payload
 
@@ -6794,6 +6798,8 @@ _Broadcasts Machine status updates_
 - `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
 - `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
 - `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+
+*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>, <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>, <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>, <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 
 ==== Payload
 

@@ -111,7 +111,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     
     @MessageMapping("/{machineName}/command/debug")
     @WebSocketDoc(description = "Sends a raw JSON command (as typed in the debug page) to the machine controller",
-                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/frontend-logs" })
+                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/{machineName}/machine-status" })
     public String receiveDebugCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload String message

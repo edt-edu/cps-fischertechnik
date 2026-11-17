@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.conveyorbelt.ConveyorBeltMachine;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,8 @@ public class ConveyorBeltController extends AbstractMachineController<ConveyorBe
 
     
     @MessageMapping("/{machineName}/command/move_to_sensor")
+    @WebSocketDoc(description = "Sends a command to the machine controller to move the conveyor belt in a given direction so its payload reaches the next sensor",
+                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/{machineName}/machine-status" })
     public String receiveMoveToSensorCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<ConveyorBeltMachine> moveToLightBarrierDTO
@@ -32,6 +35,8 @@ public class ConveyorBeltController extends AbstractMachineController<ConveyorBe
     }
 
     @MessageMapping("/{machineName}/command/move_nb_steps")
+    @WebSocketDoc(description = "Sends a command to the machine controller to move the conveyor belt a specified number of steps",
+                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/{machineName}/machine-status" })
     public String receiveMoveNbStepsCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<ConveyorBeltMachine> moveStepsDTO
@@ -40,6 +45,8 @@ public class ConveyorBeltController extends AbstractMachineController<ConveyorBe
     }
 
     @MessageMapping("/{machineName}/command/move_out")
+    @WebSocketDoc(description = "Sends a command to the machine controller to move the conveyor belt in a given direction so its payload is ejected from the conveyor belt",
+                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/{machineName}/machine-status" })
     public String receiveMoveCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<ConveyorBeltMachine> moveOutDTO
@@ -48,6 +55,8 @@ public class ConveyorBeltController extends AbstractMachineController<ConveyorBe
     }
 
     @MessageMapping("/{machineName}/command/stop")
+    @WebSocketDoc(description = "Sends a command to the machine controller to stop the conveyor belt",
+                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/{machineName}/machine-status" })
     public String receiveStopCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<ConveyorBeltMachine> stopDTO
