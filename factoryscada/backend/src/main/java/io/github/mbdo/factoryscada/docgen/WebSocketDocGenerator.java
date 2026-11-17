@@ -242,7 +242,8 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                             doc.append("----\n\n");
                         }
                     } else if (publishedTopics.isEmpty()) {
-                        doc.append("\nNOTE: This endpoint does not send a response back via a topic.\n\n");
+                        doc.append("\nNOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). "
+                                + "Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.\n\n");
                     }
                 }
             }
@@ -315,18 +316,15 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                         }
                         doc.append("- `").append(name).append("` (").append(type).append(")\n");
                     }
-                    if(method.isAnnotationPresent(SendTo.class)) {
-                        if(method.getReturnType().isPrimitive()) {
-                            doc.append("\n==== Response Payload\n\n");
-                            doc.append(method.getReturnType()+"\n\n");
-                        } else {
-                            doc.append("\n==== Response Payload\n\n");
-                            doc.append("[source,json]\n----\n");
-                            doc.append(buildJsonSchema(method.getReturnType()));
-                            doc.append("----\n\n");
-                        }
+                    // @SendTo is always present here (filtered above)
+                    if(method.getReturnType().isPrimitive()) {
+                        doc.append("\n==== Response Payload\n\n");
+                        doc.append(method.getReturnType()+"\n\n");
                     } else {
-                        doc.append("\nNOTE: This endpoint does not send a response back via a topic.\n\n");
+                        doc.append("\n==== Response Payload\n\n");
+                        doc.append("[source,json]\n----\n");
+                        doc.append(buildJsonSchema(method.getReturnType()));
+                        doc.append("----\n\n");
                     }
                 }
             }
