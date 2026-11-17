@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -104,6 +105,8 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     protected Map<String, Map<String, Set<String>>> methodToIncomingTopicMap = new TreeMap<>();
     /** List of outgoing topics for a given class and method (sorted maps/sets for a stable output) */
     protected Map<String, Map<String, Set<String>>> methodToOutgoingTopicMap = new TreeMap<>();
+    /** Incoming topics whose handler directly calls a @WebSocketPublish method, per published topic (sorted for a stable output) */
+    protected Map<String, Set<String>> topicToTriggeringIncomingMap = new TreeMap<>();
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -208,6 +211,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     if (!publishedTopics.isEmpty()) {
                         for (String publishedTopic : publishedTopics) {
                             this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), publishedTopic);
+                            this.topicToTriggeringIncomingMap.computeIfAbsent(publishedTopic, k -> new TreeSet<>()).add(mappingPath);
                         }
                         doc.append("*Publishes to:* ")
                            .append(publishedTopics.stream()
@@ -232,15 +236,8 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                         }
                     }
                     if(method.isAnnotationPresent(SendTo.class)) {
-                        if(isSimpleType(method.getReturnType())) {
-                            doc.append("\n==== Response Payload\n\n");
-                            doc.append(method.getReturnType()+"\n\n");
-                        } else {
-                            doc.append("\n==== Response Payload\n\n");
-                            doc.append("[source,json]\n----\n");
-                            doc.append(buildJsonSchema(method.getReturnType()));
-                            doc.append("----\n\n");
-                        }
+                        doc.append("\n==== Response Payload\n\n");
+                        appendPayload(doc, method.getReturnType());
                     } else if (publishedTopics.isEmpty()) {
                         doc.append("\nNOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). "
                                 + "Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.\n\n");
@@ -251,81 +248,98 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         return doc.toString();
     }
 
+    /** A method producing messages on an outgoing topic */
+    private record TopicProducer(String declaration, String role, String description, Class<?> payload) {
+    }
+
     /**
-     * Generate documentation section about Topics the backend sends messages to ( @WebSocketPublish or @SendTo)
-     * Important: in order to correctly detect the outgoing topic do not directly use templace.convertAndSend and replace it with a method anotated  with @@WebSocketPublish
+     * Generate documentation section about Topics the backend sends messages to ( @WebSocketPublish or @SendTo).
+     * There is one section per topic, listing all its producers, the incoming topics that trigger it and its payload.
+     * Important: in order to correctly detect the outgoing topic do not directly use template.convertAndSend and replace it with a method annotated with @WebSocketPublish
+     * Requires topicToTriggeringIncomingMap, computed by generateIncomingTopicsAsciidoc()
      * @return String
      */
     private String generateOutgoingTopicsAsciidoc() {
-        StringBuilder doc = new StringBuilder("== Outgoing Topics\n\n");
+        // collect the producers of each topic (sorted map for a stable output)
+        Map<String, List<TopicProducer>> producersByTopic = new TreeMap<>();
 
-        // report methods with @WebSocketPublish
+        // methods with @WebSocketPublish
         for (Class<?> clazz : sortedBeanClasses(Component.class)) {
             for (Method method : sortedMethods(clazz.getDeclaredMethods())) {
                 WebSocketPublish wsPub = method.getAnnotation(WebSocketPublish.class);
                 if (wsPub != null) {
                     String topic = wsPub.value();
-                    String desc = wsPub.description();
-                    Class<?> payloadClass = wsPub.payload();
-                    
-                    doc.append("\n[[outgoing_" + toAsciiDocAnchor(topic) + "]]");
-                    doc.append("\n=== Outgoing Topic: `").append(topic).append("`\n");
-                    this.addTopicInMap(this.methodToOutgoingTopicMap,clazz.getSimpleName(), method.getName(), topic);
-                    if (!desc.isEmpty()) {
-                        doc.append("_").append(desc).append("_\n\n");
-                    }
-                    if (payloadClass != Void.class) {
-                        doc.append("Payload: `").append(payloadClass.getSimpleName()).append("`\n");
-                        // render DTO fields here
-                         doc.append(buildJsonSchema(payloadClass));
-                    } else {
-                        doc.append("Payload: `undocumented`\n");
+                    this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), topic);
+                    producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
+                        .add(new TopicProducer(clazz.getName() + "." + method.getName() + "()",
+                            "`@WebSocketPublish` method", wsPub.description(), wsPub.payload()));
+                }
+            }
+        }
+
+        // @MessageMapping methods with @SendTo
+        for (Class<?> clazz : sortedBeanClasses(Controller.class)) {
+            MessageMapping classMapping = clazz.getAnnotation(MessageMapping.class);
+            String classMappingPath = classMapping != null ? String.join(", ", classMapping.value()) : "";
+
+            for (Method method : sortedMethods(clazz.getMethods())) {
+                if (method.isAnnotationPresent(MessageMapping.class) && method.isAnnotationPresent(SendTo.class)) {
+                    String mappingPath = classMappingPath + String.join(", ", method.getAnnotation(MessageMapping.class).value());
+                    for (String topic : method.getAnnotation(SendTo.class).value()) {
+                        this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), topic);
+                        producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
+                            .add(new TopicProducer(clazz.getName() + "." + method.getName() + "()",
+                                "`@SendTo` reply to <<incoming_" + toAsciiDocAnchor(mappingPath) + "," + toSplittaString(mappingPath) + ">>",
+                                "", method.getReturnType()));
                     }
                 }
             }
         }
 
-        // report @SendTo in 
-        for (Class<?> clazz : sortedBeanClasses(Controller.class)) {
-            MessageMapping classMapping =clazz.getAnnotation(MessageMapping.class);
+        // render one section per topic
+        StringBuilder doc = new StringBuilder("== Outgoing Topics\n\n");
+        for (Entry<String, List<TopicProducer>> entry : producersByTopic.entrySet()) {
+            String topic = entry.getKey();
+            List<TopicProducer> producers = entry.getValue();
 
-            String classMappingPath = classMapping != null ? String.join(", ", classMapping.value()) : "";
+            doc.append("[[outgoing_").append(toAsciiDocAnchor(topic)).append("]]\n");
+            doc.append("=== Outgoing Topic: `").append(topic).append("`\n\n");
+            producers.stream()
+                .map(TopicProducer::description)
+                .filter(desc -> !desc.isEmpty())
+                .distinct()
+                .forEach(desc -> doc.append("_").append(desc).append("_\n\n"));
 
-            for (Method method : sortedMethods(clazz.getMethods())) {
-                if (method.isAnnotationPresent(MessageMapping.class) && method.isAnnotationPresent(SendTo.class)) {
-                    MessageMapping mapping = method.getAnnotation(MessageMapping.class);
-                    String mappingPath = classMappingPath + String.join(", ", mapping.value());
-                    String sendToPath = "";
-                    SendTo sendTo = method.getAnnotation(SendTo.class);
-                    sendToPath = String.join(", ", sendTo.value());
-                    
-                    doc.append("[[outgoing_"+toAsciiDocAnchor(sendToPath)+"]]\n");
-                    doc.append("=== Outgoing Topic: `").append(sendToPath).append("`\n\n");
-                    doc.append("declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
+            doc.append("==== Producers\n\n");
+            for (TopicProducer producer : producers) {
+                doc.append("- `").append(producer.declaration()).append("`: ").append(producer.role()).append("\n");
+            }
+            doc.append("\n");
 
-                    this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), sendToPath);
-                    doc.append("*Request Mapping:* `@MessageMapping(\"").append(mappingPath).append("\")`\n\n");
-                    doc.append("*Send To:* `").append(sendToPath).append("`\n\n");
+            Set<String> triggeringIncomingTopics = topicToTriggeringIncomingMap.get(topic);
+            if (triggeringIncomingTopics != null) {
+                doc.append("*Triggered by incoming topics:* ")
+                   .append(triggeringIncomingTopics.stream()
+                        .map(t -> "<<incoming_" + toAsciiDocAnchor(t) + "," + toSplittaString(t) + ">>")
+                        .collect(Collectors.joining(", ")))
+                   .append("\n\n");
+            }
 
-                    doc.append("==== Parameters\n\n");
-                    for (Parameter param : method.getParameters()) {
-                        String type = param.getType().getSimpleName();
-                        String name = param.getName();
-                        if (param.isAnnotationPresent(DestinationVariable.class)) {
-                            name = param.getAnnotation(DestinationVariable.class).value();
-                        }
-                        doc.append("- `").append(name).append("` (").append(type).append(")\n");
-                    }
-                    // @SendTo is always present here (filtered above)
-                    if(method.getReturnType().isPrimitive()) {
-                        doc.append("\n==== Response Payload\n\n");
-                        doc.append(method.getReturnType()+"\n\n");
-                    } else {
-                        doc.append("\n==== Response Payload\n\n");
-                        doc.append("[source,json]\n----\n");
-                        doc.append(buildJsonSchema(method.getReturnType()));
-                        doc.append("----\n\n");
-                    }
+            doc.append("==== Payload\n\n");
+            Map<String, Class<?>> payloads = new TreeMap<>(); // distinct payload types, sorted by name
+            for (TopicProducer producer : producers) {
+                if (producer.payload() != Void.class && producer.payload() != void.class) {
+                    payloads.put(producer.payload().getName(), producer.payload());
+                }
+            }
+            if (payloads.isEmpty()) {
+                doc.append("`undocumented`\n\n");
+            } else {
+                if (payloads.size() > 1) {
+                    doc.append("WARNING: the producers of this topic declare different payload types.\n\n");
+                }
+                for (Class<?> payload : payloads.values()) {
+                    appendPayload(doc, payload);
                 }
             }
         }
@@ -368,17 +382,27 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         return anchor;
     }
 
+    /**
+     * Make a topic path splittable on several lines when displayed (keeping its case),
+     * by appending an invisible (zero width) space after each "/".
+     */
     public String toSplittaString(String input) {
         if (input == null) return "";
+        return input.replace("/", "/&#8203;");
+    }
 
-        // Convert to lowercase
-        String anchor = input.toLowerCase();
-
-        // append an invisible space after all "/"
-        anchor = anchor.replaceAll("/", "/&#8203;");
-
-        return anchor;
-    }   
+    /**
+     * Append the description of a payload type: its name for simple types,
+     * otherwise its JSON schema in an AsciiDoc source block.
+     */
+    private void appendPayload(StringBuilder doc, Class<?> payloadClass) {
+        doc.append("`").append(payloadClass.getSimpleName()).append("`\n\n");
+        if (!isSimpleType(payloadClass)) {
+            doc.append("[source,json]\n----\n");
+            doc.append(buildJsonSchema(payloadClass));
+            doc.append("----\n\n");
+        }
+    }
 
     private boolean isSimpleType(Class<?> clazz) {
     return clazz.isPrimitive() ||
