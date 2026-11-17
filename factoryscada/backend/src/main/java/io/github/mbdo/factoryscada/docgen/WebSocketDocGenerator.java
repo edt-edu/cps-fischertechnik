@@ -164,9 +164,12 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         // process remaining outgoing topics
         for (String className : methodToOutgoingTopicMap.keySet()) {
             for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
-                    doc.append("|"+className+"."+methodMap.getKey()+"()\n");
+                    doc.append("|"+className+".&#8203;"+methodMap.getKey()+"()\n");
                     doc.append("| \n");
-                    doc.append("|"+methodMap.getValue().stream().collect(Collectors.joining(", "))+"\n");
+                    doc.append("|"+methodMap.getValue().stream()
+                        .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+toSplittaString(stopic)+">>")
+                        .collect(Collectors.joining(", "))+"\n");
+                    doc.append("\n");
             }
         }
 
