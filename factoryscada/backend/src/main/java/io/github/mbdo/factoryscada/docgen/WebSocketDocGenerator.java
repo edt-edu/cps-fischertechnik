@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.frontend.WebSocketPublish;
 import lombok.extern.slf4j.Slf4j;
 
@@ -207,6 +208,10 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     doc.append("===  Incoming Topic: `").append(mappingPath).append("`\n\n");
                     doc.append("Declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
                     this.addTopicInMap(this.methodToIncomingTopicMap, clazz.getSimpleName(), method.getName(), mappingPath);
+                    WebSocketDoc wsDoc = method.getAnnotation(WebSocketDoc.class);
+                    if (wsDoc != null && !wsDoc.description().isEmpty()) {
+                        doc.append("_").append(wsDoc.description()).append("_\n\n");
+                    }
                     if(method.isAnnotationPresent(SendTo.class)) {
                         doc.append("*Send To:* `").append(sendToPath).append("`\n\n");
                     }
@@ -219,6 +224,18 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                         doc.append("*Publishes to:* ")
                            .append(publishedTopics.stream()
                                 .map(t -> "<<outgoing_" + toAsciiDocAnchor(t) + "," + toSplittaString(t) + ">>")
+                                .collect(Collectors.joining(", ")))
+                           .append("\n\n");
+                    }
+                    Set<String> indirectOutputs = new TreeSet<>(wsDoc != null ? Arrays.asList(wsDoc.indirectOutputs()) : List.of());
+                    if (!indirectOutputs.isEmpty()) {
+                        for (String indirectOutput : indirectOutputs) {
+                            this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), indirectOutput);
+                            this.topicToTriggeringIncomingMap.computeIfAbsent(indirectOutput, k -> new TreeSet<>()).add(mappingPath);
+                        }
+                        doc.append("*Indirect outputs:* ")
+                           .append(indirectOutputs.stream()
+                                .map(t -> toOutgoingTopicLink(t, clazz.getName() + "." + method.getName() + "()"))
                                 .collect(Collectors.joining(", ")))
                            .append("\n\n");
                     }
@@ -236,12 +253,14 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                             doc.append(buildJsonSchema(param.getType()));
                             doc.append("----\n\n");
 
+                        } else {
+                            doc.append("\n");
                         }
                     }
                     if(method.isAnnotationPresent(SendTo.class)) {
                         doc.append("\n==== Response Payload\n\n");
                         appendPayload(doc, method.getReturnType());
-                    } else if (publishedTopics.isEmpty()) {
+                    } else if (publishedTopics.isEmpty() && indirectOutputs.isEmpty()) {
                         doc.append("\nNOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). "
                                 + "Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.\n\n");
                     }
@@ -252,7 +271,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     }
 
     /** A method producing messages on an outgoing topic */
-    private record TopicProducer(String declaration, String role, String description, Class<?> payload) {
+    private record TopicProducer(String declaration, String role, boolean isPublisher, String description, Class<?> payload) {
     }
 
     /**
@@ -275,7 +294,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), topic);
                     producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
                         .add(new TopicProducer(clazz.getName() + "." + method.getName() + "()",
-                            "`@WebSocketPublish` method", wsPub.description(), wsPub.payload()));
+                            "`@WebSocketPublish` method", true, wsPub.description(), wsPub.payload()));
                 }
             }
         }
@@ -288,12 +307,13 @@ public class WebSocketDocGenerator implements ApplicationRunner {
             for (Method method : sortedMethods(clazz.getMethods())) {
                 if (method.isAnnotationPresent(MessageMapping.class) && method.isAnnotationPresent(SendTo.class)) {
                     String mappingPath = classMappingPath + String.join(", ", method.getAnnotation(MessageMapping.class).value());
+                    WebSocketDoc wsDoc = method.getAnnotation(WebSocketDoc.class);
                     for (String topic : method.getAnnotation(SendTo.class).value()) {
                         this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), topic);
                         producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
                             .add(new TopicProducer(clazz.getName() + "." + method.getName() + "()",
                                 "`@SendTo` reply to <<incoming_" + toAsciiDocAnchor(mappingPath) + "," + toSplittaString(mappingPath) + ">>",
-                                "", method.getReturnType()));
+                                false, wsDoc != null ? wsDoc.responseDescription() : "", method.getReturnType()));
                     }
                 }
             }
@@ -308,6 +328,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
             doc.append("[[outgoing_").append(toAsciiDocAnchor(topic)).append("]]\n");
             doc.append("=== Outgoing Topic: `").append(topic).append("`\n\n");
             producers.stream()
+                .filter(TopicProducer::isPublisher) // @SendTo descriptions are rendered with their producer
                 .map(TopicProducer::description)
                 .filter(desc -> !desc.isEmpty())
                 .distinct()
@@ -315,7 +336,11 @@ public class WebSocketDocGenerator implements ApplicationRunner {
 
             doc.append("==== Producers\n\n");
             for (TopicProducer producer : producers) {
-                doc.append("- `").append(producer.declaration()).append("`: ").append(producer.role()).append("\n");
+                doc.append("- `").append(producer.declaration()).append("`: ").append(producer.role());
+                if (!producer.isPublisher() && !producer.description().isEmpty()) {
+                    doc.append(": _").append(producer.description()).append("_");
+                }
+                doc.append("\n");
             }
             doc.append("\n");
 
@@ -392,6 +417,41 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     public String toSplittaString(String input) {
         if (input == null) return "";
         return input.replace("/", "/&#8203;");
+    }
+
+    /**
+     * Return an AsciiDoc link to the section of the given outgoing topic. If no {@link WebSocketPublish} or
+     * {@code @SendTo} declares this topic (so there is no section to link to), log a warning and return the plain topic.
+     */
+    private String toOutgoingTopicLink(String topic, String declaredIn) {
+        if (!getDeclaredOutgoingTopics().contains(topic)) {
+            log.warn("Unknown outgoing topic '" + topic + "' in @WebSocketDoc of " + declaredIn
+                    + ": it is not declared by any @WebSocketPublish or @SendTo");
+            return "`" + topic + "` (undeclared topic)";
+        }
+        return "<<outgoing_" + toAsciiDocAnchor(topic) + "," + toSplittaString(topic) + ">>";
+    }
+
+    /** Topics declared by @WebSocketPublish methods or @SendTo handlers (computed once) */
+    private Set<String> declaredOutgoingTopics;
+
+    private Set<String> getDeclaredOutgoingTopics() {
+        if (declaredOutgoingTopics == null) {
+            declaredOutgoingTopics = new TreeSet<>();
+            for (Class<?> clazz : sortedBeanClasses(Component.class)) {
+                for (Method method : clazz.getMethods()) {
+                    WebSocketPublish wsPub = method.getAnnotation(WebSocketPublish.class);
+                    if (wsPub != null) {
+                        declaredOutgoingTopics.add(wsPub.value());
+                    }
+                    SendTo sendTo = method.getAnnotation(SendTo.class);
+                    if (sendTo != null && method.isAnnotationPresent(MessageMapping.class)) {
+                        declaredOutgoingTopics.addAll(Arrays.asList(sendTo.value()));
+                    }
+                }
+            }
+        }
+        return declaredOutgoingTopics;
     }
 
     /**

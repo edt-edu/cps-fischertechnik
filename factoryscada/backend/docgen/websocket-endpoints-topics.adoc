@@ -20,7 +20,7 @@
 
 |ConveyorBeltController.&#8203;receiveDebugCommand()
 |<<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |ConveyorBeltController.&#8203;receiveMoveCommand()
 |<<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
@@ -140,7 +140,7 @@
 
 |HighBayWarehouseController.&#8203;receiveDebugCommand()
 |<<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |IndexedLineController.&#8203;getCommandStatus()
 |<<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
@@ -156,7 +156,7 @@
 
 |IndexedLineController.&#8203;receiveDebugCommand()
 |<<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |IndexedLineController.&#8203;receiveDrillCommand()
 |<<incoming_indexedline-machinename-command-drill,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;drill>>
@@ -332,7 +332,7 @@
 
 |MultiProcessingStationController.&#8203;receiveDebugCommand()
 |<<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |MultiProcessingStationController.&#8203;receiveStopCommand()
 |<<incoming_multiprocessingstation-machinename-command-stop,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;stop>>
@@ -360,7 +360,7 @@
 
 |PunchingMachineController.&#8203;receiveDebugCommand()
 |<<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |PunchingMachineController.&#8203;receivePunchCommand()
 |<<incoming_punchingmachine-machinename-command-punch,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;punch>>
@@ -388,7 +388,7 @@
 
 |SortingLineController.&#8203;receiveDebugCommand()
 |<<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |SortingLineController.&#8203;receiveStopCommand()
 |<<incoming_sortingline-machinename-command-stop,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;stop>>
@@ -456,7 +456,7 @@
 
 |VacuumGripperController.&#8203;receiveDebugCommand()
 |<<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|  
+|<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 |WebSocketPublisher.&#8203;sendActualCommandExecuting()
 | 
@@ -503,11 +503,14 @@
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -520,31 +523,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -555,11 +567,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -598,7 +613,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -607,12 +624,15 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 [[incoming_conveyorbelt-machinename-command-move-out]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_out`
@@ -622,6 +642,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveOutDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -688,6 +709,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveStepsDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -754,6 +776,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveToLightBarrierDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -820,6 +843,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -907,7 +931,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrche
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -919,6 +945,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrche
 ==== Parameters
 
 - `missionName` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -1128,7 +1155,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -1140,6 +1169,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `cantilever_backwardDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1206,6 +1236,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `cantilever_forwardDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1272,6 +1303,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `conveyor_backwardDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1338,6 +1370,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `conveyor_forwardDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1404,6 +1437,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `conveyor_stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1470,6 +1504,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `go_to_columnDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1536,6 +1571,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `go_to_rowDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1602,6 +1638,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `horizontal_toDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1668,6 +1705,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `move_to_safe_positionDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1734,6 +1772,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `pickup_fromDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1800,6 +1839,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `setupDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1866,6 +1906,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1932,6 +1973,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `dto` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -1998,6 +2040,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `machineName` (String)
+
 - `vertical_toDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2061,11 +2104,14 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -2078,31 +2124,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -2113,11 +2168,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -2156,7 +2214,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -2165,23 +2225,29 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 [[incoming_indexedline-machinename-command-status]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command-status`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -2194,31 +2260,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -2229,11 +2304,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -2272,7 +2350,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -2281,12 +2361,15 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 [[incoming_indexedline-machinename-command-drill]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/drill`
@@ -2296,6 +2379,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `drillDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2362,6 +2446,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `millDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2428,6 +2513,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveToDrillDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2494,6 +2580,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveToMillDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2560,6 +2647,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveToOutputDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2626,6 +2714,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `process1DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2692,6 +2781,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `processDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -2758,6 +2848,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3169,7 +3260,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -3181,6 +3274,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 ==== Parameters
 
 - `missionName` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -3202,6 +3296,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3268,6 +3363,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3334,6 +3430,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3400,6 +3497,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3466,6 +3564,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3532,6 +3631,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `move_to_safe_positionDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3598,6 +3698,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3664,6 +3765,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3730,6 +3832,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3796,6 +3899,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3862,6 +3966,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `setupDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3928,6 +4033,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `setupDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -3994,6 +4100,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4060,6 +4167,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `setupDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4126,6 +4234,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4192,6 +4301,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `DTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4255,11 +4365,14 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -4272,31 +4385,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -4307,11 +4429,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -4350,7 +4475,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -4359,12 +4486,15 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 [[incoming_multiprocessingstation-machinename-command-stop]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/stop`
@@ -4374,6 +4504,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4443,6 +4574,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.getPl
 
 - `plcName` (String)
 
+
 ==== Response Payload
 
 `PlcConnectionStatusDto`
@@ -4474,7 +4606,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.handl
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -4483,11 +4617,14 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -4500,31 +4637,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -4535,11 +4681,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -4578,7 +4727,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -4587,12 +4738,15 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 [[incoming_punchingmachine-machinename-command-punch]]
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/punch`
@@ -4602,6 +4756,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 ==== Parameters
 
 - `machineName` (String)
+
 - `punchDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4668,6 +4823,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4734,6 +4890,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `ejectDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4797,11 +4954,14 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -4814,31 +4974,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -4849,11 +5018,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -4892,7 +5064,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -4901,12 +5075,15 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 [[incoming_sortingline-machinename-command-stop]]
 ===  Incoming Topic: `/sortingLine/{machineName}/command/stop`
@@ -4916,6 +5093,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -4982,6 +5160,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `goToPositionDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5048,6 +5227,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `gripDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5114,6 +5294,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `moveDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5180,6 +5361,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `move_to_safe_positionDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5246,6 +5428,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `ordered_go_toDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5312,6 +5495,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `pickDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5378,6 +5562,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `placeDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5444,6 +5629,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `releaseDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5510,6 +5696,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `retract_armDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5576,6 +5763,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `setupDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5642,6 +5830,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `statusDTO` (GenericMachineStatusRequestDTO)
 
 ==== Request Payload
@@ -5695,6 +5884,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `machineName` (String)
+
 - `stopDTO` (GenericMachineCommandDTO)
 
 ==== Request Payload
@@ -5758,11 +5948,14 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`
 
+_Requests the last command status of the machine_
+
 *Send To:* `/topic/{machineName}/command-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -5775,31 +5968,40 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -5810,11 +6012,14 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`
 
+_Requests the last machine status of the machine_
+
 *Send To:* `/topic/{machineName}/machine-status`
 
 ==== Parameters
 
 - `machineName` (String)
+
 
 ==== Response Payload
 
@@ -5853,7 +6058,9 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 ==== Parameters
 
 - `destination` (String)
+
 - `messageContent` (String)
+
 
 NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
@@ -5862,12 +6069,15 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.receiveDebugCommand()`
 
+_Sends a raw JSON command (as typed in the debug page) to the machine controller_
+
+*Indirect outputs:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>, <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+
 ==== Parameters
 
 - `machineName` (String)
-- `message` (String)
 
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
+- `message` (String)
 
 == Outgoing Topics
 
@@ -6150,7 +6360,7 @@ _All logs that should appear in the frontend_
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendFrontendLogs()`: `@WebSocketPublish` method
 
-*Triggered by incoming topics:* <<incoming_logs-request,/&#8203;logs/&#8203;request>>
+*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_logs-request,/&#8203;logs/&#8203;request>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 
 ==== Payload
 
@@ -6509,13 +6719,15 @@ _Broadcasts Command status updates_
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendCommandStatus()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+
+*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 
 ==== Payload
 
@@ -6528,31 +6740,40 @@ _Broadcasts Command status updates_
   "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
   "properties" : {
     "commandFeedbackInfo" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Additional information reported by the last command feedback"
     },
     "commandFeedbackRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command feedback received from the machine controller"
     },
     "commandFeedbackStatus" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Status reported by the last command feedback"
     },
     "commandFeedbackTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command feedback"
     },
     "currentCommandId" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Id of the last command sent (its outputId)"
     },
     "currentCommandName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the last command sent"
     },
     "currentCommandRawJSON" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Raw JSON of the last command sent to the machine controller"
     },
     "currentCommandTimestamp" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Timestamp of the last command sent"
     },
     "machineName" : {
-      "type" : "string"
+      "type" : "string",
+      "description" : "Name of the machine"
     }
   }
 }
@@ -6566,13 +6787,13 @@ _Broadcasts Machine status updates_
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendMachineStatus()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
 
 ==== Payload
 
