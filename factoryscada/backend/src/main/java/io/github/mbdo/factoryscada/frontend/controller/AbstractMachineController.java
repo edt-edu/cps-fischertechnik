@@ -57,8 +57,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 status.setCurrentCommandRawJSON(message);
                 this.factoryScada.getMachineLastCommandStatusMap().put(machineName, status);
                 // publish to frontend
-                this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
-    					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
+                this.factoryScada.getWebSocketPublisher().sendCommandStatus(machineName, status);
                 factoryScada.addLogsForFrontend(message);
                 
             } catch (ProtocolException e) {

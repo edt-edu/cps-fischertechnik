@@ -31,6 +31,7 @@ import io.github.mbdo.factoryscada.utilities.CommandIdGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,7 +115,7 @@ class ReplanningServiceTest {
         MissionExtensionConfig config = new FixedConfig(List.of(vgr2Nominal, zoneCBMission), List.of(
             new MachineMissionBinding(VGR2, "VacuumGripperMachine", List.of("VacuumGripper2NominalMission")),
             new MachineMissionBinding("ZoneCB", "Zone", List.of("ZoneMissionCBNominal"))));
-        missions = new MissionExtensionService(config, mock(SimpMessagingTemplate.class));
+        missions = new MissionExtensionService(config, mock(WebSocketPublisher.class));
 
         MachineNameMappingService names = mock(MachineNameMappingService.class);
         when(names.getMachineForLogicalName(VGR2)).thenReturn("VacuumGripper02");

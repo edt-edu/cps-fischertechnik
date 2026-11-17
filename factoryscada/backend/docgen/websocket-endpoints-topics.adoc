@@ -196,35 +196,35 @@
 
 |MissionExtensionController.&#8203;getConfigurationStomp()
 |<<incoming_mission-extension-configuration,/&#8203;mission-extension/&#8203;configuration>>
-|  
+|<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionExtensionController.&#8203;getLogsStomp()
 |<<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203;logs>>
-|  
+|<<outgoing_topic-mission-extension-logs,/&#8203;topic/&#8203;mission-extension/&#8203;logs>>
 
 |MissionExtensionController.&#8203;setGlobalMissionMachineOverrideStomp()
 |<<incoming_mission-extension-global-override,/&#8203;mission-extension/&#8203;global/&#8203;override>>
-|  
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionExtensionController.&#8203;startGlobalMissionStomp()
 |<<incoming_mission-extension-global-start,/&#8203;mission-extension/&#8203;global/&#8203;start>>
-|  
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionExtensionController.&#8203;startMissionStomp()
 |<<incoming_mission-extension-start,/&#8203;mission-extension/&#8203;start>>
-|  
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionExtensionController.&#8203;stopActiveMissionStomp()
 |<<incoming_mission-extension-stop-active,/&#8203;mission-extension/&#8203;stop-active>>
-|  
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionExtensionController.&#8203;stopGlobalMissionStomp()
 |<<incoming_mission-extension-global-stop,/&#8203;mission-extension/&#8203;global/&#8203;stop>>
-|  
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionExtensionController.&#8203;stopMissionStomp()
 |<<incoming_mission-extension-stop,/&#8203;mission-extension/&#8203;stop>>
-|  
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 |MissionOrchestratorController.&#8203;getFactoryActualMissions()
 |<<incoming_factorymission-actual-command-executing,/&#8203;factorymission/&#8203;actual-command-executing>>
@@ -458,6 +458,9 @@
 |<<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumgripper/&#8203;{machinename}/&#8203;command/&#8203;debug>>
 |  
 
+|WebSocketPublisher.sendActualCommandExecuting()
+| 
+|/topic/actual-command-executing
 |WebSocketPublisher.sendCommandStatus()
 | 
 |/topic/{machineName}/command-status
@@ -470,6 +473,15 @@
 |WebSocketPublisher.sendMachineStatus()
 | 
 |/topic/{machineName}/machine-status
+|WebSocketPublisher.sendMissionExtensionCommandResponse()
+| 
+|/topic/mission-extension/command-response
+|WebSocketPublisher.sendMissionExtensionConfiguration()
+| 
+|/topic/mission-extension/configuration
+|WebSocketPublisher.sendMissionExtensionLogs()
+| 
+|/topic/mission-extension/logs
 |WebSocketPublisher.sendPlcStatus()
 | 
 |/topic/{controllerName}/plc-connection-status
@@ -2789,25 +2801,25 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.LogsController.requ
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.getConfigurationStomp()`
 
+*Publishes to:* <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+
 ==== Parameters
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_mission-extension-logs]]
 ===  Incoming Topic: `/mission-extension/logs`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.getLogsStomp()`
 
+*Publishes to:* <<outgoing_topic-mission-extension-logs,/&#8203;topic/&#8203;mission-extension/&#8203;logs>>
+
 ==== Parameters
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_mission-extension-global-override]]
 ===  Incoming Topic: `/mission-extension/global/override`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.setGlobalMissionMachineOverrideStomp()`
+
+*Publishes to:* <<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 ==== Parameters
 
@@ -2831,13 +2843,12 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionCon
 }
 ----
 
-
-NOTE: This endpoint does not send a response back via a topic.
-
 [[incoming_mission-extension-global-start]]
 ===  Incoming Topic: `/mission-extension/global/start`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.startGlobalMissionStomp()`
+
+*Publishes to:* <<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 ==== Parameters
 
@@ -2864,13 +2875,12 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionCon
 }
 ----
 
-
-NOTE: This endpoint does not send a response back via a topic.
-
 [[incoming_mission-extension-start]]
 ===  Incoming Topic: `/mission-extension/start`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.startMissionStomp()`
+
+*Publishes to:* <<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 ==== Parameters
 
@@ -2893,34 +2903,31 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionCon
   }
 }
 ----
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_mission-extension-stop-active]]
 ===  Incoming Topic: `/mission-extension/stop-active`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopActiveMissionStomp()`
 
+*Publishes to:* <<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+
 ==== Parameters
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_mission-extension-global-stop]]
 ===  Incoming Topic: `/mission-extension/global/stop`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopGlobalMissionStomp()`
 
+*Publishes to:* <<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+
 ==== Parameters
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_mission-extension-stop]]
 ===  Incoming Topic: `/mission-extension/stop`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopMissionStomp()`
+
+*Publishes to:* <<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
 ==== Parameters
 
@@ -2943,9 +2950,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionCon
   }
 }
 ----
-
-
-NOTE: This endpoint does not send a response back via a topic.
 
 [[incoming_factorymission-actual-command-executing]]
 ===  Incoming Topic: `/factoryMission/actual-command-executing`
@@ -5815,6 +5819,43 @@ NOTE: This endpoint does not send a response back via a topic.
 == Outgoing Topics
 
 
+[[outgoing_topic-actual-command-executing]]
+=== Outgoing Topic: `/topic/actual-command-executing`
+_Broadcasts the list of mission nodes currently executed by the mission DSL executer_
+
+Payload: `Node_dto[]`
+{
+  "type" : "array",
+  "items" : {
+    "type" : "object",
+    "id" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto",
+    "properties" : {
+      "description" : {
+        "type" : "string"
+      },
+      "id" : {
+        "type" : "string"
+      },
+      "outputNodes" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "$ref" : "urn:jsonschema:io:github:mbdo:factoryscada:domains:mission:dsl:dtos:Node_dto"
+        }
+      },
+      "outputs" : {
+        "type" : "array",
+        "items" : {
+          "type" : "string"
+        }
+      },
+      "type" : {
+        "type" : "string"
+      }
+    }
+  }
+}
+
 [[outgoing_topic-machinename-command-status]]
 === Outgoing Topic: `/topic/{machineName}/command-status`
 _Broadcasts Command status updates_
@@ -5876,37 +5917,217 @@ Payload: `String`
 === Outgoing Topic: `/topic/{machineName}/machine-status`
 _Broadcasts Machine status updates_
 
-Payload: `CommandStatusDTO`
+Payload: `MachineStatusDTO`
 {
   "type" : "object",
-  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:CommandStatusDTO",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineStatusDTO",
   "properties" : {
-    "commandFeedbackInfo" : {
+    "machineFeedbackInfo" : {
       "type" : "string"
     },
-    "commandFeedbackRawJSON" : {
+    "machineFeedbackRawJSON" : {
       "type" : "string"
     },
-    "commandFeedbackStatus" : {
+    "machineFeedbackStatus" : {
       "type" : "string"
     },
-    "commandFeedbackTimestamp" : {
-      "type" : "string"
-    },
-    "currentCommandId" : {
-      "type" : "string"
-    },
-    "currentCommandName" : {
-      "type" : "string"
-    },
-    "currentCommandRawJSON" : {
-      "type" : "string"
-    },
-    "currentCommandTimestamp" : {
+    "machineFeedbackTimestamp" : {
       "type" : "string"
     },
     "machineName" : {
       "type" : "string"
+    }
+  }
+}
+
+[[outgoing_topic-mission-extension-command-response]]
+=== Outgoing Topic: `/topic/mission-extension/command-response`
+_Result of a mission extension command (start, stop, override...)_
+
+Payload: `MissionCommandResponseDTO`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionCommandResponseDTO",
+  "properties" : {
+    "activeMissionName" : {
+      "type" : "string"
+    },
+    "machineName" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+
+[[outgoing_topic-mission-extension-configuration]]
+=== Outgoing Topic: `/topic/mission-extension/configuration`
+_Broadcasts the mission extension configuration (available and active missions, recent mission changes)_
+
+Payload: `MissionExtensionConfigurationDTO`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExtensionConfigurationDTO",
+  "properties" : {
+    "activeGlobalMissionName" : {
+      "type" : "string"
+    },
+    "activeMissionNames" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "configurationModified" : {
+      "type" : "boolean"
+    },
+    "globalMissions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:GlobalMissionDTO",
+        "properties" : {
+          "description" : {
+            "type" : "string"
+          },
+          "missionNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "machines" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionMachineDTO",
+        "properties" : {
+          "activeMissionName" : {
+            "type" : "string"
+          },
+          "activeState" : {
+            "type" : "string"
+          },
+          "lastChangeTime" : {
+            "type" : "string"
+          },
+          "missions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExtensionMachineOptionDTO",
+              "properties" : {
+                "description" : {
+                  "type" : "string"
+                },
+                "name" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "nominalMissionName" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "missionChanges" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionChangeEventDTO",
+        "properties" : {
+          "machine" : {
+            "type" : "string"
+          },
+          "mission" : {
+            "type" : "string"
+          },
+          "origin" : {
+            "type" : "string"
+          },
+          "previousMission" : {
+            "type" : "string"
+          },
+          "previousState" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "time" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineMissionExtensionDTO",
+        "properties" : {
+          "activeState" : {
+            "type" : "string"
+          },
+          "awaitingCommandResult" : {
+            "type" : "boolean"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "dotGraph" : {
+            "type" : "string"
+          },
+          "involvedMachines" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}
+
+[[outgoing_topic-mission-extension-logs]]
+=== Outgoing Topic: `/topic/mission-extension/logs`
+_Broadcasts the logs of the machine missions_
+
+Payload: `MissionLogsDTO`
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionLogsDTO",
+  "properties" : {
+    "logsByMission" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "array",
+        "items" : {
+          "type" : "string"
+        }
+      }
     }
   }
 }

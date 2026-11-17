@@ -3,7 +3,6 @@ package io.github.mbdo.factoryscada.core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
-import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
@@ -53,8 +52,7 @@ public abstract class AbstractCommand<T extends AbstractMachine> implements Comm
             status.setCurrentCommandRawJSON(rawJson);
             machine.factoryScada.getMachineLastCommandStatusMap().put(machine.getName(), status);
             // publish to frontend
-            machine.factoryScada.getTemplate().convertAndSend("/topic/"+machine.getName()+"/command-status",
-                    CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
+            machine.factoryScada.getWebSocketPublisher().sendCommandStatus(machine.getName(), status);
             machine.factoryScada.addLogsForFrontend(rawJson);
 
             log.info("Command sent to controller");

@@ -9,7 +9,7 @@ import io.github.mbdo.factoryscada.frontend.dto.*;
 import io.github.mbdo.factoryscada.frontend.dto.replanning.MissionChangeDTO;
 import io.github.mbdo.factoryscada.frontend.dto.replanning.MissionStateMismatchException;
 import io.github.mbdo.factoryscada.utilities.BoundedLogBuffer;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,7 +24,7 @@ public class MissionExtensionService {
     private final Map<String, AbstractMissionStrategy> activeMachineMissions = new ConcurrentHashMap<>();
     private final Map<String, BoundedLogBuffer<String>> missionLogBuffers;
     private final Map<String, MachineMissionBinding> machineBindings = new LinkedHashMap<>();
-    private final SimpMessagingTemplate messagingTemplate;
+    private final WebSocketPublisher webSocketPublisher;
     private String activeFactoryMissionName;
 
     public enum ChangeOrigin {
@@ -40,8 +40,8 @@ public class MissionExtensionService {
     }
 
     public MissionExtensionService(MissionExtensionConfig missionExtensionConfig,
-                                   SimpMessagingTemplate messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
+                                   WebSocketPublisher webSocketPublisher) {
+        this.webSocketPublisher = webSocketPublisher;
 
         this.availableFactoryMissions = new LinkedHashMap<>();
         for (FactoryMissionExtension fme : missionExtensionConfig.getFactoryMissions()) {
@@ -63,8 +63,8 @@ public class MissionExtensionService {
             missionLogBuffers.put(mission.getName(), buf);
             mission.setLogListener(entry -> {
                 buf.add(entry);
-                messagingTemplate.convertAndSend("/topic/mission-extension/logs", getMissionLogsDTO());
-                messagingTemplate.convertAndSend("/topic/mission-extension/configuration", getConfiguration());
+                webSocketPublisher.sendMissionExtensionLogs(getMissionLogsDTO());
+                webSocketPublisher.sendMissionExtensionConfiguration(getConfiguration());
             });
         }
     }
@@ -408,7 +408,7 @@ public class MissionExtensionService {
     }
 
     private void publishConfiguration() {
-        messagingTemplate.convertAndSend("/topic/mission-extension/configuration", getConfiguration());
+        webSocketPublisher.sendMissionExtensionConfiguration(getConfiguration());
     }
 
     private MachineMissionBinding requireBinding(String machineName) {

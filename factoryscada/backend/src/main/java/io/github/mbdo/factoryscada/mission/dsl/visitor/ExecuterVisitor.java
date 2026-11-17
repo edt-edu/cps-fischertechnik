@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -21,6 +19,7 @@ import io.github.mbdo.factoryscada.core.AbstractMachine;
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.dtos.CommandMessage;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
+import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.EntryNode_dto;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.FactoryMissionsParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Fork_dto;
@@ -50,13 +49,13 @@ public class ExecuterVisitor extends Visitor {
 
     private String actualMissionName;
 
-    private final SimpMessagingTemplate template;
+    private final WebSocketPublisher webSocketPublisher;
 
     public ExecuterVisitor(FactoryScada factoryScada, FactoryMissionsParallelized_dto factoryMissions,
-            SimpMessagingTemplate template) {
+            WebSocketPublisher webSocketPublisher) {
         this.factoryScada = factoryScada;
         this.factoryMissions = factoryMissions;
-        this.template = template;
+        this.webSocketPublisher = webSocketPublisher;
 
         // Store the entry node for each missions
         for (MissionParallelized_dto mission : factoryMissions.getMissions()) {
@@ -128,7 +127,7 @@ public class ExecuterVisitor extends Visitor {
                 }
                 isCurrentlyVisiting.remove(node);
             }
-            template.convertAndSend("/topic/actual-command-executing", isCurrentlyVisiting);
+            webSocketPublisher.sendActualCommandExecuting(isCurrentlyVisiting);
             return "Mission " + this.actualMissionName + " stopped";
         } else {
             return "";
@@ -165,7 +164,7 @@ public class ExecuterVisitor extends Visitor {
                     }
                 }
             }
-            template.convertAndSend("/topic/actual-command-executing", isCurrentlyVisiting);
+            webSocketPublisher.sendActualCommandExecuting(isCurrentlyVisiting);
         }
     }
 
@@ -197,7 +196,7 @@ public class ExecuterVisitor extends Visitor {
     public void visit(RawMachineCommand_dto node) {
         log.info("Visiting RMC : {}", node.getId());
         isCurrentlyVisiting.add(node);
-        template.convertAndSend("/topic/actual-command-executing", isCurrentlyVisiting);
+        webSocketPublisher.sendActualCommandExecuting(isCurrentlyVisiting);
         sendMissionCommand(node);
     }
 
