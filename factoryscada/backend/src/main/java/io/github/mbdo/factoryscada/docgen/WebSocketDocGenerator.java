@@ -135,11 +135,13 @@ public class WebSocketDocGenerator implements ApplicationRunner {
      */
     private String generateAllTopicsOverview() {
         StringBuilder doc = new StringBuilder("== Topics overview\n\n");
-        doc.append("[cols=\"1,1,1\"]\n");
-        doc.append("|===\n");
-        doc.append("| Implementing class | Incoming topic | Outgoing topic \n\n");
 
         for (String className : methodToIncomingTopicMap.keySet()) {
+            doc.append("=== Overview "+className+"\n\n");
+
+            doc.append("[cols=\"1,1,1\"]\n");
+            doc.append("|===\n");
+            doc.append("| Implementing class | Incoming topic | Outgoing topic \n\n");
             for( Entry<String, Set<String>> methodMap : methodToIncomingTopicMap.get(className).entrySet()) {
                 String methodName = methodMap.getKey();
                 for (String topic : methodMap.getValue()) {
@@ -161,21 +163,31 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     doc.append("\n");
                 }
             }
+            doc.append("|===\n\n");
         }
         // process remaining outgoing topics
         for (String className : methodToOutgoingTopicMap.keySet()) {
-            for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
-                    doc.append("|"+className+".&#8203;"+methodMap.getKey()+"()\n");
-                    doc.append("| \n");
-                    doc.append("|"+methodMap.getValue().stream()
-                        .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+toSplittaString(stopic)+">>")
-                        .collect(Collectors.joining(", "))+"\n");
-                    doc.append("\n");
+            if(!methodToOutgoingTopicMap.get(className).entrySet().stream().allMatch(e -> e.getValue().isEmpty())) {
+                // this class has outgoing topics not linked to any incoming topic, so we will document them
+            
+                doc.append("=== Overview "+className+"\n\n");
+
+                doc.append("[cols=\"1,1,1\"]\n");
+                doc.append("|===\n");
+                doc.append("| Implementing class | Incoming topic | Outgoing topic \n\n");
+                for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
+                        doc.append("|"+className+".&#8203;"+methodMap.getKey()+"()\n");
+                        doc.append("| \n");
+                        doc.append("|"+methodMap.getValue().stream()
+                            .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+toSplittaString(stopic)+">>")
+                            .collect(Collectors.joining(", "))+"\n");
+                        doc.append("\n");
+                }
+                doc.append("|===\n\n");
             }
         }
 
 
-        doc.append("|===\n\n");
         return doc.toString();
     }
 
