@@ -64,7 +64,7 @@
 |Incoming topic |Description |Request payload |Output topics
 
 |<<incoming_dynamic-mission-missions,/&#8203;dynamic-mission/&#8203;missions>>
-|
+|Returns a list of all available dynamic missions.
 |
 |<<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
 
@@ -74,12 +74,12 @@
 |
 
 |<<incoming_dynamic-mission-command-start-missionname,/&#8203;dynamic-mission/&#8203;command/&#8203;start/&#8203;{missionName}>>
-|
+|Starts a dynamic mission by its name.
 |
 |
 
 |<<incoming_dynamic-mission-command-stop,/&#8203;dynamic-mission/&#8203;command/&#8203;stop>>
-|
+|Stops the currently active dynamic mission.
 |
 |
 
@@ -92,17 +92,17 @@
 |Incoming topic |Description |Request payload |Output topics
 
 |<<incoming_factory-placeholder,/&#8203;factory/&#8203;placeholder>>
-|
+|Returns a map of command placeholders for all machines, which can be used to fill in the command templates.
 |
 |<<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
 
 |<<incoming_factory-configuration,/&#8203;factory/&#8203;configuration>>
-|
+|Returns the configuration for the factory SCADA system.
 |
 |<<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
 
 |<<incoming_factory-instance,/&#8203;factory/&#8203;instance>>
-|
+|Returns the instance of the factory SCADA system.
 |
 |<<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
 
@@ -120,74 +120,88 @@
 |Incoming topic |Description |Request payload |Output topics
 
 |<<incoming_highbaywarehouse-machinename-command-cantilever-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_backward>>
-|
+|Executes the cantilever_backward command on the specified HighBayWarehouse machine. Retracts the cantilever, moving it away from the conveyor or the storage racks.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-cantilever-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_forward>>
-|
+|Executes the cantilever_forward command on the specified HighBayWarehouse machine. Extends the cantilever towards the conveyor or the storage racks.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-conveyor-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_backward>>
-|
+|Executes the conveyor_backward command on the specified HighBayWarehouse machine. Moves the conveyor backward, towards the crane.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-conveyor-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_forward>>
-|
+|Executes the conveyor_forward command on the specified HighBayWarehouse machine. Moves the conveyor belt forward, towards the exit.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-conveyor-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_stop>>
-|
+|Executes the conveyor_stop command on the specified HighBayWarehouse machine.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-go-to-column,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_column>>
-|
+|Executes the crane_goto_column command on the specified HighBayWarehouse machine. Moves the crane horizontally to the specified column.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-go-to-row,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_row>>
-|
+|Executes the crane_goto_row command on the specified HighBayWarehouse machine. Move the crane vertically to the specified row.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-horizontal-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;horizontal_to>>
-|
+|Executes the crane_goto_horizontal_position command on the specified HighBayWarehouse machine. Move the crane vertically to a specified counter value.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-move-to-safe-position,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;move_to_safe_position>>
-|
+|Executes the move_to_safe_position command on the specified HighBayWarehouse machine. Move towards a configured safe-position
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-pickup-from,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;pickup_from>>
-|
+|Executes the pickup_from command on the specified HighBayWarehouse machine. Move a payload from the specified rack position onto the conveyor exit. A setupis performed after the command to reset the encoder and recalibrate the counters.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-setup,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;setup>>
-|
+|Executes the setup command on the specified HighBayWarehouse machine. Set up the HighBay and calibrate the counters by reaching the reference switches.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|
+|Executes the stop command on the specified HighBayWarehouse machine.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-store-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;store_to>>
-|
+|Executes the store_to command on the specified HighBayWarehouse machine. Stores an item from the conveyor to the specified row and column in the rack (ie. place the cantilevel in front of the conveyor, activate conveyor to load the payload on the cantilever, and move to place the payload in the rack), a reset of the encoder is performed after the operation.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-vertical-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;vertical_to>>
-|
+|Executes the crane_goto_vertical_position command on the specified HighBayWarehouse machine. Move the crane vertically to a specified counter value.
 |`GenericMachineCommandDTO`
-|
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 |<<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>
 |Requests the last command status of the machine
@@ -288,7 +302,7 @@
 |Incoming topic |Description |Request payload |Output topics
 
 |<<incoming_logs-request,/&#8203;logs/&#8203;request>>
-|
+|Requests all the logs currently available on the backend. The logs include events about commands received with their answers, machine status event and erros and mission events.
 |
 |<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
 
@@ -703,7 +717,7 @@
 `@SendTo` reply of MissionOrchestratorController.&#8203;getFactoryActualMissions()
 
 |<<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
-|
+|A map of command placeholders for all machines.
 |`Map`
 |`@SendTo` reply of FactoryScadaController.&#8203;getCommandPlaceholder()
 
@@ -713,22 +727,22 @@
 |`WebSocketPublisher.&#8203;sendControllerFeedback()`
 
 |<<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
-|
+|A list of dynamic missions with their names and descriptions and involved machines.
 |`List`
 |`@SendTo` reply of DynamicMissionOrchestratorController.&#8203;getMissions()
 
 |<<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
-|
+|The factory SCADA configuration. Including the list of controllers and machines, their names,  the protocols used to communicate with them, and machine logical/physical name mappings.
 |`FactoryScadaConfiguration`
 |`@SendTo` reply of FactoryScadaController.&#8203;getFactoryConfiguration()
 
 |<<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
-|
+|The factory SCADA instance, including status of the controllers and machines. Machines also provide their declaredcommand placeholders.
 |`FactoryScadaInstance`
 |`@SendTo` reply of FactoryScadaController.&#8203;getFactoryInstance()
 
 |<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
-|All logs that should appear in the frontend
+|All logs currenly archived by the backend, including command events, machine status events and mission events
 |`String`
 |`WebSocketPublisher.&#8203;sendFrontendLogs()` +
 triggered by: <<incoming_logs-request,/&#8203;logs/&#8203;request>>
@@ -771,13 +785,13 @@ triggered by: <<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203
 |Broadcasts Command status updates
 |`CommandStatusDTO`
 |8 producers (<<outgoing_topic-machinename-command-status,see details>>) +
-triggered by 11 incoming topics (<<outgoing_topic-machinename-command-status,see details>>)
+triggered by 25 incoming topics (<<outgoing_topic-machinename-command-status,see details>>)
 
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 |Broadcasts Machine status updates
 |`MachineStatusDTO`
 |8 producers (<<outgoing_topic-machinename-machine-status,see details>>) +
-triggered by 11 incoming topics (<<outgoing_topic-machinename-machine-status,see details>>)
+triggered by 25 incoming topics (<<outgoing_topic-machinename-machine-status,see details>>)
 
 |<<outgoing_topic-plcname-plc-connection-status,/&#8203;topic/&#8203;{plcName}/&#8203;plc-connection-status>>
 |
@@ -1216,6 +1230,8 @@ _Sends a command to the machine controller to stop the conveyor belt_
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
 
+_Returns a list of all available dynamic missions._
+
 *Send To:* <<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
 
 ==== Parameters
@@ -1251,6 +1267,8 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.startMission()`
 
+_Starts a dynamic mission by its name._
+
 ==== Parameters
 
 - `missionName` (String)
@@ -1263,6 +1281,8 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.stopMission()`
 
+_Stops the currently active dynamic mission._
+
 ==== Parameters
 
 
@@ -1272,6 +1292,8 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 ===  Incoming Topic: `/factory/placeholder`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getCommandPlaceholder()`
+
+_Returns a map of command placeholders for all machines, which can be used to fill in the command templates._
 
 *Send To:* <<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
 
@@ -1297,6 +1319,8 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 ===  Incoming Topic: `/factory/configuration`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryConfiguration()`
+
+_Returns the configuration for the factory SCADA system._
 
 *Send To:* <<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
 
@@ -1378,6 +1402,8 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 ===  Incoming Topic: `/factory/instance`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryInstance()`
+
+_Returns the instance of the factory SCADA system._
 
 *Send To:* <<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
 
@@ -1475,6 +1501,13 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeCantileverBackwardCommand()`
 
+_Executes the cantilever_backward command on the specified HighBayWarehouse machine. Retracts the cantilever, moving it away from the conveyor or the storage racks._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+
 ==== Parameters
 
 - `machineName` (String)
@@ -1534,13 +1567,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-cantilever-forward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_forward`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeCantileverFrontendCommand()`
+
+_Executes the cantilever_forward command on the specified HighBayWarehouse machine. Extends the cantilever towards the conveyor or the storage racks._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1601,13 +1638,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-conveyor-backward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_backward`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorBackwardCommand()`
+
+_Executes the conveyor_backward command on the specified HighBayWarehouse machine. Moves the conveyor backward, towards the crane._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1668,13 +1709,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-conveyor-forward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_forward`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorFrontendCommand()`
+
+_Executes the conveyor_forward command on the specified HighBayWarehouse machine. Moves the conveyor belt forward, towards the exit._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1735,13 +1780,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-conveyor-stop]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_stop`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorStopCommand()`
+
+_Executes the conveyor_stop command on the specified HighBayWarehouse machine._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1802,13 +1851,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-go-to-column]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_column`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeGoToColumnCommand()`
+
+_Executes the crane_goto_column command on the specified HighBayWarehouse machine. Moves the crane horizontally to the specified column._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1869,13 +1922,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-go-to-row]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_row`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeGoToRowCommand()`
+
+_Executes the crane_goto_row command on the specified HighBayWarehouse machine. Move the crane vertically to the specified row._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1936,13 +1993,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-horizontal-to]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/horizontal_to`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeHorizontalToCommand()`
+
+_Executes the crane_goto_horizontal_position command on the specified HighBayWarehouse machine. Move the crane vertically to a specified counter value._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2003,13 +2064,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-move-to-safe-position]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/move_to_safe_position`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeMoveToSafePositionCommand()`
+
+_Executes the move_to_safe_position command on the specified HighBayWarehouse machine. Move towards a configured safe-position_
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2070,13 +2135,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-pickup-from]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/pickup_from`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executePickupFromCommand()`
+
+_Executes the pickup_from command on the specified HighBayWarehouse machine. Move a payload from the specified rack position onto the conveyor exit. A setupis performed after the command to reset the encoder and recalibrate the counters._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2137,13 +2206,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-setup]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/setup`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeSetupCommand()`
+
+_Executes the setup command on the specified HighBayWarehouse machine. Set up the HighBay and calibrate the counters by reaching the reference switches._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2204,13 +2277,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-stop]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/stop`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStopCommand()`
+
+_Executes the stop command on the specified HighBayWarehouse machine._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2271,13 +2348,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-store-to]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store_to`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStoreToCommand()`
+
+_Executes the store_to command on the specified HighBayWarehouse machine. Stores an item from the conveyor to the specified row and column in the rack (ie. place the cantilevel in front of the conveyor, activate conveyor to load the payload on the cantilever, and move to place the payload in the rack), a reset of the encoder is performed after the operation._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2338,13 +2419,17 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 }
 ----
 
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
-
 [[incoming_highbaywarehouse-machinename-command-vertical-to]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/vertical_to`
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeVerticalToCommand()`
+
+_Executes the crane_goto_vertical_position command on the specified HighBayWarehouse machine. Move the crane vertically to a specified counter value._
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2404,9 +2489,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
   }
 }
 ----
-
-
-NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
 [[incoming_highbaywarehouse-machinename-command-status]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command-status`
@@ -3227,7 +3309,13 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.LogsController.requestFrontendLogs()`
 
+_Requests all the logs currently available on the backend. The logs include events about commands received with their answers, machine status event and erros and mission events._
+
 *Publishes to:* <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
+
+*Indirect outputs:* 
+
+- <<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
 
 ==== Parameters
 
@@ -6681,7 +6769,7 @@ _Broadcasts raw feedback from the controller_
 [[outgoing_topic-frontend-logs]]
 === Outgoing Topic: `/topic/frontend-logs`
 
-_All logs that should appear in the frontend_
+_All logs currenly archived by the backend, including command events, machine status events and mission events_
 
 ==== Producers
 
@@ -7080,7 +7168,21 @@ _Broadcasts Command status updates_
 - <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
 - <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>
 - <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>
+- <<incoming_highbaywarehouse-machinename-command-cantilever-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_backward>>
+- <<incoming_highbaywarehouse-machinename-command-cantilever-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_forward>>
+- <<incoming_highbaywarehouse-machinename-command-conveyor-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_backward>>
+- <<incoming_highbaywarehouse-machinename-command-conveyor-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_forward>>
+- <<incoming_highbaywarehouse-machinename-command-conveyor-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_stop>>
 - <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_highbaywarehouse-machinename-command-go-to-column,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_column>>
+- <<incoming_highbaywarehouse-machinename-command-go-to-row,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_row>>
+- <<incoming_highbaywarehouse-machinename-command-horizontal-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;horizontal_to>>
+- <<incoming_highbaywarehouse-machinename-command-move-to-safe-position,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;move_to_safe_position>>
+- <<incoming_highbaywarehouse-machinename-command-pickup-from,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;pickup_from>>
+- <<incoming_highbaywarehouse-machinename-command-setup,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;setup>>
+- <<incoming_highbaywarehouse-machinename-command-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;stop>>
+- <<incoming_highbaywarehouse-machinename-command-store-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;store_to>>
+- <<incoming_highbaywarehouse-machinename-command-vertical-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;vertical_to>>
 - <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 - <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 - <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
@@ -7160,7 +7262,21 @@ _Broadcasts Machine status updates_
 - <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
 - <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>
 - <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>
+- <<incoming_highbaywarehouse-machinename-command-cantilever-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_backward>>
+- <<incoming_highbaywarehouse-machinename-command-cantilever-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_forward>>
+- <<incoming_highbaywarehouse-machinename-command-conveyor-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_backward>>
+- <<incoming_highbaywarehouse-machinename-command-conveyor-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_forward>>
+- <<incoming_highbaywarehouse-machinename-command-conveyor-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_stop>>
 - <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_highbaywarehouse-machinename-command-go-to-column,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_column>>
+- <<incoming_highbaywarehouse-machinename-command-go-to-row,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_row>>
+- <<incoming_highbaywarehouse-machinename-command-horizontal-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;horizontal_to>>
+- <<incoming_highbaywarehouse-machinename-command-move-to-safe-position,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;move_to_safe_position>>
+- <<incoming_highbaywarehouse-machinename-command-pickup-from,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;pickup_from>>
+- <<incoming_highbaywarehouse-machinename-command-setup,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;setup>>
+- <<incoming_highbaywarehouse-machinename-command-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;stop>>
+- <<incoming_highbaywarehouse-machinename-command-store-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;store_to>>
+- <<incoming_highbaywarehouse-machinename-command-vertical-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;vertical_to>>
 - <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 - <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 - <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>

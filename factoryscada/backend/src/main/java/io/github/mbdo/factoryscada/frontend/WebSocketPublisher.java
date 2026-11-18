@@ -39,7 +39,7 @@ public class WebSocketPublisher {
         template.convertAndSend("/topic/controller-feedbacks", message);
     }
 
-    @WebSocketPublish(value = "/topic/frontend-logs", payload = String.class, description = "All logs that should appear in the frontend")
+    @WebSocketPublish(value = "/topic/frontend-logs", payload = String.class, description = "All logs currenly archived by the backend, including command events, machine status events and mission events")
     public void sendFrontendLogs(String message) {
         template.convertAndSend("/topic/frontend-logs", message);
     }
