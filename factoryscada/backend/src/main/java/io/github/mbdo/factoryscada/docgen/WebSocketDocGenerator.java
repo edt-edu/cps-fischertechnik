@@ -247,13 +247,6 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                 if (method.isAnnotationPresent(MessageMapping.class) ) {
                     MessageMapping mapping = method.getAnnotation(MessageMapping.class);
                     String mappingPath = classMappingPath + String.join(", ", mapping.value());
-                    String sendToPath = "";
-                    if(method.isAnnotationPresent(SendTo.class)) {
-                        SendTo sendTo = method.getAnnotation(SendTo.class);
-                        sendToPath = String.join(", ", sendTo.value());
-                    }
-                   
-
                     doc.append("[[incoming_"+toAsciiDocAnchor(mappingPath)+"]]\n");
                     doc.append("===  Incoming Topic: `").append(mappingPath).append("`\n\n");
                     doc.append("Declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
@@ -262,7 +255,11 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                         doc.append("_").append(wsDoc.description()).append("_\n\n");
                     }
                     if(method.isAnnotationPresent(SendTo.class)) {
-                        doc.append("*Send To:* `").append(sendToPath).append("`\n\n");
+                        doc.append("*Send To:* ")
+                           .append(Arrays.stream(method.getAnnotation(SendTo.class).value())
+                                .map(this::toOutgoingTopicLink)
+                                .collect(Collectors.joining(", ")))
+                           .append("\n\n");
                     }
                     Set<String> publishedTopics = findPublishedTopics(method);
                     if (!publishedTopics.isEmpty()) {

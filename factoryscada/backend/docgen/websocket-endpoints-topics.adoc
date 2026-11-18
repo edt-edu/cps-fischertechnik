@@ -795,7 +795,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -859,7 +859,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1216,7 +1216,7 @@ _Sends a command to the machine controller to stop the conveyor belt_
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
 
-*Send To:* `/topic/dynamic-missions`
+*Send To:* <<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
 
 ==== Parameters
 
@@ -1273,7 +1273,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getCommandPlaceholder()`
 
-*Send To:* `/topic/command-placeholder`
+*Send To:* <<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
 
 ==== Parameters
 
@@ -1298,7 +1298,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryConfiguration()`
 
-*Send To:* `/topic/factory-configuration`
+*Send To:* <<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
 
 ==== Parameters
 
@@ -1379,7 +1379,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaControl
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryInstance()`
 
-*Send To:* `/topic/factory-instance`
+*Send To:* <<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
 
 ==== Parameters
 
@@ -2415,7 +2415,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -2479,7 +2479,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2554,7 +2554,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -2618,7 +2618,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -3391,7 +3391,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionCon
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`
 
-*Send To:* `/topic/actual-command-executing`
+*Send To:* <<outgoing_topic-actual-command-executing,/&#8203;topic/&#8203;actual-command-executing>>
 
 ==== Parameters
 
@@ -3412,7 +3412,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
 
-*Send To:* `/topic/mission-configuration`
+*Send To:* <<outgoing_topic-mission-configuration,/&#8203;topic/&#8203;mission-configuration>>
 
 ==== Parameters
 
@@ -3485,7 +3485,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
 
-*Send To:* `/topic/mission-configuration`
+*Send To:* <<outgoing_topic-mission-configuration,/&#8203;topic/&#8203;mission-configuration>>
 
 ==== Parameters
 
@@ -3558,7 +3558,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestrator
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
 
-*Send To:* `/topic/mission-status`
+*Send To:* <<outgoing_topic-mission-status,/&#8203;topic/&#8203;mission-status>>
 
 ==== Parameters
 
@@ -4682,7 +4682,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -4746,7 +4746,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -4886,7 +4886,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 
 Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.getPlcConnectionStatus()`
 
-*Send To:* `/topic/{plcName}/plc-connection-status`
+*Send To:* <<outgoing_topic-plcname-plc-connection-status,/&#8203;topic/&#8203;{plcName}/&#8203;plc-connection-status>>
 
 ==== Parameters
 
@@ -4937,7 +4937,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -5001,7 +5001,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -5277,7 +5277,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -5341,7 +5341,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -6274,7 +6274,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 _Requests the last command status of the machine_
 
-*Send To:* `/topic/{machineName}/command-status`
+*Send To:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
 ==== Parameters
 
@@ -6338,7 +6338,7 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 _Requests the last machine status of the machine_
 
-*Send To:* `/topic/{machineName}/machine-status`
+*Send To:* <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
