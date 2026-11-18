@@ -280,10 +280,10 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                         for (String indirectOutput : indirectOutputs) {
                             this.topicToTriggeringIncomingMap.computeIfAbsent(indirectOutput, k -> new TreeSet<>()).add(mappingPath);
                         }
-                        doc.append("*Indirect outputs:* ")
+                        doc.append("*Indirect outputs:* \n\n")
                            .append(indirectOutputs.stream()
-                                .map(t -> toCheckedOutgoingTopicLink(t, clazz.getName() + "." + method.getName() + "()"))
-                                .collect(Collectors.joining(", ")))
+                                .map(t -> "- " + toCheckedOutgoingTopicLink(t, clazz.getName() + "." + method.getName() + "()"))
+                                .collect(Collectors.joining("\n")))
                            .append("\n\n");
                     }
                     // overview data
@@ -397,19 +397,16 @@ public class WebSocketDocGenerator implements ApplicationRunner {
             doc.append("==== Producers\n\n");
             for (TopicProducer producer : producers) {
                 doc.append("- `").append(producer.declaration()).append("`: ").append(producer.role());
-                if (!producer.isPublisher() && !producer.description().isEmpty()) {
-                    doc.append(": _").append(producer.description()).append("_");
-                }
                 doc.append("\n");
             }
             doc.append("\n");
 
             Set<String> triggeringIncomingTopics = topicToTriggeringIncomingMap.get(topic);
             if (triggeringIncomingTopics != null) {
-                doc.append("*Triggered by incoming topics:* ")
+                doc.append("*Triggered by incoming topics:* \n\n")
                    .append(triggeringIncomingTopics.stream()
-                        .map(t -> "<<incoming_" + toAsciiDocAnchor(t) + "," + toSplittaString(t) + ">>")
-                        .collect(Collectors.joining(", ")))
+                        .map(t -> "- <<incoming_" + toAsciiDocAnchor(t) + "," + toSplittaString(t) + ">>")
+                        .collect(Collectors.joining("\n")))
                    .append("\n\n");
             }
 

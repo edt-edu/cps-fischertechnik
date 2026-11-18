@@ -916,7 +916,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -931,7 +934,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Sends a command to the machine controller to move the conveyor belt in a given direction so its payload is ejected from the conveyor belt_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -999,7 +1005,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Sends a command to the machine controller to move the conveyor belt a specified number of steps_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1067,7 +1076,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Sends a command to the machine controller to move the conveyor belt in a given direction so its payload reaches the next sensor_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -1135,7 +1147,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltControl
 
 _Sends a command to the machine controller to stop the conveyor belt_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2521,7 +2536,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseCon
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -2657,7 +2675,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineControll
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -4782,7 +4803,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStat
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -5034,7 +5058,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineCont
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -5371,7 +5398,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineControll
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -6365,7 +6395,10 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
-*Indirect outputs:* <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+*Indirect outputs:* 
+
+- <<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+- <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
 ==== Parameters
 
@@ -6654,7 +6687,9 @@ _All logs that should appear in the frontend_
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendFrontendLogs()`: `@WebSocketPublish` method
 
-*Triggered by incoming topics:* <<incoming_logs-request,/&#8203;logs/&#8203;request>>
+*Triggered by incoming topics:* 
+
+- <<incoming_logs-request,/&#8203;logs/&#8203;request>>
 
 ==== Payload
 
@@ -6740,7 +6775,14 @@ _Result of a mission extension command (start, stop, override...)_
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendMissionExtensionCommandResponse()`: `@WebSocketPublish` method
 
-*Triggered by incoming topics:* <<incoming_mission-extension-global-override,/&#8203;mission-extension/&#8203;global/&#8203;override>>, <<incoming_mission-extension-global-start,/&#8203;mission-extension/&#8203;global/&#8203;start>>, <<incoming_mission-extension-global-stop,/&#8203;mission-extension/&#8203;global/&#8203;stop>>, <<incoming_mission-extension-start,/&#8203;mission-extension/&#8203;start>>, <<incoming_mission-extension-stop,/&#8203;mission-extension/&#8203;stop>>, <<incoming_mission-extension-stop-active,/&#8203;mission-extension/&#8203;stop-active>>
+*Triggered by incoming topics:* 
+
+- <<incoming_mission-extension-global-override,/&#8203;mission-extension/&#8203;global/&#8203;override>>
+- <<incoming_mission-extension-global-start,/&#8203;mission-extension/&#8203;global/&#8203;start>>
+- <<incoming_mission-extension-global-stop,/&#8203;mission-extension/&#8203;global/&#8203;stop>>
+- <<incoming_mission-extension-start,/&#8203;mission-extension/&#8203;start>>
+- <<incoming_mission-extension-stop,/&#8203;mission-extension/&#8203;stop>>
+- <<incoming_mission-extension-stop-active,/&#8203;mission-extension/&#8203;stop-active>>
 
 ==== Payload
 
@@ -6777,7 +6819,15 @@ _Broadcasts the mission extension configuration (available and active missions, 
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendMissionExtensionConfiguration()`: `@WebSocketPublish` method
 
-*Triggered by incoming topics:* <<incoming_mission-extension-configuration,/&#8203;mission-extension/&#8203;configuration>>, <<incoming_mission-extension-global-override,/&#8203;mission-extension/&#8203;global/&#8203;override>>, <<incoming_mission-extension-global-start,/&#8203;mission-extension/&#8203;global/&#8203;start>>, <<incoming_mission-extension-global-stop,/&#8203;mission-extension/&#8203;global/&#8203;stop>>, <<incoming_mission-extension-start,/&#8203;mission-extension/&#8203;start>>, <<incoming_mission-extension-stop,/&#8203;mission-extension/&#8203;stop>>, <<incoming_mission-extension-stop-active,/&#8203;mission-extension/&#8203;stop-active>>
+*Triggered by incoming topics:* 
+
+- <<incoming_mission-extension-configuration,/&#8203;mission-extension/&#8203;configuration>>
+- <<incoming_mission-extension-global-override,/&#8203;mission-extension/&#8203;global/&#8203;override>>
+- <<incoming_mission-extension-global-start,/&#8203;mission-extension/&#8203;global/&#8203;start>>
+- <<incoming_mission-extension-global-stop,/&#8203;mission-extension/&#8203;global/&#8203;stop>>
+- <<incoming_mission-extension-start,/&#8203;mission-extension/&#8203;start>>
+- <<incoming_mission-extension-stop,/&#8203;mission-extension/&#8203;stop>>
+- <<incoming_mission-extension-stop-active,/&#8203;mission-extension/&#8203;stop-active>>
 
 ==== Payload
 
@@ -6937,7 +6987,9 @@ _Broadcasts the logs of the machine missions_
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendMissionExtensionLogs()`: `@WebSocketPublish` method
 
-*Triggered by incoming topics:* <<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203;logs>>
+*Triggered by incoming topics:* 
+
+- <<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203;logs>>
 
 ==== Payload
 
@@ -7013,15 +7065,27 @@ _Broadcasts Command status updates_
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendCommandStatus()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
-- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
-- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
-- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
-- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
-- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
-- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>: _Last command sent to the machine and last feedback received for it_
+- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>
 
-*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>, <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>, <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>, <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+*Triggered by incoming topics:* 
+
+- <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>
+- <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
+- <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>
+- <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>
+- <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 
 ==== Payload
 
@@ -7081,15 +7145,27 @@ _Broadcasts Machine status updates_
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendMachineStatus()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
-- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
-- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
-- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
-- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
-- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
-- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>: _Last machine status received from the machine controller_
+- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>
 
-*Triggered by incoming topics:* <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>, <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>, <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>, <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>, <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>, <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+*Triggered by incoming topics:* 
+
+- <<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>
+- <<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
+- <<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>
+- <<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>
+- <<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
+- <<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
 
 ==== Payload
 
