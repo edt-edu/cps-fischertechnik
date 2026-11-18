@@ -2,497 +2,787 @@
 
 == Topics overview
 
-[cols="1,1,1"]
-|===
-| Implementing class | Incoming topic | Outgoing topic 
+=== Incoming messages — commands and requests
 
-|ConveyorBeltController.&#8203;getCommandStatus()
+==== ConveyorBeltController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|ConveyorBeltController.&#8203;getMachineStatus()
 |<<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|ConveyorBeltController.&#8203;handleUnmappedMessage()
 |<<incoming_conveyorbelt,/&#8203;conveyorBelt**>>
-|  
+|
+|`String`
+|
 
-|ConveyorBeltController.&#8203;receiveDebugCommand()
 |<<incoming_conveyorbelt-machinename-command-debug,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|ConveyorBeltController.&#8203;receiveMoveCommand()
 |<<incoming_conveyorbelt-machinename-command-move-out,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_out>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a command to the machine controller to move the conveyor belt in a given direction so its payload is ejected from the conveyor belt
+|`GenericMachineCommandDTO`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|ConveyorBeltController.&#8203;receiveMoveNbStepsCommand()
 |<<incoming_conveyorbelt-machinename-command-move-nb-steps,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_nb_steps>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a command to the machine controller to move the conveyor belt a specified number of steps
+|`GenericMachineCommandDTO`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|ConveyorBeltController.&#8203;receiveMoveToSensorCommand()
 |<<incoming_conveyorbelt-machinename-command-move-to-sensor,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;move_to_sensor>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a command to the machine controller to move the conveyor belt in a given direction so its payload reaches the next sensor
+|`GenericMachineCommandDTO`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|ConveyorBeltController.&#8203;receiveStopCommand()
 |<<incoming_conveyorbelt-machinename-command-stop,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a command to the machine controller to stop the conveyor belt
+|`GenericMachineCommandDTO`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|DynamicMissionOrchestratorController.&#8203;getMissions()
+|===
+
+==== DynamicMissionOrchestratorController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_dynamic-mission-missions,/&#8203;dynamic-mission/&#8203;missions>>
+|
+|
 |<<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
 
-|DynamicMissionOrchestratorController.&#8203;handleUnmappedMessage()
 |<<incoming_dynamic-mission,/&#8203;dynamic-mission**>>
-|  
+|
+|`String`
+|
 
-|DynamicMissionOrchestratorController.&#8203;startMission()
 |<<incoming_dynamic-mission-command-start-missionname,/&#8203;dynamic-mission/&#8203;command/&#8203;start/&#8203;{missionName}>>
-|  
+|
+|
+|
 
-|DynamicMissionOrchestratorController.&#8203;stopMission()
 |<<incoming_dynamic-mission-command-stop,/&#8203;dynamic-mission/&#8203;command/&#8203;stop>>
-|  
+|
+|
+|
 
-|FactoryScadaController.&#8203;getCommandPlaceholder()
+|===
+
+==== FactoryScadaController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_factory-placeholder,/&#8203;factory/&#8203;placeholder>>
+|
+|
 |<<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
 
-|FactoryScadaController.&#8203;getFactoryConfiguration()
 |<<incoming_factory-configuration,/&#8203;factory/&#8203;configuration>>
+|
+|
 |<<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
 
-|FactoryScadaController.&#8203;getFactoryInstance()
 |<<incoming_factory-instance,/&#8203;factory/&#8203;instance>>
+|
+|
 |<<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
 
-|FactoryScadaController.&#8203;handleUnmappedMessage()
 |<<incoming_factory,/&#8203;factory**>>
-|  
+|
+|`String`
+|
 
-|HighBayWarehouseController.&#8203;executeCantileverBackwardCommand()
+|===
+
+==== HighBayWarehouseController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_highbaywarehouse-machinename-command-cantilever-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_backward>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeCantileverFrontendCommand()
 |<<incoming_highbaywarehouse-machinename-command-cantilever-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;cantilever_forward>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeConveyorBackwardCommand()
 |<<incoming_highbaywarehouse-machinename-command-conveyor-backward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_backward>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeConveyorFrontendCommand()
 |<<incoming_highbaywarehouse-machinename-command-conveyor-forward,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_forward>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeConveyorStopCommand()
 |<<incoming_highbaywarehouse-machinename-command-conveyor-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;conveyor_stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeGoToColumnCommand()
 |<<incoming_highbaywarehouse-machinename-command-go-to-column,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_column>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeGoToRowCommand()
 |<<incoming_highbaywarehouse-machinename-command-go-to-row,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;go_to_row>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeHorizontalToCommand()
 |<<incoming_highbaywarehouse-machinename-command-horizontal-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;horizontal_to>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeMoveToSafePositionCommand()
 |<<incoming_highbaywarehouse-machinename-command-move-to-safe-position,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;move_to_safe_position>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executePickupFromCommand()
 |<<incoming_highbaywarehouse-machinename-command-pickup-from,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;pickup_from>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeSetupCommand()
 |<<incoming_highbaywarehouse-machinename-command-setup,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;setup>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeStopCommand()
 |<<incoming_highbaywarehouse-machinename-command-stop,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeStoreToCommand()
 |<<incoming_highbaywarehouse-machinename-command-store-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;store_to>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;executeVerticalToCommand()
 |<<incoming_highbaywarehouse-machinename-command-vertical-to,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;vertical_to>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|HighBayWarehouseController.&#8203;getCommandStatus()
 |<<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|HighBayWarehouseController.&#8203;getMachineStatus()
 |<<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|HighBayWarehouseController.&#8203;handleUnmappedMessage()
 |<<incoming_highbaywarehouse,/&#8203;highBayWarehouse**>>
-|  
+|
+|`String`
+|
 
-|HighBayWarehouseController.&#8203;receiveDebugCommand()
 |<<incoming_highbaywarehouse-machinename-command-debug,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|IndexedLineController.&#8203;getCommandStatus()
+|===
+
+==== IndexedLineController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|IndexedLineController.&#8203;getMachineStatus()
 |<<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|IndexedLineController.&#8203;handleUnmappedMessage()
 |<<incoming_indexedline,/&#8203;indexedLine**>>
-|  
+|
+|`String`
+|
 
-|IndexedLineController.&#8203;receiveDebugCommand()
 |<<incoming_indexedline-machinename-command-debug,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|IndexedLineController.&#8203;receiveDrillCommand()
 |<<incoming_indexedline-machinename-command-drill,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;drill>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveMillCommand()
 |<<incoming_indexedline-machinename-command-mill,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;mill>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveMoveToDrillCommand()
 |<<incoming_indexedline-machinename-command-move-to-drill,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;move_to_drill>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveMoveToMillCommand()
 |<<incoming_indexedline-machinename-command-move-to-mill,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;move_to_mill>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveMoveToOutputCommand()
 |<<incoming_indexedline-machinename-command-move-to-output,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;move_to_output>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveProcess1Command()
 |<<incoming_indexedline-machinename-command-process1,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;process1>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveProcessCommand()
 |<<incoming_indexedline-machinename-command-process,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;process>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|IndexedLineController.&#8203;receiveStopCommand()
 |<<incoming_indexedline-machinename-command-stop,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|LogsController.&#8203;requestFrontendLogs()
+|===
+
+==== LogsController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_logs-request,/&#8203;logs/&#8203;request>>
+|
+|
 |<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
 
-|MissionExtensionController.&#8203;getConfigurationStomp()
+|===
+
+==== MissionExtensionController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_mission-extension-configuration,/&#8203;mission-extension/&#8203;configuration>>
+|
+|
 |<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionExtensionController.&#8203;getLogsStomp()
 |<<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203;logs>>
+|
+|
 |<<outgoing_topic-mission-extension-logs,/&#8203;topic/&#8203;mission-extension/&#8203;logs>>
 
-|MissionExtensionController.&#8203;setGlobalMissionMachineOverrideStomp()
 |<<incoming_mission-extension-global-override,/&#8203;mission-extension/&#8203;global/&#8203;override>>
-|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|
+|`GlobalMissionMachineOverrideCommandDTO`
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>> +
+<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionExtensionController.&#8203;startGlobalMissionStomp()
 |<<incoming_mission-extension-global-start,/&#8203;mission-extension/&#8203;global/&#8203;start>>
-|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|
+|`GlobalMissionStartCommandDTO`
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>> +
+<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionExtensionController.&#8203;startMissionStomp()
 |<<incoming_mission-extension-start,/&#8203;mission-extension/&#8203;start>>
-|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|
+|`MissionExecutionCommandDTO`
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>> +
+<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionExtensionController.&#8203;stopActiveMissionStomp()
 |<<incoming_mission-extension-stop-active,/&#8203;mission-extension/&#8203;stop-active>>
-|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|
+|
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>> +
+<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionExtensionController.&#8203;stopGlobalMissionStomp()
 |<<incoming_mission-extension-global-stop,/&#8203;mission-extension/&#8203;global/&#8203;stop>>
-|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|
+|
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>> +
+<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionExtensionController.&#8203;stopMissionStomp()
 |<<incoming_mission-extension-stop,/&#8203;mission-extension/&#8203;stop>>
-|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>, <<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|
+|`MissionExecutionCommandDTO`
+|<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>> +
+<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
 
-|MissionOrchestratorController.&#8203;getFactoryActualMissions()
+|===
+
+==== MissionOrchestratorController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_factorymission-actual-command-executing,/&#8203;factoryMission/&#8203;actual-command-executing>>
+|
+|
 |<<outgoing_topic-actual-command-executing,/&#8203;topic/&#8203;actual-command-executing>>
 
-|MissionOrchestratorController.&#8203;getFactoryMissionsConfiguration()
 |<<incoming_factorymission-mission-configuration,/&#8203;factoryMission/&#8203;mission-configuration>>
+|
+|
 |<<outgoing_topic-mission-configuration,/&#8203;topic/&#8203;mission-configuration>>
 
-|MissionOrchestratorController.&#8203;getMissionList()
 |<<incoming_factorymission-list,/&#8203;factoryMission/&#8203;list>>
+|
+|
 |<<outgoing_topic-mission-configuration,/&#8203;topic/&#8203;mission-configuration>>
 
-|MissionOrchestratorController.&#8203;getMissionStatus()
 |<<incoming_factorymission-status,/&#8203;factoryMission/&#8203;status>>
+|
+|
 |<<outgoing_topic-mission-status,/&#8203;topic/&#8203;mission-status>>
 
-|MissionOrchestratorController.&#8203;handleUnmappedMessage()
 |<<incoming_factorymission,/&#8203;factoryMission**>>
-|  
+|
+|`String`
+|
 
-|MissionOrchestratorController.&#8203;startMission()
 |<<incoming_factorymission-command-start-missionname,/&#8203;factoryMission/&#8203;command/&#8203;start/&#8203;{missionName}>>
-|  
+|
+|
+|
 
-|MissionOrchestratorController.&#8203;stopMission()
 |<<incoming_factorymission-command-stop,/&#8203;factoryMission/&#8203;command/&#8203;stop>>
-|  
+|
+|
+|
 
-|MultiProcessingStationController.&#8203;executeArmMoveCommand()
+|===
+
+==== MultiProcessingStationController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_multiprocessingstation-machinename-command-arm-move,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;arm_move>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeArmPickCommand()
 |<<incoming_multiprocessingstation-machinename-command-arm-pick,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;arm_pick>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeArmPlaceCommand()
 |<<incoming_multiprocessingstation-machinename-command-arm-place,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;arm_place>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeConveyorMoveOutCommand()
 |<<incoming_multiprocessingstation-machinename-command-conveyor-move-out,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;conveyor_move_out>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeConveyorMoveToSensorCommand()
 |<<incoming_multiprocessingstation-machinename-command-conveyor-move-to-sensor,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;conveyor_move_to_sensor>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeMoveToSafePositionCommand()
 |<<incoming_multiprocessingstation-machinename-command-move-to-safe-position,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;move_to_safe_position>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeOvenHeatCommand()
 |<<incoming_multiprocessingstation-machinename-command-oven-heat,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;oven_heat>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeOvenLoadCommand()
 |<<incoming_multiprocessingstation-machinename-command-oven-load,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;oven_load>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeOvenProcessCommand()
 |<<incoming_multiprocessingstation-machinename-command-oven-process,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;oven_process>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeOvenUnloadCommand()
 |<<incoming_multiprocessingstation-machinename-command-oven-unload,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;oven_unload>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeProcess1Command()
 |<<incoming_multiprocessingstation-machinename-command-process1,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;process1>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeProcessCommand()
 |<<incoming_multiprocessingstation-machinename-command-process,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;process>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeSawCutCommand()
 |<<incoming_multiprocessingstation-machinename-command-saw-cut,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;saw_cut>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeSetupCommand()
 |<<incoming_multiprocessingstation-machinename-command-setup,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;setup>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeTurntableEjectCommand()
 |<<incoming_multiprocessingstation-machinename-command-turntable-eject,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;turntable_eject>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;executeTurntableRotateCommand()
 |<<incoming_multiprocessingstation-machinename-command-turntable-rotate,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;turntable_rotate>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|MultiProcessingStationController.&#8203;getCommandStatus()
 |<<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|MultiProcessingStationController.&#8203;getMachineStatus()
 |<<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|MultiProcessingStationController.&#8203;handleUnmappedMessage()
 |<<incoming_multiprocessingstation,/&#8203;multiProcessingStation**>>
-|  
+|
+|`String`
+|
 
-|MultiProcessingStationController.&#8203;receiveDebugCommand()
 |<<incoming_multiprocessingstation-machinename-command-debug,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|MultiProcessingStationController.&#8203;receiveStopCommand()
 |<<incoming_multiprocessingstation-machinename-command-stop,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|PlcController.&#8203;getPlcConnectionStatus()
+|===
+
+==== PlcController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_plc-plcname-plc-connection,/&#8203;plc/&#8203;{plcName}/&#8203;plc-connection>>
+|
+|
 |<<outgoing_topic-plcname-plc-connection-status,/&#8203;topic/&#8203;{plcName}/&#8203;plc-connection-status>>
 
-|PlcController.&#8203;handleUnmappedMessage()
 |<<incoming_plc,/&#8203;plc**>>
-|  
+|
+|`String`
+|
 
-|PunchingMachineController.&#8203;getCommandStatus()
+|===
+
+==== PunchingMachineController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|PunchingMachineController.&#8203;getMachineStatus()
 |<<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|PunchingMachineController.&#8203;handleUnmappedMessage()
 |<<incoming_punchingmachine,/&#8203;punchingMachine**>>
-|  
+|
+|`String`
+|
 
-|PunchingMachineController.&#8203;receiveDebugCommand()
 |<<incoming_punchingmachine-machinename-command-debug,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|PunchingMachineController.&#8203;receivePunchCommand()
 |<<incoming_punchingmachine-machinename-command-punch,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;punch>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|PunchingMachineController.&#8203;receiveStopCommand()
 |<<incoming_punchingmachine-machinename-command-stop,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|SortingLineController.&#8203;executeEjectCommand()
+|===
+
+==== SortingLineController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_sortingline-machinename-command-eject,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;eject>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|SortingLineController.&#8203;getCommandStatus()
 |<<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|SortingLineController.&#8203;getMachineStatus()
 |<<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|SortingLineController.&#8203;handleUnmappedMessage()
 |<<incoming_sortingline,/&#8203;sortingLine**>>
-|  
+|
+|`String`
+|
 
-|SortingLineController.&#8203;receiveDebugCommand()
 |<<incoming_sortingline-machinename-command-debug,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|SortingLineController.&#8203;receiveStopCommand()
 |<<incoming_sortingline-machinename-command-stop,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeGoToPositionCommand()
+|===
+
+==== VacuumGripperController
+
+[cols="2,3,1,2", options="header"]
+|===
+|Incoming topic |Description |Request payload |Output topics
+
 |<<incoming_vacuumgripper-machinename-command-go-to-position,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;go_to_position>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeGripCommand()
 |<<incoming_vacuumgripper-machinename-command-grip,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;grip>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeMoveCommand()
 |<<incoming_vacuumgripper-machinename-command-move,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;move>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeMoveToSafePositionCommand()
 |<<incoming_vacuumgripper-machinename-command-move-to-safe-position,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;move_to_safe_position>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeOrderedGoToCommand()
 |<<incoming_vacuumgripper-machinename-command-ordered-go-to,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;ordered_go_to>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executePickCommand()
 |<<incoming_vacuumgripper-machinename-command-pick,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;pick>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executePlaceCommand()
 |<<incoming_vacuumgripper-machinename-command-place,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;place>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeReleaseCommand()
 |<<incoming_vacuumgripper-machinename-command-release,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;release>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeRetractArmCommand()
 |<<incoming_vacuumgripper-machinename-command-retract-arm,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;retract_arm>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeSetupCommand()
 |<<incoming_vacuumgripper-machinename-command-setup,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;setup>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;executeStatusRequest()
 |<<incoming_vacuumgripper-machinename-request-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;request/&#8203;status>>
-|  
+|
+|`GenericMachineStatusRequestDTO`
+|
 
-|VacuumGripperController.&#8203;executeStopCommand()
 |<<incoming_vacuumgripper-machinename-command-stop,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;stop>>
-|  
+|
+|`GenericMachineCommandDTO`
+|
 
-|VacuumGripperController.&#8203;getCommandStatus()
 |<<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>
+|Requests the last command status of the machine
+|
 |<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
 
-|VacuumGripperController.&#8203;getMachineStatus()
 |<<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>
+|Requests the last machine status of the machine
+|
 |<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|VacuumGripperController.&#8203;handleUnmappedMessage()
 |<<incoming_vacuumgripper,/&#8203;vacuumGripper**>>
-|  
+|
+|`String`
+|
 
-|VacuumGripperController.&#8203;receiveDebugCommand()
 |<<incoming_vacuumgripper-machinename-command-debug,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;debug>>
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>, <<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Sends a raw JSON command (as typed in the debug page) to the machine controller
+|`String`
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>> +
+<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
 
-|WebSocketPublisher.&#8203;sendActualCommandExecuting()
-| 
+|===
+
+=== Outgoing messages — subscriptions and notifications
+
+[cols="2,3,1,3", options="header"]
+|===
+|Outgoing topic |Description |Payload |Trigger / producer
+
 |<<outgoing_topic-actual-command-executing,/&#8203;topic/&#8203;actual-command-executing>>
+|Broadcasts the list of mission nodes currently executed by the mission DSL executer
+|`List`, `Node_dto[]`
+|`WebSocketPublisher.&#8203;sendActualCommandExecuting()` +
+`@SendTo` reply of MissionOrchestratorController.&#8203;getFactoryActualMissions()
 
-|WebSocketPublisher.&#8203;sendCommandStatus()
-| 
-|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|<<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
+|
+|`Map`
+|`@SendTo` reply of FactoryScadaController.&#8203;getCommandPlaceholder()
 
-|WebSocketPublisher.&#8203;sendControllerFeedback()
-| 
 |<<outgoing_topic-controller-feedbacks,/&#8203;topic/&#8203;controller-feedbacks>>
+|Broadcasts raw feedback from the controller
+|`String`
+|`WebSocketPublisher.&#8203;sendControllerFeedback()`
 
-|WebSocketPublisher.&#8203;sendFrontendLogs()
-| 
+|<<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
+|
+|`List`
+|`@SendTo` reply of DynamicMissionOrchestratorController.&#8203;getMissions()
+
+|<<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
+|
+|`FactoryScadaConfiguration`
+|`@SendTo` reply of FactoryScadaController.&#8203;getFactoryConfiguration()
+
+|<<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
+|
+|`FactoryScadaInstance`
+|`@SendTo` reply of FactoryScadaController.&#8203;getFactoryInstance()
+
 |<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
+|All logs that should appear in the frontend
+|`String`
+|`WebSocketPublisher.&#8203;sendFrontendLogs()` +
+triggered by: <<incoming_logs-request,/&#8203;logs/&#8203;request>>
 
-|WebSocketPublisher.&#8203;sendMachineStatus()
-| 
-|<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|<<outgoing_topic-mission-configuration,/&#8203;topic/&#8203;mission-configuration>>
+|
+|`FactoryMissionsParallelized_dto`
+|`@SendTo` reply of MissionOrchestratorController.&#8203;getFactoryMissionsConfiguration() +
+`@SendTo` reply of MissionOrchestratorController.&#8203;getMissionList()
 
-|WebSocketPublisher.&#8203;sendMissionExtensionCommandResponse()
-| 
 |<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>
+|Result of a mission extension command (start, stop, override...)
+|`MissionCommandResponseDTO`
+|`WebSocketPublisher.&#8203;sendMissionExtensionCommandResponse()` +
+triggered by 6 incoming topics (<<outgoing_topic-mission-extension-command-response,see details>>)
 
-|WebSocketPublisher.&#8203;sendMissionExtensionConfiguration()
-| 
 |<<outgoing_topic-mission-extension-configuration,/&#8203;topic/&#8203;mission-extension/&#8203;configuration>>
+|Broadcasts the mission extension configuration (available and active missions, recent mission changes)
+|`MissionExtensionConfigurationDTO`
+|`WebSocketPublisher.&#8203;sendMissionExtensionConfiguration()` +
+triggered by 7 incoming topics (<<outgoing_topic-mission-extension-configuration,see details>>)
 
-|WebSocketPublisher.&#8203;sendMissionExtensionLogs()
-| 
 |<<outgoing_topic-mission-extension-logs,/&#8203;topic/&#8203;mission-extension/&#8203;logs>>
+|Broadcasts the logs of the machine missions
+|`MissionLogsDTO`
+|`WebSocketPublisher.&#8203;sendMissionExtensionLogs()` +
+triggered by: <<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203;logs>>
 
-|WebSocketPublisher.&#8203;sendPlcStatus()
-| 
+|<<outgoing_topic-mission-status,/&#8203;topic/&#8203;mission-status>>
+|
+|`String`
+|`@SendTo` reply of MissionOrchestratorController.&#8203;getMissionStatus()
+
 |<<outgoing_topic-controllername-plc-connection-status,/&#8203;topic/&#8203;{controllerName}/&#8203;plc-connection-status>>
+|Broadcasts PLC connection status updates
+|`PlcConnectionStatusDto`
+|`WebSocketPublisher.&#8203;sendPlcStatus()`
+
+|<<outgoing_topic-machinename-command-status,/&#8203;topic/&#8203;{machineName}/&#8203;command-status>>
+|Broadcasts Command status updates
+|`CommandStatusDTO`
+|8 producers (<<outgoing_topic-machinename-command-status,see details>>) +
+triggered by 11 incoming topics (<<outgoing_topic-machinename-command-status,see details>>)
+
+|<<outgoing_topic-machinename-machine-status,/&#8203;topic/&#8203;{machineName}/&#8203;machine-status>>
+|Broadcasts Machine status updates
+|`MachineStatusDTO`
+|8 producers (<<outgoing_topic-machinename-machine-status,see details>>) +
+triggered by 11 incoming topics (<<outgoing_topic-machinename-machine-status,see details>>)
+
+|<<outgoing_topic-plcname-plc-connection-status,/&#8203;topic/&#8203;{plcName}/&#8203;plc-connection-status>>
+|
+|`PlcConnectionStatusDto`
+|`@SendTo` reply of PlcController.&#8203;getPlcConnectionStatus()
 
 |===
 

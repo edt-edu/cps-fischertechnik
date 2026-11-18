@@ -102,10 +102,17 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     private static final Comparator<Method> METHOD_ORDER = Comparator.comparing(Method::getName)
             .thenComparing(m -> Arrays.stream(m.getParameterTypes()).map(Class::getName).collect(Collectors.joining(",")));
 
-    /** List of incoming topics for a given class and method (sorted maps/sets for a stable output) */
-    protected Map<String, Map<String, Set<String>>> methodToIncomingTopicMap = new TreeMap<>();
-    /** List of outgoing topics for a given class and method (sorted maps/sets for a stable output) */
-    protected Map<String, Map<String, Set<String>>> methodToOutgoingTopicMap = new TreeMap<>();
+    /** In the overview, lists of producers or triggers longer than this are replaced by a count */
+    private static final int MAX_OVERVIEW_LIST_SIZE = 3;
+
+    /** Overview data of an incoming topic */
+    private record IncomingEntry(String topic, String description, String requestPayload, Set<String> outputTopics) {
+    }
+
+    /** Incoming topics per controller simple class name, computed by generateIncomingTopicsAsciidoc() (sorted for a stable output) */
+    protected Map<String, List<IncomingEntry>> incomingEntriesByController = new TreeMap<>();
+    /** Producers per outgoing topic, computed by generateOutgoingTopicsAsciidoc() (sorted for a stable output) */
+    protected Map<String, List<TopicProducer>> producersByTopic = new TreeMap<>();
     /** Incoming topics whose handler directly calls a @WebSocketPublish method, per published topic (sorted for a stable output) */
     protected Map<String, Set<String>> topicToTriggeringIncomingMap = new TreeMap<>();
 
@@ -129,66 +136,97 @@ public class WebSocketDocGenerator implements ApplicationRunner {
    
 
     /**
-     * generate the overview as a table
-     * requires methodToIncomingTopicMap and methodToOutgoingTopicMap  that are computed by generateOutgoingTopicsAsciidoc() 
-     * @return
+     * Generate the overview: one table of incoming topics per controller, and one table of outgoing topics.
+     * Requires incomingEntriesByController, producersByTopic and topicToTriggeringIncomingMap, that are computed by
+     * generateIncomingTopicsAsciidoc() and generateOutgoingTopicsAsciidoc()
+     * @return String
      */
     private String generateAllTopicsOverview() {
         StringBuilder doc = new StringBuilder("== Topics overview\n\n");
 
-        for (String className : methodToIncomingTopicMap.keySet()) {
-            doc.append("=== Overview "+className+"\n\n");
-
-            doc.append("[cols=\"1,1,1\"]\n");
+        doc.append("=== Incoming messages — commands and requests\n\n");
+        for (Entry<String, List<IncomingEntry>> controllerEntry : incomingEntriesByController.entrySet()) {
+            doc.append("==== ").append(controllerEntry.getKey()).append("\n\n");
+            doc.append("[cols=\"2,3,1,2\", options=\"header\"]\n");
             doc.append("|===\n");
-            doc.append("| Implementing class | Incoming topic | Outgoing topic \n\n");
-            for( Entry<String, Set<String>> methodMap : methodToIncomingTopicMap.get(className).entrySet()) {
-                String methodName = methodMap.getKey();
-                for (String topic : methodMap.getValue()) {
-                    doc.append("|"+className+".&#8203;"+methodName+"()\n");
-                    doc.append("|<<incoming_"+toAsciiDocAnchor(topic)+","+toSplittaString(topic)+">>\n");
-                    if(methodToOutgoingTopicMap.containsKey(className) ){
-                        Set<String> topics = methodToOutgoingTopicMap.get(className).get(methodName);
-                        if(topics !=null) {
-                            doc.append("|"+topics.stream()
-                                .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+toSplittaString(stopic)+">>")
-                                .collect(Collectors.joining(", "))+"\n");
-                        } else {
-                            doc.append("|  \n");
-                        }
-                        methodToOutgoingTopicMap.get(className).remove(methodName); //  remove processed outgoing
-                    } else {
-                        doc.append("|  \n");
-                    }
-                    doc.append("\n");
-                }
+            doc.append("|Incoming topic |Description |Request payload |Output topics\n\n");
+            for (IncomingEntry entry : controllerEntry.getValue()) {
+                doc.append("|<<incoming_").append(toAsciiDocAnchor(entry.topic())).append(",").append(toSplittaString(entry.topic())).append(">>\n");
+                doc.append("|").append(toTableCell(entry.description())).append("\n");
+                doc.append("|").append(entry.requestPayload().isEmpty() ? "" : "`" + entry.requestPayload() + "`").append("\n");
+                doc.append("|").append(entry.outputTopics().stream()
+                        .map(this::toOutgoingTopicLink)
+                        .collect(Collectors.joining(" +\n"))).append("\n\n");
             }
             doc.append("|===\n\n");
         }
-        // process remaining outgoing topics
-        for (String className : methodToOutgoingTopicMap.keySet()) {
-            if(!methodToOutgoingTopicMap.get(className).entrySet().stream().allMatch(e -> e.getValue().isEmpty())) {
-                // this class has outgoing topics not linked to any incoming topic, so we will document them
-            
-                doc.append("=== Overview "+className+"\n\n");
 
-                doc.append("[cols=\"1,1,1\"]\n");
-                doc.append("|===\n");
-                doc.append("| Implementing class | Incoming topic | Outgoing topic \n\n");
-                for( Entry<String, Set<String>> methodMap : methodToOutgoingTopicMap.get(className).entrySet()) {
-                        doc.append("|"+className+".&#8203;"+methodMap.getKey()+"()\n");
-                        doc.append("| \n");
-                        doc.append("|"+methodMap.getValue().stream()
-                            .map(stopic -> "<<outgoing_"+this.toAsciiDocAnchor(stopic)+","+toSplittaString(stopic)+">>")
-                            .collect(Collectors.joining(", "))+"\n");
-                        doc.append("\n");
-                }
-                doc.append("|===\n\n");
+        doc.append("=== Outgoing messages — subscriptions and notifications\n\n");
+        doc.append("[cols=\"2,3,1,3\", options=\"header\"]\n");
+        doc.append("|===\n");
+        doc.append("|Outgoing topic |Description |Payload |Trigger / producer\n\n");
+        for (Entry<String, List<TopicProducer>> topicEntry : producersByTopic.entrySet()) {
+            String topic = topicEntry.getKey();
+            List<TopicProducer> producers = topicEntry.getValue();
+
+            // description of the topic (@WebSocketPublish), or else of the @SendTo replies
+            String description = producers.stream()
+                    .filter(TopicProducer::isPublisher)
+                    .map(TopicProducer::description)
+                    .filter(desc -> !desc.isEmpty())
+                    .distinct()
+                    .collect(Collectors.joining(" "));
+            if (description.isEmpty()) {
+                description = producers.stream()
+                        .map(TopicProducer::description)
+                        .filter(desc -> !desc.isEmpty())
+                        .distinct()
+                        .collect(Collectors.joining(" "));
             }
-        }
+            String payloads = producers.stream()
+                    .map(TopicProducer::payload)
+                    .filter(payload -> payload != Void.class && payload != void.class)
+                    .map(payload -> "`" + payload.getSimpleName() + "`")
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.joining(", "));
 
+            // long lists are replaced by a count, with a link to the topic details
+            String detailsLink = "<<outgoing_" + toAsciiDocAnchor(topic) + ",see details>>";
+            List<String> triggers = new ArrayList<>();
+            if (producers.size() > MAX_OVERVIEW_LIST_SIZE) {
+                triggers.add(producers.size() + " producers (" + detailsLink + ")");
+            } else {
+                for (TopicProducer producer : producers) {
+                    triggers.add(producer.isPublisher()
+                            ? "`" + producer.shortDeclaration() + "`"
+                            : "`@SendTo` reply of " + producer.shortDeclaration());
+                }
+            }
+            Set<String> triggeringIncomingTopics = topicToTriggeringIncomingMap.get(topic);
+            if (triggeringIncomingTopics != null) {
+                if (triggeringIncomingTopics.size() > MAX_OVERVIEW_LIST_SIZE) {
+                    triggers.add("triggered by " + triggeringIncomingTopics.size() + " incoming topics (" + detailsLink + ")");
+                } else {
+                    triggers.add("triggered by: " + triggeringIncomingTopics.stream()
+                            .map(t -> "<<incoming_" + toAsciiDocAnchor(t) + "," + toSplittaString(t) + ">>")
+                            .collect(Collectors.joining(", ")));
+                }
+            }
+
+            doc.append("|<<outgoing_").append(toAsciiDocAnchor(topic)).append(",").append(toSplittaString(topic)).append(">>\n");
+            doc.append("|").append(toTableCell(description)).append("\n");
+            doc.append("|").append(payloads).append("\n");
+            doc.append("|").append(String.join(" +\n", triggers)).append("\n\n");
+        }
+        doc.append("|===\n\n");
 
         return doc.toString();
+    }
+
+    /** Escape a text so it can be used in an AsciiDoc table cell */
+    private static String toTableCell(String text) {
+        return text.replace("|", "\\|");
     }
 
     /**
@@ -219,7 +257,6 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     doc.append("[[incoming_"+toAsciiDocAnchor(mappingPath)+"]]\n");
                     doc.append("===  Incoming Topic: `").append(mappingPath).append("`\n\n");
                     doc.append("Declared in `").append(clazz.getName()).append(".").append(method.getName()).append("()`\n\n");
-                    this.addTopicInMap(this.methodToIncomingTopicMap, clazz.getSimpleName(), method.getName(), mappingPath);
                     WebSocketDoc wsDoc = method.getAnnotation(WebSocketDoc.class);
                     if (wsDoc != null && !wsDoc.description().isEmpty()) {
                         doc.append("_").append(wsDoc.description()).append("_\n\n");
@@ -230,7 +267,6 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     Set<String> publishedTopics = findPublishedTopics(method);
                     if (!publishedTopics.isEmpty()) {
                         for (String publishedTopic : publishedTopics) {
-                            this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), publishedTopic);
                             this.topicToTriggeringIncomingMap.computeIfAbsent(publishedTopic, k -> new TreeSet<>()).add(mappingPath);
                         }
                         doc.append("*Publishes to:* ")
@@ -242,15 +278,28 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     Set<String> indirectOutputs = new TreeSet<>(wsDoc != null ? Arrays.asList(wsDoc.indirectOutputs()) : List.of());
                     if (!indirectOutputs.isEmpty()) {
                         for (String indirectOutput : indirectOutputs) {
-                            this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), indirectOutput);
                             this.topicToTriggeringIncomingMap.computeIfAbsent(indirectOutput, k -> new TreeSet<>()).add(mappingPath);
                         }
                         doc.append("*Indirect outputs:* ")
                            .append(indirectOutputs.stream()
-                                .map(t -> toOutgoingTopicLink(t, clazz.getName() + "." + method.getName() + "()"))
+                                .map(t -> toCheckedOutgoingTopicLink(t, clazz.getName() + "." + method.getName() + "()"))
                                 .collect(Collectors.joining(", ")))
                            .append("\n\n");
                     }
+                    // overview data
+                    Set<String> outputTopics = new TreeSet<>();
+                    if (method.isAnnotationPresent(SendTo.class)) {
+                        outputTopics.addAll(Arrays.asList(method.getAnnotation(SendTo.class).value()));
+                    }
+                    outputTopics.addAll(publishedTopics);
+                    outputTopics.addAll(indirectOutputs);
+                    String requestPayload = Arrays.stream(method.getParameters())
+                            .filter(param -> param.isAnnotationPresent(Payload.class))
+                            .map(param -> param.getType().getSimpleName())
+                            .findFirst().orElse("");
+                    incomingEntriesByController.computeIfAbsent(clazz.getSimpleName(), k -> new ArrayList<>())
+                            .add(new IncomingEntry(mappingPath, wsDoc != null ? wsDoc.description() : "", requestPayload, outputTopics));
+
                     doc.append("==== Parameters\n\n");
                     for (Parameter param : method.getParameters()) {
                         String type = param.getType().getSimpleName();
@@ -283,7 +332,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     }
 
     /** A method producing messages on an outgoing topic */
-    private record TopicProducer(String declaration, String role, boolean isPublisher, String description, Class<?> payload) {
+    private record TopicProducer(String declaration, String shortDeclaration, String role, boolean isPublisher, String description, Class<?> payload) {
     }
 
     /**
@@ -294,8 +343,7 @@ public class WebSocketDocGenerator implements ApplicationRunner {
      * @return String
      */
     private String generateOutgoingTopicsAsciidoc() {
-        // collect the producers of each topic (sorted map for a stable output)
-        Map<String, List<TopicProducer>> producersByTopic = new TreeMap<>();
+        // collect the producers of each topic (in the producersByTopic field, also used by the overview)
 
         // methods with @WebSocketPublish
         for (Class<?> clazz : sortedBeanClasses(Component.class)) {
@@ -303,9 +351,9 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                 WebSocketPublish wsPub = method.getAnnotation(WebSocketPublish.class);
                 if (wsPub != null) {
                     String topic = wsPub.value();
-                    this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), topic);
                     producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
                         .add(new TopicProducer(clazz.getName() + "." + method.getName() + "()",
+                            clazz.getSimpleName() + ".&#8203;" + method.getName() + "()",
                             "`@WebSocketPublish` method", true, wsPub.description(), wsPub.payload()));
                 }
             }
@@ -321,9 +369,9 @@ public class WebSocketDocGenerator implements ApplicationRunner {
                     String mappingPath = classMappingPath + String.join(", ", method.getAnnotation(MessageMapping.class).value());
                     WebSocketDoc wsDoc = method.getAnnotation(WebSocketDoc.class);
                     for (String topic : method.getAnnotation(SendTo.class).value()) {
-                        this.addTopicInMap(this.methodToOutgoingTopicMap, clazz.getSimpleName(), method.getName(), topic);
-                        producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
+                            producersByTopic.computeIfAbsent(topic, k -> new ArrayList<>())
                             .add(new TopicProducer(clazz.getName() + "." + method.getName() + "()",
+                                clazz.getSimpleName() + ".&#8203;" + method.getName() + "()",
                                 "`@SendTo` reply to <<incoming_" + toAsciiDocAnchor(mappingPath) + "," + toSplittaString(mappingPath) + ">>",
                                 false, wsDoc != null ? wsDoc.responseDescription() : "", method.getReturnType()));
                     }
@@ -432,13 +480,23 @@ public class WebSocketDocGenerator implements ApplicationRunner {
     }
 
     /**
-     * Return an AsciiDoc link to the section of the given outgoing topic. If no {@link WebSocketPublish} or
-     * {@code @SendTo} declares this topic (so there is no section to link to), log a warning and return the plain topic.
+     * Same as {@link #toOutgoingTopicLink(String)}, but also log a warning if the topic is not declared by any
+     * {@link WebSocketPublish} or {@code @SendTo} (used once per declaration, to avoid duplicated warnings).
      */
-    private String toOutgoingTopicLink(String topic, String declaredIn) {
+    private String toCheckedOutgoingTopicLink(String topic, String declaredIn) {
         if (!getDeclaredOutgoingTopics().contains(topic)) {
             log.warn("Unknown outgoing topic '" + topic + "' in @WebSocketDoc of " + declaredIn
                     + ": it is not declared by any @WebSocketPublish or @SendTo");
+        }
+        return toOutgoingTopicLink(topic);
+    }
+
+    /**
+     * Return an AsciiDoc link to the section of the given outgoing topic, or the plain topic if it is not declared
+     * by any {@link WebSocketPublish} or {@code @SendTo} (there is no section to link to).
+     */
+    private String toOutgoingTopicLink(String topic) {
+        if (!getDeclaredOutgoingTopics().contains(topic)) {
             return "`" + topic + "` (undeclared topic)";
         }
         return "<<outgoing_" + toAsciiDocAnchor(topic) + "," + toSplittaString(topic) + ">>";
@@ -573,12 +631,6 @@ public class WebSocketDocGenerator implements ApplicationRunner {
         } catch (ClassNotFoundException | LinkageError e) {
             return Optional.empty();
         }
-    }
-
-    private void addTopicInMap(Map<String, Map<String, Set<String>>> map, String className, String methodName, String topic) {
-        map.computeIfAbsent(className, k -> new TreeMap<>())
-           .computeIfAbsent(methodName, k -> new TreeSet<>())
-           .add(topic);
     }
 
     /**
