@@ -3,12 +3,10 @@ package io.github.mbdo.factoryscada.core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
-import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.socket.Protocol;
 import io.github.mbdo.factoryscada.socket.exception.ProtocolException;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
 @Data

@@ -2,7 +2,6 @@ package io.github.mbdo.factoryscada.mqtt;
 
 import io.github.mbdo.factoryscada.core.MqttMessageRouter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
