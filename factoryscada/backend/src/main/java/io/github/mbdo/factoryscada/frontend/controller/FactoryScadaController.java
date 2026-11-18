@@ -2,6 +2,7 @@ package io.github.mbdo.factoryscada.frontend.controller;
 
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
 import jakarta.annotation.PostConstruct;
@@ -42,6 +43,8 @@ public class FactoryScadaController {
 
     @MessageMapping("/placeholder")
     @SendTo("/topic/command-placeholder")
+    @WebSocketDoc(description = "Returns a map of command placeholders for all machines, which can be used to fill in the command templates.",
+                responseDescription = "A map of command placeholders for all machines.")
     public Map<String, Map<String, String>> getCommandPlaceholder() {
         log.info("Received WS request on /factory/placeholder");
         return commandPlaceholder;
@@ -49,6 +52,8 @@ public class FactoryScadaController {
 
     @MessageMapping("/configuration")
     @SendTo("/topic/factory-configuration")
+    @WebSocketDoc(description = "Returns the configuration for the factory SCADA system.",
+                  responseDescription = "The factory SCADA configuration. Including the list of controllers and machines, their names,  the protocols used to communicate with them, and machine logical/physical name mappings.")
     public FactoryScadaConfiguration getFactoryConfiguration() {
         log.info("Received WS request on /factory/configuration");
         return factoryScadaConfigurationProvider.getFactoryScadaConfiguration();
@@ -56,6 +61,8 @@ public class FactoryScadaController {
 
     @MessageMapping("/instance")
     @SendTo("/topic/factory-instance")
+    @WebSocketDoc(description = "Returns the instance of the factory SCADA system.",
+                  responseDescription = "The factory SCADA instance, including status of the controllers and machines. Machines also provide their declaredcommand placeholders.")
     public FactoryScadaInstance getFactoryInstance() {
         log.info("Received WS request on /factory/factory/instance");
         return factoryScadaInstance;

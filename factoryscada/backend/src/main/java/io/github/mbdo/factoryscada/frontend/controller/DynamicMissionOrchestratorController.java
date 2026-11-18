@@ -1,6 +1,7 @@
 package io.github.mbdo.factoryscada.frontend.controller;
 
 import io.github.mbdo.factoryscada.domains.dynamicmission.dtos.DynamicMissionDTO;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.service.dynamicmission.DynamicMissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,17 +26,23 @@ public class DynamicMissionOrchestratorController {
 
   @MessageMapping("/missions")
   @SendTo("/topic/dynamic-missions")
+  @WebSocketDoc(description = "Returns a list of all available dynamic missions.",
+                responseDescription = "A list of dynamic missions with their names and descriptions and involved machines.")
   public List<DynamicMissionDTO> getMissions() {
     return dynamicMissionService.getMissionDTOs();
   }
 
   @MessageMapping("/command/start/{missionName}")
+  @WebSocketDoc(description = "Starts a dynamic mission by its name.",
+                  indirectOutputs = { })
   public void startMission(@DestinationVariable("missionName") String encodedMissionName) {
     var missionName = UriUtils.decode(encodedMissionName, StandardCharsets.UTF_8);
     dynamicMissionService.startMissionByName(missionName);
   }
 
   @MessageMapping("/command/stop")
+  @WebSocketDoc(description = "Stops the currently active dynamic mission.",
+                  indirectOutputs = { })
   public void stopMission() {
     dynamicMissionService.stopActiveMission();
   }
