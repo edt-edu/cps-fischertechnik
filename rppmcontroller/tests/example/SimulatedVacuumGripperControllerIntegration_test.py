@@ -37,8 +37,11 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         vgr_parameters.rotational_axis_parameters.control_parameters = PIDParameters(
             main_loop_delay=main_loop_delay,
             decimation_factor=1,
-            smoothing_delay_seconds=0.01 * main_loop_delay,
+            smoothing_delay_seconds=0,
             error_deadband=10,
+            kp=1,
+            ki=0,
+            kd=0,
         )
         self.vgr_parameters = vgr_parameters
         self.controller = SimulatedVacuumGripperController(config_path, vgr_parameters)

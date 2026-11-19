@@ -65,7 +65,7 @@ class AxisParameters:
     control_parameters: ControlParameters = field(default_factory=lambda: ApproachParameters())
     """Parameters that determine how the axis will be controlled"""
     tolerance: int | None = None
-    """Tolerance of whether the axis target has been reached. When set in combination with pid_parameters then this value will be used as error_deadband"""
+    """Tolerance of whether the axis target has been reached. When set in combination with pid_parameters then this value will be ignored"""
     max_counter_value: int | None = None
     """The maximum encoder counter value for this axis.
     This limit is induced by the physical setup."""

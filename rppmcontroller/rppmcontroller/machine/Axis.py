@@ -31,12 +31,9 @@ class Axis:
         :param parameters: The parameters to configure the axis
         :return: The created axis
         """
-        tolerance_with_precedence = parameters.tolerance
-        tolerance = tolerance_with_precedence if tolerance_with_precedence is not None else 0
+        tolerance = parameters.tolerance if parameters.tolerance is not None else 0
         pid_parameters = parameters.control_parameters if isinstance(parameters.control_parameters,
                                                                      PIDParameters) else None
-        if tolerance_with_precedence is not None and pid_parameters is not None:
-            pid_parameters.error_deadband = tolerance_with_precedence
         pid_controller = DiscretePIDController.from_parameters(pid_parameters) if pid_parameters is not None else None
         pwm_control = parameters.control_parameters if isinstance(parameters.control_parameters,
                                                                   ApproachParameters) else None
