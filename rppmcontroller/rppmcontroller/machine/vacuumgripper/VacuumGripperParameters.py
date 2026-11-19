@@ -7,7 +7,8 @@ from typing_extensions import Self
 
 from rppmcontroller.machine.MachineParameters import (MachineParameters,
                                                       AxisMonitorParameters,
-                                                      AxisParameters)
+                                                      AxisParameters,
+                                                      ApproachParameters)
 from rppmcontroller.machine.Position import Position
 
 
@@ -39,24 +40,29 @@ class VacuumGripperParameters(MachineParameters):
     If either of those parameters is `None` a setup will be assumed to be
     "safe".
     """
-    pwm_standard_speed: int = 100
+    # TODO mark for deprecation
+    pwm_standard_speed: int | None = None
     """The standard speed used in PWM"""
-    pwm_vertical_approach_speed: int = 30
+    # TODO mark for deprecation
+    pwm_vertical_approach_speed: int | None = None
     """
     The reduced speed used in vertical PWM, when the axis is close to its'
     target
     """
-    pwm_horizontal_approach_speed: int = 30
+    # TODO mark for deprecation
+    pwm_horizontal_approach_speed: int | None = None
     """
     The reduced speed used in horizontal PWM, when the axis is close to its'
     target
     """
-    pwm_rotational_approach_speed: int = 20
+    # TODO mark for deprecation
+    pwm_rotational_approach_speed: int | None = None
     """
     The reduced speed used in rotational PWM, when the axis is close to its'
     target
     """
-    pwm_approach_tolerance: int = 100
+    # TODO mark for deprecation
+    pwm_approach_tolerance: int | None = None
     """
     Tolerance for when an axis is considered to be close to its target position
     """
@@ -116,8 +122,8 @@ class VacuumGripperParameters(MachineParameters):
                                                tolerance=7))
     """Configuration of the vertical axis"""
     rotational_axis_parameters: AxisParameters = field(
-        default_factory=lambda: AxisParameters(max_counter_value=3040,
-                                               tolerance=5))
+        default_factory=lambda: AxisParameters(control_parameters=ApproachParameters(
+            approach_speed=20), max_counter_value=3040, tolerance=5))
     """Configuration of the rotational axis"""
 
     def derive_over_positions(self) -> Self:

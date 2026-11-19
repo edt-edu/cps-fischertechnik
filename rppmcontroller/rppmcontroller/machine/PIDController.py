@@ -94,15 +94,6 @@ class DiscretePIDController(SignalProcessingBlock[int, int]):
     """A port exposing the target value to steer the controller"""
 
     @staticmethod
-    def from_opt_parameters(parameters: PIDParameters | None) -> DiscretePIDController | None:
-        """
-        Creates a DiscretePIDController from the given PIDParameters or returns None if the passed parameters are None.
-        :param parameters: PIDParameters to create a DiscretePIDController from.
-        :return: The created DiscretePIDController, if any
-        """
-        return DiscretePIDController.from_parameters(parameters) if parameters is not None else None
-
-    @staticmethod
     def from_parameters(parameters: PIDParameters) -> DiscretePIDController:
         """
         Creates a new DiscretePIDController for pwm control from the given

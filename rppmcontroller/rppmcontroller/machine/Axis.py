@@ -6,7 +6,7 @@ from typing import Tuple, Optional
 
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.MachineParameters import AxisParameters, \
-    PIDParameters, PWMParameters
+    PIDParameters, ApproachParameters
 from rppmcontroller.machine.MaxValueExceededError import MaxValueExceededError
 from rppmcontroller.machine.PIDController import DiscretePIDController
 from rppmcontroller.utils.Counter import Counter
@@ -31,12 +31,15 @@ class Axis:
         :param parameters: The parameters to configure the axis
         :return: The created axis
         """
-        tolerance = parameters.tolerance if parameters.tolerance is not None else 0
-        pid_controller = DiscretePIDController.from_opt_parameters(
-            parameters.control_parameters) if isinstance(parameters.control_parameters,
-                                                         PIDParameters) else None
+        tolerance_with_precedence = parameters.tolerance
+        tolerance = tolerance_with_precedence if tolerance_with_precedence is not None else 0
+        pid_parameters = parameters.control_parameters if isinstance(parameters.control_parameters,
+                                                                     PIDParameters) else None
+        if tolerance_with_precedence is not None and pid_parameters is not None:
+            pid_parameters.error_deadband = tolerance_with_precedence
+        pid_controller = DiscretePIDController.from_parameters(pid_parameters) if pid_parameters is not None else None
         pwm_control = parameters.control_parameters if isinstance(parameters.control_parameters,
-                                                                  PWMParameters) else None
+                                                                  ApproachParameters) else None
         return Axis(axis_type=AxisType.Encoder,
                     tolerance=tolerance,
                     max_counter_value=parameters.max_counter_value,
@@ -49,7 +52,7 @@ class Axis:
                  *,
                  pwm_standard_speed: int = 100,
                  pid_controller: DiscretePIDController | None = None,
-                 pwm_control: PWMParameters | None = None):
+                 pwm_control: ApproachParameters | None = None):
         """
         constructor creates ImpulseCounter object if necessary
         :param axis_type: What kind of axis this is

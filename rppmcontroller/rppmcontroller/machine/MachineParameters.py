@@ -62,9 +62,7 @@ class AxisMonitorParameters:
 @dataclass
 class AxisParameters:
     """Parameters for a generic axis"""
-    control_parameters: ControlParameters = field(default_factory=lambda: PWMParameters(
-        approach_speed=30,
-        approach_tolerance=100))
+    control_parameters: ControlParameters = field(default_factory=lambda: ApproachParameters())
     """Parameters that determine how the axis will be controlled"""
     tolerance: int | None = None
     """Tolerance of whether the axis target has been reached. When set in combination with pid_parameters then this value will be used as error_deadband"""
@@ -84,30 +82,30 @@ class PIDParameters(ControlParameters):
     """Parameters for a PID controller of an axis"""
     main_loop_delay: float
     """The delay of the main control loop in seconds"""
-    decimation_factor: int = 10
+    decimation_factor: int = 1
     """The factor by how much the pid controller is slowed down compared to the
     MachineController"""
-    smoothing_delay_seconds: float = 0.05
+    smoothing_delay_seconds: float = 0
     """How many seconds reaction delay will be introduced by smoothing out the
     position signal"""
-    error_deadband: int = 3
+    error_deadband: int = 4
     """encoder precision/tolerance"""
     minimum_output: int = 15
     """The minimum required pid value for the axis to move"""
-    kp: float = 1
+    kp: float = 0.04
     """Proportional gain"""
-    ki: float = 0
+    ki: float = 0.0002
     """Integral gain"""
-    kd: float = 0
+    kd: float = 0.001
     """Differential gain"""
     integral_limit: float | None = 25
     """Cap for the pid-internal integral"""
 
 
 @dataclass
-class PWMParameters(ControlParameters):
+class ApproachParameters(ControlParameters):
     """Parameters for an approached based PWM control"""
-    approach_speed: int
+    approach_speed: int = 30
     """How fast the axis should approach the target value"""
-    approach_tolerance: int
+    approach_tolerance: int = 100
     """How close the axis must be to the target value before switching to approach mode"""
