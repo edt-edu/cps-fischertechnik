@@ -28,79 +28,86 @@ from rppmcontroller.utils.csv import CSVWriter
 from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
+# no inspection for deprecation here since we explicitly handle deprecation
+# noinspection PyDeprecation
 def _apply_legacy_support(parameters: VacuumGripperParameters):
-    if parameters.pwm_standard_speed is not None:
+    legacy_pwm_standard_speed = parameters.pwm_standard_speed
+    if legacy_pwm_standard_speed is not None:
         _warn_about_legacy_option("pwm_standard_speed",
                                   ["horizontal_axis_parameters.pwm_standard_speed",
                                    "vertical_axis_parameters.pwm_standard_speed",
                                    "rotational_axis_parameters.pwm_standard_speed"])
-        parameters.horizontal_axis_parameters.pwm_standard_speed = parameters.pwm_standard_speed
-        parameters.vertical_axis_parameters.pwm_standard_speed = parameters.pwm_standard_speed
-        parameters.rotational_axis_parameters.pwm_standard_speed = parameters.pwm_standard_speed
+        parameters.horizontal_axis_parameters.pwm_standard_speed = legacy_pwm_standard_speed
+        parameters.vertical_axis_parameters.pwm_standard_speed = legacy_pwm_standard_speed
+        parameters.rotational_axis_parameters.pwm_standard_speed = legacy_pwm_standard_speed
     else:
         parameters.pwm_standard_speed = min(parameters.horizontal_axis_parameters.pwm_standard_speed,
                                             parameters.vertical_axis_parameters.pwm_standard_speed,
                                             parameters.rotational_axis_parameters.pwm_standard_speed)
 
+    legacy_pwm_vertical_speed = parameters.pwm_vertical_approach_speed
     if isinstance(parameters.vertical_axis_parameters.control_parameters,
                   ApproachParameters):
-        if parameters.pwm_vertical_approach_speed is not None:
+        if legacy_pwm_vertical_speed is not None:
             _warn_about_legacy_option("pwm_vertical_approach_speed",
                                       ["vertical_axis_parameters.control_parameters.approach_speed"])
-            parameters.vertical_axis_parameters.control_parameters.approach_speed = parameters.pwm_vertical_approach_speed
+            parameters.vertical_axis_parameters.control_parameters.approach_speed = legacy_pwm_vertical_speed
         else:
             parameters.pwm_vertical_approach_speed = parameters.vertical_axis_parameters.control_parameters.approach_speed
     else:
-        if parameters.pwm_vertical_approach_speed is not None:
+        if legacy_pwm_vertical_speed is not None:
             _warn_about_legacy_option("pwm_vertical_approach_speed",
                                       ["pwm_vertical_approach_speed = None"])
         else:
             parameters.pwm_vertical_approach_speed = parameters.vertical_axis_parameters.pwm_standard_speed
 
+    legacy_pwm_horizontal_speed = parameters.pwm_horizontal_approach_speed
     if isinstance(parameters.horizontal_axis_parameters.control_parameters,
                   ApproachParameters):
-        if parameters.pwm_horizontal_approach_speed is not None:
+        if legacy_pwm_horizontal_speed is not None:
             _warn_about_legacy_option("pwm_horizontal_approach_speed",
                                       ["horizontal_axis_parameters.control_parameters.approach_speed"])
-            parameters.horizontal_axis_parameters.control_parameters.approach_speed = parameters.pwm_horizontal_approach_speed
+            parameters.horizontal_axis_parameters.control_parameters.approach_speed = legacy_pwm_horizontal_speed
         else:
             parameters.pwm_horizontal_approach_speed = parameters.horizontal_axis_parameters.control_parameters.approach_speed
     else:
-        if parameters.pwm_horizontal_approach_speed is not None:
+        if legacy_pwm_horizontal_speed is not None:
             _warn_about_legacy_option("pwm_horizontal_approach_speed",
                                       ["pwm_horizontal_approach_speed = None"])
         else:
             parameters.pwm_horizontal_approach_speed = parameters.horizontal_axis_parameters.pwm_standard_speed
 
+    legacy_pwm_rotational_speed = parameters.pwm_rotational_approach_speed
     if isinstance(parameters.rotational_axis_parameters.control_parameters,
                   ApproachParameters):
-        if parameters.pwm_rotational_approach_speed is not None:
+        if legacy_pwm_rotational_speed is not None:
             _warn_about_legacy_option("pwm_rotational_approach_speed",
                                       ["rotational_axis_parameters.control_parameters.approach_speed"])
-            parameters.rotational_axis_parameters.control_parameters.approach_speed = parameters.pwm_rotational_approach_speed
+            parameters.rotational_axis_parameters.control_parameters.approach_speed = legacy_pwm_rotational_speed
         else:
             parameters.pwm_rotational_approach_speed = parameters.rotational_axis_parameters.control_parameters.approach_speed
     else:
-        if parameters.pwm_rotational_approach_speed is not None:
+        if legacy_pwm_rotational_speed is not None:
             _warn_about_legacy_option("pwm_rotational_approach_speed",
                                       ["pwm_rotational_approach_speed = None"])
         else:
             parameters.pwm_rotational_approach_speed = parameters.rotational_axis_parameters.pwm_standard_speed
 
-    if parameters.pwm_approach_tolerance is not None:
+    legacy_pwm_approach_tolerance = parameters.pwm_approach_tolerance
+    if legacy_pwm_approach_tolerance is not None:
         _warn_about_legacy_option("pwm_approach_tolerance",
                                   ["vertical_axis_parameters.control_parameters.approach_tolerance",
                                    "horizontal_axis_parameters.control_parameters.approach_tolerance",
                                    "rotational_axis_parameters.control_parameters.approach_tolerance"])
         if isinstance(parameters.vertical_axis_parameters.control_parameters,
                       ApproachParameters):
-            parameters.vertical_axis_parameters.control_parameters.approach_tolerance = parameters.pwm_approach_tolerance
+            parameters.vertical_axis_parameters.control_parameters.approach_tolerance = legacy_pwm_approach_tolerance
         if isinstance(parameters.horizontal_axis_parameters.control_parameters,
                       ApproachParameters):
-            parameters.horizontal_axis_parameters.control_parameters.approach_tolerance = parameters.pwm_approach_tolerance
+            parameters.horizontal_axis_parameters.control_parameters.approach_tolerance = legacy_pwm_approach_tolerance
         if isinstance(parameters.rotational_axis_parameters.control_parameters,
                       ApproachParameters):
-            parameters.rotational_axis_parameters.control_parameters.approach_tolerance = parameters.pwm_approach_tolerance
+            parameters.rotational_axis_parameters.control_parameters.approach_tolerance = legacy_pwm_approach_tolerance
     else:
         # just select any value that is set
         if isinstance(parameters.vertical_axis_parameters.control_parameters,
@@ -139,7 +146,7 @@ def _apply_legacy_support(parameters: VacuumGripperParameters):
 
 def _warn_about_legacy_option(option: str, better: List[str]) -> None:
     alternative = "' or '".join(better)
-    logging.warning(f"[DEPRECATION] Your config is still setting the legacy option '{option}', please use '{alternative}' instead")
+    logging.warning(f"[DEPRECATION] Your setup is still setting the legacy option '{option}', please use '{alternative}' instead")
 
 
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
@@ -230,6 +237,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
 
+    # noinspection PyDeprecation
     @cycle_step_function()
     def reset_pwm_CycleStep(self) -> CycleStepResult:
         self.pwmVertical = self.parameters.pwm_standard_speed
@@ -613,6 +621,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
+    # noinspection PyDeprecation
     @override
     @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
