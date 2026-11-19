@@ -18,7 +18,7 @@ as part of your gradle build pipeline.
 ```kotlin
 plugins {
     // Apply the plugin from Maven Central
-    id("fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin") version "1.1.0-SNAPSHOT"
+    id("fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin") version "1.2.0-SNAPSHOT"
 }
 ```
 
