@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -13,7 +13,7 @@ import io.github.mbdo.factoryscada.service.FactoryScada;
  * The logs are sent through {@link WebSocketPublisher} so the outgoing topic is documented by the WebSocketDocGenerator.
  */
 @Controller
-public class LogsController {
+public class LogsWsController {
 
     @Autowired
     private WebSocketPublisher webSocketPublisher;

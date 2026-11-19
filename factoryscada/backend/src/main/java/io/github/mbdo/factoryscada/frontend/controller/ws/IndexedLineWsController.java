@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.indexedline.IndexedLineMachine;
@@ -15,10 +15,10 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 @MessageMapping("/indexedLine")
-public class IndexedLineController extends AbstractMachineController<IndexedLineMachine> {
+public class IndexedLineWsController extends AbstractMachineWsController<IndexedLineMachine> {
 
   @Autowired
-  public IndexedLineController(FactoryScada factoryScada) {
+  public IndexedLineWsController(FactoryScada factoryScada) {
     super(factoryScada);
   }
 

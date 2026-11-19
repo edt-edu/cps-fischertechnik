@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.punchingmachine.PunchingMachine;
@@ -15,10 +15,10 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 @MessageMapping("/punchingMachine")
-public class PunchingMachineController extends AbstractMachineController<PunchingMachine> {
+public class PunchingMachineWsController extends AbstractMachineWsController<PunchingMachine> {
 
   @Autowired
-  public PunchingMachineController(FactoryScada factoryScada) {
+  public PunchingMachineWsController(FactoryScada factoryScada) {
     super(factoryScada);
   }
 

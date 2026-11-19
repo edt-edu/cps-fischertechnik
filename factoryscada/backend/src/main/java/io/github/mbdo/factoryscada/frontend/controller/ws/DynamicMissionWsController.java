@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.domains.dynamicmission.dtos.DynamicMissionDTO;
 import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
@@ -15,12 +15,12 @@ import java.util.List;
 @Slf4j
 @Controller
 @MessageMapping("/dynamic-mission")
-public class DynamicMissionOrchestratorController {
+public class DynamicMissionWsController {
 
   private final DynamicMissionService dynamicMissionService;
 
   @Autowired
-  public DynamicMissionOrchestratorController(DynamicMissionService dynamicMissionService) {
+  public DynamicMissionWsController(DynamicMissionService dynamicMissionService) {
     this.dynamicMissionService = dynamicMissionService;
   }
 

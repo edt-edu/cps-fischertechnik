@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.highbaywarehouse.HighBayWarehouseMachine;
@@ -15,10 +15,10 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @Controller
 @MessageMapping("/highBayWarehouse")
-public class HighBayWarehouseController extends AbstractMachineController<HighBayWarehouseMachine> {
+public class HighBayWarehouseWsController extends AbstractMachineWsController<HighBayWarehouseMachine> {
 
     @Autowired
-    public HighBayWarehouseController(FactoryScada factoryScada) {
+    public HighBayWarehouseWsController(FactoryScada factoryScada) {
         super(factoryScada);
     }
 

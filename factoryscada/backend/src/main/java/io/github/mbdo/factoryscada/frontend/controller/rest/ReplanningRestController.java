@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.rest;
 
 import io.github.mbdo.factoryscada.frontend.dto.replanning.MissionChangeDTO;
 import io.github.mbdo.factoryscada.frontend.dto.replanning.MachineCommandRequestDTO;
@@ -25,11 +25,11 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/replanning")
-public class ReplanningController {
+public class ReplanningRestController {
 
     private final ReplanningService replanningService;
 
-    public ReplanningController(ReplanningService replanningService) {
+    public ReplanningRestController(ReplanningService replanningService) {
         this.replanningService = replanningService;
     }
 

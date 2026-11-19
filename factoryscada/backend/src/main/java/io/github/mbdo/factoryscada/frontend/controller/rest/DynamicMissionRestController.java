@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.rest;
 
 import io.github.mbdo.factoryscada.service.dynamicmission.DynamicMissionService;
 import lombok.extern.slf4j.Slf4j;

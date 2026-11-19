@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -29,12 +29,12 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractMachineController<T extends AbstractMachine> {
+public abstract class AbstractMachineWsController<T extends AbstractMachine> {
 
     private final FactoryScada factoryScada;
 
     @Autowired
-    public AbstractMachineController(FactoryScada factoryScada) {
+    public AbstractMachineWsController(FactoryScada factoryScada) {
         this.factoryScada = factoryScada;
     }
 
