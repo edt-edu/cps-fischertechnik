@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.FactoryMissionsParallelized_dto;
@@ -26,7 +26,7 @@ import java.util.List;
 @Slf4j
 @Controller
 @MessageMapping("/factoryMission")
-public class MissionOrchestratorController {
+public class MissionOrchestratorWsController {
 
     private final BeanFactory beanFactory;
 
@@ -36,7 +36,7 @@ public class MissionOrchestratorController {
     protected FactoryMissionsParallelizedProvider factoryMissionsParallelizedProvider;
 
     @Autowired
-    public MissionOrchestratorController(BeanFactory beanFactory) {
+    public MissionOrchestratorWsController(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 

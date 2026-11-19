@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -16,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @MessageMapping("/sortingLine")
-public class SortingLineController extends AbstractMachineController<SortingLineMachine> {
+public class SortingLineWsController extends AbstractMachineWsController<SortingLineMachine> {
 
     @Autowired
-    public SortingLineController(FactoryScada factoryScada) {
+    public SortingLineWsController(FactoryScada factoryScada) {
         super(factoryScada);
     }
 

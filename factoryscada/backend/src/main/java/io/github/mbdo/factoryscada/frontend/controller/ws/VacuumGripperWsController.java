@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -17,10 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @MessageMapping("/vacuumGripper")
-public class VacuumGripperController extends AbstractMachineController<VacuumGripperMachine> {
+public class VacuumGripperWsController extends AbstractMachineWsController<VacuumGripperMachine> {
 
     @Autowired
-    public VacuumGripperController(FactoryScada factoryScada) {
+    public VacuumGripperWsController(FactoryScada factoryScada) {
         super(factoryScada);
     }
 

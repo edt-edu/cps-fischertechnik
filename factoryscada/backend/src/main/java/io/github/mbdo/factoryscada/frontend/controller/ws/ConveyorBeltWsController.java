@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -16,10 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @MessageMapping("/conveyorBelt")
-public class ConveyorBeltController extends AbstractMachineController<ConveyorBeltMachine> {
+public class ConveyorBeltWsController extends AbstractMachineWsController<ConveyorBeltMachine> {
 
     @Autowired
-    public ConveyorBeltController(FactoryScada factoryScada) {
+    public ConveyorBeltWsController(FactoryScada factoryScada) {
         super(factoryScada);
     }
 

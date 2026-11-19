@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -16,10 +16,10 @@ import jakarta.validation.Valid;
 @Slf4j
 @Controller
 @MessageMapping("/multiProcessingStation")
-public class MultiProcessingStationController extends AbstractMachineController<MultiProcessingStationMachine> {
+public class MultiProcessingStationWsController extends AbstractMachineWsController<MultiProcessingStationMachine> {
 
     @Autowired
-    public MultiProcessingStationController(FactoryScada factoryScada) {
+    public MultiProcessingStationWsController(FactoryScada factoryScada) {
         super(factoryScada);
     }
 

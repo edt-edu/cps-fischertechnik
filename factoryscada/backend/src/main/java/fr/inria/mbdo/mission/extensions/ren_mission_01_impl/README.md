@@ -14,7 +14,7 @@ defined in `fr.inria.mbdo.mission.extensions.ren_mission_01`) and the **Spring a
 └─────────────────────┬───────────────────────────────────────────┘
                       │
 ┌─────────────────────▼───────────────────────────────────────────┐
-│  MissionExtensionController + MissionExtensionService           │
+│  MissionExtension{Rest,Ws}Controller + MissionExtensionService  │
 │  Manages mission lifecycle (start/stop/override)                │
 └─────────────────────┬───────────────────────────────────────────┘
                       │

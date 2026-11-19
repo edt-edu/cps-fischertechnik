@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaConfiguration;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
@@ -20,7 +20,7 @@ import java.util.Map;
 @Slf4j
 @Controller
 @MessageMapping("/factory")
-public class FactoryScadaController {
+public class FactoryScadaWsController {
 
     private final BeanFactory beanFactory;
 
@@ -29,7 +29,7 @@ public class FactoryScadaController {
     protected Map<String, Map<String, String>> commandPlaceholder;
 
     @Autowired
-    public FactoryScadaController(BeanFactory beanFactory) {
+    public FactoryScadaWsController(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 

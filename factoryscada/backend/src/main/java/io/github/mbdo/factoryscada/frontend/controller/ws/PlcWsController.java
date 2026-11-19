@@ -1,4 +1,4 @@
-package io.github.mbdo.factoryscada.frontend.controller;
+package io.github.mbdo.factoryscada.frontend.controller.ws;
 
 import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
 import org.springframework.beans.factory.BeanFactory;
@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @MessageMapping("/plc")
-public class PlcController {
+public class PlcWsController {
 
 
     private final BeanFactory beanFactory;
@@ -31,7 +31,7 @@ public class PlcController {
     protected FactoryScadaConfigurationProvider factoryScadaConfigurationProvider;
 
     @Autowired
-    public PlcController(BeanFactory beanFactory) {
+    public PlcWsController(BeanFactory beanFactory) {
         this.beanFactory = beanFactory;
     }
 
