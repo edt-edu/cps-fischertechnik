@@ -1,0 +1,730 @@
+= REST API of factoryscada backend
+
+All paths are relative to the HTTP base URL of the backend (e.g. `http://localhost:9000`).
+
+== Endpoints overview
+
+=== DynamicMissionRestController
+
+[cols="1,3,4,2,2", options="header"]
+|===
+|Method |Path |Description |Request body |Response
+
+|POST
+|<<rest_post-api-dynamic-mission-command-start-missionname,/&#8203;api/&#8203;dynamic-mission/&#8203;command/&#8203;start/&#8203;{missionName}>>
+|Starts a dynamic mission by its (URL encoded) name. Answers 404 if the mission is unknown.
+|
+|
+
+|POST
+|<<rest_post-api-dynamic-mission-command-stop,/&#8203;api/&#8203;dynamic-mission/&#8203;command/&#8203;stop>>
+|Stops the currently active dynamic mission.
+|
+|
+
+|===
+
+=== MissionExtensionRestController
+
+[cols="1,3,4,2,2", options="header"]
+|===
+|Method |Path |Description |Request body |Response
+
+|GET
+|<<rest_get-api-mission-extension-configuration,/&#8203;api/&#8203;mission-extension/&#8203;configuration>>
+|Returns the current configuration of the mission extension, including the list of available missions and their statuses.
+|
+|`MissionExtensionConfigurationDTO`
+
+|GET
+|<<rest_get-api-mission-extension-logs,/&#8203;api/&#8203;mission-extension/&#8203;logs>>
+|Returns the logs of the mission extension, including the history of executed missions and their statuses.
+|
+|`MissionLogsDTO`
+
+|POST
+|<<rest_post-api-mission-extension-start,/&#8203;api/&#8203;mission-extension/&#8203;start>>
+|Starts a mission extension for a given machine with the given mission name. Answers 404 if the machine or mission is unknown.
+|`MissionExecutionCommandDTO`
+|`MissionCommandResponseDTO`
+
+|POST
+|<<rest_post-api-mission-extension-stop-active,/&#8203;api/&#8203;mission-extension/&#8203;stop-active>>
+|Stops all the currently active missions (from mission extension).
+|
+|`MissionCommandResponseDTO`
+
+|POST
+|<<rest_post-api-mission-extension-missionname-stop,/&#8203;api/&#8203;mission-extension/&#8203;{missionName}/&#8203;stop>>
+|Stops a mission with the given name.
+|
+|`MissionCommandResponseDTO`
+
+|===
+
+=== ReplanningRestController
+
+[cols="1,3,4,2,2", options="header"]
+|===
+|Method |Path |Description |Request body |Response
+
+|POST
+|<<rest_post-api-replanning-command,/&#8203;api/&#8203;replanning/&#8203;command>>
+|Sends a command to a machine running no mission, and waits for its feedback. Answers 409 if the machine runs a mission, 400 if the request is invalid.
+|`MachineCommandRequestDTO`
+|`MachineCommandResultDTO`
+
+|GET
+|<<rest_get-api-replanning-machines,/&#8203;api/&#8203;replanning/&#8203;machines>>
+|Returns every machine, the missions it can run (with their states), and the mission and state it runs.
+|
+|`List<ReplanningMachineDTO>`
+
+|POST
+|<<rest_post-api-replanning-mission-stop,/&#8203;api/&#8203;replanning/&#8203;mission/&#8203;stop>>
+|Stops the mission running on a machine (the command it executes, if any, is not interrupted). Answers 409 if the machine doesn't run the expected mission or state, 400 if the request is invalid.
+|`MachineRequestDTO`
+|`MissionChangeDTO`
+
+|POST
+|<<rest_post-api-replanning-mission-swap,/&#8203;api/&#8203;replanning/&#8203;mission/&#8203;swap>>
+|Replaces the mission running on a machine, the new one starting from its initial state or in a given state. Answers 409 if the machine doesn't run the expected mission or state, 400 if the request is invalid.
+|`MissionSwapRequestDTO`
+|`MissionChangeDTO`
+
+|===
+
+== Endpoints
+
+[[rest_post-api-dynamic-mission-command-start-missionname]]
+=== `POST /api/dynamic-mission/command/start/{missionName}`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.DynamicMissionRestController.startMission()`
+
+_Starts a dynamic mission by its (URL encoded) name. Answers 404 if the mission is unknown._
+
+==== Parameters
+
+- `missionName` (String, path variable)
+
+==== Response
+
+_202 Accepted: the mission is started asynchronously._
+
+No body.
+
+[[rest_post-api-dynamic-mission-command-stop]]
+=== `POST /api/dynamic-mission/command/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.DynamicMissionRestController.stopMission()`
+
+_Stops the currently active dynamic mission._
+
+==== Response
+
+_202 Accepted: the mission is stopped asynchronously._
+
+No body.
+
+[[rest_get-api-mission-extension-configuration]]
+=== `GET /api/mission-extension/configuration`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.MissionExtensionRestController.getConfiguration()`
+
+_Returns the current configuration of the mission extension, including the list of available missions and their statuses._
+
+==== Response
+
+_The current configuration of the mission extension._
+
+`MissionExtensionConfigurationDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExtensionConfigurationDTO",
+  "properties" : {
+    "activeGlobalMissionName" : {
+      "type" : "string"
+    },
+    "activeMissionNames" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "configurationModified" : {
+      "type" : "boolean"
+    },
+    "globalMissions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:GlobalMissionDTO",
+        "properties" : {
+          "description" : {
+            "type" : "string"
+          },
+          "missionNames" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "machines" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionMachineDTO",
+        "properties" : {
+          "activeMissionName" : {
+            "type" : "string"
+          },
+          "activeState" : {
+            "type" : "string"
+          },
+          "lastChangeTime" : {
+            "type" : "string"
+          },
+          "missions" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExtensionMachineOptionDTO",
+              "properties" : {
+                "description" : {
+                  "type" : "string"
+                },
+                "name" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "nominalMissionName" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "missionChanges" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionChangeEventDTO",
+        "properties" : {
+          "machine" : {
+            "type" : "string"
+          },
+          "mission" : {
+            "type" : "string"
+          },
+          "origin" : {
+            "type" : "string"
+          },
+          "previousMission" : {
+            "type" : "string"
+          },
+          "previousState" : {
+            "type" : "string"
+          },
+          "state" : {
+            "type" : "string"
+          },
+          "time" : {
+            "type" : "string"
+          }
+        }
+      }
+    },
+    "missions" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MachineMissionExtensionDTO",
+        "properties" : {
+          "activeState" : {
+            "type" : "string"
+          },
+          "awaitingCommandResult" : {
+            "type" : "boolean"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "dotGraph" : {
+            "type" : "string"
+          },
+          "involvedMachines" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "name" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+  }
+}
+----
+
+[[rest_get-api-mission-extension-logs]]
+=== `GET /api/mission-extension/logs`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.MissionExtensionRestController.getLogs()`
+
+_Returns the logs of the mission extension, including the history of executed missions and their statuses._
+
+==== Response
+
+_The logs of the mission extension._
+
+`MissionLogsDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionLogsDTO",
+  "properties" : {
+    "logsByMission" : {
+      "type" : "object",
+      "additionalProperties" : {
+        "type" : "array",
+        "items" : {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}
+----
+
+[[rest_post-api-mission-extension-start]]
+=== `POST /api/mission-extension/start`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.MissionExtensionRestController.startMission()`
+
+_Starts a mission extension for a given machine with the given mission name. Answers 404 if the machine or mission is unknown._
+
+==== Request Body
+
+`MissionExecutionCommandDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionExecutionCommandDTO",
+  "properties" : {
+    "machineName" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+==== Response
+
+_The result of the command._
+
+`MissionCommandResponseDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionCommandResponseDTO",
+  "properties" : {
+    "activeMissionName" : {
+      "type" : "string"
+    },
+    "machineName" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+[[rest_post-api-mission-extension-stop-active]]
+=== `POST /api/mission-extension/stop-active`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.MissionExtensionRestController.stopActiveMission()`
+
+_Stops all the currently active missions (from mission extension)._
+
+==== Response
+
+_The result of the command._
+
+`MissionCommandResponseDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionCommandResponseDTO",
+  "properties" : {
+    "activeMissionName" : {
+      "type" : "string"
+    },
+    "machineName" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+[[rest_post-api-mission-extension-missionname-stop]]
+=== `POST /api/mission-extension/{missionName}/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.MissionExtensionRestController.stopMission()`
+
+_Stops a mission with the given name._
+
+==== Parameters
+
+- `missionName` (String, path variable)
+
+==== Response
+
+_The result of the command._
+
+`MissionCommandResponseDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:MissionCommandResponseDTO",
+  "properties" : {
+    "activeMissionName" : {
+      "type" : "string"
+    },
+    "machineName" : {
+      "type" : "string"
+    },
+    "message" : {
+      "type" : "string"
+    },
+    "missionName" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+[[rest_post-api-replanning-command]]
+=== `POST /api/replanning/command`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.ReplanningRestController.executeCommand()`
+
+_Sends a command to a machine running no mission, and waits for its feedback. Answers 409 if the machine runs a mission, 400 if the request is invalid._
+
+==== Request Body
+
+`MachineCommandRequestDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:MachineCommandRequestDTO",
+  "properties" : {
+    "command" : {
+      "type" : "string"
+    },
+    "machine" : {
+      "type" : "string"
+    },
+    "parameters" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:dtos:Parameter",
+        "properties" : {
+          "passable" : {
+            "type" : "object",
+            "id" : "urn:jsonschema:io:github:mbdo:factoryscada:core:Passable"
+          },
+          "passableType" : {
+            "type" : "string",
+            "enum" : [ "COLOR", "DIRECTION", "BOXNUMBER", "POSITIONPARAMETERTHREED", "NAMEDPOSITION", "NUMBERNATURAL", "AXISPRIORITIZED", "MPSOUTPUT", "MPSARMPOSITION", "MPSTURNTABLEPOSITION", "BOOL" ]
+          }
+        }
+      }
+    },
+    "timeoutMs" : {
+      "type" : "integer"
+    }
+  }
+}
+----
+
+==== Response
+
+_The result of the command, as reported by the machine._
+
+`MachineCommandResultDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:MachineCommandResultDTO",
+  "properties" : {
+    "command" : {
+      "type" : "string"
+    },
+    "commandId" : {
+      "type" : "string"
+    },
+    "done" : {
+      "type" : "boolean"
+    },
+    "durationMs" : {
+      "type" : "integer"
+    },
+    "machine" : {
+      "type" : "string"
+    },
+    "physicalMachine" : {
+      "type" : "string"
+    },
+    "status" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+[[rest_get-api-replanning-machines]]
+=== `GET /api/replanning/machines`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.ReplanningRestController.getMachines()`
+
+_Returns every machine, the missions it can run (with their states), and the mission and state it runs._
+
+==== Response
+
+_The machines, named by their logical name in the mission extension._
+
+`List<ReplanningMachineDTO>`
+
+[source,json]
+----
+{
+  "type" : "array",
+  "items" : {
+    "type" : "object",
+    "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:ReplanningMachineDTO",
+    "properties" : {
+      "activeMission" : {
+        "type" : "string"
+      },
+      "activeState" : {
+        "type" : "string"
+      },
+      "availableMissions" : {
+        "type" : "array",
+        "items" : {
+          "type" : "object",
+          "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:ReplanningMissionDTO",
+          "properties" : {
+            "activeState" : {
+              "type" : "string"
+            },
+            "description" : {
+              "type" : "string"
+            },
+            "name" : {
+              "type" : "string"
+            },
+            "running" : {
+              "type" : "boolean"
+            },
+            "states" : {
+              "type" : "array",
+              "items" : {
+                "type" : "string"
+              }
+            }
+          }
+        }
+      },
+      "idle" : {
+        "type" : "boolean"
+      },
+      "name" : {
+        "type" : "string"
+      },
+      "physicalMachine" : {
+        "type" : "string"
+      },
+      "type" : {
+        "type" : "string"
+      }
+    }
+  }
+}
+----
+
+[[rest_post-api-replanning-mission-stop]]
+=== `POST /api/replanning/mission/stop`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.ReplanningRestController.stopMission()`
+
+_Stops the mission running on a machine (the command it executes, if any, is not interrupted). Answers 409 if the machine doesn't run the expected mission or state, 400 if the request is invalid._
+
+==== Request Body
+
+`MachineRequestDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:MachineRequestDTO",
+  "properties" : {
+    "expectedMission" : {
+      "type" : "string"
+    },
+    "expectedState" : {
+      "type" : "string"
+    },
+    "machine" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+==== Response
+
+_The mission and state the machine was stopped in._
+
+`MissionChangeDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:MissionChangeDTO",
+  "properties" : {
+    "machine" : {
+      "type" : "string"
+    },
+    "mission" : {
+      "type" : "string"
+    },
+    "previousMission" : {
+      "type" : "string"
+    },
+    "previousState" : {
+      "type" : "string"
+    },
+    "state" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+[[rest_post-api-replanning-mission-swap]]
+=== `POST /api/replanning/mission/swap`
+
+Declared in `io.github.mbdo.factoryscada.frontend.controller.rest.ReplanningRestController.swapMission()`
+
+_Replaces the mission running on a machine, the new one starting from its initial state or in a given state. Answers 409 if the machine doesn't run the expected mission or state, 400 if the request is invalid._
+
+==== Request Body
+
+`MissionSwapRequestDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:MissionSwapRequestDTO",
+  "properties" : {
+    "expectedMission" : {
+      "type" : "string"
+    },
+    "expectedState" : {
+      "type" : "string"
+    },
+    "machine" : {
+      "type" : "string"
+    },
+    "mission" : {
+      "type" : "string"
+    },
+    "state" : {
+      "type" : "string"
+    }
+  }
+}
+----
+
+==== Response
+
+_The mission change that was applied._
+
+`MissionChangeDTO`
+
+[source,json]
+----
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:github:mbdo:factoryscada:frontend:dto:replanning:MissionChangeDTO",
+  "properties" : {
+    "machine" : {
+      "type" : "string"
+    },
+    "mission" : {
+      "type" : "string"
+    },
+    "previousMission" : {
+      "type" : "string"
+    },
+    "previousState" : {
+      "type" : "string"
+    },
+    "state" : {
+      "type" : "string"
+    }
+  }
+}
+----
+

@@ -1,5 +1,6 @@
 package io.github.mbdo.factoryscada.frontend.controller.rest;
 
+import io.github.mbdo.factoryscada.frontend.RestDoc;
 import io.github.mbdo.factoryscada.service.dynamicmission.DynamicMissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class DynamicMissionRestController {
   }
 
   @PostMapping("/command/start/{missionName}")
+  @RestDoc(description = "Starts a dynamic mission by its (URL encoded) name. Answers 404 if the mission is unknown.",
+      responseDescription = "202 Accepted: the mission is started asynchronously.")
   public ResponseEntity<Void> startMission(@PathVariable("missionName") String encodedMissionName) {
     var missionName = UriUtils.decode(encodedMissionName, StandardCharsets.UTF_8);
     if (dynamicMissionService.getMissionByName(missionName).isEmpty()) {
@@ -37,6 +40,8 @@ public class DynamicMissionRestController {
   }
 
   @PostMapping("/command/stop")
+  @RestDoc(description = "Stops the currently active dynamic mission.",
+      responseDescription = "202 Accepted: the mission is stopped asynchronously.")
   public ResponseEntity<Void> stopMission() {
     dynamicMissionService.stopActiveMission();
     return ResponseEntity.accepted().build();

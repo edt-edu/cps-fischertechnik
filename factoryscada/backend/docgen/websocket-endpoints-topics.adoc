@@ -4,7 +4,7 @@
 
 === Incoming messages — commands and requests
 
-==== ConveyorBeltController
+==== ConveyorBeltWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -57,7 +57,7 @@
 
 |===
 
-==== DynamicMissionOrchestratorController
+==== DynamicMissionWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -85,7 +85,7 @@
 
 |===
 
-==== FactoryScadaController
+==== FactoryScadaWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -113,7 +113,7 @@
 
 |===
 
-==== HighBayWarehouseController
+==== HighBayWarehouseWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -226,7 +226,7 @@
 
 |===
 
-==== IndexedLineController
+==== IndexedLineWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -303,7 +303,7 @@
 
 |===
 
-==== LogsController
+==== LogsWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -316,7 +316,7 @@
 
 |===
 
-==== MissionExtensionController
+==== MissionExtensionWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -370,7 +370,7 @@
 
 |===
 
-==== MissionOrchestratorController
+==== MissionOrchestratorWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -413,7 +413,7 @@
 
 |===
 
-==== MultiProcessingStationController
+==== MultiProcessingStationWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -544,7 +544,7 @@
 
 |===
 
-==== PlcController
+==== PlcWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -562,7 +562,7 @@
 
 |===
 
-==== PunchingMachineController
+==== PunchingMachineWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -601,7 +601,7 @@
 
 |===
 
-==== SortingLineController
+==== SortingLineWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -640,7 +640,7 @@
 
 |===
 
-==== VacuumGripperController
+==== VacuumGripperWsController
 
 [cols="2,3,1,2", options="header"]
 |===
@@ -739,13 +739,13 @@
 |Broadcasts the list of mission nodes currently executed by the mission DSL executer
 |`List`, `Node_dto[]`
 |`WebSocketPublisher.&#8203;sendActualCommandExecuting()` +
-`@SendTo` reply of MissionOrchestratorController.&#8203;getFactoryActualMissions() +
+`@SendTo` reply of MissionOrchestratorWsController.&#8203;getFactoryActualMissions() +
 triggered by: <<incoming_factorymission-command-start-missionname,/&#8203;factoryMission/&#8203;command/&#8203;start/&#8203;{missionName}>>, <<incoming_factorymission-command-stop,/&#8203;factoryMission/&#8203;command/&#8203;stop>>
 
 |<<outgoing_topic-command-placeholder,/&#8203;topic/&#8203;command-placeholder>>
 |A map of command placeholders for all machines.
 |`Map`
-|`@SendTo` reply of FactoryScadaController.&#8203;getCommandPlaceholder()
+|`@SendTo` reply of FactoryScadaWsController.&#8203;getCommandPlaceholder()
 
 |<<outgoing_topic-controller-feedbacks,/&#8203;topic/&#8203;controller-feedbacks>>
 |Broadcasts raw feedback from the controller
@@ -755,17 +755,17 @@ triggered by: <<incoming_factorymission-command-start-missionname,/&#8203;factor
 |<<outgoing_topic-dynamic-missions,/&#8203;topic/&#8203;dynamic-missions>>
 |A list of dynamic missions with their names and descriptions and involved machines.
 |`List`
-|`@SendTo` reply of DynamicMissionOrchestratorController.&#8203;getMissions()
+|`@SendTo` reply of DynamicMissionWsController.&#8203;getMissions()
 
 |<<outgoing_topic-factory-configuration,/&#8203;topic/&#8203;factory-configuration>>
 |The factory SCADA configuration. Including the list of controllers and machines, their names,  the protocols used to communicate with them, and machine logical/physical name mappings.
 |`FactoryScadaConfiguration`
-|`@SendTo` reply of FactoryScadaController.&#8203;getFactoryConfiguration()
+|`@SendTo` reply of FactoryScadaWsController.&#8203;getFactoryConfiguration()
 
 |<<outgoing_topic-factory-instance,/&#8203;topic/&#8203;factory-instance>>
 |The factory SCADA instance, including status of the controllers and machines. Machines also provide their declaredcommand placeholders.
 |`FactoryScadaInstance`
-|`@SendTo` reply of FactoryScadaController.&#8203;getFactoryInstance()
+|`@SendTo` reply of FactoryScadaWsController.&#8203;getFactoryInstance()
 
 |<<outgoing_topic-frontend-logs,/&#8203;topic/&#8203;frontend-logs>>
 |All logs currenly archived by the backend, including command events, machine status events and mission events
@@ -776,8 +776,8 @@ triggered by: <<incoming_logs-request,/&#8203;logs/&#8203;request>>
 |<<outgoing_topic-mission-configuration,/&#8203;topic/&#8203;mission-configuration>>
 |The factory SCADA DSL based mission configuration. Including the list of missions, their names, and involved machines. The list of all DSL based missions, including their names and involved machines.
 |`FactoryMissionsParallelized_dto`
-|`@SendTo` reply of MissionOrchestratorController.&#8203;getFactoryMissionsConfiguration() +
-`@SendTo` reply of MissionOrchestratorController.&#8203;getMissionList()
+|`@SendTo` reply of MissionOrchestratorWsController.&#8203;getFactoryMissionsConfiguration() +
+`@SendTo` reply of MissionOrchestratorWsController.&#8203;getMissionList()
 
 |<<outgoing_topic-mission-extension-command-response,/&#8203;topic/&#8203;mission-extension/&#8203;command-response>>
 |Result of a mission extension command (start, stop, override...)
@@ -800,7 +800,7 @@ triggered by: <<incoming_mission-extension-logs,/&#8203;mission-extension/&#8203
 |<<outgoing_topic-mission-status,/&#8203;topic/&#8203;mission-status>>
 |The status of the currently executing DSL based mission.
 |`String`
-|`@SendTo` reply of MissionOrchestratorController.&#8203;getMissionStatus()
+|`@SendTo` reply of MissionOrchestratorWsController.&#8203;getMissionStatus()
 
 |<<outgoing_topic-controllername-plc-connection-status,/&#8203;topic/&#8203;{controllerName}/&#8203;plc-connection-status>>
 |Broadcasts PLC connection status updates
@@ -822,7 +822,7 @@ triggered by 50 incoming topics (<<outgoing_topic-machinename-machine-status,see
 |<<outgoing_topic-plcname-plc-connection-status,/&#8203;topic/&#8203;{plcName}/&#8203;plc-connection-status>>
 |The connection status of the PLC, including whether the send and receive channels are connected.
 |`PlcConnectionStatusDto`
-|`@SendTo` reply of PlcController.&#8203;getPlcConnectionStatus()
+|`@SendTo` reply of PlcWsController.&#8203;getPlcConnectionStatus()
 
 |===
 
@@ -831,7 +831,7 @@ triggered by 50 incoming topics (<<outgoing_topic-machinename-machine-status,see
 [[incoming_conveyorbelt-machinename-command-status]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -895,7 +895,7 @@ _Requests the last command status of the machine_
 [[incoming_conveyorbelt-machinename-machine-status]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -938,7 +938,7 @@ _Requests the last machine status of the machine_
 [[incoming_conveyorbelt]]
 ===  Incoming Topic: `/conveyorBelt**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -952,7 +952,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_conveyorbelt-machinename-command-debug]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -970,7 +970,7 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 [[incoming_conveyorbelt-machinename-command-move-out]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_out`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.receiveMoveCommand()`
 
 _Sends a command to the machine controller to move the conveyor belt in a given direction so its payload is ejected from the conveyor belt_
 
@@ -1041,7 +1041,7 @@ _Sends a command to the machine controller to move the conveyor belt in a given 
 [[incoming_conveyorbelt-machinename-command-move-nb-steps]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_nb_steps`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveNbStepsCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.receiveMoveNbStepsCommand()`
 
 _Sends a command to the machine controller to move the conveyor belt a specified number of steps_
 
@@ -1112,7 +1112,7 @@ _Sends a command to the machine controller to move the conveyor belt a specified
 [[incoming_conveyorbelt-machinename-command-move-to-sensor]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/move_to_sensor`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveMoveToSensorCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.receiveMoveToSensorCommand()`
 
 _Sends a command to the machine controller to move the conveyor belt in a given direction so its payload reaches the next sensor_
 
@@ -1183,7 +1183,7 @@ _Sends a command to the machine controller to move the conveyor belt in a given 
 [[incoming_conveyorbelt-machinename-command-stop]]
 ===  Incoming Topic: `/conveyorBelt/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.receiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.receiveStopCommand()`
 
 _Sends a command to the machine controller to stop the conveyor belt_
 
@@ -1254,7 +1254,7 @@ _Sends a command to the machine controller to stop the conveyor belt_
 [[incoming_dynamic-mission-missions]]
 ===  Incoming Topic: `/dynamic-mission/missions`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.DynamicMissionWsController.getMissions()`
 
 _Returns a list of all available dynamic missions._
 
@@ -1277,7 +1277,7 @@ _Returns a list of all available dynamic missions._
 [[incoming_dynamic-mission]]
 ===  Incoming Topic: `/dynamic-mission**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.DynamicMissionWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -1291,7 +1291,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_dynamic-mission-command-start-missionname]]
 ===  Incoming Topic: `/dynamic-mission/command/start/{missionName}`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.startMission()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.DynamicMissionWsController.startMission()`
 
 _Starts a dynamic mission by its name._
 
@@ -1305,7 +1305,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_dynamic-mission-command-stop]]
 ===  Incoming Topic: `/dynamic-mission/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.stopMission()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.DynamicMissionWsController.stopMission()`
 
 _Stops the currently active dynamic mission._
 
@@ -1317,7 +1317,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_factory-placeholder]]
 ===  Incoming Topic: `/factory/placeholder`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getCommandPlaceholder()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.getCommandPlaceholder()`
 
 _Returns a map of command placeholders for all machines, which can be used to fill in the command templates._
 
@@ -1344,7 +1344,7 @@ _Returns a map of command placeholders for all machines, which can be used to fi
 [[incoming_factory-configuration]]
 ===  Incoming Topic: `/factory/configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryConfiguration()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.getFactoryConfiguration()`
 
 _Returns the configuration for the factory SCADA system._
 
@@ -1427,7 +1427,7 @@ _Returns the configuration for the factory SCADA system._
 [[incoming_factory-instance]]
 ===  Incoming Topic: `/factory/instance`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryInstance()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.getFactoryInstance()`
 
 _Returns the instance of the factory SCADA system._
 
@@ -1511,7 +1511,7 @@ _Returns the instance of the factory SCADA system._
 [[incoming_factory]]
 ===  Incoming Topic: `/factory**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -1525,7 +1525,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_highbaywarehouse-machinename-command-cantilever-backward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_backward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeCantileverBackwardCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeCantileverBackwardCommand()`
 
 _Executes the cantilever_backward command on the specified HighBayWarehouse machine. Retracts the cantilever, moving it away from the conveyor or the storage racks._
 
@@ -1596,7 +1596,7 @@ _Executes the cantilever_backward command on the specified HighBayWarehouse mach
 [[incoming_highbaywarehouse-machinename-command-cantilever-forward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/cantilever_forward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeCantileverFrontendCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeCantileverFrontendCommand()`
 
 _Executes the cantilever_forward command on the specified HighBayWarehouse machine. Extends the cantilever towards the conveyor or the storage racks._
 
@@ -1667,7 +1667,7 @@ _Executes the cantilever_forward command on the specified HighBayWarehouse machi
 [[incoming_highbaywarehouse-machinename-command-conveyor-backward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_backward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorBackwardCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeConveyorBackwardCommand()`
 
 _Executes the conveyor_backward command on the specified HighBayWarehouse machine. Moves the conveyor backward, towards the crane._
 
@@ -1738,7 +1738,7 @@ _Executes the conveyor_backward command on the specified HighBayWarehouse machin
 [[incoming_highbaywarehouse-machinename-command-conveyor-forward]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_forward`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorFrontendCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeConveyorFrontendCommand()`
 
 _Executes the conveyor_forward command on the specified HighBayWarehouse machine. Moves the conveyor belt forward, towards the exit._
 
@@ -1809,7 +1809,7 @@ _Executes the conveyor_forward command on the specified HighBayWarehouse machine
 [[incoming_highbaywarehouse-machinename-command-conveyor-stop]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/conveyor_stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeConveyorStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeConveyorStopCommand()`
 
 _Executes the conveyor_stop command on the specified HighBayWarehouse machine._
 
@@ -1880,7 +1880,7 @@ _Executes the conveyor_stop command on the specified HighBayWarehouse machine._
 [[incoming_highbaywarehouse-machinename-command-go-to-column]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_column`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeGoToColumnCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeGoToColumnCommand()`
 
 _Executes the crane_goto_column command on the specified HighBayWarehouse machine. Moves the crane horizontally to the specified column._
 
@@ -1951,7 +1951,7 @@ _Executes the crane_goto_column command on the specified HighBayWarehouse machin
 [[incoming_highbaywarehouse-machinename-command-go-to-row]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/go_to_row`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeGoToRowCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeGoToRowCommand()`
 
 _Executes the crane_goto_row command on the specified HighBayWarehouse machine. Move the crane vertically to the specified row._
 
@@ -2022,7 +2022,7 @@ _Executes the crane_goto_row command on the specified HighBayWarehouse machine. 
 [[incoming_highbaywarehouse-machinename-command-horizontal-to]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/horizontal_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeHorizontalToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeHorizontalToCommand()`
 
 _Executes the crane_goto_horizontal_position command on the specified HighBayWarehouse machine. Move the crane vertically to a specified counter value._
 
@@ -2093,7 +2093,7 @@ _Executes the crane_goto_horizontal_position command on the specified HighBayWar
 [[incoming_highbaywarehouse-machinename-command-move-to-safe-position]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/move_to_safe_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeMoveToSafePositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeMoveToSafePositionCommand()`
 
 _Executes the move_to_safe_position command on the specified HighBayWarehouse machine. Move towards a configured safe-position_
 
@@ -2164,7 +2164,7 @@ _Executes the move_to_safe_position command on the specified HighBayWarehouse ma
 [[incoming_highbaywarehouse-machinename-command-pickup-from]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/pickup_from`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executePickupFromCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executePickupFromCommand()`
 
 _Executes the pickup_from command on the specified HighBayWarehouse machine. Move a payload from the specified rack position onto the conveyor exit. A setupis performed after the command to reset the encoder and recalibrate the counters._
 
@@ -2235,7 +2235,7 @@ _Executes the pickup_from command on the specified HighBayWarehouse machine. Mov
 [[incoming_highbaywarehouse-machinename-command-setup]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/setup`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeSetupCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeSetupCommand()`
 
 _Executes the setup command on the specified HighBayWarehouse machine. Set up the HighBay and calibrate the counters by reaching the reference switches._
 
@@ -2306,7 +2306,7 @@ _Executes the setup command on the specified HighBayWarehouse machine. Set up th
 [[incoming_highbaywarehouse-machinename-command-stop]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeStopCommand()`
 
 _Executes the stop command on the specified HighBayWarehouse machine._
 
@@ -2377,7 +2377,7 @@ _Executes the stop command on the specified HighBayWarehouse machine._
 [[incoming_highbaywarehouse-machinename-command-store-to]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/store_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeStoreToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeStoreToCommand()`
 
 _Executes the store_to command on the specified HighBayWarehouse machine. Stores an item from the conveyor to the specified row and column in the rack (ie. place the cantilevel in front of the conveyor, activate conveyor to load the payload on the cantilever, and move to place the payload in the rack), a reset of the encoder is performed after the operation._
 
@@ -2448,7 +2448,7 @@ _Executes the store_to command on the specified HighBayWarehouse machine. Stores
 [[incoming_highbaywarehouse-machinename-command-vertical-to]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/vertical_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.executeVerticalToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.executeVerticalToCommand()`
 
 _Executes the crane_goto_vertical_position command on the specified HighBayWarehouse machine. Move the crane vertically to a specified counter value._
 
@@ -2519,7 +2519,7 @@ _Executes the crane_goto_vertical_position command on the specified HighBayWareh
 [[incoming_highbaywarehouse-machinename-command-status]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -2583,7 +2583,7 @@ _Requests the last command status of the machine_
 [[incoming_highbaywarehouse-machinename-machine-status]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -2626,7 +2626,7 @@ _Requests the last machine status of the machine_
 [[incoming_highbaywarehouse]]
 ===  Incoming Topic: `/highBayWarehouse**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2640,7 +2640,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_highbaywarehouse-machinename-command-debug]]
 ===  Incoming Topic: `/highBayWarehouse/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -2658,7 +2658,7 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 [[incoming_indexedline-machinename-command-status]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -2722,7 +2722,7 @@ _Requests the last command status of the machine_
 [[incoming_indexedline-machinename-machine-status]]
 ===  Incoming Topic: `/indexedLine/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -2765,7 +2765,7 @@ _Requests the last machine status of the machine_
 [[incoming_indexedline]]
 ===  Incoming Topic: `/indexedLine**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -2779,7 +2779,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_indexedline-machinename-command-debug]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -2797,7 +2797,7 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 [[incoming_indexedline-machinename-command-drill]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/drill`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveDrillCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveDrillCommand()`
 
 _Commands the indexed line machine to perform the drilling operation._
 
@@ -2868,7 +2868,7 @@ _Commands the indexed line machine to perform the drilling operation._
 [[incoming_indexedline-machinename-command-mill]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/mill`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveMillCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveMillCommand()`
 
 _Commands the indexed line machine to perform the milling operation._
 
@@ -2939,7 +2939,7 @@ _Commands the indexed line machine to perform the milling operation._
 [[incoming_indexedline-machinename-command-move-to-drill]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/move_to_drill`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveMoveToDrillCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveMoveToDrillCommand()`
 
 _Moves the workpiece to the drill position._
 
@@ -3010,7 +3010,7 @@ _Moves the workpiece to the drill position._
 [[incoming_indexedline-machinename-command-move-to-mill]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/move_to_mill`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveMoveToMillCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveMoveToMillCommand()`
 
 _Moves the workpiece to the mill position._
 
@@ -3081,7 +3081,7 @@ _Moves the workpiece to the mill position._
 [[incoming_indexedline-machinename-command-move-to-output]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/move_to_output`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveMoveToOutputCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveMoveToOutputCommand()`
 
 _Moves the workpiece to the output position._
 
@@ -3152,7 +3152,7 @@ _Moves the workpiece to the output position._
 [[incoming_indexedline-machinename-command-process1]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/process1`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveProcess1Command()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveProcess1Command()`
 
 _Wait for a workpiece, mill it for 2 seconds, drill it for 2 seconds and move it to the output._
 
@@ -3223,7 +3223,7 @@ _Wait for a workpiece, mill it for 2 seconds, drill it for 2 seconds and move it
 [[incoming_indexedline-machinename-command-process]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/process`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveProcessCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveProcessCommand()`
 
 _Move a workpiece through all stations of the IndexedLine and process it for the specified timespans._
 
@@ -3294,7 +3294,7 @@ _Move a workpiece through all stations of the IndexedLine and process it for the
 [[incoming_indexedline-machinename-command-stop]]
 ===  Incoming Topic: `/indexedLine/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.receiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.receiveStopCommand()`
 
 _Stops the indexed line machine._
 
@@ -3365,7 +3365,7 @@ _Stops the indexed line machine._
 [[incoming_logs-request]]
 ===  Incoming Topic: `/logs/request`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.LogsController.requestFrontendLogs()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.LogsWsController.requestFrontendLogs()`
 
 _Requests all the logs currently available on the backend. The logs include events about commands received with their answers, machine status event and erros and mission events._
 
@@ -3380,7 +3380,7 @@ _Requests all the logs currently available on the backend. The logs include even
 [[incoming_mission-extension-configuration]]
 ===  Incoming Topic: `/mission-extension/configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.getConfigurationStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.getConfigurationStomp()`
 
 _Returns the current configuration of the mission extension, including the list of available missions and their statuses._
 
@@ -3391,7 +3391,7 @@ _Returns the current configuration of the mission extension, including the list 
 [[incoming_mission-extension-logs]]
 ===  Incoming Topic: `/mission-extension/logs`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.getLogsStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.getLogsStomp()`
 
 _Returns the logs of the mission extension, including the history of executed missions and their statuses._
 
@@ -3402,7 +3402,7 @@ _Returns the logs of the mission extension, including the history of executed mi
 [[incoming_mission-extension-global-override]]
 ===  Incoming Topic: `/mission-extension/global/override`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.setGlobalMissionMachineOverrideStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.setGlobalMissionMachineOverrideStomp()`
 
 _Overrides the current global mission with new global mission. Replaces the current machine missions with the new ones while trying to maintains  consistent state._
 
@@ -3438,7 +3438,7 @@ _Overrides the current global mission with new global mission. Replaces the curr
 [[incoming_mission-extension-global-start]]
 ===  Incoming Topic: `/mission-extension/global/start`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.startGlobalMissionStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.startGlobalMissionStomp()`
 
 _Starts all machine missions related to the global mission._
 
@@ -3477,7 +3477,7 @@ _Starts all machine missions related to the global mission._
 [[incoming_mission-extension-start]]
 ===  Incoming Topic: `/mission-extension/start`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.startMissionStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.startMissionStomp()`
 
 _Starts a mission extension for a given machine with the given mission name._
 
@@ -3513,7 +3513,7 @@ _Starts a mission extension for a given machine with the given mission name._
 [[incoming_mission-extension-stop-active]]
 ===  Incoming Topic: `/mission-extension/stop-active`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopActiveMissionStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.stopActiveMissionStomp()`
 
 _Stops all the currently active missions (from mission extension)._
 
@@ -3529,7 +3529,7 @@ _Stops all the currently active missions (from mission extension)._
 [[incoming_mission-extension-global-stop]]
 ===  Incoming Topic: `/mission-extension/global/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopGlobalMissionStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.stopGlobalMissionStomp()`
 
 _Stops the current global mission, all machine missions related to it, and the machines themselves._
 
@@ -3545,7 +3545,7 @@ _Stops the current global mission, all machine missions related to it, and the m
 [[incoming_mission-extension-stop]]
 ===  Incoming Topic: `/mission-extension/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionExtensionController.stopMissionStomp()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionExtensionWsController.stopMissionStomp()`
 
 _Stops a mission with the given  name._
 
@@ -3581,7 +3581,7 @@ _Stops a mission with the given  name._
 [[incoming_factorymission-actual-command-executing]]
 ===  Incoming Topic: `/factoryMission/actual-command-executing`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getFactoryActualMissions()`
 
 _Returns the list of currently executing commands (I.e. DSL Nodes) from the DSL mission._
 
@@ -3604,7 +3604,7 @@ _Returns the list of currently executing commands (I.e. DSL Nodes) from the DSL 
 [[incoming_factorymission-mission-configuration]]
 ===  Incoming Topic: `/factoryMission/mission-configuration`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getFactoryMissionsConfiguration()`
 
 _Returns the configuration for all DSL based missions in the factory SCADA system._
 
@@ -3679,7 +3679,7 @@ _Returns the configuration for all DSL based missions in the factory SCADA syste
 [[incoming_factorymission-list]]
 ===  Incoming Topic: `/factoryMission/list`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getMissionList()`
 
 _Returns the list of all DSL based missions in the factory SCADA system._
 
@@ -3754,7 +3754,7 @@ _Returns the list of all DSL based missions in the factory SCADA system._
 [[incoming_factorymission-status]]
 ===  Incoming Topic: `/factoryMission/status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getMissionStatus()`
 
 _Returns the status of the currently executing DSL based mission._
 
@@ -3770,7 +3770,7 @@ _Returns the status of the currently executing DSL based mission._
 [[incoming_factorymission]]
 ===  Incoming Topic: `/factoryMission**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -3784,7 +3784,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_factorymission-command-start-missionname]]
 ===  Incoming Topic: `/factoryMission/command/start/{missionName}`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.startMission()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.startMission()`
 
 _Starts a mission with the given name._
 
@@ -3799,7 +3799,7 @@ _Starts a mission with the given name._
 [[incoming_factorymission-command-stop]]
 ===  Incoming Topic: `/factoryMission/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.stopMission()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.stopMission()`
 
 _Stops the currently executing DSL based mission._
 
@@ -3812,7 +3812,7 @@ _Stops the currently executing DSL based mission._
 [[incoming_multiprocessingstation-machinename-command-arm-move]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/arm_move`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeArmMoveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeArmMoveCommand()`
 
 _Moves the robotic arm to a specified position (OVEN or TURNTABLE)._
 
@@ -3883,7 +3883,7 @@ _Moves the robotic arm to a specified position (OVEN or TURNTABLE)._
 [[incoming_multiprocessingstation-machinename-command-arm-pick]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/arm_pick`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeArmPickCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeArmPickCommand()`
 
 _Commands the robotic arm to lower itself, grab the workpiece, and lift it._
 
@@ -3954,7 +3954,7 @@ _Commands the robotic arm to lower itself, grab the workpiece, and lift it._
 [[incoming_multiprocessingstation-machinename-command-arm-place]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/arm_place`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeArmPlaceCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeArmPlaceCommand()`
 
 _Commands the robotic arm to place down the workpiece._
 
@@ -4025,7 +4025,7 @@ _Commands the robotic arm to place down the workpiece._
 [[incoming_multiprocessingstation-machinename-command-conveyor-move-out]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/conveyor_move_out`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeConveyorMoveOutCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeConveyorMoveOutCommand()`
 
 _Moves the conveyor until the workpiece is ejected._
 
@@ -4096,7 +4096,7 @@ _Moves the conveyor until the workpiece is ejected._
 [[incoming_multiprocessingstation-machinename-command-conveyor-move-to-sensor]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/conveyor_move_to_sensor`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeConveyorMoveToSensorCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeConveyorMoveToSensorCommand()`
 
 _Moves the conveyor until the workpiece reaches the sensor position._
 
@@ -4167,7 +4167,7 @@ _Moves the conveyor until the workpiece reaches the sensor position._
 [[incoming_multiprocessingstation-machinename-command-move-to-safe-position]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/move_to_safe_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeMoveToSafePositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeMoveToSafePositionCommand()`
 
 _Moves the multi-processing station machine to a predifined safe position._
 
@@ -4238,7 +4238,7 @@ _Moves the multi-processing station machine to a predifined safe position._
 [[incoming_multiprocessingstation-machinename-command-oven-heat]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/oven_heat`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeOvenHeatCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeOvenHeatCommand()`
 
 _Heats the oven for a given time._
 
@@ -4309,7 +4309,7 @@ _Heats the oven for a given time._
 [[incoming_multiprocessingstation-machinename-command-oven-load]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/oven_load`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeOvenLoadCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeOvenLoadCommand()`
 
 _Loads the oven with a workpiece._
 
@@ -4380,7 +4380,7 @@ _Loads the oven with a workpiece._
 [[incoming_multiprocessingstation-machinename-command-oven-process]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/oven_process`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeOvenProcessCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeOvenProcessCommand()`
 
 _Processes a workpiece in the oven. Heating  time is specified in the command arguments._
 
@@ -4451,7 +4451,7 @@ _Processes a workpiece in the oven. Heating  time is specified in the command ar
 [[incoming_multiprocessingstation-machinename-command-oven-unload]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/oven_unload`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeOvenUnloadCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeOvenUnloadCommand()`
 
 _Unloads the oven with a workpiece._
 
@@ -4522,7 +4522,7 @@ _Unloads the oven with a workpiece._
 [[incoming_multiprocessingstation-machinename-command-process1]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/process1`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeProcess1Command()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeProcess1Command()`
 
 _Execute process1, Specification not very clear, preferred command: process_Command  with arguments._
 
@@ -4593,7 +4593,7 @@ _Execute process1, Specification not very clear, preferred command: process_Comm
 [[incoming_multiprocessingstation-machinename-command-process]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/process`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeProcessCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeProcessCommand()`
 
 _Execute process according to oven_time (time in oven in sec), saw_time (time in saw in sec), and output the product on the specified output._
 
@@ -4664,7 +4664,7 @@ _Execute process according to oven_time (time in oven in sec), saw_time (time in
 [[incoming_multiprocessingstation-machinename-command-saw-cut]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/saw_cut`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeSawCutCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeSawCutCommand()`
 
 _Activates the saw for the specified duration._
 
@@ -4735,7 +4735,7 @@ _Activates the saw for the specified duration._
 [[incoming_multiprocessingstation-machinename-command-setup]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/setup`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeSetupCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeSetupCommand()`
 
 _Sets up the multi-processing station machine for operation._
 
@@ -4806,7 +4806,7 @@ _Sets up the multi-processing station machine for operation._
 [[incoming_multiprocessingstation-machinename-command-turntable-eject]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/turntable_eject`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeTurntableEjectCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeTurntableEjectCommand()`
 
 _Ejects the workpiece from the turntable._
 
@@ -4877,7 +4877,7 @@ _Ejects the workpiece from the turntable._
 [[incoming_multiprocessingstation-machinename-command-turntable-rotate]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/turntable_rotate`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.executeTurntableRotateCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.executeTurntableRotateCommand()`
 
 _Rotates the turntable to a specified position._
 
@@ -4948,7 +4948,7 @@ _Rotates the turntable to a specified position._
 [[incoming_multiprocessingstation-machinename-command-status]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -5012,7 +5012,7 @@ _Requests the last command status of the machine_
 [[incoming_multiprocessingstation-machinename-machine-status]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -5055,7 +5055,7 @@ _Requests the last machine status of the machine_
 [[incoming_multiprocessingstation]]
 ===  Incoming Topic: `/multiProcessingStation**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -5069,7 +5069,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_multiprocessingstation-machinename-command-debug]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -5087,7 +5087,7 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 [[incoming_multiprocessingstation-machinename-command-stop]]
 ===  Incoming Topic: `/multiProcessingStation/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.receiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.receiveStopCommand()`
 
 _Stops the multi-processing station machine._
 
@@ -5158,7 +5158,7 @@ _Stops the multi-processing station machine._
 [[incoming_plc-plcname-plc-connection]]
 ===  Incoming Topic: `/plc/{plcName}/plc-connection`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.getPlcConnectionStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PlcWsController.getPlcConnectionStatus()`
 
 _Returns the connection status of the specified PLC._
 
@@ -5195,7 +5195,7 @@ _Returns the connection status of the specified PLC._
 [[incoming_plc]]
 ===  Incoming Topic: `/plc**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PlcController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PlcWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -5209,7 +5209,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_punchingmachine-machinename-command-status]]
 ===  Incoming Topic: `/punchingMachine/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -5273,7 +5273,7 @@ _Requests the last command status of the machine_
 [[incoming_punchingmachine-machinename-machine-status]]
 ===  Incoming Topic: `/punchingMachine/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -5316,7 +5316,7 @@ _Requests the last machine status of the machine_
 [[incoming_punchingmachine]]
 ===  Incoming Topic: `/punchingMachine**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -5330,7 +5330,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_punchingmachine-machinename-command-debug]]
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -5348,7 +5348,7 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 [[incoming_punchingmachine-machinename-command-punch]]
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/punch`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receivePunchCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.receivePunchCommand()`
 
 _Sends a punch command to the specified punching machine._
 
@@ -5418,7 +5418,7 @@ _Sends a punch command to the specified punching machine._
 [[incoming_punchingmachine-machinename-command-stop]]
 ===  Incoming Topic: `/punchingMachine/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.receiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.receiveStopCommand()`
 
 _Sends a stop command to the specified punching machine._
 
@@ -5488,7 +5488,7 @@ _Sends a stop command to the specified punching machine._
 [[incoming_sortingline-machinename-command-eject]]
 ===  Incoming Topic: `/sortingLine/{machineName}/command/eject`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.executeEjectCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.executeEjectCommand()`
 
 _Sends an eject command to the specified sorting line machine._
 
@@ -5558,7 +5558,7 @@ _Sends an eject command to the specified sorting line machine._
 [[incoming_sortingline-machinename-command-status]]
 ===  Incoming Topic: `/sortingLine/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -5622,7 +5622,7 @@ _Requests the last command status of the machine_
 [[incoming_sortingline-machinename-machine-status]]
 ===  Incoming Topic: `/sortingLine/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -5665,7 +5665,7 @@ _Requests the last machine status of the machine_
 [[incoming_sortingline]]
 ===  Incoming Topic: `/sortingLine**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -5679,7 +5679,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_sortingline-machinename-command-debug]]
 ===  Incoming Topic: `/sortingLine/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -5697,7 +5697,7 @@ _Sends a raw JSON command (as typed in the debug page) to the machine controller
 [[incoming_sortingline-machinename-command-stop]]
 ===  Incoming Topic: `/sortingLine/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.receiveStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.receiveStopCommand()`
 
 _Sends a stop command to the specified sorting line machine. Eject the workpiece on specified color. If the color is set to auto, detect the color before._
 
@@ -5767,7 +5767,7 @@ _Sends a stop command to the specified sorting line machine. Eject the workpiece
 [[incoming_vacuumgripper-machinename-command-go-to-position]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/go_to_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeGoToPositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeGoToPositionCommand()`
 
 _Sends a go_to_position command to the specified vacuum gripper machine. Moves the gripper to the position without changing the valve or compressor status._
 
@@ -5837,7 +5837,7 @@ _Sends a go_to_position command to the specified vacuum gripper machine. Moves t
 [[incoming_vacuumgripper-machinename-command-grip]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/grip`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeGripCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeGripCommand()`
 
 _Sends a grip command to the specified vacuum gripper machine. It activates the vacuum gripper without moving the arm._
 
@@ -5907,7 +5907,7 @@ _Sends a grip command to the specified vacuum gripper machine. It activates the 
 [[incoming_vacuumgripper-machinename-command-move]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/move`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeMoveCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeMoveCommand()`
 
 _Sends a move command to the specified vacuum gripper machine. It picks a workpiece on the startPos and drop it on the endPos_
 
@@ -5977,7 +5977,7 @@ _Sends a move command to the specified vacuum gripper machine. It picks a workpi
 [[incoming_vacuumgripper-machinename-command-move-to-safe-position]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/move_to_safe_position`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeMoveToSafePositionCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeMoveToSafePositionCommand()`
 
 _Sends a move_to_safe_position command to the specified vacuum gripper machine. Moves the gripper to a predefined safe position without changing the valve or compressor status._
 
@@ -6047,7 +6047,7 @@ _Sends a move_to_safe_position command to the specified vacuum gripper machine. 
 [[incoming_vacuumgripper-machinename-command-ordered-go-to]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/ordered_go_to`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeOrderedGoToCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeOrderedGoToCommand()`
 
 _Sends an ordered_go_to command to the specified vacuum gripper machine. Go to the specified position, moving the prioritized axes first and then the others._
 
@@ -6117,7 +6117,7 @@ _Sends an ordered_go_to command to the specified vacuum gripper machine. Go to t
 [[incoming_vacuumgripper-machinename-command-pick]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/pick`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePickCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executePickCommand()`
 
 _Sends a pick command to the specified vacuum gripper machine. It picks a workpiece on the startPos._
 
@@ -6187,7 +6187,7 @@ _Sends a pick command to the specified vacuum gripper machine. It picks a workpi
 [[incoming_vacuumgripper-machinename-command-place]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/place`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executePlaceCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executePlaceCommand()`
 
 _Sends a place command to the specified vacuum gripper machine. It drops a workpiece on the endPos._
 
@@ -6257,7 +6257,7 @@ _Sends a place command to the specified vacuum gripper machine. It drops a workp
 [[incoming_vacuumgripper-machinename-command-release]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/release`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeReleaseCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeReleaseCommand()`
 
 _Sends a release command to the specified vacuum gripper machine. It deactivates the vacuum gripper without moving the arm._
 
@@ -6327,7 +6327,7 @@ _Sends a release command to the specified vacuum gripper machine. It deactivates
 [[incoming_vacuumgripper-machinename-command-retract-arm]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/retract_arm`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeRetractArmCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeRetractArmCommand()`
 
 _Sends a retract_arm command to the specified vacuum gripper machine. It retracts the arm without changing the gripper status or other axes._
 
@@ -6397,7 +6397,7 @@ _Sends a retract_arm command to the specified vacuum gripper machine. It retract
 [[incoming_vacuumgripper-machinename-command-setup]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/setup`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeSetupCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeSetupCommand()`
 
 _Sends a setup command to the specified vacuum gripper machine. It resets the encoders by moving the gripper to the home position._
 
@@ -6467,7 +6467,7 @@ _Sends a setup command to the specified vacuum gripper machine. It resets the en
 [[incoming_vacuumgripper-machinename-request-status]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/request/status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeStatusRequest()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeStatusRequest()`
 
 _Requests the status of the specified vacuum gripper machine._
 
@@ -6523,7 +6523,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_vacuumgripper-machinename-command-stop]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/stop`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.executeStopCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.executeStopCommand()`
 
 _Sends a stop command to the specified vacuum gripper machine._
 
@@ -6593,7 +6593,7 @@ _Sends a stop command to the specified vacuum gripper machine._
 [[incoming_vacuumgripper-machinename-command-status]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.getCommandStatus()`
 
 _Requests the last command status of the machine_
 
@@ -6657,7 +6657,7 @@ _Requests the last command status of the machine_
 [[incoming_vacuumgripper-machinename-machine-status]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/machine-status`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.getMachineStatus()`
 
 _Requests the last machine status of the machine_
 
@@ -6700,7 +6700,7 @@ _Requests the last machine status of the machine_
 [[incoming_vacuumgripper]]
 ===  Incoming Topic: `/vacuumGripper**`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.handleUnmappedMessage()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.handleUnmappedMessage()`
 
 ==== Parameters
 
@@ -6714,7 +6714,7 @@ NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublis
 [[incoming_vacuumgripper-machinename-command-debug]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/debug`
 
-Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.receiveDebugCommand()`
+Declared in `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.receiveDebugCommand()`
 
 _Sends a raw JSON command (as typed in the debug page) to the machine controller_
 
@@ -6739,7 +6739,7 @@ _Broadcasts the list of mission nodes currently executed by the mission DSL exec
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendActualCommandExecuting()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryActualMissions()`: `@SendTo` reply to <<incoming_factorymission-actual-command-executing,/&#8203;factoryMission/&#8203;actual-command-executing>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getFactoryActualMissions()`: `@SendTo` reply to <<incoming_factorymission-actual-command-executing,/&#8203;factoryMission/&#8203;actual-command-executing>>
 
 *Triggered by incoming topics:* 
 
@@ -6801,7 +6801,7 @@ WARNING: the producers of this topic declare different payload types.
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getCommandPlaceholder()`: `@SendTo` reply to <<incoming_factory-placeholder,/&#8203;factory/&#8203;placeholder>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.getCommandPlaceholder()`: `@SendTo` reply to <<incoming_factory-placeholder,/&#8203;factory/&#8203;placeholder>>
 
 ==== Payload
 
@@ -6836,7 +6836,7 @@ _Broadcasts raw feedback from the controller_
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.DynamicMissionOrchestratorController.getMissions()`: `@SendTo` reply to <<incoming_dynamic-mission-missions,/&#8203;dynamic-mission/&#8203;missions>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.DynamicMissionWsController.getMissions()`: `@SendTo` reply to <<incoming_dynamic-mission-missions,/&#8203;dynamic-mission/&#8203;missions>>
 
 ==== Payload
 
@@ -6854,7 +6854,7 @@ _Broadcasts raw feedback from the controller_
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryConfiguration()`: `@SendTo` reply to <<incoming_factory-configuration,/&#8203;factory/&#8203;configuration>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.getFactoryConfiguration()`: `@SendTo` reply to <<incoming_factory-configuration,/&#8203;factory/&#8203;configuration>>
 
 ==== Payload
 
@@ -6932,7 +6932,7 @@ _Broadcasts raw feedback from the controller_
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.FactoryScadaController.getFactoryInstance()`: `@SendTo` reply to <<incoming_factory-instance,/&#8203;factory/&#8203;instance>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.FactoryScadaWsController.getFactoryInstance()`: `@SendTo` reply to <<incoming_factory-instance,/&#8203;factory/&#8203;instance>>
 
 ==== Payload
 
@@ -7028,8 +7028,8 @@ _All logs currenly archived by the backend, including command events, machine st
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getFactoryMissionsConfiguration()`: `@SendTo` reply to <<incoming_factorymission-mission-configuration,/&#8203;factoryMission/&#8203;mission-configuration>>
-- `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionList()`: `@SendTo` reply to <<incoming_factorymission-list,/&#8203;factoryMission/&#8203;list>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getFactoryMissionsConfiguration()`: `@SendTo` reply to <<incoming_factorymission-mission-configuration,/&#8203;factoryMission/&#8203;mission-configuration>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getMissionList()`: `@SendTo` reply to <<incoming_factorymission-list,/&#8203;factoryMission/&#8203;list>>
 
 ==== Payload
 
@@ -7347,7 +7347,7 @@ _Broadcasts the logs of the machine missions_
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.MissionOrchestratorController.getMissionStatus()`: `@SendTo` reply to <<incoming_factorymission-status,/&#8203;factoryMission/&#8203;status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.MissionOrchestratorWsController.getMissionStatus()`: `@SendTo` reply to <<incoming_factorymission-status,/&#8203;factoryMission/&#8203;status>>
 
 ==== Payload
 
@@ -7393,13 +7393,13 @@ _Broadcasts Command status updates_
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendCommandStatus()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getCommandStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getCommandStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getCommandStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getCommandStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-command-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-command-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-command-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-command-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-command-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-command-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;command-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.getCommandStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-command-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command-status>>
 
 *Triggered by incoming topics:* 
 
@@ -7527,13 +7527,13 @@ _Broadcasts Machine status updates_
 ==== Producers
 
 - `io.github.mbdo.factoryscada.frontend.WebSocketPublisher.sendMachineStatus()`: `@WebSocketPublish` method
-- `io.github.mbdo.factoryscada.frontend.controller.ConveyorBeltController.getMachineStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.HighBayWarehouseController.getMachineStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.IndexedLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.MultiProcessingStationController.getMachineStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.PunchingMachineController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.SortingLineController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>
-- `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.ConveyorBeltWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_conveyorbelt-machinename-machine-status,/&#8203;conveyorBelt/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.HighBayWarehouseWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_highbaywarehouse-machinename-machine-status,/&#8203;highBayWarehouse/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.IndexedLineWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_indexedline-machinename-machine-status,/&#8203;indexedLine/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.MultiProcessingStationWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_multiprocessingstation-machinename-machine-status,/&#8203;multiProcessingStation/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.PunchingMachineWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_punchingmachine-machinename-machine-status,/&#8203;punchingMachine/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.SortingLineWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_sortingline-machinename-machine-status,/&#8203;sortingLine/&#8203;{machineName}/&#8203;machine-status>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.VacuumGripperWsController.getMachineStatus()`: `@SendTo` reply to <<incoming_vacuumgripper-machinename-machine-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;machine-status>>
 
 *Triggered by incoming topics:* 
 
@@ -7622,7 +7622,7 @@ _Broadcasts Machine status updates_
 
 ==== Producers
 
-- `io.github.mbdo.factoryscada.frontend.controller.PlcController.getPlcConnectionStatus()`: `@SendTo` reply to <<incoming_plc-plcname-plc-connection,/&#8203;plc/&#8203;{plcName}/&#8203;plc-connection>>
+- `io.github.mbdo.factoryscada.frontend.controller.ws.PlcWsController.getPlcConnectionStatus()`: `@SendTo` reply to <<incoming_plc-plcname-plc-connection,/&#8203;plc/&#8203;{plcName}/&#8203;plc-connection>>
 
 ==== Payload
 
