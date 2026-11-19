@@ -699,7 +699,7 @@
 |<<incoming_vacuumgripper-machinename-request-status,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;request/&#8203;status>>
 |Requests the status of the specified vacuum gripper machine.
 |`GenericMachineStatusRequestDTO`
-|`/topic/{machineName}/status` (undeclared topic)
+|
 
 |<<incoming_vacuumgripper-machinename-command-stop,/&#8203;vacuumGripper/&#8203;{machineName}/&#8203;command/&#8203;stop>>
 |Sends a stop command to the specified vacuum gripper machine.
@@ -6471,10 +6471,6 @@ Declared in `io.github.mbdo.factoryscada.frontend.controller.VacuumGripperContro
 
 _Requests the status of the specified vacuum gripper machine._
 
-*Indirect outputs:* 
-
-- `/topic/{machineName}/status` (undeclared topic)
-
 ==== Parameters
 
 - `machineName` (String)
@@ -6520,6 +6516,9 @@ _Requests the status of the specified vacuum gripper machine._
   }
 }
 ----
+
+
+NOTE: No direct output topic detected (no `@SendTo`, no direct `@WebSocketPublish` call). Indirect outputs (via services or machine feedback, e.g. command or machine status updates) are possible.
 
 [[incoming_vacuumgripper-machinename-command-stop]]
 ===  Incoming Topic: `/vacuumGripper/{machineName}/command/stop`

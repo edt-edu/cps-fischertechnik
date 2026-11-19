@@ -7,7 +7,7 @@ plugins {
     id 'com.diffplug.eclipse.apt' version '3.37.2'
     // generation of the SysML mission code from the SysML models (must be moved later to a separate module)
 
-    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.1.0-SNAPSHOT'
+    id 'fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin' version '1.2.0-SNAPSHOT'
 }
 
 group = 'io.github.mbdo'
