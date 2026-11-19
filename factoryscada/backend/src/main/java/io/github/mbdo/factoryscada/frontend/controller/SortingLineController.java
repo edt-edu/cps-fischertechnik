@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 
 import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.domains.sortingline.SortingLineMachine;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,8 @@ public class SortingLineController extends AbstractMachineController<SortingLine
     }
 
     @MessageMapping("/{machineName}/command/eject")
+    @WebSocketDoc (description = "Sends an eject command to the specified sorting line machine.",
+                indirectOutputs = {"/topic/{machineName}/command-status"})
     public String executeEjectCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<SortingLineMachine> ejectDTO
@@ -31,6 +34,8 @@ public class SortingLineController extends AbstractMachineController<SortingLine
     }
     
     @MessageMapping("/{machineName}/command/stop")
+    @WebSocketDoc (description = "Sends a stop command to the specified sorting line machine. Eject the workpiece on specified color. If the color is set to auto, detect the color before.",
+                indirectOutputs = {"/topic/{machineName}/command-status"})
     public String receiveStopCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload GenericMachineCommandDTO<SortingLineMachine> stopDTO

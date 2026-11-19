@@ -1,12 +1,13 @@
 package io.github.mbdo.factoryscada.frontend.controller;
 
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
+import io.github.mbdo.factoryscada.frontend.WebSocketPublisher;
 import io.github.mbdo.factoryscada.frontend.dto.*;
 import io.github.mbdo.factoryscada.service.MissionExtensionService;
 import io.github.mbdo.factoryscada.service.ReplanningService;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,16 +21,17 @@ public class MissionExtensionController {
 
     private final MissionExtensionService missionExtensionService;
     private final ReplanningService replanningService;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final WebSocketPublisher webSocketPublisher;
 
     public MissionExtensionController(MissionExtensionService missionExtensionService,
                                       ReplanningService replanningService,
-                                      SimpMessagingTemplate messagingTemplate) {
+                                      WebSocketPublisher webSocketPublisher) {
         this.missionExtensionService = missionExtensionService;
         this.replanningService = replanningService;
-        this.messagingTemplate = messagingTemplate;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
+    // REST Endpoints for HTTP clients
     @GetMapping("/configuration")
     public MissionExtensionConfigurationDTO getConfiguration() {
         return missionExtensionService.getConfiguration();
@@ -62,74 +64,78 @@ public class MissionExtensionController {
 
     // STOMP Endpoints for WebSocket subscribers
     @MessageMapping("/mission-extension/configuration")
+    @WebSocketDoc (description = "Returns the current configuration of the mission extension, including the list of available missions and their statuses.",
+                responseDescription = "The current configuration of the mission extension.")
     public void getConfigurationStomp() {
-        messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-            missionExtensionService.getConfiguration());
+        webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
     }
 
     @MessageMapping("/mission-extension/logs")
+    @WebSocketDoc (description = "Returns the logs of the mission extension, including the history of executed missions and their statuses.",
+                responseDescription = "The logs of the mission extension.")
     public void getLogsStomp() {
-        messagingTemplate.convertAndSend("/topic/mission-extension/logs",
-            missionExtensionService.getMissionLogsDTO());
+        webSocketPublisher.sendMissionExtensionLogs(missionExtensionService.getMissionLogsDTO());
     }
 
     @MessageMapping("/mission-extension/start")
+    @WebSocketDoc (description = "Starts a mission extension for a given machine with the given mission name.",
+                indirectOutputs = { "/topic/mission-extension/configuration", "/topic/mission-extension/command-response" })
     public void startMissionStomp(@Payload MissionExecutionCommandDTO command) {
         try {
             MissionCommandResponseDTO response = missionExtensionService.startMission(command);
-            messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-                missionExtensionService.getConfiguration());
-            messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);
+            webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
+            webSocketPublisher.sendMissionExtensionCommandResponse(response);
         } catch (IllegalArgumentException ex) {
-            messagingTemplate.convertAndSend("/topic/mission-extension/command-response",
-                new MissionCommandResponseDTO(ex.getMessage(), command.machineName(), command.missionName(), null));
+            webSocketPublisher.sendMissionExtensionCommandResponse(new MissionCommandResponseDTO(ex.getMessage(), command.machineName(), command.missionName(), null));
         }
     }
 
     @MessageMapping("/mission-extension/stop")
+    @WebSocketDoc (description = "Stops a mission with the given  name.",
+                indirectOutputs = { "/topic/mission-extension/configuration", "/topic/mission-extension/command-response" })
     public void stopMissionStomp(@Payload MissionExecutionCommandDTO command) {
         MissionCommandResponseDTO response = missionExtensionService.stopMission(command.missionName());
-        messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-            missionExtensionService.getConfiguration());
-        messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);
+        webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
+        webSocketPublisher.sendMissionExtensionCommandResponse(response);
     }
 
     @MessageMapping("/mission-extension/stop-active")
+    @WebSocketDoc (description = "Stops all the currently active missions (from mission extension).",
+                indirectOutputs = { "/topic/mission-extension/configuration", "/topic/mission-extension/command-response" })
     public void stopActiveMissionStomp() {
         MissionCommandResponseDTO response = missionExtensionService.stopActiveMission();
-        messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-            missionExtensionService.getConfiguration());
-        messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);
+        webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
+        webSocketPublisher.sendMissionExtensionCommandResponse(response);
     }
 
     // Global Mission STOMP Endpoints
     @MessageMapping("/mission-extension/global/start")
+    @WebSocketDoc (description = "Starts all machine missions related to the global mission.",
+                indirectOutputs = { "/topic/mission-extension/configuration", "/topic/mission-extension/command-response" })
     public void startGlobalMissionStomp(@Payload GlobalMissionStartCommandDTO command) {
         try {
             MissionCommandResponseDTO response = missionExtensionService.startGlobalMission(
                 command.globalMissionName(),
                 command.machineOverrides());
-            messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-                missionExtensionService.getConfiguration());
-            messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);
+            webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
+            webSocketPublisher.sendMissionExtensionCommandResponse(response);
         } catch (IllegalArgumentException ex) {
-            messagingTemplate.convertAndSend("/topic/mission-extension/command-response",
-                new MissionCommandResponseDTO(ex.getMessage(), null, null, null));
+            webSocketPublisher.sendMissionExtensionCommandResponse(new MissionCommandResponseDTO(ex.getMessage(), null, null, null));
         }
     }
 
     @MessageMapping("/mission-extension/global/override")
+    @WebSocketDoc (description = "Overrides the current global mission with new global mission. Replaces the current machine missions with the new ones while trying to maintains  consistent state.",
+                indirectOutputs = { "/topic/mission-extension/configuration", "/topic/mission-extension/command-response" })
     public void setGlobalMissionMachineOverrideStomp(@Payload GlobalMissionMachineOverrideCommandDTO command) {
         try {
             MissionCommandResponseDTO response = missionExtensionService.setGlobalMissionMachineOverride(
                 command.machineName(),
                 command.missionName());
-            messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-                missionExtensionService.getConfiguration());
-            messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);
+            webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
+            webSocketPublisher.sendMissionExtensionCommandResponse(response);
         } catch (IllegalArgumentException ex) {
-            messagingTemplate.convertAndSend("/topic/mission-extension/command-response",
-                new MissionCommandResponseDTO(ex.getMessage(), command.machineName(), command.missionName(), null));
+            webSocketPublisher.sendMissionExtensionCommandResponse(new MissionCommandResponseDTO(ex.getMessage(), command.machineName(), command.missionName(), null));
         }
     }
 
@@ -138,14 +144,15 @@ public class MissionExtensionController {
      * interrupts the command it executes.
      */
     @MessageMapping("/mission-extension/global/stop")
+    @WebSocketDoc (description = "Stops the current global mission, all machine missions related to it, and the machines themselves.",
+                indirectOutputs = { "/topic/mission-extension/configuration", "/topic/mission-extension/command-response" })
     public void stopGlobalMissionStomp() {
         MissionCommandResponseDTO stopped = missionExtensionService.stopGlobalMission();
         List<String> machines = replanningService.stopAllMachines();
         MissionCommandResponseDTO response = new MissionCommandResponseDTO(
             stopped.message() + " Stop sent to: " + (machines.isEmpty() ? "no machine" : String.join(", ", machines)),
             null, null, null);
-        messagingTemplate.convertAndSend("/topic/mission-extension/configuration",
-            missionExtensionService.getConfiguration());
-        messagingTemplate.convertAndSend("/topic/mission-extension/command-response", response);
+        webSocketPublisher.sendMissionExtensionConfiguration(missionExtensionService.getConfiguration());
+        webSocketPublisher.sendMissionExtensionCommandResponse(response);
     }
 }

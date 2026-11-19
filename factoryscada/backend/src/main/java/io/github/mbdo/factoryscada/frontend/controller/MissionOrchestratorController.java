@@ -3,6 +3,7 @@ package io.github.mbdo.factoryscada.frontend.controller;
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.FactoryMissionsParallelized_dto;
 import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Node_dto;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.service.FactoryMissionsParallelizedProvider;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.service.FactoryScadaConfigurationProvider;
@@ -49,6 +50,8 @@ public class MissionOrchestratorController {
 
     @MessageMapping("/mission-configuration")
     @SendTo("/topic/mission-configuration")
+    @WebSocketDoc(description = "Returns the configuration for all DSL based missions in the factory SCADA system.",
+                  responseDescription = "The factory SCADA DSL based mission configuration. Including the list of missions, their names, and involved machines.")
     public FactoryMissionsParallelized_dto getFactoryMissionsConfiguration() {
         log.info("Received WS request on /factoryMission/mission-configuration");
         return factoryMissionsParallelizedProvider.getMissionsParallelized();
@@ -56,12 +59,16 @@ public class MissionOrchestratorController {
 
     @MessageMapping("/actual-command-executing")
     @SendTo("/topic/actual-command-executing")
+    @WebSocketDoc(description = "Returns the list of currently executing commands (I.e. DSL Nodes) from the DSL mission.",
+                  responseDescription = "The list of currently executing commands of the DSL mission, including their names and involved machines.")
     public List<Node_dto> getFactoryActualMissions() {
         log.info("Received WS request on /factoryMission/actual-command-executing");
         return factoryScada.getExecuterVisitor().getIsCurrentlyVisiting();
     }
 
     @MessageMapping("/command/start/{missionName}")
+    @WebSocketDoc (description = "Starts a mission with the given name.",
+                indirectOutputs = {  "/topic/actual-command-executing" })
     public String startMission(
         @DestinationVariable("missionName") String missionName
             //@Valid @Payload MissionCommandDTO missionCommandDTO
@@ -72,6 +79,8 @@ public class MissionOrchestratorController {
     }
 
     @MessageMapping("/command/stop")
+    @WebSocketDoc (description = "Stops the currently executing DSL based mission.",
+                indirectOutputs = {  "/topic/actual-command-executing" })
     public String stopMission(
             //@Valid @Payload MissionCommandDTO missionCommandDTO
     ) {
@@ -81,6 +90,8 @@ public class MissionOrchestratorController {
 
     @MessageMapping("/status")
     @SendTo("/topic/mission-status")
+    @WebSocketDoc(description = "Returns the status of the currently executing DSL based mission.",
+                  responseDescription = "The status of the currently executing DSL based mission.")
     public String getMissionStatus(
     ) {
         // TODO implement me
@@ -90,6 +101,8 @@ public class MissionOrchestratorController {
 
     @MessageMapping("/list")
     @SendTo("/topic/mission-configuration")
+    @WebSocketDoc(description = "Returns the list of all DSL based missions in the factory SCADA system.",
+                  responseDescription = "The list of all DSL based missions, including their names and involved machines.")
     public FactoryMissionsParallelized_dto getMissionList() {
         log.debug("Received WS request on /factoryMission/list/");
         return factoryScada.getExecuterVisitor().getFactoryMissions();

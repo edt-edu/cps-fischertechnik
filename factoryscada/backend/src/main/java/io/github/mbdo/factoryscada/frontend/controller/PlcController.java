@@ -11,6 +11,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 import io.github.mbdo.factoryscada.domains.factoryscada.dtos.FactoryScadaInstance;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.service.FactoryScada;
 import io.github.mbdo.factoryscada.socket.Protocol;
@@ -43,6 +44,8 @@ public class PlcController {
 
     @MessageMapping("/{plcName}/plc-connection")
     @SendTo("/topic/{plcName}/plc-connection-status")
+    @WebSocketDoc (description = "Returns the connection status of the specified PLC.",
+                responseDescription = "The connection status of the PLC, including whether the send and receive channels are connected.")
     public PlcConnectionStatusDto getPlcConnectionStatus(
         	@DestinationVariable("plcName") String plcName) {
         log.debug("Received WS request on /plc/"+plcName+"/plc-connection");

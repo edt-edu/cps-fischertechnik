@@ -1,14 +1,19 @@
 package io.github.mbdo.factoryscada.frontend;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 
 import io.github.mbdo.factoryscada.domain.CommandStatus;
 import io.github.mbdo.factoryscada.domain.MachineStatus;
+import io.github.mbdo.factoryscada.domains.mission.dsl.dtos.Node_dto;
 import io.github.mbdo.factoryscada.frontend.dto.CommandStatusDTO;
+import io.github.mbdo.factoryscada.frontend.dto.MachineStatusDTO;
+import io.github.mbdo.factoryscada.frontend.dto.MissionCommandResponseDTO;
+import io.github.mbdo.factoryscada.frontend.dto.MissionExtensionConfigurationDTO;
+import io.github.mbdo.factoryscada.frontend.dto.MissionLogsDTO;
 import io.github.mbdo.factoryscada.frontend.dto.PlcConnectionStatusDto;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
 import io.github.mbdo.factoryscada.frontend.mapper.MachineStatusMapper;
@@ -34,7 +39,7 @@ public class WebSocketPublisher {
         template.convertAndSend("/topic/controller-feedbacks", message);
     }
 
-    @WebSocketPublish(value = "/topic/frontend-logs", payload = String.class, description = "All logs that should appear in the frontend")
+    @WebSocketPublish(value = "/topic/frontend-logs", payload = String.class, description = "All logs currenly archived by the backend, including command events, machine status events and mission events")
     public void sendFrontendLogs(String message) {
         template.convertAndSend("/topic/frontend-logs", message);
     }
@@ -51,28 +56,31 @@ public class WebSocketPublisher {
                 CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(commandStatus));
     }
 
-    @WebSocketPublish(value = "/topic/{machineName}/machine-status", payload = CommandStatusDTO.class, description = "Broadcasts Machine status updates")
+    @WebSocketPublish(value = "/topic/{machineName}/machine-status", payload = MachineStatusDTO.class, description = "Broadcasts Machine status updates")
     public void sendMachineStatus(String machineName, MachineStatus machineStatus) {
         template.convertAndSend("/topic/" + machineName + "/machine-status",
                 MachineStatusMapper.INSTANCE.machineStatusToMachineStatusDTO(machineStatus));
 
     }
 
-    // This is used for the loading of logs on scada pages
-    @Controller
-    public class LogsWebSocketController {
+    @WebSocketPublish(value = "/topic/actual-command-executing", payload = Node_dto[].class, description = "Broadcasts the list of mission nodes currently executed by the mission DSL executer")
+    public void sendActualCommandExecuting(List<Node_dto> currentlyExecutingNodes) {
+        template.convertAndSend("/topic/actual-command-executing", currentlyExecutingNodes);
+    }
 
-        @Autowired
-        private SimpMessagingTemplate template;
+    @WebSocketPublish(value = "/topic/mission-extension/configuration", payload = MissionExtensionConfigurationDTO.class, description = "Broadcasts the mission extension configuration (available and active missions, recent mission changes)")
+    public void sendMissionExtensionConfiguration(MissionExtensionConfigurationDTO configuration) {
+        template.convertAndSend("/topic/mission-extension/configuration", configuration);
+    }
 
-        @Autowired
-        private FactoryScada factoryscada;
+    @WebSocketPublish(value = "/topic/mission-extension/logs", payload = MissionLogsDTO.class, description = "Broadcasts the logs of the machine missions")
+    public void sendMissionExtensionLogs(MissionLogsDTO logs) {
+        template.convertAndSend("/topic/mission-extension/logs", logs);
+    }
 
-        @MessageMapping("/logs/request")
-        public void requestFrontendLogs() {
-            String logs = String.join("\n", factoryscada.getFrontendLogsList().snapshot());
-            template.convertAndSend("/topic/frontend-logs", logs);
-        }
+    @WebSocketPublish(value = "/topic/mission-extension/command-response", payload = MissionCommandResponseDTO.class, description = "Result of a mission extension command (start, stop, override...)")
+    public void sendMissionExtensionCommandResponse(MissionCommandResponseDTO response) {
+        template.convertAndSend("/topic/mission-extension/command-response", response);
     }
 
 }

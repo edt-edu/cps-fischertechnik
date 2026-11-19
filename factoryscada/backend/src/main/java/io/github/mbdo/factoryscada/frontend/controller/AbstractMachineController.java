@@ -17,6 +17,7 @@ import io.github.mbdo.factoryscada.core.GenericMachineCommandDTO;
 import io.github.mbdo.factoryscada.core.GenericMachineStatusRequestDTO;
 import io.github.mbdo.factoryscada.domain.CommandStatus;
 import io.github.mbdo.factoryscada.domain.MachineStatus;
+import io.github.mbdo.factoryscada.frontend.WebSocketDoc;
 import io.github.mbdo.factoryscada.frontend.dto.CommandStatusDTO;
 import io.github.mbdo.factoryscada.frontend.dto.MachineStatusDTO;
 import io.github.mbdo.factoryscada.frontend.mapper.CommandStatusMapper;
@@ -57,8 +58,7 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
                 status.setCurrentCommandRawJSON(message);
                 this.factoryScada.getMachineLastCommandStatusMap().put(machineName, status);
                 // publish to frontend
-                this.factoryScada.getTemplate().convertAndSend("/topic/"+machineName+"/command-status", 
-    					CommandStatusMapper.INSTANCE.commandStatusToCommandStatusDTO(status));
+                this.factoryScada.getWebSocketPublisher().sendCommandStatus(machineName, status);
                 factoryScada.addLogsForFrontend(message);
                 
             } catch (ProtocolException e) {
@@ -110,6 +110,8 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     }
     
     @MessageMapping("/{machineName}/command/debug")
+    @WebSocketDoc(description = "Sends a raw JSON command (as typed in the debug page) to the machine controller",
+                  indirectOutputs = { "/topic/{machineName}/command-status", "/topic/{machineName}/machine-status" })
     public String receiveDebugCommand(
             @DestinationVariable("machineName") String machineName,
             @Valid @Payload String message
@@ -118,6 +120,8 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     }
     
     @MessageMapping("/{machineName}/command-status")
+    @WebSocketDoc(description = "Requests the last command status of the machine",
+                  responseDescription = "Last command sent to the machine and last feedback received for it")
     @SendTo("/topic/{machineName}/command-status")
     public CommandStatusDTO getCommandStatus ( 
     	@DestinationVariable("machineName") String machineName
@@ -128,6 +132,8 @@ public abstract class AbstractMachineController<T extends AbstractMachine> {
     }
 
     @MessageMapping("/{machineName}/machine-status")
+    @WebSocketDoc(description = "Requests the last machine status of the machine",
+                  responseDescription = "Last machine status received from the machine controller")
     @SendTo("/topic/{machineName}/machine-status")
     public MachineStatusDTO getMachineStatus ( 
     	@DestinationVariable("machineName") String machineName

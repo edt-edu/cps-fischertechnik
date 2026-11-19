@@ -121,7 +121,7 @@ public class FactoryScada {
                 node.accept(resolver);
             }
         }
-        this.executerVisitor = new ExecuterVisitor(this, missionsParallelized_dto, this.template);
+        this.executerVisitor = new ExecuterVisitor(this, missionsParallelized_dto, this.webSocketPublisher);
     }
 
     @EventListener(ApplicationReadyEvent.class)
