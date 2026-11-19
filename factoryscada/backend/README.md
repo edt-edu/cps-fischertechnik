@@ -112,6 +112,80 @@ To start the application, you have two options:
       ```
 
 
+## Communication with the backend: WebSocket (STOMP) vs REST
+
+Clients (the Angular frontend, the digital twin, scripts...) can talk to the backend with two protocols.
+Both are served by the same Spring Boot server, on the same port (`server.port`, `9000` by default, see `src/main/resources/application.yml`).
+
+| | WebSocket (STOMP) | REST (HTTP) |
+|---|---|---|
+| Controllers package | `io.github.mbdo.factoryscada.frontend.controller.ws` | `io.github.mbdo.factoryscada.frontend.controller.rest` |
+| Controller class names | `*WsController` | `*RestController` |
+| Handler annotations | `@Controller` + `@MessageMapping` (+ `@SendTo`) | `@RestController` + `@RequestMapping` / `@GetMapping` / `@PostMapping`... |
+| Documentation annotation | `@WebSocketDoc` (and `@WebSocketPublish` for outgoing topics) | `@RestDoc` |
+| Generated documentation | [docgen/websocket-endpoints-topics.adoc](docgen/websocket-endpoints-topics.adoc) | [docgen/rest-endpoints.adoc](docgen/rest-endpoints.adoc) |
+
+### WebSocket (STOMP)
+
+The WebSocket configuration is in [WebSocketConfig](src/main/java/io/github/mbdo/factoryscada/configs/WebSocketConfig.java):
+
+- A client opens **one** WebSocket connection to the STOMP endpoint `ws://<host>:9000/mbdo-factory-scada`.
+  The connection starts as an HTTP request that is upgraded to WebSocket, which is why it shares the HTTP port.
+- All messages then go through this connection as STOMP frames. Their *destination* is a STOMP header,
+  **not** a URL path (there is no `ws://<host>:9000/mbdo-factory-scada/topic` URL):
+  - destinations starting with **`/app`** are messages sent *to* the backend (commands, requests).
+    The `/app` prefix is removed, and the rest is dispatched to the matching `@MessageMapping` method
+    (the class-level `@MessageMapping` prefix is prepended to the method one).
+    For example, `/app/conveyorBelt/{machineName}/command/stop` is handled by `ConveyorBeltWsController`
+    (class `@MessageMapping("/conveyorBelt")`, method `@MessageMapping("/{machineName}/command/stop")`).
+  - destinations starting with **`/topic`** are topics of the backend's in-memory broker, which clients *subscribe* to.
+    The backend publishes on them either as the reply of a handler (`@SendTo`), or at any time
+    (machine status, logs...) through the methods of `WebSocketPublisher` annotated with `@WebSocketPublish`.
+
+In the frontend (with `@stomp/rx-stomp`, see `frontend/src/app/services/my-rx-stomp.service.ts`):
+
+```typescript
+// brokerURL: `ws://${window.location.hostname}:9000/mbdo-factory-scada`
+this.myRxStompService.watch('/topic/factory-configuration').subscribe(message => { /* ... */ });
+this.myRxStompService.publish({ destination: '/app/factory/configuration' }); // the reply is sent to /topic/factory-configuration
+```
+
+### REST
+
+REST endpoints are plain HTTP requests, all under the `/api` prefix. The URL is the class-level `@RequestMapping`
+followed by the method mapping. For example, in `DynamicMissionRestController`:
+
+```java
+@RestController
+@RequestMapping("/api/dynamic-mission")
+public class DynamicMissionRestController {
+  @PostMapping("/command/start/{missionName}")
+  public ResponseEntity<Void> startMission(@PathVariable("missionName") String encodedMissionName) { /* ... */ }
+}
+```
+
+is called with `POST http://<host>:9000/api/dynamic-mission/command/start/<missionName>`, for example in the frontend
+with Angular's `HttpClient` (see `frontend/src/app/services/mission-extension-http.service.ts`):
+
+```typescript
+this.http.post(`${window.location.protocol}//${window.location.hostname}:9000/api/dynamic-mission/command/start/${encodeURIComponent(name)}`, {});
+```
+
+### Which protocol to use
+
+- Use **WebSocket (STOMP)** for the SCADA user interface: live data pushed by the backend (machine and command statuses,
+  logs, mission progress), and commands whose result is observed through these topics.
+- Use **REST** for request/response interactions that need a synchronous result or an HTTP status code,
+  and for external clients (the digital twin, scripts, tests) that should not have to manage a STOMP session.
+
+A feature may be exposed with both protocols (e.g. the mission extension and the dynamic missions):
+in this case, write one `*WsController` and one `*RestController` that both delegate to the same service,
+and never mix both protocols in a single controller class.
+
+The documentation in `docgen/` is regenerated each time the application starts
+(by `WebSocketDocGenerator` and `RestDocGenerator`): commit it with the changes of the endpoints.
+
 ## Documentation
 
-- [WebSocket protocol API](docgen/websocket-endpoints-topics.adoc) (backend to frontend communication)
+- [WebSocket protocol API](docgen/websocket-endpoints-topics.adoc) (STOMP destinations and topics, used by the frontend)
+- [REST API](docgen/rest-endpoints.adoc) (HTTP endpoints, used by the frontend and external clients such as the digital twin)

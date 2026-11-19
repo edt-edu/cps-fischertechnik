@@ -49,8 +49,11 @@ command class in the respective `commands` sub-package.
 In the machine class itself, create a method with the respective command name.
 The naming convention should follow the one in the rppmcontroller.
 
-Then head to the `io.github.mbdo.factoryscada.frontend.controller` package, find the respective machine controller and
-add a new receive-method for the command.
+Then head to the `io.github.mbdo.factoryscada.frontend.controller.ws` package, find the respective machine controller
+(e.g. `ConveyorBeltWsController`) and add a new receive-method for the command (annotated with `@MessageMapping` and
+documented with `@WebSocketDoc`).
+See the [backend README](backend/README.md#communication-with-the-backend-websocket-stomp-vs-rest) for the
+WebSocket (STOMP) and REST controllers.
 
 After that, the command can be selected in the UI, but it can't be executed yet.
 
