@@ -3,7 +3,7 @@ import unittest
 from rppmcontroller.machine.PIDController import DiscretePIDController
 
 
-class MyTestCase(unittest.TestCase):
+class PIDControllerTest(unittest.TestCase):
     def test_output_not_zero(self):
         controller = DiscretePIDController.for_pwm_control(0.001)
         controller.target.set(2000)
