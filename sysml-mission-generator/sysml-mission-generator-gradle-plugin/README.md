@@ -18,7 +18,7 @@ as part of your gradle build pipeline.
 ```kotlin
 plugins {
     // Apply the plugin from Maven Central
-    id("edu.edt.sysml.generator") version "1.1.0-SNAPSHOT"
+    id("fr.inria.mbdo.mission.sysml-mission-generator-gradle-plugin") version "1.2.0-SNAPSHOT"
 }
 ```
 
@@ -75,11 +75,41 @@ pluginManagement {
 ### Basic task
 
 ```bash
-./gradlew generateMission
+./gradlew generateSysml
 ```
 
-The task generates a SysML model under `build/generated-sysml`.  
-It runs **after** `processResources` and **before** `compileJava` by default, so generated sources are compiled automatically.
+The task generates Java sources under `build/generated/sources/sysml/main/java` (by default).
+The output directory is added to the `main` source set, so `compileJava` (and any other consumer of the sources) runs `generateSysml` first automatically.
+
+### Incremental build: when is the generator executed?
+
+`generateSysml` declares its inputs and outputs, so Gradle skips it (`UP-TO-DATE`) unless one of these changed:
+
+- the **content** of one of the `inputFiles`, or their order,
+- `basePackageName` or `cleanOutputDirectory`,
+- the plugin implementation (e.g. a new version of the generator),
+- the generated files under `<outputDirectory>/<basePackageName as path>` (modified or deleted).
+
+`inputFiles` must list **all** the SysML files of the project: files reached only through an `import` are neither loaded nor tracked.
+
+Only the `basePackageName` subtree of the output directory is tracked, so hand-written sources located elsewhere in a shared `outputDirectory` do not trigger a new generation.
+
+To force a generation:
+
+```bash
+./gradlew generateSysml --rerun
+```
+
+(`./gradlew clean` also works when `outputDirectory` is inside the build directory, which is the default.)
+
+### Removing stale generated files
+
+By default, files are only (over)written: a file generated from a SysML element that was later renamed or removed stays in the output directory and is still compiled.
+Set `cleanOutputDirectory = true` to delete the `basePackageName` subtree of the output directory before each generation.
+
+> **Warning:** every file in this package subtree is deleted, including hand-written ones. When `outputDirectory` is outside the build directory, the task logs a warning each time it cleans it. Keep a clear package separation between generated and hand-written code.
+
+> **Limitation:** when `basePackageName` changes, the files of the *previous* package are not deleted. Remove the old package folder manually (or run `./gradlew clean` when the output is inside the build directory).
 
 ### Example `build.gradle.kts` with custom configuration
 
@@ -102,8 +132,9 @@ sysmlGenerator {
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `inputFiles`      | `ListProperty<File>` |  | Ordered list of sysml files |
-| `basePackageName` | `String` |  | base java package name for generated files |
+| `basePackageName` | `String` | `fr.inria.generated` | base java package name for generated files |
 | `outputDirectory` | `DirectoryProperty` | `build/generated/sources/sysml/main/java/` | Where generated artifacts are placed. |
+| `cleanOutputDirectory` | `Boolean` | `false` | Delete the `basePackageName` subtree of `outputDirectory` before each generation (see above). |
 
 All properties are exposed under the `sysmlGenerator` extension block.
 

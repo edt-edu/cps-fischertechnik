@@ -27,7 +27,7 @@ Add the plugin declaration inside the `<plugins>` section of your project's `pom
         <plugin>
             <groupId>fr.inria.mbdo.mission</groupId>
             <artifactId>sysml-mission-generator-maven-plugin</artifactId>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.2.0-SNAPSHOT</version>
 
             <!-- bind the goal to the generate-sources phase -->
             <executions>
@@ -90,7 +90,7 @@ The generated code relies on the runtime library. Add it as a regular Maven depe
     <dependency>
         <groupId>fr.inria.mbdo.mission</groupId>
         <artifactId>sysml-mission-runtime</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
+        <version>1.2.0-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```
@@ -130,7 +130,7 @@ cd sysml-mission-generator-maven-plugin
 mvn clean install   # installs the plugin into your local Maven repository
 ```
 
-The resulting artifact will be available as `fr.inria.mbdo.mission:sysml-mission-generator-maven-plugin:1.1.0-SNAPSHOT`.
+The resulting artifact will be available as `fr.inria.mbdo.mission:sysml-mission-generator-maven-plugin:1.2.0-SNAPSHOT`.
 
 
 However, most changes usually occurs in the `sysml-mission-generator` module, sot the recommanded command is to run `mvn clean install` in the parent folder.
