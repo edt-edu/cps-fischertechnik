@@ -1,6 +1,5 @@
 import ctypes
 import logging
-
 import revpimodio2
 
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController

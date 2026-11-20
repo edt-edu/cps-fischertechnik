@@ -1,23 +1,23 @@
 from __future__ import annotations
 
+import select
+import sys
+import time
+from multiprocessing import Process
+from multiprocessing import Queue
+
 import inspect
 import json as json
 import logging
 import multiprocessing
 import os
-import select
 import signal
 import socket
-import sys
-import time
+import yaml
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
-from multiprocessing import Process
-from multiprocessing import Queue
 from queue import Empty
 from typing import Any, Dict, List, Optional, Callable, cast
-
-import yaml
 
 from rppmcontroller import __version__, TRACE
 from rppmcontroller.behavior.CycleStepCommand import CycleStepCommand
@@ -786,6 +786,7 @@ class RevPiPyMachineController(ABC):
                 logging.error("Encountered an unexpected error during the main loop iteration", exc_info=e)
 
     def mainLoopIteration(self):
+        iteration_start = time.time()
         logging.log(TRACE, "[main loop] Processing json...")
         self.processJson(self.inputBuffer)
         logging.log(TRACE, "[main loop] Reading...")
@@ -805,7 +806,17 @@ class RevPiPyMachineController(ABC):
         for m in self.machines:
             m.decrementNbMinimumRequiredExecutionCycles()
         logging.log(TRACE, "[main loop] Sleeping...")
-        time.sleep(self.mainLoopDelay)
+        iteration_duration = time.time() - iteration_start
+        if self.mainLoopDelay > iteration_duration:
+            time.sleep(self.mainLoopDelay - iteration_duration)
+            logging.log(TRACE,
+                        "[main loop] Iteration took %.3f seconds",
+                        iteration_duration)
+        else:
+            logging.warning(
+                "Main loop iteration took %.3f seconds, controller is lagging behind its desired frequency!",
+                iteration_duration)
+
 
 def abort(info: str) -> CycleStepResult:
     return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, info)

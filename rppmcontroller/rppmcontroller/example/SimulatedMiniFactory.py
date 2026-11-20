@@ -1,15 +1,23 @@
 import logging
-from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
-from rppmcontroller.machine.conveyorbelt.ConveyorBeltSimpleSimulator import ConveyorBeltSimpleSimulator
-from rppmcontroller.machine.highbay.HighBay import HighBay
-from rppmcontroller.machine.highbay.HighBaySimpleSimulator import HighBaySimpleSimulator
-from rppmcontroller.machine.multiprocessing.MultiProcessing import MultiProcessing
-from rppmcontroller.machine.multiprocessing.MultiProcessingSimpleSimulator import MultiProcessingSimpleSimulator
-from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
-from rppmcontroller.machine.sortingLine.SortingLineSimpleSimulator import SortingLineSimpleSimulator
-from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
-from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import VacuumGripperSimpleSimulator
+
 from rppmcontroller.RevPiPyMachineController import RevPiPyMachineController
+from rppmcontroller.machine.conveyorbelt.ConveyorBelt import ConveyorBelt
+from rppmcontroller.machine.conveyorbelt.ConveyorBeltSimpleSimulator import \
+    ConveyorBeltSimpleSimulator
+from rppmcontroller.machine.highbay.HighBay import HighBay
+from rppmcontroller.machine.highbay.HighBaySimpleSimulator import \
+    HighBaySimpleSimulator
+from rppmcontroller.machine.multiprocessing.MultiProcessing import \
+    MultiProcessing
+from rppmcontroller.machine.multiprocessing.MultiProcessingSimpleSimulator import \
+    MultiProcessingSimpleSimulator
+from rppmcontroller.machine.sortingLine.SortingLine import SortingLine
+from rppmcontroller.machine.sortingLine.SortingLineSimpleSimulator import \
+    SortingLineSimpleSimulator
+from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
+from rppmcontroller.machine.vacuumgripper.VacuumGripperSimpleSimulator import \
+    VacuumGripperSimpleSimulator
+
 
 class SimulatedMiniFactoryController(RevPiPyMachineController):
     """
