@@ -79,7 +79,13 @@ class ControlParameters(ABC):
 
 @dataclass
 class PIDParameters(ControlParameters):
-    """Parameters for a PID controller of an axis"""
+    """
+    Parameters for a PID controller of an axis.
+
+    The default parameters are tuned for the rotational axis of a VacuumGripper,
+    since those axes are the main use-case of a PID controller, rooted in the
+    need for very precise movement with a fully extended arm.
+    """
     main_loop_delay: float
     """The delay of the main control loop in seconds"""
     decimation_factor: int = 1
