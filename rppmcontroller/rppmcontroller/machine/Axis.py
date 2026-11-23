@@ -35,13 +35,14 @@ class Axis:
         pid_parameters = parameters.control_parameters if isinstance(parameters.control_parameters,
                                                                      PIDParameters) else None
         pid_controller = DiscretePIDController.from_parameters(pid_parameters) if pid_parameters is not None else None
-        pwm_control = parameters.control_parameters if isinstance(parameters.control_parameters,
+        approach_control = parameters.control_parameters if isinstance(
+            parameters.control_parameters,
                                                                   ApproachParameters) else None
         return Axis(axis_type=AxisType.Encoder,
                     tolerance=tolerance,
                     max_counter_value=parameters.max_counter_value,
                     pid_controller=pid_controller,
-                    pwm_control=pwm_control)
+                    approach_control=approach_control)
 
     def __init__(self, axis_type: AxisType,
                  tolerance: int,
@@ -49,7 +50,7 @@ class Axis:
                  *,
                  pwm_standard_speed: int = 100,
                  pid_controller: DiscretePIDController | None = None,
-                 pwm_control: ApproachParameters | None = None):
+                 approach_control: ApproachParameters | None = None):
         """
         constructor creates ImpulseCounter object if necessary
         :param axis_type: What kind of axis this is
@@ -57,7 +58,7 @@ class Axis:
         :param max_counter_value: If the counter exceeds this value, the axis
         :param pwm_standard_speed: How fast the axis should move normally
         :param pid_controller: A PID controller to use for this axis
-        :param pwm_control: How the pid output should behave - will be ignored when a pid controller is used
+        :param approach_control: How approach based control will be applied - will be ignored when a pid controller is used
         will not move to higher counter-values
         """
         self.__type = axis_type
@@ -65,7 +66,7 @@ class Axis:
         self.__tolerance = tolerance
         self.__first = True
         self.__standard_speed = pwm_standard_speed
-        self.__pwm_control = pwm_control
+        self.__approach_control = approach_control
         self.__max_counter_value = max_counter_value
         self.__pid_controller = pid_controller
 
@@ -402,10 +403,10 @@ class Axis:
         :param target_position: A position or configuration to approach
         :return: The pwm speed to use in the approach
         """
-        if self.__pwm_control is not None and not target_position.to_end_position() and self.isCloseFromEnd(
+        if self.__approach_control is not None and not target_position.to_end_position() and self.isCloseFromEnd(
             target_position,
-            self.__pwm_control.approach_tolerance):
-            return self.__pwm_control.approach_speed
+            self.__approach_control.approach_tolerance):
+            return self.__approach_control.approach_speed
 
         return self.__standard_speed
 
