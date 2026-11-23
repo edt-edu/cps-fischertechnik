@@ -1,18 +1,18 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, Optional, List
-
+from typing import Any, Callable, Dict, List
 from typing_extensions import override, deprecated
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.behavior.decoratorFunctions import cycle_step_function
-from rppmcontroller.machine.Axis import AxisType, Axis
+from rppmcontroller.machine.Axis import Axis
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.AxisMonitor import (NamedAxisMonitor)
 from rppmcontroller.machine.Machine import Machine
+from rppmcontroller.machine.MachineParameters import ApproachParameters
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.RequestedParameter import RequestedParameter
 from rppmcontroller.machine.ResetHelper import ResetHelper
@@ -28,11 +28,137 @@ from rppmcontroller.utils.csv import CSVWriter
 from rppmcontroller.utils.pretty_print import shortBoolStr
 
 
+# no inspection for deprecation here since we explicitly handle deprecation
+# noinspection PyDeprecation
+def _apply_legacy_support(parameters: VacuumGripperParameters):
+    legacy_pwm_standard_speed = parameters.pwm_standard_speed
+    if legacy_pwm_standard_speed is not None:
+        _warn_about_legacy_option("pwm_standard_speed",
+                                  ["horizontal_axis_parameters.pwm_standard_speed",
+                                   "vertical_axis_parameters.pwm_standard_speed",
+                                   "rotational_axis_parameters.pwm_standard_speed"])
+        parameters.horizontal_axis_parameters.pwm_standard_speed = legacy_pwm_standard_speed
+        parameters.vertical_axis_parameters.pwm_standard_speed = legacy_pwm_standard_speed
+        parameters.rotational_axis_parameters.pwm_standard_speed = legacy_pwm_standard_speed
+    else:
+        parameters.pwm_standard_speed = min(parameters.horizontal_axis_parameters.pwm_standard_speed,
+                                            parameters.vertical_axis_parameters.pwm_standard_speed,
+                                            parameters.rotational_axis_parameters.pwm_standard_speed)
+
+    legacy_pwm_vertical_speed = parameters.pwm_vertical_approach_speed
+    if isinstance(parameters.vertical_axis_parameters.control_parameters,
+                  ApproachParameters):
+        if legacy_pwm_vertical_speed is not None:
+            _warn_about_legacy_option("pwm_vertical_approach_speed",
+                                      ["vertical_axis_parameters.control_parameters.approach_speed"])
+            parameters.vertical_axis_parameters.control_parameters.approach_speed = legacy_pwm_vertical_speed
+        else:
+            parameters.pwm_vertical_approach_speed = parameters.vertical_axis_parameters.control_parameters.approach_speed
+    else:
+        if legacy_pwm_vertical_speed is not None:
+            _warn_about_legacy_option("pwm_vertical_approach_speed",
+                                      ["pwm_vertical_approach_speed = None"])
+        else:
+            parameters.pwm_vertical_approach_speed = parameters.vertical_axis_parameters.pwm_standard_speed
+
+    legacy_pwm_horizontal_speed = parameters.pwm_horizontal_approach_speed
+    if isinstance(parameters.horizontal_axis_parameters.control_parameters,
+                  ApproachParameters):
+        if legacy_pwm_horizontal_speed is not None:
+            _warn_about_legacy_option("pwm_horizontal_approach_speed",
+                                      ["horizontal_axis_parameters.control_parameters.approach_speed"])
+            parameters.horizontal_axis_parameters.control_parameters.approach_speed = legacy_pwm_horizontal_speed
+        else:
+            parameters.pwm_horizontal_approach_speed = parameters.horizontal_axis_parameters.control_parameters.approach_speed
+    else:
+        if legacy_pwm_horizontal_speed is not None:
+            _warn_about_legacy_option("pwm_horizontal_approach_speed",
+                                      ["pwm_horizontal_approach_speed = None"])
+        else:
+            parameters.pwm_horizontal_approach_speed = parameters.horizontal_axis_parameters.pwm_standard_speed
+
+    legacy_pwm_rotational_speed = parameters.pwm_rotational_approach_speed
+    if isinstance(parameters.rotational_axis_parameters.control_parameters,
+                  ApproachParameters):
+        if legacy_pwm_rotational_speed is not None:
+            _warn_about_legacy_option("pwm_rotational_approach_speed",
+                                      ["rotational_axis_parameters.control_parameters.approach_speed"])
+            parameters.rotational_axis_parameters.control_parameters.approach_speed = legacy_pwm_rotational_speed
+        else:
+            parameters.pwm_rotational_approach_speed = parameters.rotational_axis_parameters.control_parameters.approach_speed
+    else:
+        if legacy_pwm_rotational_speed is not None:
+            _warn_about_legacy_option("pwm_rotational_approach_speed",
+                                      ["pwm_rotational_approach_speed = None"])
+        else:
+            parameters.pwm_rotational_approach_speed = parameters.rotational_axis_parameters.pwm_standard_speed
+
+    legacy_pwm_approach_tolerance = parameters.pwm_approach_tolerance
+    if legacy_pwm_approach_tolerance is not None:
+        _warn_about_legacy_option("pwm_approach_tolerance",
+                                  ["vertical_axis_parameters.control_parameters.approach_tolerance",
+                                   "horizontal_axis_parameters.control_parameters.approach_tolerance",
+                                   "rotational_axis_parameters.control_parameters.approach_tolerance"])
+        if isinstance(parameters.vertical_axis_parameters.control_parameters,
+                      ApproachParameters):
+            parameters.vertical_axis_parameters.control_parameters.approach_tolerance = legacy_pwm_approach_tolerance
+        if isinstance(parameters.horizontal_axis_parameters.control_parameters,
+                      ApproachParameters):
+            parameters.horizontal_axis_parameters.control_parameters.approach_tolerance = legacy_pwm_approach_tolerance
+        if isinstance(parameters.rotational_axis_parameters.control_parameters,
+                      ApproachParameters):
+            parameters.rotational_axis_parameters.control_parameters.approach_tolerance = legacy_pwm_approach_tolerance
+    else:
+        # just select any value that is set
+        if isinstance(parameters.vertical_axis_parameters.control_parameters,
+                      ApproachParameters):
+            parameters.pwm_approach_tolerance = parameters.vertical_axis_parameters.control_parameters.approach_tolerance
+        elif isinstance(parameters.horizontal_axis_parameters.control_parameters,
+                        ApproachParameters):
+            parameters.pwm_approach_tolerance = parameters.horizontal_axis_parameters.control_parameters.approach_tolerance
+        elif isinstance(parameters.rotational_axis_parameters.control_parameters,
+                        ApproachParameters):
+            parameters.pwm_approach_tolerance = parameters.rotational_axis_parameters.control_parameters.approach_tolerance
+        else:
+            parameters.pwm_approach_tolerance = 100
+
+    if parameters.max_horizontal_counter_value is not None:
+        _warn_about_legacy_option("max_horizontal_counter_value",
+                                  ["horizontal_axis_parameters.max_counter_value"])
+        parameters.horizontal_axis_parameters.max_counter_value = parameters.max_horizontal_counter_value
+    else:
+        parameters.max_horizontal_counter_value = parameters.horizontal_axis_parameters.max_counter_value
+
+    if parameters.max_vertical_counter_value is not None:
+        _warn_about_legacy_option("max_vertical_counter_value",
+                                  ["vertical_axis_parameters.max_counter_value"])
+        parameters.vertical_axis_parameters.max_counter_value = parameters.max_vertical_counter_value
+    else:
+        parameters.max_vertical_counter_value = parameters.vertical_axis_parameters.max_counter_value
+
+    if parameters.max_rotational_counter_value is not None:
+        _warn_about_legacy_option("max_rotational_counter_value",
+                                  ["rotational_axis_parameters.max_counter_value"])
+        parameters.rotational_axis_parameters.max_counter_value = parameters.max_rotational_counter_value
+    else:
+        parameters.max_rotational_counter_value = parameters.rotational_axis_parameters.max_counter_value
+
+
+def _warn_about_legacy_option(option: str, better: List[str]) -> None:
+    alternative = "' or '".join(better)
+    logging.warning(f"[DEPRECATION] Your setup is still setting the legacy option '{option}', please use '{alternative}' instead")
+
+
 class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
-    def __init__(self, id1, parameters: Optional[VacuumGripperParameters] = None):
+    def __init__(self,
+                 id1: str,
+                 parameters: VacuumGripperParameters | None = None):
         if parameters is None:
             parameters = VacuumGripperParameters()
+
+        # support for legacy configuration
+        _apply_legacy_support(parameters)
 
         self.__parameters = parameters
 
@@ -59,9 +185,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.__vacuumSensRotEncoderCounter = 0
         self.__vacuumSensVerticalEncoderCounter = 0
         self.__vacuumSensArmEncoderCounter = 0
-        self.__axisArm = Axis(AxisType.Encoder, 5, parameters.max_horizontal_counter_value)
-        self.__axisVertical = Axis(AxisType.Encoder, 7, parameters.max_vertical_counter_value)
-        self.__axisRot = Axis(AxisType.Encoder, 5, parameters.max_rotational_counter_value)
+        self.__axisArm = Axis.encoder(parameters.horizontal_axis_parameters)
+        self.__axisVertical = Axis.encoder(parameters.vertical_axis_parameters)
+        self.__axisRot = Axis.encoder(parameters.rotational_axis_parameters)
         self.__rot_reset_helper = ResetHelper()
         self.__vertical_reset_helper = ResetHelper()
         self.__arm_reset_helper = ResetHelper()
@@ -111,6 +237,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.previous_isExecuting_log = None
         self.__gripperWaiter = CyclicWaiter(10)
 
+    # noinspection PyDeprecation
     @cycle_step_function()
     def reset_pwm_CycleStep(self) -> CycleStepResult:
         self.pwmVertical = self.parameters.pwm_standard_speed
@@ -337,7 +464,6 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         return self.__rot_reset_helper
 
     def sensorStatusString(self) -> str:
-        # noinspection SpellCheckingInspection
         return f"CountVRH[{self.vacuumSensVerticalEncoderCounter}, {self.vacuumSensRotEncoderCounter}, {self.vacuumSensArmEncoderCounter}], " + \
                f"SensVRH[{shortBoolStr(self.vacuumSensVerticalEndUp)}, {shortBoolStr(self.vacuumSensRotEnd)}, {shortBoolStr(self.vacuumSensArmEndIn)}]"
 
@@ -396,14 +522,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisArm.gotoAxisConfig(config.horizontal_axis_config):
             self.vacuumActArmIn = self.__axisArm.outputminus
             self.vacuumActArmOut = self.__axisArm.outputplus
-            if self.__axisArm.isCloseFromEnd(config.horizontal_axis_config, self.parameters.pwm_approach_tolerance):
-                self.pwmHorizontal = self.parameters.pwm_horizontal_approach_speed
-            else:
-                self.pwmHorizontal = self.parameters.pwm_standard_speed
+            self.pwmHorizontal = self.__axisArm.pwm_output
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "extending or retracting arm")
-        if self.vacuumActArmIn and self.vacuumSensArmEndIn:
-            self.stop_CycleStep()
-            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
 
         # vertical axis
         self.vacuumActVerticalUp = False
@@ -416,14 +536,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
             self.vacuumActVerticalUp = self.__axisVertical.outputminus
             self.vacuumActVerticalDown = self.__axisVertical.outputplus
-            if self.__axisVertical.isCloseFromEnd(config.vertical_axis_config, self.parameters.pwm_approach_tolerance):
-                self.pwmVertical= self.parameters.pwm_vertical_approach_speed
-            else :
-                self.pwmVertical = self.parameters.pwm_standard_speed
+            self.pwmVertical = self.__axisVertical.pwm_output
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "moving down or up")
-        if self.vacuumActVerticalUp and self.vacuumSensVerticalEndUp:
-            self.stop_CycleStep()
-            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
 
         # rotation
         self.vacuumActRotRight = False
@@ -436,14 +550,8 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         if not self.__axisRot.gotoAxisConfig(config.rotation_axis_config):
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
-            if self.__axisRot.isCloseFromEnd(config.rotation_axis_config, self.parameters.pwm_approach_tolerance):
-                self.pwmRotational = self.parameters.pwm_rotational_approach_speed
-            else :
-                self.pwmRotational = self.parameters.pwm_standard_speed
+            self.pwmRotational = self.__axisRot.pwm_output
             res = CycleStepResult(CycleStepResultEnum.MUST_CONTINUE, "rotating arm")
-        if self.vacuumActRotRight and self.vacuumSensRotEnd:
-            self.stop_CycleStep()
-            return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, "can't move beyond ref switch")
 
         # ensure movement is not blocked
         error = self.__monitor_axis_values()
@@ -513,6 +621,7 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
 
     ### ____________ Functions intended to be called in the exLoop function of the RevPiPyMachineController ________________
 
+    # noinspection PyDeprecation
     @override
     @cycle_step_function()
     def stop_CycleStep(self) -> CycleStepResult:
@@ -525,9 +634,9 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActCompressorOn = False
         self.vacuumActValve = False
 
-        self.__axisVertical.resetDirection()
-        self.__axisArm.resetDirection()
-        self.__axisRot.resetDirection()
+        self.__axisVertical.reset_direction()
+        self.__axisArm.reset_direction()
+        self.__axisRot.reset_direction()
 
         self.pwmHorizontal = self.parameters.pwm_standard_speed
         self.pwmRotational = self.parameters.pwm_standard_speed

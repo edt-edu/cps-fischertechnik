@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC
 from dataclasses import dataclass, field
 from typing import Any, Dict
@@ -55,3 +57,61 @@ class AxisMonitorParameters:
     measurement_interval: float = 0.1
     """Delay in seconds before another measurement is taken.
     Increase this value if you get too many false-positive high deviations."""
+
+
+@dataclass
+class AxisParameters:
+    """Parameters for a generic axis"""
+    control_parameters: ControlParameters = field(default_factory=lambda: ApproachParameters())
+    """Parameters that determine how the axis will be controlled"""
+    tolerance: int | None = None
+    """Tolerance of whether the axis target has been reached. When set in combination with pid_parameters then this value will be ignored"""
+    max_counter_value: int | None = None
+    """The maximum encoder counter value for this axis.
+    This limit is induced by the physical setup."""
+    pwm_standard_speed: int = 100
+    """How fast the axis should move normally"""
+
+
+class ControlParameters(ABC):
+    """Parameters that determine how the machine should be controlled"""
+
+
+@dataclass
+class PIDParameters(ControlParameters):
+    """
+    Parameters for a PID controller of an axis.
+
+    The default parameters are tuned for the rotational axis of a VacuumGripper,
+    since those axes are the main use-case of a PID controller, rooted in the
+    need for very precise movement with a fully extended arm.
+    """
+    main_loop_delay: float
+    """The delay of the main control loop in seconds"""
+    decimation_factor: int = 1
+    """The factor by how much the pid controller is slowed down compared to the
+    MachineController"""
+    smoothing_delay_seconds: float = 0
+    """How many seconds reaction delay will be introduced by smoothing out the
+    position signal"""
+    error_deadband: int = 4
+    """encoder precision/tolerance"""
+    minimum_output: int = 15
+    """The minimum required pid value for the axis to move"""
+    kp: float = 0.04
+    """Proportional gain"""
+    ki: float = 0.0002
+    """Integral gain"""
+    kd: float = 0.001
+    """Differential gain"""
+    integral_limit: float | None = 25
+    """Cap for the pid-internal integral"""
+
+
+@dataclass
+class ApproachParameters(ControlParameters):
+    """Parameters for an approached based PWM control"""
+    approach_speed: int = 30
+    """How fast the axis should approach the target value"""
+    approach_tolerance: int = 100
+    """How close the axis must be to the target value before switching to approach mode"""

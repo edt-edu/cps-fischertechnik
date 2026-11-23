@@ -9,6 +9,7 @@ import tests.controllerTestHelper as ctHelper
 from rppmcontroller.example.SimulatedVacuumGripperController import \
     SimulatedVacuumGripperController
 from rppmcontroller.machine.AxisBoolThreeD import AxisBoolThreeD
+from rppmcontroller.machine.MachineParameters import PIDParameters
 from rppmcontroller.machine.NamedPosition import NamedPosition
 from rppmcontroller.machine.Position import Position
 from rppmcontroller.machine.vacuumgripper.VacuumGripper import VacuumGripper
@@ -28,13 +29,23 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
 
 
         logging.debug("setup called")
+        main_loop_delay = 0.05
         vgr_parameters = VacuumGripperParameters(named_positions={
             "TEST": Position(rot=400, vertical=300, horizontal=200, meaning="any")
         })
         vgr_parameters.derive_over_positions()
+        vgr_parameters.rotational_axis_parameters.control_parameters = PIDParameters(
+            main_loop_delay=main_loop_delay,
+            decimation_factor=1,
+            smoothing_delay_seconds=0,
+            error_deadband=10,
+            kp=1,
+            ki=0,
+            kd=0,
+        )
         self.vgr_parameters = vgr_parameters
         self.controller = SimulatedVacuumGripperController(config_path, vgr_parameters)
-        self.controller.mainLoopDelay = 0.05
+        self.controller.mainLoopDelay = main_loop_delay
 
 
     def test_setupCommand(self):
@@ -1306,7 +1317,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
         message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
             Position("END",
                      0,
-                     vgr.parameters.max_rotational_counter_value + 100,
+                     (
+                             vgr.parameters.rotational_axis_parameters.max_counter_value or 0) + 100,
                      0),
         ])
         ctHelper.sendMessage(self.controller, "VacuumGripper01", message)
@@ -1320,7 +1332,8 @@ class SimulatedVacuumGripperControllerIntegrationTestCase(unittest.TestCase):
                          r"ABORTED_ERROR")
 
         # now go to valid position
-        target_rotation = vgr.parameters.max_rotational_counter_value - 100
+        target_rotation = (
+                                  vgr.parameters.rotational_axis_parameters.max_counter_value or 0) - 100
         message = MachineCommand("COMMAND", "VACUUM", 1, "GO_TO_POSITION", [
             Position("END",
                      0,
