@@ -71,6 +71,11 @@ class AxisParameters:
     This limit is induced by the physical setup."""
     pwm_standard_speed: int = 100
     """How fast the axis should move normally"""
+    allowed_overshoots: int | None = 10
+    """How often the axis may change the direction in order to reach the
+    current target, before the movement is aborted.
+    This setting can also be understood as how many overshoots are tolerated
+    or the maximum number of jitters"""
 
 
 class ControlParameters(ABC):

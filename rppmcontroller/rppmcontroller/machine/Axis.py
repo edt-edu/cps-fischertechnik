@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import logging
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple, Optional
+from typing import Optional, override
 
+from rppmcontroller.behavior.CycleStepResult import CycleStepResult
+from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
 from rppmcontroller.machine.AxisConfig import AxisConfig
 from rppmcontroller.machine.MachineParameters import AxisParameters, \
     PIDParameters, ApproachParameters
-from rppmcontroller.machine.MaxValueExceededError import MaxValueExceededError
 from rppmcontroller.machine.PIDController import DiscretePIDController
 from rppmcontroller.utils.Counter import Counter
 from rppmcontroller.utils.ImpulseCounter import ImpulseCounter
@@ -37,12 +40,13 @@ class Axis:
         pid_controller = DiscretePIDController.from_parameters(pid_parameters) if pid_parameters is not None else None
         approach_control = parameters.control_parameters if isinstance(
             parameters.control_parameters,
-                                                                  ApproachParameters) else None
+            ApproachParameters) else None
         return Axis(axis_type=AxisType.Encoder,
                     tolerance=tolerance,
                     max_counter_value=parameters.max_counter_value,
                     pid_controller=pid_controller,
-                    approach_control=approach_control)
+                    approach_control=approach_control,
+                    allowed_overshoots=parameters.allowed_overshoots)
 
     def __init__(self, axis_type: AxisType,
                  tolerance: int,
@@ -50,7 +54,8 @@ class Axis:
                  *,
                  pwm_standard_speed: int = 100,
                  pid_controller: DiscretePIDController | None = None,
-                 approach_control: ApproachParameters | None = None):
+                 approach_control: ApproachParameters | None = None,
+                 allowed_overshoots: int | None = None):
         """
         constructor creates ImpulseCounter object if necessary
         :param axis_type: What kind of axis this is
@@ -60,6 +65,7 @@ class Axis:
         :param pid_controller: A PID controller to use for this axis
         :param approach_control: How approach based control will be applied - will be ignored when a pid controller is used
         will not move to higher counter-values
+        :param allowed_overshoots: How often the target value may be overshot before the movement will be aborted and the target is considered reached
         """
         self.__type = axis_type
         self._counter = ImpulseCounter() if axis_type == AxisType.Counter else Counter()
@@ -69,6 +75,7 @@ class Axis:
         self.__approach_control = approach_control
         self.__max_counter_value = max_counter_value
         self.__pid_controller = pid_controller
+        self.__overshoot_tracker = _OverShootTracker(allowed_overshoots) if allowed_overshoots is not None else None
 
         # current input state
         self.__at_ref_switch: bool = False
@@ -160,7 +167,7 @@ class Axis:
         return PlusMinusStop.STOP
 
     def config_would_exceed_max_counter_value(self, axis_config: AxisConfig) \
-        -> Optional[MaxValueExceededError]:
+        -> Optional[OutOfReachError]:
         """
         Checks whether the counter-goal specified by the config would exceed
         the maximum counter-value
@@ -180,7 +187,7 @@ class Axis:
             axis_config.counter_goal)
 
     def goal_would_exceed_max_counter_value(self, counter_goal: int) \
-        -> Optional[MaxValueExceededError]:
+        -> OutOfReachError | None:
         """
         Checks whether the specified counter-goal would exceed the maximum
         counter-value
@@ -196,55 +203,73 @@ class Axis:
         :return: A `MaxValueExceededError` if the goal exceeds the maximum
             counter-value, otherwise `None`
         """
-        return MaxValueExceededError(counter_goal, self.__max_counter_value) \
+        return OutOfReachError(counter_goal, self.__max_counter_value) \
             if self.__max_counter_value is not None and counter_goal > self.__max_counter_value \
             else None
 
-    def gotoAxisConfig(self, axis_config: AxisConfig) -> bool | Tuple[
-        bool, PlusMinusStop | None]:
+    def aim_for(self, target: AxisConfig) -> AimFeedback:
         """
-        Set the outputs to move towards the specified axis_config
-
-        :param axis_config: An AxisConfig specifying where to move to
-        :return: True if the goal specified by the config has been reached. If the internal counter is a pulse counter, then the direction of that is also returned.
-        """
-        return self.gotoConfig(axis_config.end_position,
-                               axis_config.counter_goal)
-
-    def gotoConfig(self, go_to_ref_switch: bool, counter_goal: int) -> bool | \
-                                                                       Tuple[
-                                                                           bool, PlusMinusStop | None]:
-        """
-        Set outputs to reach the wanted counter-goal for that axis.
-
-        Note: If you set `counter_goal` to `0,` this method will behave exactly
-        as when `end_pos` is `True`.
-
-        :param go_to_ref_switch: Whether to move to the end-position of the axis
-        :param counter_goal: The counter-position to move to. Will be ignored
-        if end_pos is `True`
-        :return: `True` if the target has been reached. If the internal counter
-        is an ImpulseCounter, the direction of the movement is returned as
-         a second parameter
+        Configures the outputs of this axis to reach the specified config.
+        :param target: A target configuration to reach
+        :return: Feedback indicating whether the target has been reached or
+        whether an error occurred
         """
         # To improve precision, consider a move to 0 as a move to
         # ref-switch
-        # -> there are checks in place that prevent moving beyond a
-        #   ref-switch
-        if counter_goal <= 0:
-            go_to_ref_switch = True
-            # this value should not be used when the above value is True, but
-            # let's set it to 0 anyway, just to be sure
-            counter_goal = 0
-
-        if go_to_ref_switch:
+        counter_goal = target.counter_goal
+        if target.end_position or counter_goal <= 0:
             target_reached = self.go_to_ref_switch()
-        else:
-            target_reached = self._go_to_positive_counter_value(counter_goal)
+            direction = self.calculate_direction()
+            self._reset_overshoot_tracker()
+            return AimFeedback(target_reached, direction)
 
-        if isinstance(self._counter, ImpulseCounter):
-            return target_reached, self.calculate_direction()
-        return target_reached
+        if error := self.goal_would_exceed_max_counter_value(counter_goal):
+            self._reset_overshoot_tracker()
+            return AimFeedback(target_reached=False,
+                               direction=PlusMinusStop.STOP,
+                               out_of_reach_error=error)
+
+        target_reached = self._go_to_positive_counter_value(counter_goal)
+        direction = self.calculate_direction()
+
+        if error := self._detect_overshoot(counter_goal, direction):
+            self._reset_overshoot_tracker()
+            return AimFeedback(target_reached=False,
+                               direction=PlusMinusStop.STOP,
+                               overshoot_limit_exceeded_error=error)
+
+        return AimFeedback(target_reached, direction)
+
+    def _detect_overshoot(self,
+                          counter_goal: int,
+                          direction: PlusMinusStop) -> OvershootLimitExceededError | None:
+        tracker = self.__overshoot_tracker
+        if tracker is None:
+            return None
+
+        target_changed = tracker.last_target != counter_goal
+        if target_changed:
+            tracker.reset()
+            tracker.last_target = counter_goal
+            return None
+
+        no_direction_change = tracker.last_direction == direction
+        if no_direction_change:
+            return None
+
+        logging.warning(f"Detected overshoot of {self.counterValueCurrent - counter_goal}")
+        tracker.overshoot_count += 1
+
+        limit = tracker.allowed_overshoots
+        limit_exceeded = tracker.overshoot_count > limit
+        if not limit_exceeded:
+            return None
+
+        return OvershootLimitExceededError(limit)
+
+    def _reset_overshoot_tracker(self):
+        if self.__overshoot_tracker is not None:
+            self.__overshoot_tracker.reset()
 
     def _go_to_positive_counter_value(self, counter_goal: int) -> bool:
         """
@@ -417,3 +442,90 @@ class Axis:
 
         if self.__pid_controller is not None:
             self.__pid_controller.reset()
+
+
+@dataclass
+class AimFeedback:
+    """Accumulates feedback for a movement instruction"""
+    target_reached: bool
+    """Whether the target config has been reached. Will be False when an error occurred."""
+    direction: PlusMinusStop
+    """If the internal axis counter is an impulse counter, then the direction of the movement, otherwise None"""
+    out_of_reach_error: OutOfReachError | None = None
+    """An error that occurs when the target lies beyond the axis limits"""
+    overshoot_limit_exceeded_error: OvershootLimitExceededError | None = None
+    """An error that occurs when the axis has overshot the target too many times"""
+
+    @property
+    def error(self) -> AxisError | None:
+        """Returns any error that occurred"""
+        return self.out_of_reach_error if self.out_of_reach_error is not None else self.overshoot_limit_exceeded_error
+
+
+class AxisError(Exception, ABC):
+    """Base class for errors that occur during axis movement"""
+
+    @property
+    @abstractmethod
+    def message(self) -> str:
+        """A descriptive message of the error"""
+
+    def as_abort(self) -> CycleStepResult:
+        """
+        Convert this into a CycleStepResult with result ABORTED_ERROR
+        :return: An aborting CycleStepResult
+        """
+        return CycleStepResult(CycleStepResultEnum.ABORTED_ERROR, self.message)
+
+    def __bool__(self):
+        """Ensure that if statements can be used to check presence of errors"""
+        return True
+
+    def __str__(self) -> str:
+        return self.message
+
+
+class OutOfReachError(AxisError):
+    """
+    Indicates that a move to a specific configuration would exceed the
+    maximum counter-value
+    """
+
+    def __init__(self, requested_counter_value: int, max_counter_value: int):
+        self.__requested_counter_value = requested_counter_value
+        self.__max_counter_value = max_counter_value
+
+    @override
+    @property
+    def message(self) -> str:
+        return (f"Movement to counter-value {self.__requested_counter_value} "
+                f"would exceed maximum counter-value of {self.__max_counter_value}")
+
+
+class OvershootLimitExceededError(AxisError):
+    """Indicates that an axis has overshot its target value too often"""
+
+    def __init__(self, limit: int):
+        """
+        Create a new error
+        :param limit: The limit for how many overshoots are allowed
+        """
+        self.__limit = limit
+
+    @override
+    @property
+    def message(self) -> str:
+        return f"Axis has overshot its target value {self.__limit + 1} times"
+
+
+@dataclass
+class _OverShootTracker:
+    allowed_overshoots: int
+    last_target: int | None = None
+    last_direction: PlusMinusStop = PlusMinusStop.STOP
+    overshoot_count: int = 0
+
+    def reset(self):
+        self.last_target = None
+        self.last_direction = PlusMinusStop.STOP
+        self.overshoot_count = 0

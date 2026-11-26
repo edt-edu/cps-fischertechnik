@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from typing_extensions import override
-
 import logging
 from enum import Enum
 from typing import Dict, Any, Union, Callable, Optional, List
+from typing_extensions import override
 
 from rppmcontroller.behavior.CycleStepResult import CycleStepResult
 from rppmcontroller.behavior.CycleStepResultEnum import CycleStepResultEnum
@@ -460,11 +459,11 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # vertical axis
         self.__axisVertical.update(self.highbaySensVertical,
                                    self.highbaySensVerticalEncoderCounter)
-        error = self.__axisVertical.config_would_exceed_max_counter_value(config.vertical_axis_config)
-        if error:
+        feedback = self.__axisVertical.aim_for(config.vertical_axis_config)
+        if error := feedback.error:
             self.stop_CycleStep()
             return error.as_abort()
-        if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+        if not feedback.target_reached:
             # only allow small vertical movements for pickup
             distance_to_move = self.__axisVertical.counterValueCurrent - (
                 config.vertical_axis_config.counter_goal or 0)
@@ -478,18 +477,14 @@ class HighBay(Machine, TransitioningMachine[HighBayConfig]):
         # horizontal axis
         self.__axisHorizontal.update(self.highbaySensHorizontal,
                                      self.highbaySensHorizontalEncoderCounter)
-        error = self.__axisHorizontal.config_would_exceed_max_counter_value(config.horizontal_axis_config)
-        if error:
+        feedback = self.__axisHorizontal.aim_for(config.horizontal_axis_config)
+        if error := feedback.error:
             self.stop_CycleStep()
             return error.as_abort()
-        if not self.__axisHorizontal.gotoAxisConfig(config.horizontal_axis_config):
+        if not feedback.target_reached:
             arm_movement = ArmMovement.MAYOR
-            if self.__axisHorizontal.isCloseFromEnd(config.horizontal_axis_config, self.parameters.pwm_approach_tolerance):
-                self.pwmHorizontal = self.parameters.pwm_reduced_speed
-            else :
-                self.pwmHorizontal = self.parameters.pwm_standard_speed
+            self.pwmHorizontal = self.__axisHorizontal.pwm_output
 
-        # logging.debug(f"arm_movement: {arm_movement}")
         if (
             arm_movement is ArmMovement.MAYOR and not
         self.highbaySensCantileverBack):

@@ -515,11 +515,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActArmIn = False
         self.vacuumActArmOut = False
         self.__axisArm.update(self.vacuumSensArmEndIn, self.vacuumSensArmEncoderCounter)
-        error = self.__axisArm.config_would_exceed_max_counter_value(config.horizontal_axis_config)
-        if error:
+        feedback = self.__axisArm.aim_for(config.horizontal_axis_config)
+        if error := feedback.error:
             self.stop_CycleStep()
             return error.as_abort()
-        if not self.__axisArm.gotoAxisConfig(config.horizontal_axis_config):
+        if not feedback.target_reached:
             self.vacuumActArmIn = self.__axisArm.outputminus
             self.vacuumActArmOut = self.__axisArm.outputplus
             self.pwmHorizontal = self.__axisArm.pwm_output
@@ -529,11 +529,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActVerticalUp = False
         self.vacuumActVerticalDown = False
         self.__axisVertical.update(self.vacuumSensVerticalEndUp, self.vacuumSensVerticalEncoderCounter)
-        error = self.__axisVertical.config_would_exceed_max_counter_value(config.vertical_axis_config)
-        if error:
+        feedback = self.__axisVertical.aim_for(config.vertical_axis_config)
+        if error := feedback.error:
             self.stop_CycleStep()
             return error.as_abort()
-        if not self.__axisVertical.gotoAxisConfig(config.vertical_axis_config):
+        if not feedback.target_reached:
             self.vacuumActVerticalUp = self.__axisVertical.outputminus
             self.vacuumActVerticalDown = self.__axisVertical.outputplus
             self.pwmVertical = self.__axisVertical.pwm_output
@@ -543,11 +543,11 @@ class VacuumGripper(Machine, TransitioningMachine[VacuumGripperConfig]):
         self.vacuumActRotRight = False
         self.vacuumActRotLeft = False
         self.__axisRot.update(self.vacuumSensRotEnd, self.vacuumSensRotEncoderCounter)
-        error = self.__axisRot.config_would_exceed_max_counter_value(config.rotation_axis_config)
-        if error:
+        feedback = self.__axisRot.aim_for(config.rotation_axis_config)
+        if error := feedback.error:
             self.stop_CycleStep()
             return error.as_abort()
-        if not self.__axisRot.gotoAxisConfig(config.rotation_axis_config):
+        if not feedback.target_reached:
             self.vacuumActRotRight = self.__axisRot.outputminus
             self.vacuumActRotLeft = self.__axisRot.outputplus
             self.pwmRotational = self.__axisRot.pwm_output
